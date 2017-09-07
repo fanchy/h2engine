@@ -2,6 +2,7 @@
 #include "game/item.h"
 #include "game/db_service.h"
 #include "game/game_event.h"
+#include "server/ffworker.h"
 
 using namespace ff;
 using namespace std;
@@ -33,4 +34,7 @@ bool DbService::init(){
     EVENT_BUS_LISTEN(&handleDelEntityEvent);
     return true;
 }
-
+static bool initEnvir(){
+    return DbServiceSingleton.init();
+}
+WORKER_AT_SETUP(initEnvir);

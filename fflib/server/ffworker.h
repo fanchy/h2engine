@@ -55,8 +55,8 @@ struct WorkerInitFileInfo{
     int         nLine;
     WorkerFunc  func;
 };
-#define WORKER_AT_SETUP(f) int gSetup_##f = FFWorker::regSetupFunc(f, __FILE__, __LINE__)
-#define WORKER_AT_EXIT(f)  int gExit_##f = FFWorker::regExitFunc(f)
+#define WORKER_AT_SETUP(f) static int gSetup_##f = FFWorker::regSetupFunc(f, __FILE__, __LINE__)
+#define WORKER_AT_EXIT(f)  static int gExit_##f = FFWorker::regExitFunc(f)
 
 class SessionMsgFunctor{
 public:
@@ -70,6 +70,7 @@ struct SessionMsgFunctorUtil;
 class FFWorker
 {
 public:
+    static FFWorker* gSingletonWorker;
     static WorkerInitFileInfo gSetupFunc[100];
     static WorkerFunc gExitFunc[100];
     static int regSetupFunc(WorkerFunc f, const char* file, int line);
@@ -232,7 +233,7 @@ public:
 private:
     std::map<std::string, FFWorker*>     m_all_worker;
 };
-#define FFWORKER_SINGLETON (*(Singleton<FFWorkerMgr>::instance().get_any()))
+#define FFWORKER_SINGLETON (*FFWorker::gSingletonWorker)
 
 class FFWorker::session_enter_arg: public FFSlot::CallBackArg
 {

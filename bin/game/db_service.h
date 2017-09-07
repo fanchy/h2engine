@@ -23,6 +23,7 @@ public:
     bool cleanup();
 
 };
+#define DbServiceSingleton Singleton<DbService>::instance()
 
 }
 #endif

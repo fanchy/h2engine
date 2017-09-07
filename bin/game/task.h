@@ -57,7 +57,6 @@ class TaskCtrl:public EntityField
 {
 public:
     TaskCtrl():m_nMaxNum(0){}
-    virtual void onEvent(EntityPtr& entity, EntityEvent& event){}//!处理事件通知
 
     void addTask(TaskObjPtr Task);
     TaskObjPtr genTask(int cfgid);

@@ -39,8 +39,6 @@ public:
 class ItemCtrl:public EntityField
 {
 public:
-    virtual void onEvent(EntityPtr& entity, EntityEvent& event){}//!处理事件通知
-
     ItemConfigPtr getCfg()          { return m_itemConfig; }
     void setCfg(ItemConfigPtr c)    { m_itemConfig = c;    }
     
@@ -67,8 +65,6 @@ class PkgCtrl:public EntityField
 public:
     PkgCtrl():m_nMaxNum(0){}
     ~PkgCtrl();
-    virtual void onEvent(EntityPtr& entity, EntityEvent& event){}//!处理事件通知
-
     void addItem(EntityPtr item);
     EntityPtr genItem(uint64_t uid, int cfgid);
     bool delItem(uint64_t uid);

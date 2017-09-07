@@ -63,10 +63,12 @@ FFWorker::~FFWorker()
     m_functors.clear();
     m_shared_mem_mgr.cleanup();
 }
+FFWorker* FFWorker::gSingletonWorker = NULL;
 //int FFWorker::open(ArgHelper& arg_helper, string worker_name)
 int FFWorker::open(const string& brokercfg, int worker_index)
 {
     LOGTRACE((FFWORKER, "FFWorker::open begin"));
+    FFWorker::gSingletonWorker = this;
     
     char msgbuff[128] = {0};
     snprintf(msgbuff, sizeof(msgbuff), "worker#%d", worker_index);

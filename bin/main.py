@@ -104,6 +104,6 @@ def when_syncSharedData(cmd, data):
 def cleanup():
     print('cleaup.....')
     
-ret = h2ext.callFunc("Server.testFunc", 1,'s2',3.33,4,5,6,7,8, {9: 99})
+ret = h2ext.callFunc("Entity.totalNum")
 print('ret', type(ret), ret)
 
