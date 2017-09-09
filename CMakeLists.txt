@@ -2,10 +2,11 @@ cmake_minimum_required(VERSION 2.8)
 project(h2engine)
 include_directories(${PROJECT_SOURCE_DIR}/fflib ${PROJECT_SOURCE_DIR}/lib3party ${PROJECT_SOURCE_DIR}/src  
             ${PROJECT_SOURCE_DIR}/lib3party/php ${PROJECT_SOURCE_DIR}/lib3party/php/embed 
-            ${PROJECT_SOURCE_DIR}/lib3party/php/main ${PROJECT_SOURCE_DIR}/lib3party/php/TSRM
+            ${PROJECT_SOURCE_DIR}/lib3party/php/main ${PROJECT_SOURCE_DIR}/lib3party/php/Zend
+            ${PROJECT_SOURCE_DIR}/lib3party/php/TSRM
             /usr/include/mysql/ /usr/include/python2.7/ /usr/include/python2.6/ 
 )
-link_directories(/usr/local/lib /usr/lib64/mysql)
+link_directories(/usr/local/lib /usr/lib64/mysql ${PROJECT_SOURCE_DIR})
 
 set(ENGINE_LIB_SRC 
     ${PROJECT_SOURCE_DIR}/fflib/db/sqlite3.c

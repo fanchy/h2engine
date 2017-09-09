@@ -253,33 +253,33 @@ FFWorkerPhp::~FFWorkerPhp()
 {
 }
 
-static zend_class_entry *ffext_class_entry = NULL;
+static zend_class_entry *h2ext_class_entry = NULL;
 
-PHP_FUNCTION(confirm_ffext_compiled)
+PHP_FUNCTION(confirm_h2ext_compiled)
 {
 	const char *strg = "";
 	RETURN_STRINGL(strg, 0, 0);
 }
 
-PHP_FUNCTION(h2ext_inst)
-{
-	zval* retval = Singleton<FFWorkerPhp>::instance().m_php->global_instance;
-    RETURN_ZVAL(retval, 0, 1);
-}
+// PHP_FUNCTION(h2ext_inst)
+// {
+	// zval* retval = Singleton<FFWorkerPhp>::instance().m_php->global_instance;
+    // RETURN_ZVAL(retval, 0, 1);
+// }
 
-zend_function_entry ffext_functions[] = {
-	PHP_FE(confirm_ffext_compiled,	NULL)
-    PHP_FE(h2ext_inst,	NULL)
+zend_function_entry h2ext_functions[] = {
+	PHP_FE(confirm_h2ext_compiled,	NULL)
+    //PHP_FE(h2ext_inst,	NULL)
 	{NULL, NULL, NULL}
 };
 
 
-PHP_METHOD(ffext, __construct)
+PHP_METHOD(h2ext, __construct)
 {
     RETURN_TRUE;    
 }
 
-PHP_METHOD(ffext, send_msg_session)
+PHP_METHOD(h2ext, send_msg_session)
 {
     userid_t session_id_ = 0;
     long cmd_ = 0;
@@ -295,7 +295,7 @@ PHP_METHOD(ffext, send_msg_session)
     RETURN_TRUE;
     
 }
-PHP_METHOD(ffext, gateBroadcastMsg)
+PHP_METHOD(h2ext, gateBroadcastMsg)
 {
     long cmd_ = 0;
 	char *strarg  = NULL;
@@ -309,7 +309,7 @@ PHP_METHOD(ffext, gateBroadcastMsg)
     Singleton<FFWorkerPhp>::instance().gateBroadcastMsg(cmd_, data_);
     RETURN_TRUE;
 }
-PHP_METHOD(ffext, sessionMulticastMsg)
+PHP_METHOD(h2ext, sessionMulticastMsg)
 {
     zval* ids = NULL;
     long cmd_ = 0;
@@ -344,7 +344,7 @@ PHP_METHOD(ffext, sessionMulticastMsg)
     Singleton<FFWorkerPhp>::instance().sessionMulticastMsg(session_ids, cmd_, data_);
     RETURN_TRUE;
 }
-PHP_METHOD(ffext, sessionClose)
+PHP_METHOD(h2ext, sessionClose)
 {
     userid_t session_id_ = 0;
 
@@ -356,7 +356,7 @@ PHP_METHOD(ffext, sessionClose)
     RETURN_TRUE;
 }
 
-PHP_METHOD(ffext, sessionChangeWorker)
+PHP_METHOD(h2ext, sessionChangeWorker)
 {
     userid_t session_id_ = 0;
     long to_worker_index_ = 0;
@@ -371,7 +371,7 @@ PHP_METHOD(ffext, sessionChangeWorker)
     Singleton<FFWorkerPhp>::instance().sessionChangeWorker(session_id_, to_worker_index_, extra_data);
     RETURN_TRUE;
 }
-PHP_METHOD(ffext, getSessionGate)
+PHP_METHOD(h2ext, getSessionGate)
 {
     userid_t session_id_ = 0;
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &session_id_) == FAILURE) {
@@ -381,7 +381,7 @@ PHP_METHOD(ffext, getSessionGate)
     std::string ret = Singleton<FFWorkerPhp>::instance().getSessionGate(session_id_);
     RETURN_STRINGL(ret.c_str(), ret.size(), 1);
 }
-PHP_METHOD(ffext, getSessionIp)
+PHP_METHOD(h2ext, getSessionIp)
 {
     userid_t session_id_ = 0;
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &session_id_) == FAILURE) {
@@ -391,7 +391,7 @@ PHP_METHOD(ffext, getSessionIp)
     std::string ret = Singleton<FFWorkerPhp>::instance().getSessionIp(session_id_);
     RETURN_STRINGL(ret.c_str(), ret.size(), 1);
 }
-PHP_METHOD(ffext, isExist)
+PHP_METHOD(h2ext, isExist)
 {
 	char *strarg  = NULL;
     long strlen = 0;
@@ -404,7 +404,7 @@ PHP_METHOD(ffext, isExist)
     bool ret = Singleton<FFWorkerPhp>::instance().getRpc().isExist(service_name_);
     RETURN_BOOL(ret);
 }
-PHP_METHOD(ffext, reload)
+PHP_METHOD(h2ext, reload)
 {
 	char *strarg  = NULL;
     long strlen = 0;
@@ -417,7 +417,7 @@ PHP_METHOD(ffext, reload)
     std::string ret = Singleton<FFWorkerPhp>::instance().reload(name_);
     RETURN_STRINGL(ret.c_str(), ret.size(), 1);
 }
-PHP_METHOD(ffext, log)
+PHP_METHOD(h2ext, log)
 {
     long level = 0;
 	char *strarg  = NULL;
@@ -433,7 +433,7 @@ PHP_METHOD(ffext, log)
     Singleton<FFWorkerPhp>::instance().pylog(level, mod_, content_);
     RETURN_TRUE;
 }
-PHP_METHOD(ffext, regTimer)
+PHP_METHOD(h2ext, regTimer)
 {
     static long timer_idx = 0;
     
@@ -474,12 +474,12 @@ PHP_METHOD(ffext, regTimer)
                 TaskBinder::gen(&lambda_cb::callback, idx));
     RETURN_TRUE;
 }
-PHP_METHOD(ffext, writeLockGuard)
+PHP_METHOD(h2ext, writeLockGuard)
 {
     Singleton<FFWorkerPhp>::instance().getSharedMem().writeLockGuard();
     RETURN_TRUE;
 }
-PHP_METHOD(ffext, connectDB)
+PHP_METHOD(h2ext, connectDB)
 {
 	char *strarg  = NULL;
     long strlen = 0;
@@ -497,7 +497,7 @@ PHP_METHOD(ffext, connectDB)
 }
 
 
-PHP_METHOD(ffext, asyncQuery)
+PHP_METHOD(h2ext, asyncQuery)
 {
     long db_id_ = 0;
 	char *strarg  = NULL;
@@ -580,7 +580,7 @@ PHP_METHOD(ffext, asyncQuery)
     RETURN_TRUE;
 }
 
-PHP_METHOD(ffext, asyncQueryGroupMod)
+PHP_METHOD(h2ext, asyncQueryGroupMod)
 {
     char *strgroup  = NULL;
     long lengroup = 0;
@@ -666,7 +666,7 @@ PHP_METHOD(ffext, asyncQueryGroupMod)
     DB_MGR_OBJ.queryDBGroupMod(group_, mod_, sql_,  new lambda_cb(idx));
     RETURN_TRUE;
 }
-PHP_METHOD(ffext, query)
+PHP_METHOD(h2ext, query)
 {
     long db_id_ = 0;
 	char *strarg  = NULL;
@@ -715,7 +715,7 @@ PHP_METHOD(ffext, query)
     }
     RETURN_ZVAL(retval, 0, 1);
 }
-PHP_METHOD(ffext, queryGroupMod)
+PHP_METHOD(h2ext, queryGroupMod)
 {
     char *strgroup  = NULL;
     long lengroup = 0;
@@ -767,7 +767,7 @@ PHP_METHOD(ffext, queryGroupMod)
     }
     RETURN_ZVAL(retval, 0, 1);
 }
-PHP_METHOD(ffext, workerRPC)
+PHP_METHOD(h2ext, workerRPC)
 {
     long workerindex = 0;
     long cmd = 0;
@@ -825,7 +825,7 @@ PHP_METHOD(ffext, workerRPC)
     
     RETURN_TRUE;
 }
-PHP_METHOD(ffext, syncSharedData)
+PHP_METHOD(h2ext, syncSharedData)
 {
     long cmd_ = 0;
 	char *strarg  = NULL;
@@ -839,7 +839,7 @@ PHP_METHOD(ffext, syncSharedData)
     Singleton<FFWorkerPhp>::instance().getSharedMem().syncSharedData(cmd_, data_);
     RETURN_TRUE;
 }
-PHP_METHOD(ffext, asyncHttp)
+PHP_METHOD(h2ext, asyncHttp)
 {
     long timeoutsec = 0;
 	char *strarg  = NULL;
@@ -899,7 +899,7 @@ PHP_METHOD(ffext, asyncHttp)
     Singleton<FFWorkerPhp>::instance().asyncHttp(url, timeoutsec,  new lambda_cb(idx));
     RETURN_TRUE;
 }
-PHP_METHOD(ffext, syncHttp)
+PHP_METHOD(h2ext, syncHttp)
 {
     long timeoutsec = 0;
 	char *strarg  = NULL;
@@ -913,7 +913,7 @@ PHP_METHOD(ffext, syncHttp)
     std::string ret = Singleton<FFWorkerPhp>::instance().syncHttp(url, timeoutsec);
     RETURN_STRINGL(ret.c_str(), ret.size(), 1);
 }
-PHP_METHOD(ffext, escape)
+PHP_METHOD(h2ext, escape)
 {
 	char *strarg  = NULL;
     long strlen = 0;
@@ -1043,7 +1043,7 @@ static zval* fromScriptArgToScript(ScriptArgObjPtr pvalue){
     }
     return ret;
 }
-PHP_METHOD(ffext, callFunc)
+PHP_METHOD(h2ext, callFunc)
 {
 	char *strarg  = NULL;
     long strlen = 0;
@@ -1078,58 +1078,58 @@ PHP_METHOD(ffext, callFunc)
     RETURN_ZVAL(ret, 0, 1);
 }
  
-zend_function_entry ffext_class_functions[] = {
-    PHP_ME(ffext, __construct, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(ffext, send_msg_session, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(ffext, gateBroadcastMsg, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(ffext, sessionMulticastMsg, NULL, ZEND_ACC_PUBLIC)
+zend_function_entry h2ext_class_functions[] = {
+    PHP_ME(h2ext, __construct, NULL, ZEND_ACC_STATIC)
+    PHP_ME(h2ext, send_msg_session, NULL, ZEND_ACC_STATIC)
+    PHP_ME(h2ext, gateBroadcastMsg, NULL, ZEND_ACC_STATIC)
+    PHP_ME(h2ext, sessionMulticastMsg, NULL, ZEND_ACC_STATIC)
     
-    PHP_ME(ffext, escape, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(ffext, sessionClose, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(ffext, sessionChangeWorker, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(ffext, getSessionGate, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(ffext, getSessionIp, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(ffext, isExist, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(ffext, log, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(ffext, regTimer, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(ffext, connectDB, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(ffext, asyncQuery, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(ffext, query, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(ffext, asyncQueryGroupMod, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(ffext, queryGroupMod, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(ffext, workerRPC, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(ffext, syncSharedData, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(ffext, asyncHttp, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(ffext, syncHttp, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(ffext, writeLockGuard, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(ffext, callFunc, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(h2ext, escape, NULL, ZEND_ACC_STATIC)
+    PHP_ME(h2ext, sessionClose, NULL, ZEND_ACC_STATIC)
+    PHP_ME(h2ext, sessionChangeWorker, NULL, ZEND_ACC_STATIC)
+    PHP_ME(h2ext, getSessionGate, NULL, ZEND_ACC_STATIC)
+    PHP_ME(h2ext, getSessionIp, NULL, ZEND_ACC_STATIC)
+    PHP_ME(h2ext, isExist, NULL, ZEND_ACC_STATIC)
+    PHP_ME(h2ext, log, NULL, ZEND_ACC_STATIC)
+    PHP_ME(h2ext, regTimer, NULL, ZEND_ACC_STATIC)
+    PHP_ME(h2ext, connectDB, NULL, ZEND_ACC_STATIC)
+    PHP_ME(h2ext, asyncQuery, NULL, ZEND_ACC_STATIC)
+    PHP_ME(h2ext, query, NULL, ZEND_ACC_STATIC)
+    PHP_ME(h2ext, asyncQueryGroupMod, NULL, ZEND_ACC_STATIC)
+    PHP_ME(h2ext, queryGroupMod, NULL, ZEND_ACC_STATIC)
+    PHP_ME(h2ext, workerRPC, NULL, ZEND_ACC_STATIC)
+    PHP_ME(h2ext, syncSharedData, NULL, ZEND_ACC_STATIC)
+    PHP_ME(h2ext, asyncHttp, NULL, ZEND_ACC_STATIC)
+    PHP_ME(h2ext, syncHttp, NULL, ZEND_ACC_STATIC)
+    PHP_ME(h2ext, writeLockGuard, NULL, ZEND_ACC_STATIC)
+    PHP_ME(h2ext, callFunc, NULL, ZEND_ACC_STATIC)
     {NULL, NULL, NULL}
 };
 
-PHP_MINIT_FUNCTION(ffext)
+PHP_MINIT_FUNCTION(h2ext)
 {
     zend_class_entry ce;
-    INIT_CLASS_ENTRY(ce, "ffext_t", ffext_class_functions);
-    ffext_class_entry = zend_register_internal_class(&ce TSRMLS_CC);
+    INIT_CLASS_ENTRY(ce, "h2ext", h2ext_class_functions);
+    h2ext_class_entry = zend_register_internal_class(&ce TSRMLS_CC);
 
     return SUCCESS;
 }
 
-PHP_MSHUTDOWN_FUNCTION(ffext)
+PHP_MSHUTDOWN_FUNCTION(h2ext)
 {
 	return SUCCESS;
 }
 
-PHP_RINIT_FUNCTION(ffext)
+PHP_RINIT_FUNCTION(h2ext)
 {
 	return SUCCESS;
 }
-PHP_RSHUTDOWN_FUNCTION(ffext)
+PHP_RSHUTDOWN_FUNCTION(h2ext)
 {
 	return SUCCESS;
 }
 
-PHP_MINFO_FUNCTION(ffext)
+PHP_MINFO_FUNCTION(h2ext)
 {
 }
 
@@ -1139,12 +1139,12 @@ PHP_MINFO_FUNCTION(ffext)
 zend_module_entry php_mymod_entry = {
     STANDARD_MODULE_HEADER,
     EXT_NAME,
-    ffext_functions,
-	PHP_MINIT(ffext),
-	PHP_MSHUTDOWN(ffext),
-	PHP_RINIT(ffext),
-	PHP_RSHUTDOWN(ffext),
-	PHP_MINFO(ffext),
+    h2ext_functions,
+	PHP_MINIT(h2ext),
+	PHP_MSHUTDOWN(h2ext),
+	PHP_RINIT(h2ext),
+	PHP_RSHUTDOWN(h2ext),
+	PHP_MINFO(h2ext),
     "1.0",
     STANDARD_MODULE_PROPERTIES
 };
@@ -1202,24 +1202,22 @@ int FFWorkerPhp::process_init(ConditionVar* var, int* ret)
         
         zend_startup_module(&php_mymod_entry);
         char buff[256] = {0};
-        // snprintf(buff, sizeof(buff), "$GLOBALS['%s'] = new ffext_t();", EXT_NAME);
-        // m_php->eval_string(buff);
         snprintf(buff, sizeof(buff), "function h2ext_callback($func_array, $func_key){ return $func_array[$func_key](); }");
         m_php->eval_string(buff);
         snprintf(buff, sizeof(buff), "function h2ext_callback1($func_array, $func_key, $arg1){ return $func_array[$func_key]($arg1); }");
         m_php->eval_string(buff);
         
-        snprintf(buff, sizeof(buff), "function __BuildObj__(){ $ret = new ffext_t(); $GLOBALS['%s'] = $ret; return $ret;}", EXT_NAME);
-        m_php->eval_string(buff);
+        // snprintf(buff, sizeof(buff), "function __BuildObj__(){ $ret = new h2ext(); $GLOBALS['%s'] = $ret; return $ret;}", EXT_NAME);
+        // m_php->eval_string(buff);
         
-        zval* retval = m_php->call_function("__BuildObj__", NULL, true);
+        // zval* retval = m_php->call_function("__BuildObj__", NULL, true);
         
-        if (retval){
-            *(m_php->global_instance) = *retval;
-            zval_copy_ctor(m_php->global_instance);
+        // if (retval){
+            // *(m_php->global_instance) = *retval;
+            // zval_copy_ctor(m_php->global_instance);
             
-            zval_ptr_dtor(&retval);
-        }
+            // zval_ptr_dtor(&retval);
+        // }
         
         
         if(SUCCESS != m_php->load(m_ext_name.c_str())){
