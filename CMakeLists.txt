@@ -55,27 +55,27 @@ set(GAME_EXAMPLE_SRC
 )
 set(ENGINE_SRC_LIST 
     ${ENGINE_LIB_SRC}
-    ${PROJECT_SOURCE_DIR}/src/engine/main.cpp
+    ${PROJECT_SOURCE_DIR}/engine/main.cpp
 )
 set(WORKER_PY_SRC_LIST 
     ${ENGINE_LIB_SRC} ${GAME_EXAMPLE_SRC}
-    ${PROJECT_SOURCE_DIR}/src/workerpy/ffworker_python.cpp
-    ${PROJECT_SOURCE_DIR}/src/workerpy/main.cpp
+    ${PROJECT_SOURCE_DIR}/workerpy/ffworker_python.cpp
+    ${PROJECT_SOURCE_DIR}/workerpy/main.cpp
 )
 set(WORKER_LUA_SRC_LIST 
     ${ENGINE_LIB_SRC} ${GAME_EXAMPLE_SRC}
-    ${PROJECT_SOURCE_DIR}/src/workerlua/ffworker_lua.cpp
-    ${PROJECT_SOURCE_DIR}/src/workerlua/main.cpp
+    ${PROJECT_SOURCE_DIR}/workerlua/ffworker_lua.cpp
+    ${PROJECT_SOURCE_DIR}/workerlua/main.cpp
 )
 set(WORKER_JS_SRC_LIST 
     ${ENGINE_LIB_SRC} ${GAME_EXAMPLE_SRC}
-    ${PROJECT_SOURCE_DIR}/src/workerjs/ffworker_js.cpp
-    ${PROJECT_SOURCE_DIR}/src/workerjs/main.cpp
+    ${PROJECT_SOURCE_DIR}/workerjs/ffworker_js.cpp
+    ${PROJECT_SOURCE_DIR}/workerjs/main.cpp
 )
 set(WORKER_PHP_SRC_LIST 
     ${ENGINE_LIB_SRC} ${GAME_EXAMPLE_SRC}
-    ${PROJECT_SOURCE_DIR}/src/workerphp/ffworker_php.cpp
-    ${PROJECT_SOURCE_DIR}/src/workerphp/main.cpp
+    ${PROJECT_SOURCE_DIR}/workerphp/ffworker_php.cpp
+    ${PROJECT_SOURCE_DIR}/workerphp/main.cpp
 )
 add_executable(h2engine ${ENGINE_SRC_LIST})
 target_link_libraries(h2engine pthread dl mysqlclient crypto ssl z curl)
