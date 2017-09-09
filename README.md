@@ -18,12 +18,12 @@ $ make h2workerlua
 $ make h2workerjs
 $ make h2workerphp
 ```
-依赖说明：
-cmake:构建的时候需要
-python2.6或python2.7:构建h2workerpy的时候需要
-lua5:构建h2workerlua的时候需要
-js v8:构建h2workerjs的时候需要
-libphp5:构建h2workerphp的时候需要,注意需要下载php源码编译出来允许嵌入的版本，./configure --enable-embed  --prefix=~/php5dir --with-iconv=/usr/local/libiconv
+## 依赖说明：
+- cmake:构建的时候需要
+- python2.6或python2.7:构建h2workerpy的时候需要
+- lua5:构建h2workerlua的时候需要
+- js v8:构建h2workerjs的时候需要
+- libphp5:构建h2workerphp的时候需要,注意需要下载php源码编译出来允许嵌入的版本，./configure --enable-embed  --prefix=~/php5dir - --with-iconv=/usr/local/libiconv
 
 ## Further Reading
 
