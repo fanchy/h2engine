@@ -25,6 +25,15 @@ $ make h2workerphp
 - lua5:构建h2workerlua的时候需要
 - js v8:构建h2workerjs的时候需要
 - libphp5:构建h2workerphp的时候需要,注意需要下载php源码编译出来允许嵌入的版本，./configure --enable-embed  --prefix=~/php5dir - --with-iconv=/usr/local/libiconv
+## 运行
+```shell
+$ ./h2engine -d
+$ ./h2workerpy
+$ ./h2workerlua
+$ ./h2workerjs
+$ ./h2workerphp
+```
+h2engine是核心，需要首先启动，woker进程根据你需要的语言，启动你需要的版本即可。
 
 ## Further Reading
 
