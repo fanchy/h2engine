@@ -1,0 +1,306 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../favicon.ico">
+
+    <title>模拟客户端</title>
+    <style>
+    body {
+        padding-top: 50px;
+    }
+    .starter-template {
+        padding: 40px 15px;
+        text-align: center;
+    }
+    </style>
+    <!-- Bootstrap core CSS -->
+    <link href="./bootstrap-3.3.5-dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <!-- <link href="starter-template.css" rel="stylesheet"> -->
+
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    <!-- <script src="../../assets/js/ie-emulation-modes-warning.js"></script>-->
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="//cdn.bootcss.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="//cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">网络测试工具</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Socket</a></li>
+            <!--<li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li> -->
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+      <hr/>
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="panel panel-primary">
+            <div class="panel-heading">
+              <h3 class="panel-title">模拟客户端</h3>
+            </div>
+            <div class="panel-body">
+              
+            <div class="panel panel-default" >
+              <div id="LogContainer" class="panel-body" style="height:600px;overflow:auto;">
+                消息记录...<br/>
+              </div>
+            </div>
+            <p><hr/></p>
+            <form class="form-inline">
+              <div class="form-group">
+                <label class="sr-only" for="ip">ip</label>
+                <input type="text" class="form-control" id="ip" placeholder="ip" value="127.0.0.1">
+              </div>
+              <div class="form-group">
+                <label class="sr-only" for="port">port</label>
+                <input type="text" class="form-control" id="port" placeholder="port" value="44000">
+              </div>
+              <button type="button" class="btn btn-default" onclick="btnConnect();">连接</button>
+              <button type="button" class="btn btn-default" onclick="btnClose();">关闭</button>
+            </form>
+            <p><hr/></p>
+            <div class="row">
+              <div class="col-xs-3">
+                  <div class="form-group">
+                    <label class="sr-only" for="cmdSelect">user</label>
+                    <input type="text" class="form-control" id="cmdSelect" placeholder="协议号" value="">
+                  </div>
+              </div>
+              <div class="col-xs-3">
+                <div class="form-group">
+                    <label class="sr-only" for="dataReq">data</label>
+                    <input type="text" class="form-control" id="dataReq" placeholder="协议数据" value="">
+                  </div>
+              </div>
+              <div class="col-xs-4">
+                <button type="button" class="btn btn-default" onclick="btnSend();">发送</button>
+              </div>
+            </div>
+            <hr/>
+            <div id="reqInput" class="row" style="margin-top:10px;margin-left:2px;margin-right:2px;margin-bottom:10px;">
+                
+            </div>
+            </div>
+          </div>
+        </div>
+    </div><!-- /.container -->
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="./bootstrap-3.3.5-dist/js/jquery.min.js"></script>
+    <script src="./bootstrap-3.3.5-dist/js/bootstrap.min.js"></script>
+    <script src="./bootstrap-3.3.5-dist/js/json2.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+  </body>
+</html>
+
+<script>
+var ws = undefined;
+var gHost = '';
+function Log(Text, MessageType) {
+    if (MessageType == "OK") Text = "<span style='color: green;'>" + Text + "</span>";
+    else if (MessageType == "ERROR") Text = "<span style='color: red;'>" + Text + "</span>";
+    else if (MessageType == "SEND") Text = "<span style='color: orange;'>" + Text + "</span>";
+    document.getElementById("LogContainer").innerHTML = document.getElementById("LogContainer").innerHTML + Text + "<br />";
+    var LogContainer = document.getElementById("LogContainer");
+    LogContainer.scrollTop = LogContainer.scrollHeight;
+};
+function btnConnect(){
+    if (ws){
+        Log("连接已经建立!!。", "ERROR");
+        return;
+    }
+    gHost = document.getElementById("ip").value + ":" + document.getElementById("port").value;
+    Log("begin connect:"+gHost)
+    gHost +=  "/chat";
+    if ("WebSocket" in window) {
+        ws = new WebSocket("ws://" + gHost);
+    }
+    else if("MozWebSocket" in window) {
+        ws = new MozWebSocket("ws://" + gHost);
+    }
+    ws.onopen    = WSonOpen;
+    ws.onmessage = WSonMessage;
+    ws.onclose   = WSonClose;
+    ws.onerror   = WSonError;
+}
+function btnClose(){
+    if (ws)
+        ws.close();
+}
+function WSonOpen() {
+    Log("连接已经建立。", "OK");
+    //$("#SendDataContainer").show();
+        //ws.send('cmd:1\n{"_webdebug_":true,"username":"' + document.getElementById("user").value+'"}');//,"reconnectUid":15728642
+};
+ClientCmd = {}
+ServerCmd = {}
+ReqMsg    = {}
+RetMsg    = {}
+function updateCmdHtml(){
+    if ($('#cmdSelect').val() != '选择Cmd')
+        return;
+     var html = '';
+     for (var k in ClientCmd){
+        html += '<option value="'+ClientCmd[k]+'">'+k+'</option>';
+     }
+     $('#cmdSelect').html(html);
+     
+     var html = '<option value="">选择Struct</option>';
+     for (var k in ReqMsg){
+        html += '<option value="'+k+'">'+k+'</option>';
+     }
+     $('#reqSelect').html(html);
+     
+     
+}
+function changeCmd(){
+    var reqCmd = parseInt($('#cmdSelect').val());
+    for (var k in ClientCmd){
+        if (ClientCmd[k] == reqCmd){
+            var names = k.split('_');
+            
+            //!寻找 msg 包含此字符串的
+            for (var m in ReqMsg){
+                if (m.toLowerCase().indexOf(names[0].toLowerCase()) >= 0){
+                    
+                    $("#reqSelect").val(m);
+                    changeReq();
+                    return;
+                }
+            }
+            
+        }
+    }
+}
+function changeReq(){
+    var reqName = $('#reqSelect').val();
+    var talbe = '<table class="table table-bordered">\
+                    <tr>\
+                    <th>字段</th>\
+                    <th>类型</th>\
+                    <th>值</th>\
+                  </tr>\
+                  ';
+
+    var thrift_spec_list = ReqMsg[reqName];
+    for (var i = 1; i < thrift_spec_list.length; ++i){
+        var thrift_spec = thrift_spec_list[i];
+        talbe +='\
+                  <tr>\
+                    <td>'+thrift_spec[2]+'</td>\
+                    <td>'+thrift_spec[1]+'</td>\
+                    <td><input type="text"  id="'+reqName+'_'+thrift_spec[2]+'" placeholder="输入值" value="'+thrift_spec[4]+'"></td>\
+                  </tr>';
+    }
+    talbe +='</table>';
+    $('#reqInput').html(talbe);
+     
+}
+function WSonMessage(event) {
+    var tmpArg = event.data.split('\n');
+    if (tmpArg[0] == 'cmd:0'){
+        if (tmpArg[1][0] == '{'){
+            var dataObj = eval("("+tmpArg[1]+")");//转换为json对象 
+            ClientCmd = dataObj['ClientCmd'];
+            ServerCmd = dataObj['ServerCmd'];
+            ReqMsg    = dataObj['ReqMsg'];
+            RetMsg    = dataObj['RetMsg'];
+            updateCmdHtml();
+        }
+        else{
+            var lgdata = decodeUTF8(tmpArg[1]);
+            Log(lgdata);
+        }
+    }
+    if (tmpArg[0] == 'cmd:1111'){
+        Log(event.data);
+    }
+    else{
+        var cmdStr = tmpArg[0];
+        for (var k in ServerCmd){
+            if ('cmd:'+ServerCmd[k] == cmdStr){
+                cmdStr = k +':';
+                break;
+            }
+        }
+        var lgdata = decodeUTF8(tmpArg[1]);
+        Log('接收:'+cmdStr+'\n'+lgdata, 'OK');
+        if (cmdStr == 'USER_INFO:'){
+            var dataMsg  = {'uid':0};
+            var jsonData = JSON.stringify(dataMsg);
+            var reqMsg   = 'cmd:11' +'\n'+jsonData;
+            //Log($('#cmdSelect').html());
+            //Log(reqMsg);
+            ws.send(reqMsg);
+        }
+    }
+};
+
+function WSonClose() {
+    if (ws)
+        Log("【"+document.getElementById("user").value+"】下线！");
+    ws = undefined;
+};
+
+function WSonError() {
+    Log("远程连接中断。", "ERROR");
+    ws = undefined;
+};
+function btnSend(){
+    var cmdReq  = $('#cmdSelect').val();
+    var dataReq = $('#dataReq').val();
+    var reqMsg   = 'cmd:' + cmdReq + '\n'+dataReq;
+    //Log($('#cmdSelect').html());
+    //Log(reqMsg);
+    ws.send(reqMsg);
+}
+
+
+ function encodeUTF8(str){
+	var temp = "",rs = "";
+	for( var i=0 , len = str.length; i < len; i++ ){
+		temp = str.charCodeAt(i).toString(16);
+		rs  += "\\u"+ new Array(5-temp.length).join("0") + temp;
+	}
+	return rs;
+ }
+ function decodeUTF8(str){
+	return str.replace(/(\\u)(\w{4}|\w{2})/gi, function($0,$1,$2){
+		return String.fromCharCode(parseInt($2,16));
+	}); 
+ } 
+
+</script>
