@@ -26,6 +26,15 @@ function h2DefaultErrorHandler($errno, $errstr, $errfile, $errline) {
 // set_error_handler("h2DefaultErrorHandler", E_ALL & ~E_NOTICE);
 
 
+function onSessionReq($sessionid, $cmd, $body){
+    print('onSessionReq:'.$sessionid.','.$cmd.','.$body."\n");
+    $ip = h2ext::getSessionIp($sessionid);
+    h2ext::sessionSendMsg($sessionid, $cmd, '服务器收到消息，sessionid:'.$sessionid.',ip:'.$ip.',cmd:'.$cmd.',data:'. $body);
+    return;
+}
+function onSessionOffline($sessionid){
+    print('onSessionOffline:'.$sessionid."\n");
+}
 function timer_cb_p(){
     print("timer_cb_p:\n");
     print("timer_cb_p: end***************************\n");

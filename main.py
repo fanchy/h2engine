@@ -35,7 +35,7 @@ objMgr = PlayerMgr()
 def onSessionReq(sessionid, cmd, body):
     print('onSessionReq', sessionid, cmd, body)
     ip = h2ext.getSessionIp(sessionid)
-    h2ext.sessionSendMsg(sessionid, cmd, '服务器收到消息，ip:%s,cmd:%d,data:%s'%(ip, cmd, body))
+    h2ext.sessionSendMsg(sessionid, cmd, '服务器收到消息，sessionid:%d,ip:%s,cmd:%d,data:%s'%(sessionid, ip, cmd, body))
     return
     player = objMgr.allocPlayer(sessionid)
     if cmd == CMD_LOGIN:

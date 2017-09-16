@@ -260,7 +260,7 @@ static BIND_FUNC_RET_TYPE js_send_msg_session(const Arguments& args)
     string  data_        = js2string(args[2]);
     Singleton<FFWorkerJs>::instance().sessionSendMsg(session_id_, cmd_, data_);
     
-    LOGINFO((FFWORKER_JS, "js_send_msg_session %d %d %s", session_id_, cmd_, data_));
+    LOGTRACE((FFWORKER_JS, "js_send_msg_session %d %d %s", session_id_, cmd_, data_));
     BIND_FUNC_RET_TRUE;
 }
 static BIND_FUNC_RET_TYPE js_broadcast_msg_gate(const Arguments& args)

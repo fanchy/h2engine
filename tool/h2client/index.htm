@@ -271,12 +271,12 @@ function WSonMessage(event) {
 
 function WSonClose() {
     if (ws)
-        Log("【"+document.getElementById("user").value+"】下线！");
+        Log("下线！");
     ws = undefined;
 };
 
 function WSonError() {
-    Log("远程连接中断。", "ERROR");
+    Log("远程连接中断。");
     ws = undefined;
 };
 function btnSend(){

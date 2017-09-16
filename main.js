@@ -1,11 +1,20 @@
 
-
-h2ext.sessionSendMsg(100000000000, 2, 'ccccccccc');
-h2ext.sessionMulticastMsg([1,2,3], 101, 'dddd');
-h2ext.sessionClose(33);
-h2ext.sessionChangeWorker(4, 1, 'extraAA');
-gate = h2ext.getSessionGate(55);
-h2ext.print(gate);
+function onSessionReq(sessionid, cmd, body){
+    h2ext.print('onSessionReq', sessionid, cmd, body);
+    ip = h2ext.getSessionIp(sessionid);
+    h2ext.sessionSendMsg(sessionid, cmd, 
+        '服务器收到消息，sessionid:'+sessionid+',ip:'+ip+',cmd:'+cmd+',data:'+ body);
+    return;
+}
+function onSessionOffline(sessionid){
+    h2ext.print('onSessionOffline', sessionid);
+}
+// h2ext.sessionSendMsg(100000000000, 2, 'ccccccccc');
+// h2ext.sessionMulticastMsg([1,2,3], 101, 'dddd');
+// h2ext.sessionClose(33);
+// h2ext.sessionChangeWorker(4, 1, 'extraAA');
+// gate = h2ext.getSessionGate(55);
+// h2ext.print(gate);
 function timercb(){
     h2ext.regTimer(1, timercb);
 }
@@ -30,8 +39,8 @@ h2ext.asyncHttp("https://git.oschina.net/ownit/spython/raw/master/ma.py", 1, fun
     h2ext.print("http", ret);
 });
 
-var ret = h2ext.require("foo.js");
-h2ext.print(ret);
+// var ret = h2ext.require("foo.js");
+// h2ext.print(ret);
 h2ext.print("ls", h2ext.ls("./h2js"));
 
 function onWorkerCall(cmd, data){

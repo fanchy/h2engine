@@ -279,7 +279,7 @@ PHP_METHOD(h2ext, __construct)
     RETURN_TRUE;    
 }
 
-PHP_METHOD(h2ext, send_msg_session)
+PHP_METHOD(h2ext, sessionSendMsg)
 {
     userid_t session_id_ = 0;
     long cmd_ = 0;
@@ -1080,7 +1080,7 @@ PHP_METHOD(h2ext, callFunc)
  
 zend_function_entry h2ext_class_functions[] = {
     PHP_ME(h2ext, __construct, NULL, ZEND_ACC_STATIC)
-    PHP_ME(h2ext, send_msg_session, NULL, ZEND_ACC_STATIC)
+    PHP_ME(h2ext, sessionSendMsg, NULL, ZEND_ACC_STATIC)
     PHP_ME(h2ext, gateBroadcastMsg, NULL, ZEND_ACC_STATIC)
     PHP_ME(h2ext, sessionMulticastMsg, NULL, ZEND_ACC_STATIC)
     
