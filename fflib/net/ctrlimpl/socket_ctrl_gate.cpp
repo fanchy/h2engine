@@ -38,6 +38,7 @@ int SocketCtrlGate::handleOpen(SocketI* s_)
 {
     m_last_update_tm = m_net_stat->get_heartbeat().tick();
     m_net_stat->get_heartbeat().add(s_);
+    LOGTRACE((FFNET, "SocketCtrlGate::handleOpen ok"));
     return 0;
 }
 
@@ -95,6 +96,7 @@ int SocketCtrlGate::handleRead(SocketI* s_, const char* buff, size_t len)
 
     if (true == m_message.have_recv_head(m_have_recv_size) && m_message.size() > (size_t)m_net_stat->get_max_packet_size())
     {
+        LOGERROR((FFNET, "SocketCtrlGate::handleRead end msg size<%u>,%d", m_message.size(), m_net_stat->get_max_packet_size()));
         s_->close();
     }
 
@@ -537,6 +539,7 @@ int SocketCtrlGate::handleRead_mask_msg(SocketI* s_, const char* buff, size_t le
         }
         else if (8 == opcode)//!ask close
         {
+            LOGTRACE((FFNET, "SocketCtrlGate::handle_parse_text_prot ask close"));
             s_->close();
             return 0;
         }
@@ -599,6 +602,7 @@ int SocketCtrlGate::handle_parse_text_prot(SocketI* s_, const string& str_body_)
     //! 判断消息包是否超过限制
     if (m_message.get_head().size > (size_t)m_net_stat->get_max_packet_size())
     {
+        LOGERROR((FFNET, "SocketCtrlGate::handle_parse_text_prot exceed=%d:%d", m_message.get_head().size, m_net_stat->get_max_packet_size()));
         s_->close();
         return 0;
     }

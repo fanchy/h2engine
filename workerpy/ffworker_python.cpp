@@ -795,6 +795,7 @@ void FFWorkerPython::pylog(int level_, const string& mod_, const string& content
 
 int FFWorkerPython::onSessionReq(userid_t session_id, uint16_t cmd, const std::string& data)
 {
+    LOGTRACE((FFWORKER_PYTHON, "onSessionReq session_id=%d,cmd=<%d>", session_id, cmd));
     try
     {
         (*m_ffpython).call<void>(m_ext_name, "onSessionReq", session_id, cmd, data);//

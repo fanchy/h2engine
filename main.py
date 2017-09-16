@@ -34,6 +34,9 @@ class PlayerMgr:
 objMgr = PlayerMgr()
 def onSessionReq(sessionid, cmd, body):
     print('onSessionReq', sessionid, cmd, body)
+    ip = h2ext.getSessionIp(sessionid)
+    h2ext.sessionSendMsg(sessionid, cmd, '服务器收到消息，ip:%s,cmd:%d,data:%s'%(ip, cmd, body))
+    return
     player = objMgr.allocPlayer(sessionid)
     if cmd == CMD_LOGIN:
         name = body
@@ -78,7 +81,7 @@ def onWorkerCall(cmd, body):
 
 def rpc_cb(ret):
     print('rpc_cb', ret)
-h2ext.workerRPC(0, 101, "hello", rpc_cb)
+#h2ext.workerRPC(0, 101, "hello", rpc_cb)
 
 
 def timerTest():
@@ -104,6 +107,6 @@ def when_syncSharedData(cmd, data):
 def cleanup():
     print('cleaup.....')
     
-ret = h2ext.callFunc("Entity.totalNum")
-print('ret', type(ret), ret)
+#ret = h2ext.callFunc("Entity.totalNum")
+#print('ret', type(ret), ret)
 

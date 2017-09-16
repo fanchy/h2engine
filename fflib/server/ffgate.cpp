@@ -126,7 +126,9 @@ int FFGate::handleMsg(const Message& msg_, socket_ptr_t sock_)
         //!随机一个worker
         vector<string> allwoker = m_ffrpc->getServicesLike("worker#");
         if (allwoker.empty()){
-            sock_->close();
+            LOGERROR((FFGATE, "FFGate::handleMsg no worer exist"));
+            msg_sender_t::send(sock_, 0, "server busy!");
+            //sock_->close();
             return 0;
         }
         
