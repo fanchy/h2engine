@@ -2,10 +2,10 @@
 #include<stdio.h>
 #include<math.h>
 
-#include "game/map.h"
 #include "base/log.h"
 #include "server/ffworker.h"
-#include "game/game_event.h"
+#include "map/map.h"
+#include "common/game_event.h"
 
 using namespace ff;
 using namespace std;

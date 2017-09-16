@@ -1,4 +1,4 @@
-#include "game/entity.h"
+#include "common/entity.h"
 #include "server/ffworker.h"
 #include "server/script.h"
 

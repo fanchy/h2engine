@@ -2,7 +2,7 @@
 #define _FF_GAME_EVENT_H_
 
 #include "base/event_bus.h"
-#include "game/entity.h"
+#include "common/entity.h"
 
 namespace ff{
 class MapObj;

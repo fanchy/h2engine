@@ -1,7 +1,7 @@
 
-#include "game/item.h"
-#include "game/db_service.h"
-#include "game/game_event.h"
+#include "item/item.h"
+#include "player/db_player.h"
+#include "common/game_event.h"
 #include "server/ffworker.h"
 
 using namespace ff;

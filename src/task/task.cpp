@@ -1,6 +1,6 @@
 #include <ctype.h>
 
-#include "game/task.h"
+#include "task/task.h"
 #include "server/db_mgr.h"
 
 using namespace ff;

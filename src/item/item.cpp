@@ -1,8 +1,8 @@
 #include <ctype.h>
 
-#include "game/item.h"
+#include "item/item.h"
 #include "server/db_mgr.h"
-#include "game/game_event.h"
+#include "common/game_event.h"
 
 using namespace ff;
 using namespace std;

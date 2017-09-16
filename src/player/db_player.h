@@ -7,8 +7,8 @@
 #include <map>
 #include <set>
 
-#include "game/entity.h"
-#include "game/game_event.h"
+#include "common/entity.h"
+#include "common/game_event.h"
 #include "base/smart_ptr.h"
 #include "server/db_mgr.h"
 
