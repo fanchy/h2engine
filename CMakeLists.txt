@@ -46,12 +46,12 @@ set(ENGINE_LIB_SRC
     ${PROJECT_SOURCE_DIR}/fflib/xml/tinyxmlparser.cpp
 )
 set(GAME_EXAMPLE_SRC
-    ${PROJECT_SOURCE_DIR}/src/game/entity.cpp
-    ${PROJECT_SOURCE_DIR}/src/game/player_service.cpp
-    ${PROJECT_SOURCE_DIR}/src/game/map.cpp
-    ${PROJECT_SOURCE_DIR}/src/game/db_service.cpp
-    ${PROJECT_SOURCE_DIR}/src/game/task.cpp
-    ${PROJECT_SOURCE_DIR}/src/game/item.cpp
+    ${PROJECT_SOURCE_DIR}/src/common/entity.cpp
+    ${PROJECT_SOURCE_DIR}/src/player/cmd_player.cpp
+    ${PROJECT_SOURCE_DIR}/src/player/db_player.cpp
+    ${PROJECT_SOURCE_DIR}/src/map/map.cpp
+    ${PROJECT_SOURCE_DIR}/src/task/task.cpp
+    ${PROJECT_SOURCE_DIR}/src/item/item.cpp
 )
 set(ENGINE_SRC_LIST 
     ${ENGINE_LIB_SRC}
