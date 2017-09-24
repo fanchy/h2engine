@@ -1,4 +1,10 @@
 <?
+function init(){
+    print("php init...\n");
+}
+function cleanup(){
+    print("php cleanup...\n");
+}
 
 // test.php - file for exploring php embed
 // Copyright (c) 2007 Andrew Bosworth, Facebook, inc
@@ -75,10 +81,6 @@ function http_cb($rpcret){
     h2ext::asyncHttp($url, 1, http_cb);
 }
 //h2ext::asyncHttp($url, 1, http_cb);
-
-function cleanup(){
-    print("cleanup...\n");
-}
 
 
 function rpc_cb($rpcret){

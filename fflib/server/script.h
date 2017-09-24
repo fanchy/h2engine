@@ -209,6 +209,13 @@ struct ScriptArgs{
         }
         return args[n];
     }
+    ScriptArgObjPtr atOrCreate(size_t n){
+        for (size_t i = args.size(); i <= n; ++i){
+            ScriptArgObjPtr ret = new ScriptArgObj();
+            args.push_back(ret);
+        }
+        return args[n];
+    }
     ScriptArgObjPtr getReturnValue(){ return ret;}
     std::vector<ScriptArgObjPtr> args;
     ScriptArgObjPtr              ret;
@@ -224,8 +231,28 @@ public:
 
 template<typename T>
 struct ScriptFunctorUtil;
+
+template<typename RET>
+struct CallFuncRetUtil;//!ret type traits
+template<typename T>
+struct CppScriptValutil{
+    static void toScriptVal(ScriptArgObjPtr retVal, T& a){
+        retVal->toInt(a);
+    }
+    static void toCppVal(ScriptArgObjPtr argVal, T& a){
+        a = (T)(argVal->getInt());
+    }
+};
+template<typename ARG_TYPE>
+struct TypeInitValUtil
+{
+    static ARG_TYPE gInitVal;
+    static ARG_TYPE& initVal() { return gInitVal; }
+};
+typedef bool (*CallScriptFunctor)(const std::string&, ScriptArgs&);
 class ScriptUtil{
 public:
+    ScriptUtil():m_funcCallScript(false){}
     ~ScriptUtil(){
         std::map<std::string/*funcName*/, ScriptFunctor*>::iterator  it = m_functors.begin();
         for (; it != m_functors.end(); ++it){
@@ -252,7 +279,7 @@ public:
         }
         return NULL;
     }
-    bool call(const std::string& funcName, ScriptArgs& scriptArg){
+    bool callFunc(const std::string& funcName, ScriptArgs& scriptArg){
         ScriptFunctor* f = this->find(funcName);
         if (f){
             f->callFunc(scriptArg);
@@ -260,8 +287,48 @@ public:
         }
         return false;
     }
-protected:
+    
+    //!-----call script 
+    void setCallScriptFunc(CallScriptFunctor f){
+        m_funcCallScript = f;
+    }
+    template<typename RET>
+    typename CallFuncRetUtil<RET>::RET_TYPE callScriptRaw(const std::string& funcName, ScriptArgs& scriptArg){
+        typename CallFuncRetUtil<RET>::RET_TYPE ret = TypeInitValUtil<typename CallFuncRetUtil<RET>::RET_TYPE>::initVal();
+        if (m_funcCallScript){
+            (*m_funcCallScript)(funcName, scriptArg);
+            CppScriptValutil<typename CallFuncRetUtil<RET>::RET_TYPE>::toCppVal(scriptArg.getReturnValue(), ret);
+        }
+        else{
+            printf("callScriptRaw none script impl functor\n");
+        }
+        return ret;
+    }
+    template<typename RET>
+    typename CallFuncRetUtil<RET>::RET_TYPE callScript(const std::string& funcName){
+        ScriptArgs varScript;
+        return callScriptRaw<typename CallFuncRetUtil<RET>::RET_TYPE>(funcName, varScript);
+    }
+    template<typename RET, typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5,
+                           typename ARG6, typename ARG7, typename ARG8, typename ARG9>
+    typename CallFuncRetUtil<RET>::RET_TYPE callScript(const std::string& funcName, ARG1& arg1, ARG2& arg2,
+                ARG3& arg3, ARG4& arg4, ARG5& arg5, ARG6& arg6, ARG7& arg7, ARG8& arg8, ARG9& arg9){
+        ScriptArgs varScript;
+        CppScriptValutil<ARG1>::toScriptVal(varScript.atOrCreate(0), arg1);
+        CppScriptValutil<ARG2>::toScriptVal(varScript.atOrCreate(1), arg2);
+        CppScriptValutil<ARG3>::toScriptVal(varScript.atOrCreate(2), arg3);
+        CppScriptValutil<ARG4>::toScriptVal(varScript.atOrCreate(3), arg4);
+        CppScriptValutil<ARG5>::toScriptVal(varScript.atOrCreate(4), arg5);
+        CppScriptValutil<ARG6>::toScriptVal(varScript.atOrCreate(5), arg6);
+        CppScriptValutil<ARG7>::toScriptVal(varScript.atOrCreate(6), arg7);
+        CppScriptValutil<ARG8>::toScriptVal(varScript.atOrCreate(7), arg8);
+        CppScriptValutil<ARG9>::toScriptVal(varScript.atOrCreate(8), arg9);
+                                                                 
+        return callScriptRaw<typename CallFuncRetUtil<RET>::RET_TYPE>(funcName, varScript);
+    }
+public:
     std::map<std::string/*funcName*/, ScriptFunctor*>    m_functors;
+    CallScriptFunctor                                    m_funcCallScript;
 };
 
 //************************************************************detail
@@ -304,24 +371,11 @@ struct RefTypeTraits<const ARG_TYPE*>
 {
     typedef ARG_TYPE* RealType;
 };
-template<typename ARG_TYPE>
-struct TypeInitValUtil
-{
-    static ARG_TYPE gInitVal;
-    static ARG_TYPE& initVal() { return gInitVal; }
-};
+
 template<typename ARG_TYPE>
 ARG_TYPE TypeInitValUtil<ARG_TYPE>::gInitVal;
 
-template<typename T>
-struct CppScriptValutil{
-    static void toScriptVal(ScriptArgObjPtr retVal, T& a){
-        retVal->toInt(a);
-    }
-    static void toCppVal(ScriptArgObjPtr argVal, T& a){
-        a = (T)(argVal->getInt());
-    }
-};
+
 template<>
 struct CppScriptValutil<std::string>{
     static void toScriptVal(ScriptArgObjPtr retVal, const std::string& a){
@@ -432,11 +486,10 @@ struct CppScriptValutil<std::map<T, R> >{
     }
 };
 
-template<typename RET>
-struct CallFuncRetUtil;
 
 template<typename RET>
 struct CallFuncRetUtil{
+    typedef RET RET_TYPE;
     template<typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4,
              typename ARG5, typename ARG6, typename ARG7, typename ARG8, typename ARG9>
     static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4, 
@@ -561,6 +614,7 @@ struct CallFuncRetUtil{
 };
 template<>
 struct CallFuncRetUtil<void>{
+    typedef int RET_TYPE;
     template<typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4,
              typename ARG5, typename ARG6, typename ARG7, typename ARG8, typename ARG9>
     static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4, 

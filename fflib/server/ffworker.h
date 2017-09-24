@@ -157,6 +157,9 @@ public:
     void workerRPC(int workerindex, uint16_t cmd, const std::string& data, FFSlot::FFCallBack* cb);
     void asyncHttp(const std::string& url_, int timeoutsec, FFSlot::FFCallBack* cb);
     std::string syncHttp(const std::string& url_, int timeoutsec);
+    
+    bool initModule();
+    bool cleanupModule();
 public:
     //! 转发client消息
     virtual int onSessionReq(userid_t session_id_, uint16_t cmd_, const std::string& data_);

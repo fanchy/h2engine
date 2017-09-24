@@ -1,3 +1,9 @@
+function init()
+    print("lua init")
+end
+function cleanup()
+    print("lua cleanup")
+end
 --- @brief 调试时打印变量的值  
 --- @param data 要打印的字符串  
 --- @param [max_level] table要展开打印的计数，默认nil表示全部展开  
@@ -172,5 +178,3 @@ h2ext.sessionMulticastMsg({1,2,3}, 101, 'ok')
 -- ret = h2ext.callFunc("Server.foo", 1, 2.2, 3, 'ddd', {1,2,3,'fff'}, {['a']='b', [111]=222})
 -- print(ret)
 -- vd(ret)
-function cleanup()
-end

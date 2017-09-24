@@ -51,12 +51,18 @@ int FFRpc::open(const string& broker_addr)
         return -1;
     }
 
+    int tryTimes = 0;
     while(m_node_id == 0)
     {
         usleep(1);
         if (m_master_broker_sock == NULL)
         {
             LOGERROR((FFRPC, "FFRpc::open failed"));
+            return -1;
+        }
+        ++tryTimes;
+        if (tryTimes > 10000){
+            LOGERROR((FFRPC, "FFRpc::open failed timeout"));
             return -1;
         }
     }
@@ -434,6 +440,8 @@ int FFRpc::handle_broker_reg_response(RegisterToBroker::out_t& msg_, socket_ptr_
     if (msg_.register_flag < 0)
     {
         LOGERROR((FFRPC, "FFBroker::handle_broker_reg_response register failed, service exist"));
+        m_master_broker_sock->close();
+        m_master_broker_sock = NULL;
         return -1;
     }
     if (msg_.register_flag == 1)

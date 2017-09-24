@@ -183,6 +183,9 @@ public:
         } zend_end_try() {
         }
 
+        if(status == FAIL){
+            throw std::runtime_error("call func failed");
+        }
         return rrv;
     }
     
@@ -1069,7 +1072,7 @@ PHP_METHOD(h2ext, callFunc)
     }
 
     LOGTRACE((FFWORKER_PHP, "callFunc begin funcName=%s,argsize=%d", funcName, scriptArgs.args.size()));
-    if (false == SCRIPT_UTIL.call(funcName, scriptArgs)){
+    if (false == SCRIPT_UTIL.callFunc(funcName, scriptArgs)){
         LOGERROR((FFWORKER_PHP, "callFunc no funcname:%s", funcName));
         RETURN_FALSE;
     }
@@ -1199,7 +1202,6 @@ int FFWorkerPhp::php_init(const std::string& root)
 int FFWorkerPhp::process_init(ConditionVar* var, int* ret)
 {
     try{
-        
         zend_startup_module(&php_mymod_entry);
         char buff[256] = {0};
         snprintf(buff, sizeof(buff), "function h2ext_callback($func_array, $func_key){ return $func_array[$func_key](); }");
@@ -1225,6 +1227,9 @@ int FFWorkerPhp::process_init(ConditionVar* var, int* ret)
             *ret = -1;
         }
         else{
+            this->initModule();
+                
+            Singleton<FFWorkerPhp>::instance().m_php->call_function("init");
             printf("load ok\n");
             *ret = 0;
         }
@@ -1241,6 +1246,7 @@ void FFWorkerPhp::php_cleanup()
 {
     try
     {
+        this->cleanupModule();
         Singleton<FFWorkerPhp>::instance().m_php->call_function("cleanup");
     }
     catch(std::exception& e_)

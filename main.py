@@ -2,6 +2,11 @@
 
 import h2ext
 
+def cleanup():
+    print('py init.....')
+def cleanup():
+    print('py cleanup.....')
+  
 
 CMD_LOGIN = 1
 CMD_CHAT  = 2
@@ -104,9 +109,10 @@ def httpcb(retdata):
 #h2ext.asyncHttp("http://www.baidu.com", 1, httpcb)
 def when_syncSharedData(cmd, data):
     print('when_syncSharedData', cmd, data)
-def cleanup():
-    print('cleaup.....')
-    
+  
 #ret = h2ext.callFunc("Entity.totalNum")
 #print('ret', type(ret), ret)
+def testScriptCall(arg1 = 0, arg2 = 0, arg3 = 0, arg4 = 0, arg5 = 0, arg6 = 0, arg7 = 0, arg8 = 0, arg9 = 0):
+    print('testScriptCall', arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+    return 1122334
 

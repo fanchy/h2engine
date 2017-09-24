@@ -76,12 +76,6 @@ int FFWorker::open(const string& brokercfg, int worker_index)
     m_logic_name = msgbuff;
 
     m_ffrpc = new FFRpc(m_logic_name);
-    if (false == callSetupFunc()){
-        LOGERROR((FFWORKER, "FFWorker::open failed when callSetupFunc"));
-        m_logic_name.clear();
-        return -1;
-    }
-    
     m_ffrpc->reg(&FFWorker::processSessionReq, this);
     m_ffrpc->reg(&FFWorker::processSessionOffline, this);
     m_ffrpc->reg(&FFWorker::processSessionEnter, this);
@@ -111,13 +105,21 @@ int FFWorker::close()
         m_ffrpc->close();
         Singleton<FFWorkerMgr>::instance().del(m_logic_name);
     }
-    if (false == m_logic_name.empty()){
-        callExitFunc();
-        m_logic_name.clear();
-    }
+    m_logic_name.clear();
     return 0;
 }
-
+bool FFWorker::initModule(){
+    LOGINFO((FFWORKER, "FFWorker::open initModule begin ..."));
+    if (false == callSetupFunc()){
+        LOGERROR((FFWORKER, "FFWorker::open initModule failed when callSetupFunc"));
+        return false;
+    }
+    return true;
+}
+bool FFWorker::cleanupModule(){
+    callExitFunc();
+    return true;
+}
 //! 转发client消息
 int FFWorker::processSessionReq(ffreq_t<RouteLogicMsg_t::in_t, RouteLogicMsg_t::out_t>& req_)
 {

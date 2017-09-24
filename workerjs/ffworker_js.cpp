@@ -914,7 +914,7 @@ static BIND_FUNC_RET_TYPE js_callFunc(const Arguments& args)
         scriptArgs.args.push_back(elem);
     }
     LOGTRACE((FFWORKER_JS, "js_callFunc begin argsize=%d", scriptArgs.args.size()));
-    if (false == SCRIPT_UTIL.call(funcName, scriptArgs)){
+    if (false == SCRIPT_UTIL.callFunc(funcName, scriptArgs)){
         LOGERROR((FFWORKER_JS, "js_callFunc no funcname:%s", funcName));
         BIND_FUNC_RET_UNDEFINED;
     }
@@ -1090,6 +1090,16 @@ int FFWorkerJs::process_init(ConditionVar* var, int* ret, const string& js_root)
                     LOGERROR((FFWORKER_JS, "FFWorkerJs::open failed no when_syncSharedData"));
                 }
             }
+            this->initModule();
+            {
+                HANDLE_SCOPE_DEF_VAR;
+                string funcname = "init";
+                Handle<v8::Value> value = PERSISTENT2LOCAL(_global_context)->Global()->Get(NewStrValue(funcname.c_str(), funcname.size()));
+                if (value->IsFunction()) {
+                    persistent_lambda_ptr_t pf = new persistent_lambda_t(v8::Handle<v8::Function>::Cast(value));
+                    call(pf);
+                }
+            }
             *ret = 0;
         }
     }
@@ -1104,6 +1114,7 @@ int FFWorkerJs::process_init(ConditionVar* var, int* ret, const string& js_root)
 }
 void FFWorkerJs::js_cleanup()
 {
+    this->cleanupModule();
     {
         HANDLE_SCOPE_DEF_VAR;
         string funcname = "cleanup";

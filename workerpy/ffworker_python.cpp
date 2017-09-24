@@ -606,12 +606,60 @@ static PyObject* callFunc(PyObject* pvalue){
     }
     
     LOGTRACE((FFWORKER_PYTHON, "FFWorkerPython::callFunc begin argsize=%d", scriptArgs.args.size()));
-    if (false == SCRIPT_UTIL.call(funcName, scriptArgs)){
+    if (false == SCRIPT_UTIL.callFunc(funcName, scriptArgs)){
         LOGERROR((FFWORKER_PYTHON, "FFWorkerPython::callFunc no funcname:%s", funcName));
         Py_RETURN_NONE;
     }
     PyObject* ret = fromScriptArgToPy(scriptArgs.getReturnValue());
     return ret;
+}
+static bool CallScriptImpl(const std::string& funcName, ScriptArgs& varScript){
+    if (Singleton<FFWorkerPython>::instance().m_enable_call)
+    {
+        size_t argsSize = varScript.args.size();
+        const string& m_ext_name = Singleton<FFWorkerPython>::instance().m_ext_name;
+        ffpython_t& ffpython = Singleton<FFWorkerPython>::instance().get_ffpython();
+        PyObject* ret = NULL;
+        PyObject* args[9];
+        memset((void*)args, 0, sizeof(args));
+        try{
+            switch (argsSize){
+                case 0:
+                {
+                    ret = ffpython.call<PyObject*>(m_ext_name, funcName);
+                }break;
+                case 1:
+                {
+                    args[0] = fromScriptArgToPy(varScript.at(0));
+                    ret = ffpython.call<PyObject*>(m_ext_name, funcName, args[0]);
+                }break;
+                case 9:
+                {
+                    args[0] = fromScriptArgToPy(varScript.at(0));
+                    args[1] = fromScriptArgToPy(varScript.at(1));
+                    args[2] = fromScriptArgToPy(varScript.at(2));
+                    args[3] = fromScriptArgToPy(varScript.at(3));
+                    args[4] = fromScriptArgToPy(varScript.at(4));
+                    args[5] = fromScriptArgToPy(varScript.at(5));
+                    args[6] = fromScriptArgToPy(varScript.at(6));
+                    args[7] = fromScriptArgToPy(varScript.at(7));
+                    args[8] = fromScriptArgToPy(varScript.at(8));
+                    ret = ffpython.call<PyObject*>(m_ext_name, funcName, args[0], args[1], args[2], args[3], args[4], 
+                                                    args[5], args[6], args[7], args[8]);
+                }break;
+                default:
+                    break;
+            }
+        }
+        catch(exception& e_){
+            LOGERROR((FFWORKER_PYTHON, "ffscene_python_t::callScript exception<%s>", e_.what()));
+        }
+        for (size_t i = 0; i < sizeof(args)/sizeof(PyObject*); ++i){
+            if (args[i])
+                Py_DECREF(args[i]);
+        }
+    }
+    return true;
 }
 int FFWorkerPython::py_init(const string& py_root)
 {
@@ -698,6 +746,8 @@ int FFWorkerPython::process_init(ConditionVar* var, int* ret)
 {
     try{
         (*m_ffpython).load(m_ext_name);
+        SCRIPT_UTIL.setCallScriptFunc(CallScriptImpl);
+        this->initModule();
         *ret = 0;
     }
     catch(exception& e_)
@@ -713,6 +763,7 @@ void FFWorkerPython::py_cleanup()
 {
     try
     {
+        this->cleanupModule();
         (*m_ffpython).call<void>(m_ext_name, string("cleanup"));
     }
     catch(exception& e_)

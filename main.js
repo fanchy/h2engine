@@ -1,4 +1,9 @@
-
+function init(){
+    h2ext.print("js init ok");
+}
+function cleanup(){
+    h2ext.print("js cleanup ok");
+}
 function onSessionReq(sessionid, cmd, body){
     h2ext.print('onSessionReq', sessionid, cmd, body);
     ip = h2ext.getSessionIp(sessionid);

@@ -736,7 +736,7 @@ static int lua_callFunc(lua_State* ls_){
         scriptArgs.args.push_back(elem);
     }
     LOGTRACE((FFWORKER_LUA, "lua_callFunc begin %s argsize=%d", funcName, scriptArgs.args.size()));
-    if (false == SCRIPT_UTIL.call(funcName, scriptArgs)){
+    if (false == SCRIPT_UTIL.callFunc(funcName, scriptArgs)){
         LOGERROR((FFWORKER_LUA, "lua_callFunc no funcname:%s", funcName));
         return 0;
     }
@@ -833,6 +833,9 @@ int FFWorkerLua::process_init(ConditionVar* var, int* ret)
 {
     try{
         (*m_fflua).do_file(m_ext_name);
+        this->initModule();
+        lua_args_t luaarg;
+        (*m_fflua).call<void>("init", luaarg);
         *ret = 0;
     }
     catch(exception& e_)
@@ -847,6 +850,7 @@ void FFWorkerLua::lua_cleanup()
 {
     try
     {
+        this->cleanupModule();
         lua_args_t luaarg;
         (*m_fflua).call<void>("cleanup", luaarg);
     }
