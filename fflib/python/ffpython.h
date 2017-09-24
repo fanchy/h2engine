@@ -1657,9 +1657,13 @@ struct pytype_traits_t<PyObject*>
         }
         return val_;
     }
+    
     static int pyobj_to_cppobj(PyObject *pvalue_, PyObject*& m_ret)
     {
         m_ret = pvalue_;
+        if (pvalue_ != NULL){
+            Py_INCREF(pvalue_);
+        }
         return 0;
     }
     static const char* get_typename() { return "PyObject";}

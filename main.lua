@@ -46,7 +46,7 @@ CMD_CHAT  = 2
 function onSessionReq(sessionid, cmd, body)
     print('onSessionReq', sessionid, cmd, body)
     ip = h2ext.getSessionIp(sessionid)
-    h2ext.sessionSendMsg(sessionid, cmd, string.format('服务器收到消息，sessionid:%d,ip:%s,cmd:%d,data:%s', sessionid, ip, cmd, body))
+    h2ext.gateBroadcastMsg(cmd, string.format('服务器收到消息，sessionid:%d,ip:%s,cmd:%d,data:%s', sessionid, ip, cmd, body))
     return
 end
 function onSessionOffline(sessionid)
@@ -178,3 +178,8 @@ h2ext.sessionMulticastMsg({1,2,3}, 101, 'ok')
 -- ret = h2ext.callFunc("Server.foo", 1, 2.2, 3, 'ddd', {1,2,3,'fff'}, {['a']='b', [111]=222})
 -- print(ret)
 -- vd(ret)
+function testScriptCall(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+    print('testScriptCall', arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+    return 1122334
+end
+

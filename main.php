@@ -93,4 +93,9 @@ h2ext::workerRPC(0, 101, 'OhNice', rpc_cb);
 // for($i = 0; $i < 10000*1000; $i++)
     // $ret = h2ext::callFunc("Server.foo", 12345678901234567, 'ssss', 22.33, array('cc' => 'b'), array(1,2,3));
 // var_dump($ret);
+
+function testScriptCall($arg1 = 0, $arg2 = 0, $arg3 = 0, $arg4 = 0, $arg5 = 0, $arg6 = 0, $arg7 = 0, $arg8 = 0, $arg9 = 0){
+    print('testScriptCall'.":".$arg1.":".$arg2.":".$arg3.":".$arg4.":".$arg5.":".$arg6.":".$arg7.":".$arg8.":".$arg9."\n");
+    return 1122334;
+}
 ?>

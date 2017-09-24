@@ -117,9 +117,9 @@ int main(int argc, char* argv[])
             printf("FFWorkerLua open error!\n");
             goto err_proc;
         }
-        if (Singleton<FFWorkerLua>::instance().lua_init(entry))
+        if (Singleton<FFWorkerLua>::instance().scriptInit(entry))
         {
-            printf("FFWorkerLua lua_init error!\n");
+            printf("FFWorkerLua scriptInit error!\n");
             goto err_proc;
         }
     }

@@ -117,9 +117,9 @@ int main(int argc, char* argv[])
             printf("FFWorkerJs open error!\n");
             goto err_proc;
         }
-        if (Singleton<FFWorkerJs>::instance().js_init(entry))
+        if (Singleton<FFWorkerJs>::instance().scriptInit(entry))
         {
-            printf("FFWorkerJs js_init error!\n");
+            printf("FFWorkerJs scriptInit error!\n");
             goto err_proc;
         }
     }

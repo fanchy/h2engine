@@ -1080,7 +1080,36 @@ PHP_METHOD(h2ext, callFunc)
     zval* ret = fromScriptArgToScript(scriptArgs.getReturnValue());
     RETURN_ZVAL(ret, 0, 1);
 }
- 
+
+static bool callScriptImpl(const std::string& funcName, ScriptArgs& varScript){
+    if (!Singleton<FFWorkerPhp>::instance().m_enable_call)
+    {
+        return false;
+    }
+    
+    std::string exceptInfo;
+    try{
+        std::vector<zval*> params;
+        for (size_t i = 0; i < varScript.args.size(); ++i){
+            params.push_back(fromScriptArgToScript(varScript.at(i)));
+        }
+        zval* retval = Singleton<FFWorkerPhp>::instance().m_php->call_function(funcName, &params, true);
+        if (retval){
+            varScript.ret = toScriptArg(retval);
+            zval_ptr_dtor(&retval);
+        }
+    }
+    catch(std::exception& e_)
+    {
+        LOGERROR((FFWORKER_PHP, "FFWorkerPhp::callScriptImpl exception=%s", e_.what()));
+        exceptInfo = e_.what();
+    }
+    if (exceptInfo.empty() == false && SCRIPT_UTIL.isExceptEnable()){ 
+        throw std::runtime_error(exceptInfo);
+    }
+    return true;
+}
+
 zend_function_entry h2ext_class_functions[] = {
     PHP_ME(h2ext, __construct, NULL, ZEND_ACC_STATIC)
     PHP_ME(h2ext, sessionSendMsg, NULL, ZEND_ACC_STATIC)
@@ -1136,9 +1165,6 @@ PHP_MINFO_FUNCTION(h2ext)
 {
 }
 
-
-
-
 zend_module_entry php_mymod_entry = {
     STANDARD_MODULE_HEADER,
     EXT_NAME,
@@ -1151,9 +1177,11 @@ zend_module_entry php_mymod_entry = {
     "1.0",
     STANDARD_MODULE_PROPERTIES
 };
-int FFWorkerPhp::php_init(const std::string& root)
+
+
+int FFWorkerPhp::scriptInit(const std::string& root)
 {
-    LOGINFO((FFWORKER_PHP, "FFWorkerPhp::php_init begin %s", root));
+    LOGINFO((FFWORKER_PHP, "FFWorkerPhp::scriptInit begin %s", root));
     std::string path;
     std::size_t pos = root.find_last_of("/");
     if (pos != std::string::npos)
@@ -1165,7 +1193,7 @@ int FFWorkerPhp::php_init(const std::string& root)
         m_ext_name = root;
     }
     
-    LOGTRACE((FFWORKER_PHP, "FFWorkerPhp::php_init begin path:%s, m_ext_name:%s", path, m_ext_name));
+    LOGTRACE((FFWORKER_PHP, "FFWorkerPhp::scriptInit begin path:%s, m_ext_name:%s", path, m_ext_name));
 
     getSharedMem().setNotifyFunc(when_syncSharedData);
 
@@ -1179,7 +1207,7 @@ int FFWorkerPhp::php_init(const std::string& root)
         ConditionVar            cond(mutex);
         
         LockGuard lock(mutex);
-        getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerPhp::process_init, this, &cond, &ret));
+        getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerPhp::processInit, this, &cond, &ret));
         while (ret == -2){
             cond.time_wait(100);
         }
@@ -1195,11 +1223,11 @@ int FFWorkerPhp::php_init(const std::string& root)
         return -1;
     }
     m_started = true;
-    LOGINFO((FFWORKER_PHP, "FFWorkerPhp::php_init end ok"));
+    LOGINFO((FFWORKER_PHP, "FFWorkerPhp::scriptInit end ok"));
     return ret;
 }
 //!!处理初始化逻辑
-int FFWorkerPhp::process_init(ConditionVar* var, int* ret)
+int FFWorkerPhp::processInit(ConditionVar* var, int* ret)
 {
     try{
         zend_startup_module(&php_mymod_entry);
@@ -1227,6 +1255,7 @@ int FFWorkerPhp::process_init(ConditionVar* var, int* ret)
             *ret = -1;
         }
         else{
+            SCRIPT_UTIL.setCallScriptFunc(callScriptImpl);
             this->initModule();
                 
             Singleton<FFWorkerPhp>::instance().m_php->call_function("init");
@@ -1242,25 +1271,25 @@ int FFWorkerPhp::process_init(ConditionVar* var, int* ret)
     var->signal();
     return 0;
 }
-void FFWorkerPhp::php_cleanup()
+void FFWorkerPhp::scriptCleanup()
 {
     try
     {
-        this->cleanupModule();
         Singleton<FFWorkerPhp>::instance().m_php->call_function("cleanup");
     }
     catch(std::exception& e_)
     {
-        LOGERROR((FFWORKER_PHP, "php_cleanup failed er=<%s>", e_.what()));
+        LOGERROR((FFWORKER_PHP, "scriptCleanup failed er=<%s>", e_.what()));
     }
-    LOGINFO((FFWORKER_PHP, "php_cleanup end"));
+    this->cleanupModule();
+    LOGINFO((FFWORKER_PHP, "scriptCleanup end"));
     m_enable_call = false;
     DB_MGR_OBJ.stop();
 }
 int FFWorkerPhp::close()
 {
     LOGINFO((FFWORKER_PHP, "close begin"));
-    getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerPhp::php_cleanup, this));
+    getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerPhp::scriptCleanup, this));
     
     FFWorker::close();
     if (false == m_started)

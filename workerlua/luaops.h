@@ -664,11 +664,14 @@ struct func_ret_type_traits<void>{
 };
 
 struct lua_args_t{
+    typedef void (*special_lua_args_t)(lua_State*, void*);
     struct args_into_t{
-        int64_t     n;
-        std::string s;
-        int         argtype;
+        args_into_t():n(0), argtype(0){}
+        int64_t             n;
+        std::string         s;
+        int                 argtype;
     };
+    lua_args_t():arg_num(0), func(NULL), pdata(NULL){}
     lua_args_t& add(int64_t n){
         args_into_t arg;
         arg.n = n;
@@ -690,17 +693,34 @@ struct lua_args_t{
         args.push_back(arg);
         return *this;
     }
+
     void cpp2luastack(lua_State* ls_) const{
+        if (func){
+            (*func)(ls_, pdata);
+            return;
+        }
         for (unsigned int i = 0; i < args.size(); ++i){
             if (args[i].argtype == 0){
                 lua_pushnumber(ls_, (lua_Number)args[i].n);
             }
-            else{
+            else if (args[i].argtype == 1){
                 lua_pushlstring(ls_, args[i].s.c_str(), args[i].s.size());
+            }
+            else{
+                lua_pushnumber(ls_, (lua_Number)args[i].n);
             }
         }
         
     }
+    size_t get_arg_num() const{
+        if (!func){
+            return args.size();
+        }
+        return arg_num;
+    }
+    size_t                   arg_num;
+    special_lua_args_t       func;
+    void*                    pdata;
     std::vector<args_into_t> args;
 };
 
@@ -716,7 +736,7 @@ struct luaops_t{
 
         luaarg.cpp2luastack(m_ls);
         
-        if (lua_pcall(m_ls, luaarg.args.size(), 1, 0) != 0)
+        if (lua_pcall(m_ls, luaarg.get_arg_num(), 1, 0) != 0)
         {
             std::string err = lua_err_handler_t::luatraceback(m_ls, "lua_pcall failed func_name<%s>", func_name_.c_str());
             lua_pop(m_ls, 1);

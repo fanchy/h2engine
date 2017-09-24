@@ -105,7 +105,7 @@ static int  lua_regTimer(lua_State* ls_)
                     ::lua_pop(ls_, 1);
                     throw lua_err_t(err);
                 }
-                //Singleton<FFWorkerLua>::instance().get_fflua().call_lambda<void>(pFunc);
+                //Singleton<FFWorkerLua>::instance().getFFlua().call_lambda<void>(pFunc);
             }
             catch(exception& e_)
             {
@@ -216,7 +216,7 @@ static int lua_asyncQuery(lua_State* ls_)
                     ::lua_pop(ls_, 1);
                     throw lua_err_t(err);
                 }
-                //Singleton<FFWorkerLua>::instance().get_fflua().call_lambda<void>(pFunc);
+                //Singleton<FFWorkerLua>::instance().getFFlua().call_lambda<void>(pFunc);
             }
             catch(exception& e_)
             {
@@ -323,7 +323,7 @@ static int lua_asyncQueryGroupMod(lua_State* ls_)
                     ::lua_pop(ls_, 1);
                     throw lua_err_t(err);
                 }
-                //Singleton<FFWorkerLua>::instance().get_fflua().call_lambda<void>(pFunc);
+                //Singleton<FFWorkerLua>::instance().getFFlua().call_lambda<void>(pFunc);
             }
             catch(exception& e_)
             {
@@ -595,7 +595,7 @@ static void when_syncSharedData(int32_t cmd, const string& data){
         lua_args_t luaarg;
         luaarg.add((int64_t)cmd);
         luaarg.add(data);
-        Singleton<FFWorkerLua>::instance().get_fflua().call<void>("when_syncSharedData", luaarg);
+        Singleton<FFWorkerLua>::instance().getFFlua().call<void>("when_syncSharedData", luaarg);
     }
     catch(exception& e_)
     {
@@ -606,15 +606,12 @@ static ScriptArgObjPtr toScriptArg(lua_State* ls_, int pos_){
     ScriptArgObjPtr ret = new ScriptArgObj();
     if (lua_isnumber(ls_, pos_)){
         double d  = lua_tonumber(ls_, pos_);
-
-        char buff[64] = {0};
-        
-        snprintf(buff, sizeof(buff), "%g", d);
-        if (::strstr(buff, ".") == NULL){
-            ret->toInt((int64_t)lua_tonumber(ls_, pos_));
+        int64_t n = (int64_t)d;
+        if (::abs(d - n) > 0){
+            ret->toFloat(d);
         }
         else{
-            ret->toFloat(d);
+            ret->toInt((int64_t)d);
         }
     }
     else if (lua_isnil(ls_, pos_)){
@@ -743,6 +740,49 @@ static int lua_callFunc(lua_State* ls_){
     fromScriptArgToLua(ls_, scriptArgs.getReturnValue());
     return 1;
 }
+static void pushLuaArgs(lua_State* ls_, void* pdata){
+    ScriptArgs& varScript = *((ScriptArgs*)pdata);
+    for (size_t i = 0; i < varScript.args.size(); ++i){
+        fromScriptArgToLua(ls_, varScript.at(i));
+    }
+}
+namespace ff{
+template<> struct luacpp_op_t<ScriptArgObjPtr>
+{
+	static int luareturn2cpp(lua_State* ls_, int pos_, ScriptArgObjPtr& param_)
+	{
+        param_ = toScriptArg(ls_, pos_);
+        printf("param_:%d\n", param_->getInt());
+		return 0;
+	}
+};
+}
+static bool callScriptImpl(const std::string& funcName, ScriptArgs& varScript){
+    if (!Singleton<FFWorkerLua>::instance().m_enable_call)
+    {
+        return false;
+    }
+    lua_args_t luaarg;
+    luaarg.arg_num = varScript.args.size();
+    luaarg.pdata = &varScript;
+    luaarg.func = pushLuaArgs;
+    luaops_t& fflua = Singleton<FFWorkerLua>::instance().getFFlua();
+    
+    std::string exceptInfo;
+    try{
+        varScript.ret = fflua.call<ScriptArgObjPtr>(funcName, luaarg);
+    }
+    catch(exception& e_)
+    {
+        LOGERROR((FFWORKER_LUA, "FFWorkerLua::callScriptImpl exception=%s", e_.what()));
+        exceptInfo = e_.what();
+    }
+    if (exceptInfo.empty() == false && SCRIPT_UTIL.isExceptEnable()){ 
+        throw std::runtime_error(exceptInfo);
+    }
+    return true;
+}
+
 struct ffext_t{};
 
 static bool  lua_reg(lua_State* ls)
@@ -776,7 +816,7 @@ static bool  lua_reg(lua_State* ls)
     return true;
 }
 
-int FFWorkerLua::lua_init(const string& lua_root)
+int FFWorkerLua::scriptInit(const string& lua_root)
 {
     string path;
     std::size_t pos = lua_root.find_last_of("/");
@@ -784,16 +824,16 @@ int FFWorkerLua::lua_init(const string& lua_root)
     {
         path = lua_root.substr(0, pos+1);
         m_ext_name = lua_root.substr(pos+1, lua_root.size() - pos - 1);
-        get_fflua().add_package_path(path);
+        getFFlua().add_package_path(path);
     }
     else{
         m_ext_name = lua_root;
-        get_fflua().add_package_path("/");
+        getFFlua().add_package_path("/");
     }
     //pos = m_ext_name.find(".lua");
     //m_ext_name = m_ext_name.substr(0, pos);
     
-    LOGTRACE((FFWORKER_LUA, "FFWorkerLua::lua_init begin path:%s, m_ext_name:%s", path, m_ext_name));
+    LOGTRACE((FFWORKER_LUA, "FFWorkerLua::scriptInit begin path:%s, m_ext_name:%s", path, m_ext_name));
 
     getSharedMem().setNotifyFunc(when_syncSharedData);
     (*m_fflua).reg(lua_reg);
@@ -809,7 +849,7 @@ int FFWorkerLua::lua_init(const string& lua_root)
         ConditionVar            cond(mutex);
         
         LockGuard lock(mutex);
-        getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerLua::process_init, this, &cond, &ret));
+        getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerLua::processInit, this, &cond, &ret));
         while (ret == -2)
         {
             cond.time_wait(100);
@@ -825,14 +865,15 @@ int FFWorkerLua::lua_init(const string& lua_root)
         return -1;
     }
     m_started = true;
-    LOGTRACE((FFWORKER_LUA, "FFWorkerLua::lua_init end ok"));
+    LOGTRACE((FFWORKER_LUA, "FFWorkerLua::scriptInit end ok"));
     return ret;
 }
 //!!处理初始化逻辑
-int FFWorkerLua::process_init(ConditionVar* var, int* ret)
+int FFWorkerLua::processInit(ConditionVar* var, int* ret)
 {
     try{
         (*m_fflua).do_file(m_ext_name);
+        SCRIPT_UTIL.setCallScriptFunc(callScriptImpl);
         this->initModule();
         lua_args_t luaarg;
         (*m_fflua).call<void>("init", luaarg);
@@ -846,24 +887,24 @@ int FFWorkerLua::process_init(ConditionVar* var, int* ret)
     var->signal();
     return 0;
 }
-void FFWorkerLua::lua_cleanup()
+void FFWorkerLua::scriptCleanup()
 {
     try
     {
-        this->cleanupModule();
         lua_args_t luaarg;
         (*m_fflua).call<void>("cleanup", luaarg);
     }
     catch(exception& e_)
     {
-        LOGERROR((FFWORKER_LUA, "lua_cleanup failed er=<%s>", e_.what()));
+        LOGERROR((FFWORKER_LUA, "scriptCleanup failed er=<%s>", e_.what()));
     }
+    this->cleanupModule();
     m_enable_call = false;
     DB_MGR_OBJ.stop();
 }
 int FFWorkerLua::close()
 {
-    getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerLua::lua_cleanup, this));
+    getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerLua::scriptCleanup, this));
     FFWorker::close();
     if (false == m_started)
         return 0;

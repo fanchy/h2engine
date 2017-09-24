@@ -118,9 +118,9 @@ int main(int argc, char* argv[])
             printf("FFWorkerPython open error!\n");
             goto err_proc;
         }
-        if (Singleton<FFWorkerPython>::instance().py_init(entry))
+        if (Singleton<FFWorkerPython>::instance().scriptInit(entry))
         {
-            printf("FFWorkerPython py_init error!\n");
+            printf("FFWorkerPython scriptInit error!\n");
             goto err_proc;
         }
     }

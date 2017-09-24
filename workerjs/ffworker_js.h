@@ -9,6 +9,7 @@
 #include "server/db_mgr.h"
 #include "server/fftask_processor.h"
 #include "server/ffworker.h"
+#include "server/script.h" 
 
 #include <v8.h>
 #ifndef V8_MAJOR_VERSION
@@ -181,7 +182,7 @@ public:
     FFWorkerJs();
     ~FFWorkerJs();
     
-    int                     js_init(const std::string& js_root);
+    int                     scriptInit(const std::string& js_root);
     
     
     int                     close();
@@ -192,7 +193,7 @@ public:
 
 
     //!!处理初始化逻辑
-    int                     process_init(ConditionVar* var, int* ret, const std::string& js_root);
+    int                     processInit(ConditionVar* var, int* ret, const std::string& js_root);
     
     //**************************************************重载的接口***************************************
     //! 转发client消息
@@ -204,11 +205,11 @@ public:
     //! scene 之间的互调用
     virtual std::string onWorkerCall(uint16_t cmd, const std::string& body);
     
-    bool call(persistent_lambda_ptr_t& jscb, int argc = 0, v8::Handle<v8::Value>* argv = NULL, std::string* ret = NULL);
+    bool call(persistent_lambda_ptr_t& jscb, int argc = 0, v8::Handle<v8::Value>* argv = NULL, std::string* ret = NULL, ScriptArgObjPtr* pRet = NULL);
     
 private:
-    void                    js_cleanup();
-    void                    js_release();
+    void                    scriptCleanup();
+    void                    scriptRelease();
 public:
     bool                            m_enable_call;
     std::string                     m_jspath;

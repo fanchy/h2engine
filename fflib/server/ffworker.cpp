@@ -117,7 +117,13 @@ bool FFWorker::initModule(){
     return true;
 }
 bool FFWorker::cleanupModule(){
-    callExitFunc();
+    try{
+        callExitFunc();
+    }
+    catch(exception& e_)
+    {
+        LOGERROR((FFWORKER, "cleanupModule failed er=<%s>", e_.what()));
+    }
     return true;
 }
 //! 转发client消息

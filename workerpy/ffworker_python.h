@@ -21,10 +21,10 @@ public:
     FFWorkerPython();
     ~FFWorkerPython();
     
-    ffpython_t&             get_ffpython(){ return *m_ffpython; }
+    ffpython_t&             getFFpython(){ return *m_ffpython; }
     
-    int                     py_init(const std::string& py_root);
-    void                    py_cleanup();
+    int                     scriptInit(const std::string& py_root);
+    void                    scriptCleanup();
     
     int                     close();
     
@@ -33,7 +33,7 @@ public:
     void                    pylog(int level, const std::string& mod_, const std::string& content_);
 
     //!!处理初始化逻辑
-    int                     process_init(ConditionVar* var, int* ret);
+    int                     processInit(ConditionVar* var, int* ret);
     
     //**************************************************重载的接口***************************************
     //! 转发client消息

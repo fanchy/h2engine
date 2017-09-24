@@ -117,9 +117,9 @@ int main(int argc, char* argv[])
             printf("FFWorkerPhp open error!\n");
             goto err_proc;
         }
-        if (Singleton<FFWorkerPhp>::instance().php_init(entry))
+        if (Singleton<FFWorkerPhp>::instance().scriptInit(entry))
         {
-            printf("FFWorkerPhp php_init error!\n");
+            printf("FFWorkerPhp scriptInit error!\n");
             goto err_proc;
         }
     }

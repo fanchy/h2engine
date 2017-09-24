@@ -5,7 +5,6 @@
 #include "base/performance_daemon.h"
 #include "server/http_mgr.h"
 #include "base/os_tool.h"
-#include "server/script.h" 
  
 using namespace ff;
 using namespace std;
@@ -921,7 +920,40 @@ static BIND_FUNC_RET_TYPE js_callFunc(const Arguments& args)
     Local<Value> ret = fromScriptArgToJs(scriptArgs.getReturnValue());
     BIND_FUNC_RET_VAL(ret);
 }
-int FFWorkerJs::js_init(const string& js_root)
+static bool callScriptImpl(const std::string& funcName, ScriptArgs& varScript){
+    if (!Singleton<FFWorkerJs>::instance().m_enable_call)
+    {
+        return false;
+    }
+    std::string exceptInfo;
+    try{
+        HANDLE_SCOPE_DEF_VAR;
+        Handle<v8::Value> func = PERSISTENT2LOCAL(Singleton<FFWorkerJs>::instance()._global_context)->Global()->Get(NewStrValue(funcName.c_str(), funcName.size()));
+        if (!func->IsFunction()) {
+            LOGERROR((FFWORKER_JS, "FFWorkerJs::callScriptImpl failed no func:%s", funcName));
+            exceptInfo = "callScriptImpl failed no func:";
+            exceptInfo += funcName;
+        }
+        else{
+            Handle<Value> argv[9];
+            for (size_t i = 0; i < 9 && i < varScript.args.size(); ++i)
+            {
+                argv[i] = fromScriptArgToJs(varScript.args[i]);
+            }
+            persistent_lambda_ptr_t funcScript = new persistent_lambda_t(v8::Handle<v8::Function>::Cast(func));
+            Singleton<FFWorkerJs>::instance().call(funcScript, varScript.args.size(), argv, NULL, &(varScript.ret));
+        }
+    }
+    catch(exception& e_)
+    {
+        LOGERROR((FFWORKER_JS, "FFWorkerJs::callScriptImpl exception=%s", e_.what()));
+    }
+    if (exceptInfo.empty() == false && SCRIPT_UTIL.isExceptEnable()){ 
+        throw std::runtime_error(exceptInfo);
+    }
+    return true;
+}
+int FFWorkerJs::scriptInit(const string& js_root)
 {
     string path;
     string ext_name;
@@ -937,7 +969,7 @@ int FFWorkerJs::js_init(const string& js_root)
     pos = ext_name.find(".js");
     ext_name = ext_name.substr(0, pos);
     m_jspath = path;
-    LOGINFO((FFWORKER_JS, "FFWorkerJs::js_init begin path:%s, m_ext_name:%s", path, ext_name));
+    LOGINFO((FFWORKER_JS, "FFWorkerJs::scriptInit begin path:%s, m_ext_name:%s", path, ext_name));
     
     getSharedMem().setNotifyFunc(when_syncSharedData);
 
@@ -951,7 +983,7 @@ int FFWorkerJs::js_init(const string& js_root)
         ConditionVar            cond(mutex);
         
         LockGuard lock(mutex);
-        getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerJs::process_init, this, &cond, &ret, js_root));
+        getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerJs::processInit, this, &cond, &ret, js_root));
         while (ret == -2){
             cond.time_wait(100);
         }
@@ -967,12 +999,12 @@ int FFWorkerJs::js_init(const string& js_root)
         return -1;
     }
     m_started = true;
-    LOGTRACE((FFWORKER_JS, "FFWorkerJs::js_init end ok"));
+    LOGTRACE((FFWORKER_JS, "FFWorkerJs::scriptInit end ok"));
     return ret;
 }
 
 //!!处理初始化逻辑
-int FFWorkerJs::process_init(ConditionVar* var, int* ret, const string& js_root)
+int FFWorkerJs::processInit(ConditionVar* var, int* ret, const string& js_root)
 {
     try{
         m_v8init = new v8init_t();
@@ -1090,6 +1122,7 @@ int FFWorkerJs::process_init(ConditionVar* var, int* ret, const string& js_root)
                     LOGERROR((FFWORKER_JS, "FFWorkerJs::open failed no when_syncSharedData"));
                 }
             }
+            SCRIPT_UTIL.setCallScriptFunc(callScriptImpl);
             this->initModule();
             {
                 HANDLE_SCOPE_DEF_VAR;
@@ -1112,9 +1145,8 @@ int FFWorkerJs::process_init(ConditionVar* var, int* ret, const string& js_root)
 
     return 0;
 }
-void FFWorkerJs::js_cleanup()
+void FFWorkerJs::scriptCleanup()
 {
-    this->cleanupModule();
     {
         HANDLE_SCOPE_DEF_VAR;
         string funcname = "cleanup";
@@ -1124,12 +1156,13 @@ void FFWorkerJs::js_cleanup()
             call(pf);
         }
     }
+    this->cleanupModule();
     m_enable_call = false;
     DB_MGR_OBJ.stop();
-    getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerJs::js_release, this));
+    getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerJs::scriptRelease, this));
 }
 
-void FFWorkerJs::js_release(){
+void FFWorkerJs::scriptRelease(){
 
     // 释放上下文资源
     m_func_req.reset();
@@ -1149,7 +1182,7 @@ void FFWorkerJs::js_release(){
 }
 int FFWorkerJs::close()
 {
-    getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerJs::js_cleanup, this));
+    getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerJs::scriptCleanup, this));
 
     FFWorker::close();
     if (false == m_started)
@@ -1289,7 +1322,7 @@ string FFWorkerJs::onWorkerCall(uint16_t cmd, const std::string& body)
 
     return ret;
 }
-bool FFWorkerJs::call(persistent_lambda_ptr_t& pf, int argc, Handle<Value>* argv, std::string* ret)
+bool FFWorkerJs::call(persistent_lambda_ptr_t& pf, int argc, Handle<Value>* argv, std::string* ret, ScriptArgObjPtr* pRet)
 {
     if (m_enable_call == false){
         return false;
@@ -1312,6 +1345,9 @@ bool FFWorkerJs::call(persistent_lambda_ptr_t& pf, int argc, Handle<Value>* argv
     }
     if (ret){
         *ret = js2string(result);
+    }
+    else if (pRet){
+        *pRet = toScriptArg(result);
     }
     return true;
 }

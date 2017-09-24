@@ -7,7 +7,7 @@ function cleanup(){
 function onSessionReq(sessionid, cmd, body){
     h2ext.print('onSessionReq', sessionid, cmd, body);
     ip = h2ext.getSessionIp(sessionid);
-    h2ext.sessionSendMsg(sessionid, cmd, 
+    h2ext.gateBroadcastMsg(cmd, 
         '服务器收到消息，sessionid:'+sessionid+',ip:'+ip+',cmd:'+cmd+',data:'+ body);
     return;
 }
@@ -60,3 +60,7 @@ h2ext.workerRPC(0, 101, 'OhNice', function(rpcret){
 // var ret = h2ext.callFunc("Server.foo", 1, 2.2, "s3");
 // h2ext.print(ret);
 
+function testScriptCall(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9){
+    h2ext.print('testScriptCall', arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+    return 1122334;
+}

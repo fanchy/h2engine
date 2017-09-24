@@ -116,6 +116,9 @@ struct ScriptArgObj{
         if (isString()){
             return ::atol(sVal.c_str());
         }
+        else if (isFloat()){
+            return (int64_t)fVal;
+        }
         return nVal;
     }
     double              getFloat() const        { return fVal; }
@@ -252,7 +255,7 @@ struct TypeInitValUtil
 typedef bool (*CallScriptFunctor)(const std::string&, ScriptArgs&);
 class ScriptUtil{
 public:
-    ScriptUtil():m_funcCallScript(false){}
+    ScriptUtil():m_funcCallScript(false), m_flagCallScript(0){}
     ~ScriptUtil(){
         std::map<std::string/*funcName*/, ScriptFunctor*>::iterator  it = m_functors.begin();
         for (; it != m_functors.end(); ++it){
@@ -292,6 +295,8 @@ public:
     void setCallScriptFunc(CallScriptFunctor f){
         m_funcCallScript = f;
     }
+    bool isExceptEnable() const { return m_flagCallScript != 0;}
+    
     template<typename RET>
     typename CallFuncRetUtil<RET>::RET_TYPE callScriptRaw(const std::string& funcName, ScriptArgs& scriptArg){
         typename CallFuncRetUtil<RET>::RET_TYPE ret = TypeInitValUtil<typename CallFuncRetUtil<RET>::RET_TYPE>::initVal();
@@ -309,6 +314,91 @@ public:
         ScriptArgs varScript;
         return callScriptRaw<typename CallFuncRetUtil<RET>::RET_TYPE>(funcName, varScript);
     }
+    template<typename RET, typename ARG1>
+    typename CallFuncRetUtil<RET>::RET_TYPE callScript(const std::string& funcName, ARG1& arg1){
+        ScriptArgs varScript;
+        CppScriptValutil<ARG1>::toScriptVal(varScript.atOrCreate(0), arg1);
+        return callScriptRaw<typename CallFuncRetUtil<RET>::RET_TYPE>(funcName, varScript);
+    }
+    template<typename RET, typename ARG1, typename ARG2>
+    typename CallFuncRetUtil<RET>::RET_TYPE callScript(const std::string& funcName, ARG1& arg1, ARG2& arg2){
+        ScriptArgs varScript;
+        CppScriptValutil<ARG1>::toScriptVal(varScript.atOrCreate(0), arg1);
+        CppScriptValutil<ARG2>::toScriptVal(varScript.atOrCreate(1), arg2);
+        return callScriptRaw<typename CallFuncRetUtil<RET>::RET_TYPE>(funcName, varScript);
+    }
+    template<typename RET, typename ARG1, typename ARG2, typename ARG3>
+    typename CallFuncRetUtil<RET>::RET_TYPE callScript(const std::string& funcName, ARG1& arg1, ARG2& arg2,
+                ARG3& arg3){
+        ScriptArgs varScript;
+        CppScriptValutil<ARG1>::toScriptVal(varScript.atOrCreate(0), arg1);
+        CppScriptValutil<ARG2>::toScriptVal(varScript.atOrCreate(1), arg2);
+        CppScriptValutil<ARG3>::toScriptVal(varScript.atOrCreate(2), arg3);
+        return callScriptRaw<typename CallFuncRetUtil<RET>::RET_TYPE>(funcName, varScript);
+    }
+    template<typename RET, typename ARG1, typename ARG2, typename ARG3, typename ARG4>
+    typename CallFuncRetUtil<RET>::RET_TYPE callScript(const std::string& funcName, ARG1& arg1, ARG2& arg2,
+                ARG3& arg3, ARG4& arg4){
+        ScriptArgs varScript;
+        CppScriptValutil<ARG1>::toScriptVal(varScript.atOrCreate(0), arg1);
+        CppScriptValutil<ARG2>::toScriptVal(varScript.atOrCreate(1), arg2);
+        CppScriptValutil<ARG3>::toScriptVal(varScript.atOrCreate(2), arg3);
+        CppScriptValutil<ARG4>::toScriptVal(varScript.atOrCreate(3), arg4);
+        return callScriptRaw<typename CallFuncRetUtil<RET>::RET_TYPE>(funcName, varScript);
+    }
+    template<typename RET, typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>
+    typename CallFuncRetUtil<RET>::RET_TYPE callScript(const std::string& funcName, ARG1& arg1, ARG2& arg2,
+                ARG3& arg3, ARG4& arg4, ARG5& arg5){
+        ScriptArgs varScript;
+        CppScriptValutil<ARG1>::toScriptVal(varScript.atOrCreate(0), arg1);
+        CppScriptValutil<ARG2>::toScriptVal(varScript.atOrCreate(1), arg2);
+        CppScriptValutil<ARG3>::toScriptVal(varScript.atOrCreate(2), arg3);
+        CppScriptValutil<ARG4>::toScriptVal(varScript.atOrCreate(3), arg4);
+        CppScriptValutil<ARG5>::toScriptVal(varScript.atOrCreate(4), arg5);
+        return callScriptRaw<typename CallFuncRetUtil<RET>::RET_TYPE>(funcName, varScript);
+    }
+    template<typename RET, typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5,
+                           typename ARG6>
+    typename CallFuncRetUtil<RET>::RET_TYPE callScript(const std::string& funcName, ARG1& arg1, ARG2& arg2,
+                ARG3& arg3, ARG4& arg4, ARG5& arg5, ARG6& arg6){
+        ScriptArgs varScript;
+        CppScriptValutil<ARG1>::toScriptVal(varScript.atOrCreate(0), arg1);
+        CppScriptValutil<ARG2>::toScriptVal(varScript.atOrCreate(1), arg2);
+        CppScriptValutil<ARG3>::toScriptVal(varScript.atOrCreate(2), arg3);
+        CppScriptValutil<ARG4>::toScriptVal(varScript.atOrCreate(3), arg4);
+        CppScriptValutil<ARG5>::toScriptVal(varScript.atOrCreate(4), arg5);
+        CppScriptValutil<ARG6>::toScriptVal(varScript.atOrCreate(5), arg6);
+        return callScriptRaw<typename CallFuncRetUtil<RET>::RET_TYPE>(funcName, varScript);
+    }
+    template<typename RET, typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5,
+                           typename ARG6, typename ARG7>
+    typename CallFuncRetUtil<RET>::RET_TYPE callScript(const std::string& funcName, ARG1& arg1, ARG2& arg2,
+                ARG3& arg3, ARG4& arg4, ARG5& arg5, ARG6& arg6, ARG7& arg7){
+        ScriptArgs varScript;
+        CppScriptValutil<ARG1>::toScriptVal(varScript.atOrCreate(0), arg1);
+        CppScriptValutil<ARG2>::toScriptVal(varScript.atOrCreate(1), arg2);
+        CppScriptValutil<ARG3>::toScriptVal(varScript.atOrCreate(2), arg3);
+        CppScriptValutil<ARG4>::toScriptVal(varScript.atOrCreate(3), arg4);
+        CppScriptValutil<ARG5>::toScriptVal(varScript.atOrCreate(4), arg5);
+        CppScriptValutil<ARG6>::toScriptVal(varScript.atOrCreate(5), arg6);
+        CppScriptValutil<ARG7>::toScriptVal(varScript.atOrCreate(6), arg7);
+        return callScriptRaw<typename CallFuncRetUtil<RET>::RET_TYPE>(funcName, varScript);
+    }
+    template<typename RET, typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5,
+                           typename ARG6, typename ARG7, typename ARG8>
+    typename CallFuncRetUtil<RET>::RET_TYPE callScript(const std::string& funcName, ARG1& arg1, ARG2& arg2,
+                ARG3& arg3, ARG4& arg4, ARG5& arg5, ARG6& arg6, ARG7& arg7, ARG8& arg8){
+        ScriptArgs varScript;
+        CppScriptValutil<ARG1>::toScriptVal(varScript.atOrCreate(0), arg1);
+        CppScriptValutil<ARG2>::toScriptVal(varScript.atOrCreate(1), arg2);
+        CppScriptValutil<ARG3>::toScriptVal(varScript.atOrCreate(2), arg3);
+        CppScriptValutil<ARG4>::toScriptVal(varScript.atOrCreate(3), arg4);
+        CppScriptValutil<ARG5>::toScriptVal(varScript.atOrCreate(4), arg5);
+        CppScriptValutil<ARG6>::toScriptVal(varScript.atOrCreate(5), arg6);
+        CppScriptValutil<ARG7>::toScriptVal(varScript.atOrCreate(6), arg7);
+        CppScriptValutil<ARG8>::toScriptVal(varScript.atOrCreate(7), arg8);
+        return callScriptRaw<typename CallFuncRetUtil<RET>::RET_TYPE>(funcName, varScript);
+    }
     template<typename RET, typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5,
                            typename ARG6, typename ARG7, typename ARG8, typename ARG9>
     typename CallFuncRetUtil<RET>::RET_TYPE callScript(const std::string& funcName, ARG1& arg1, ARG2& arg2,
@@ -323,12 +413,12 @@ public:
         CppScriptValutil<ARG7>::toScriptVal(varScript.atOrCreate(6), arg7);
         CppScriptValutil<ARG8>::toScriptVal(varScript.atOrCreate(7), arg8);
         CppScriptValutil<ARG9>::toScriptVal(varScript.atOrCreate(8), arg9);
-                                                                 
         return callScriptRaw<typename CallFuncRetUtil<RET>::RET_TYPE>(funcName, varScript);
     }
 public:
     std::map<std::string/*funcName*/, ScriptFunctor*>    m_functors;
     CallScriptFunctor                                    m_funcCallScript;
+    int                                                  m_flagCallScript;//!调用脚本出错后，是否抛出异常
 };
 
 //************************************************************detail
