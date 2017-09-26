@@ -613,6 +613,16 @@ static PyObject* callFunc(PyObject* pvalue){
     PyObject* ret = fromScriptArgToPy(scriptArgs.getReturnValue());
     return ret;
 }
+template<>
+struct pytype_traits_t<ScriptArgObjPtr>
+{
+    static int pyobj_to_cppobj(PyObject *pvalue_, ScriptArgObjPtr& m_ret)
+    {
+        m_ret = toScriptArg(pvalue_);
+        return 0;
+    }
+    static const char* get_typename() { return "PyObject";}
+};
 static bool callScriptImpl(const std::string& funcName, ScriptArgs& varScript){
     if (!Singleton<FFWorkerPython>::instance().m_enable_call)
     {
@@ -621,7 +631,7 @@ static bool callScriptImpl(const std::string& funcName, ScriptArgs& varScript){
     size_t argsSize = varScript.args.size();
     const string& m_ext_name = Singleton<FFWorkerPython>::instance().m_ext_name;
     ffpython_t& ffpython = Singleton<FFWorkerPython>::instance().getFFpython();
-    PyObject* ret = NULL;
+    ScriptArgObjPtr ret;
     PyObject* args[9];
     memset((void*)args, 0, sizeof(args));
     std::string exceptInfo;
@@ -629,25 +639,25 @@ static bool callScriptImpl(const std::string& funcName, ScriptArgs& varScript){
         switch (argsSize){
             case 0:
             {
-                ret = ffpython.call<PyObject*>(m_ext_name, funcName);
+                ret = ffpython.call<ScriptArgObjPtr>(m_ext_name, funcName);
             }break;
             case 1:
             {
                 args[0] = fromScriptArgToPy(varScript.at(0));
-                ret = ffpython.call<PyObject*>(m_ext_name, funcName, args[0]);
+                ret = ffpython.call<ScriptArgObjPtr>(m_ext_name, funcName, args[0]);
             }break;
             case 2:
             {
                 args[0] = fromScriptArgToPy(varScript.at(0));
                 args[1] = fromScriptArgToPy(varScript.at(1));
-                ret = ffpython.call<PyObject*>(m_ext_name, funcName, args[0], args[1]);
+                ret = ffpython.call<ScriptArgObjPtr>(m_ext_name, funcName, args[0], args[1]);
             }break;
             case 3:
             {
                 args[0] = fromScriptArgToPy(varScript.at(0));
                 args[1] = fromScriptArgToPy(varScript.at(1));
                 args[2] = fromScriptArgToPy(varScript.at(2));
-                ret = ffpython.call<PyObject*>(m_ext_name, funcName, args[0], args[1], args[2]);
+                ret = ffpython.call<ScriptArgObjPtr>(m_ext_name, funcName, args[0], args[1], args[2]);
             }break;
             case 4:
             {
@@ -655,7 +665,7 @@ static bool callScriptImpl(const std::string& funcName, ScriptArgs& varScript){
                 args[1] = fromScriptArgToPy(varScript.at(1));
                 args[2] = fromScriptArgToPy(varScript.at(2));
                 args[3] = fromScriptArgToPy(varScript.at(3));
-                ret = ffpython.call<PyObject*>(m_ext_name, funcName, args[0], args[1], args[2], args[3]);
+                ret = ffpython.call<ScriptArgObjPtr>(m_ext_name, funcName, args[0], args[1], args[2], args[3]);
             }break;
             case 5:
             {
@@ -664,7 +674,7 @@ static bool callScriptImpl(const std::string& funcName, ScriptArgs& varScript){
                 args[2] = fromScriptArgToPy(varScript.at(2));
                 args[3] = fromScriptArgToPy(varScript.at(3));
                 args[4] = fromScriptArgToPy(varScript.at(4));
-                ret = ffpython.call<PyObject*>(m_ext_name, funcName, args[0], args[1], args[2], args[3], args[4]);
+                ret = ffpython.call<ScriptArgObjPtr>(m_ext_name, funcName, args[0], args[1], args[2], args[3], args[4]);
             }break;
             case 6:
             {
@@ -674,7 +684,7 @@ static bool callScriptImpl(const std::string& funcName, ScriptArgs& varScript){
                 args[3] = fromScriptArgToPy(varScript.at(3));
                 args[4] = fromScriptArgToPy(varScript.at(4));
                 args[5] = fromScriptArgToPy(varScript.at(5));
-                ret = ffpython.call<PyObject*>(m_ext_name, funcName, args[0], args[1], args[2], args[3], args[4], 
+                ret = ffpython.call<ScriptArgObjPtr>(m_ext_name, funcName, args[0], args[1], args[2], args[3], args[4], 
                                                 args[5]);
             }break;
             case 7:
@@ -686,7 +696,7 @@ static bool callScriptImpl(const std::string& funcName, ScriptArgs& varScript){
                 args[4] = fromScriptArgToPy(varScript.at(4));
                 args[5] = fromScriptArgToPy(varScript.at(5));
                 args[6] = fromScriptArgToPy(varScript.at(6));
-                ret = ffpython.call<PyObject*>(m_ext_name, funcName, args[0], args[1], args[2], args[3], args[4], 
+                ret = ffpython.call<ScriptArgObjPtr>(m_ext_name, funcName, args[0], args[1], args[2], args[3], args[4], 
                                                 args[5], args[6]);
             }break;
             case 8:
@@ -699,7 +709,7 @@ static bool callScriptImpl(const std::string& funcName, ScriptArgs& varScript){
                 args[5] = fromScriptArgToPy(varScript.at(5));
                 args[6] = fromScriptArgToPy(varScript.at(6));
                 args[7] = fromScriptArgToPy(varScript.at(7));
-                ret = ffpython.call<PyObject*>(m_ext_name, funcName, args[0], args[1], args[2], args[3], args[4], 
+                ret = ffpython.call<ScriptArgObjPtr>(m_ext_name, funcName, args[0], args[1], args[2], args[3], args[4], 
                                                 args[5], args[6], args[7]);
             }break;
             case 9:
@@ -713,7 +723,7 @@ static bool callScriptImpl(const std::string& funcName, ScriptArgs& varScript){
                 args[6] = fromScriptArgToPy(varScript.at(6));
                 args[7] = fromScriptArgToPy(varScript.at(7));
                 args[8] = fromScriptArgToPy(varScript.at(8));
-                ret = ffpython.call<PyObject*>(m_ext_name, funcName, args[0], args[1], args[2], args[3], args[4], 
+                ret = ffpython.call<ScriptArgObjPtr>(m_ext_name, funcName, args[0], args[1], args[2], args[3], args[4], 
                                                 args[5], args[6], args[7], args[8]);
             }break;
             default:
@@ -726,8 +736,7 @@ static bool callScriptImpl(const std::string& funcName, ScriptArgs& varScript){
     }
 
     if (ret){
-        varScript.ret = toScriptArg(ret);
-        Py_DECREF(ret);
+        varScript.ret = ret;
     }
     if (exceptInfo.empty() == false && SCRIPT_UTIL.isExceptEnable()){ 
         throw std::runtime_error(exceptInfo);

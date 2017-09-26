@@ -93,10 +93,23 @@ static bool initEntityEnvir(){
     SCRIPT_UTIL.reg("Entity.getUid", Entity_getUid);
     SCRIPT_UTIL.reg("Entity.totalNum", Entity_totalNum);
     printf("initEntityEnvir....\n");
+    
+    
+    ScriptArgs varScriptArgs;
+    SCRIPT_UTIL.callScriptRaw<void>("testScriptCall", varScriptArgs);
+    int arg1 = 0;
+    string arg2 = "sss";
+    double arg3  = 3.14;
+    int ret = 0;
+    for (int i = 0; i < 1; ++i)
+        ret = SCRIPT_UTIL.callScript<int>("testScriptCall", arg1, arg2, arg3, arg1, arg2, arg3, arg1, arg2, arg3);
+    printf("initEntityEnvir....callScript:%d\n", ret);
     return true;
 }
 static bool cleanupEntityEnvir(){
     printf("cleanupEntityEnvir....\n");
+    
+    SCRIPT_UTIL.callScript<void>("testScriptCall");
     return true;
     
 }
