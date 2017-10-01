@@ -36,12 +36,15 @@ struct ScriptArgObj{
     ScriptArgObj(const std::string& v):nType(ARG_STRING), nVal(0), fVal(0.0), sVal(v){}
     
     template<typename T>
-    ScriptArgObj(T* v):nType(ARG_INT), nVal(v), fVal(0.0){}
+    ScriptArgObj(T* v):nType(ARG_INT), nVal((int64_t)v), fVal(0.0){}
     template<typename T>
-    ScriptArgObj(const T* v):nType(ARG_INT), nVal(v), fVal(0.0){}
+    ScriptArgObj(const T* v):nType(ARG_INT), nVal((int64_t)v), fVal(0.0){}
     template<typename T>
-    ScriptArgObj(SharedPtr<T> v):nType(ARG_INT), nVal(v.get()), fVal(0.0){}
+    ScriptArgObj(SharedPtr<T> v):nType(ARG_INT), nVal((int64_t)v.get()), fVal(0.0){}
 
+    void toNull(){
+        nType = ARG_NULL;
+    }
     void toInt(int64_t v){
         nType = ARG_INT;
         nVal  = v;
@@ -104,6 +107,7 @@ struct ScriptArgObj{
                 ++i;
             }
         }
+        printf("\n");
     }
     bool isNull() const         { return nType == ARG_NULL; }
     bool isInt() const          { return nType == ARG_INT;  }
@@ -137,7 +141,14 @@ struct ScriptArgObj{
     }
     const std::vector<SharedPtr<ScriptArgObj> >& getList() const         { return listVal; }
     const std::map<std::string, SharedPtr<ScriptArgObj> >& getDict() const         { return dictVal; }
-    
+    void copy(SharedPtr<ScriptArgObj>& src){
+        nType   = src->nType;
+        nVal    = src->nVal;
+        fVal    = src->fVal;
+        sVal    = src->sVal;
+        listVal = src->listVal;
+        dictVal = src->dictVal;
+    }
     int                                             nType;
     int64_t                                         nVal;
     double                                          fVal;
@@ -500,6 +511,15 @@ struct CppScriptValutil<T*>{
     }
     static void toCppVal(ScriptArgObjPtr argVal, T* &a){
         a = (T*)(argVal->getInt());
+    }
+};
+template<>
+struct CppScriptValutil<ScriptArgObjPtr>{
+    static void toScriptVal(ScriptArgObjPtr retVal, ScriptArgObjPtr& a){
+        retVal->copy(a);
+    }
+    static void toCppVal(ScriptArgObjPtr argVal, ScriptArgObjPtr &a){
+        a = argVal;
     }
 };
 template<typename T>

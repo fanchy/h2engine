@@ -1,6 +1,7 @@
 #include "server/ffworker.h"
 #include "base/log.h"
 #include "server/http_mgr.h"
+#include "server/script_cache.h"
 
 using namespace ff;
 using namespace std;
@@ -96,6 +97,8 @@ int FFWorker::open(const string& brokercfg, int worker_index)
     Singleton<FFWorkerMgr>::instance().add(m_logic_name, this);
     
     LOGTRACE((FFWORKER, "FFWorker::open end ok"));
+    
+    SCRIPT_CACHE.init();
     return 0;
 }
 int FFWorker::close()
