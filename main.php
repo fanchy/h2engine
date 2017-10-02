@@ -6,30 +6,8 @@ function cleanup(){
     print("php cleanup...\n");
 }
 
-// test.php - file for exploring php embed
-// Copyright (c) 2007 Andrew Bosworth, Facebook, inc
-// All rights reserved
-//
-// This file is loaded by the PHP interpreter compiled into example
-
 // we set a larger memory limit just in case
 ini_set('memory_limit', '1000M');
-
-function h2DefaultErrorHandler($errno, $errstr, $errfile, $errline) {
-
-    
-    $errmsg = "exception:$errfile:$errline:$errstr\n";
-    
-    //var_dump(debug_backtrace());
-    $dbtrace = debug_backtrace();
-    for ($i = 0; $i < count($dbtrace); ++$i){
-        $rowtrace = $dbtrace[$i];
-        $errmsg .= "[".($i+1)."]".$rowtrace['file'].":".$rowtrace['line']." ".$rowtrace['function'];
-    }
-    h2ext::log(2, "FFWORKER_PHP", $errmsg);
-    exit;
-}
-// set_error_handler("h2DefaultErrorHandler", E_ALL & ~E_NOTICE);
 
 
 function onSessionReq($sessionid, $cmd, $body){
@@ -41,13 +19,12 @@ function onSessionReq($sessionid, $cmd, $body){
 function onSessionOffline($sessionid){
     print('onSessionOffline:'.$sessionid."\n");
 }
+
 function timer_cb_p(){
     print("timer_cb_p:\n");
     print("timer_cb_p: end***************************\n");
 }
 function timer_cb(){
-    
-    
     h2ext::regTimer(1, "timer_cb");
 }
 for ($x=0; $x<=1000; $x++) {
@@ -98,4 +75,16 @@ function testScriptCall($arg1 = 0, $arg2 = 0, $arg3 = 0, $arg4 = 0, $arg5 = 0, $
     print('testScriptCall'.":".$arg1.":".$arg2.":".$arg3.":".$arg4.":".$arg5.":".$arg6.":".$arg7.":".$arg8.":".$arg9."\n");
     return 1122334;
 }
+function testScriptCache(){
+    print("xxx\n");
+    h2ext::callFunc("Cache.set", "m.n[10]", "mmm1");
+
+    $cacheRet = h2ext::callFunc("Cache.get", "m.n[0]");
+    print("cacheRet".$cacheRet);
+    $cacheRet = h2ext::callFunc("Cache.get", "");
+    //var_dump($cacheRet);
+    print("cacheRet:".h2ext::callFunc("Cache.size", "m").":".h2ext::callFunc("Cache.size", "m.n")."\n");
+}
+
+testScriptCache();
 ?>

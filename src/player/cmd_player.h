@@ -11,7 +11,7 @@ public:
     void handleLogin(userid_t sessionId, const std::string& data);
 };
 
-#define PlayerServiceSingleton Singleton<PlayerService>::instance()
+#define PLAYER_SERVICE Singleton<PlayerService>::instance()
 
 }
 

@@ -64,3 +64,10 @@ function testScriptCall(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9){
     h2ext.print('testScriptCall', arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
     return 1122334;
 }
+
+h2ext.callFunc("Cache.set", "m.n[10]", "mmm1");
+cacheRet = h2ext.callFunc("Cache.get", "m.n[10]");
+h2ext.print("cacheRet", cacheRet);
+cacheRet = h2ext.callFunc("Cache.get", "");
+h2ext.print(cacheRet['m']['n']);
+h2ext.print("cacheRet", h2ext.callFunc("Cache.size", "m"), h2ext.callFunc("Cache.size", "m.n"));

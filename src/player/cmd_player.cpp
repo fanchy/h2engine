@@ -8,7 +8,7 @@ void PlayerService::handleLogin(userid_t sessionId, const std::string& data){
 }
 #define LOGIN_CMD  1024
 static bool initEnvir(){
-    FFWORKER_SINGLETON.regSessionReq(LOGIN_CMD, &PlayerService::handleLogin, &(PlayerServiceSingleton));
+    FFWORKER_SINGLETON.regSessionReq(LOGIN_CMD, &PlayerService::handleLogin, &(PLAYER_SERVICE));
     return true;
 }
 

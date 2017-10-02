@@ -6,76 +6,15 @@ def cleanup():
     print('py init.....')
 def cleanup():
     print('py cleanup.....')
-  
 
-CMD_LOGIN = 1
-CMD_CHAT  = 2
-class Player:
-    def __init__(self, sessionid):
-        self.sessionid = sessionid
-        self.name = ''
-    def sendChat(self, data):
-        return h2ext.sessionSendMsg(self.sessionid, CMD_CHAT, data)
-class PlayerMgr:
-    def __init__(self):
-        self.allSession2Player = {}
-    def allocPlayer(self, sessionid):
-        player = self.allSession2Player.get(sessionid)
-        if not player:
-            player = Player(sessionid)
-            self.allSession2Player[sessionid] = player
-        return player
-    def delPlayer(self, sessionid):
-        return self.allSession2Player.pop(sessionid, None)
-    def findPlayerByName(self, name):
-        for k, v in self.allSession2Player.iteritems():
-            if v.name == name:
-                return v
-        return None
-    def foreach(self, func):
-        for k, v in self.allSession2Player.iteritems():
-            func(v)
-
-objMgr = PlayerMgr()
 def onSessionReq(sessionid, cmd, body):
     print('onSessionReq', sessionid, cmd, body)
     ip = h2ext.getSessionIp(sessionid)
     h2ext.gateBroadcastMsg(cmd, '服务器收到消息，sessionid:%d,ip:%s,cmd:%d,data:%s'%(sessionid, ip, cmd, body))
     return
-    player = objMgr.allocPlayer(sessionid)
-    if cmd == CMD_LOGIN:
-        name = body
-        oldPlayer = objMgr.findPlayerByName(name)
-        if oldPlayer:
-            h2ext.sessionClose(oldPlayer.sessionid)
-            objMgr.delPlayer(sessionid)
-        player.name = name
-        print('player.name', player.name)
-        allPlayerList = []
-        def getAllPlayer(eachPlayer):
-            allPlayerList.append(eachPlayer.name)
-        objMgr.foreach(getAllPlayer)
-        def notifyOnline(eachPlayer):
-            eachPlayer.sendChat('[%s] online ip=[%s]'%(name, h2ext.getSessionIp(sessionid)))
-            eachPlayer.sendChat('current online list:%s'%(str(allPlayerList)))
-        objMgr.foreach(notifyOnline)
-    elif cmd == CMD_CHAT:
-        msg = '[%s] say:%s'%(player.name, body)
-        def notifyOnline(eachPlayer):
-            eachPlayer.sendChat(msg)
-        objMgr.foreach(notifyOnline)
 def onSessionOffline(sessionid):
     print('onSessionOffline', sessionid)
-    oldPlayer = objMgr.delPlayer(sessionid)
-    if oldPlayer:
-        allPlayerList = []
-        def getAllPlayer(eachPlayer):
-            allPlayerList.append(eachPlayer.name)
-        objMgr.foreach(getAllPlayer)
-        def notifyOnline(eachPlayer):
-            eachPlayer.sendChat('%s offline！'%(eachPlayer.name))
-            eachPlayer.sendChat('current online list:%s'%(str(allPlayerList)))
-        objMgr.foreach(notifyOnline)
+    return
 
 def sharedMemTest():
     d = h2ext.get_shared_data(0, sessionid)
@@ -116,3 +55,8 @@ def testScriptCall(arg1 = 0, arg2 = 0, arg3 = 0, arg4 = 0, arg5 = 0, arg6 = 0, a
     print('testScriptCall', arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
     return 1122334
 
+h2ext.callFunc("Cache.set", "m.n[10]", "mmm1")
+cacheRet = h2ext.callFunc("Cache.get", "m.n[0]")
+print("cacheRet", cacheRet)
+cacheRet = h2ext.callFunc("Cache.get", "")
+print("cacheRet", cacheRet, h2ext.callFunc("Cache.size", "m"), h2ext.callFunc("Cache.size", "m.n"))

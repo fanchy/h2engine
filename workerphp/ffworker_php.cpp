@@ -64,6 +64,17 @@ struct php_wrap_t{
     }
 };
 extern "C"{ void zend_fetch_debug_backtrace(zval *return_value, int skip_last, int options, int limit TSRMLS_DC); }
+static void dumpDebugTrace(){
+    // long options = DEBUG_BACKTRACE_PROVIDE_OBJECT;
+    // long limit = 0;
+
+    // zval* retval = NULL;
+    // MAKE_STD_ZVAL(retval);
+    // array_init(retval);
+    // zend_fetch_debug_backtrace(retval, 1, options, limit TSRMLS_CC);
+    // LOGERROR((FFWORKER_PHP, "zend_hash_num_elements %d\n", zend_hash_num_elements(Z_ARRVAL_P(retval))));
+    // zval_ptr_dtor(&retval);
+}
 class phpops_t{
 public:
     phpops_t():global_array(NULL), global_instance(NULL){
@@ -91,7 +102,21 @@ public:
         zend_first_try {
             status = zend_eval_string((char*)code.c_str(), NULL, (char*)"" TSRMLS_CC);
         } zend_catch {
+            if (PG(last_error_message)) {
+                long errtype = PG(last_error_type);
+                std::string errmsg = PG(last_error_message);
+                std::string errfile = PG(last_error_file)?PG(last_error_file):"-";
+                long errline = PG(last_error_lineno);
+                
+                LOGERROR((FFWORKER_PHP, "eval_string:%s errtype:%ld,%s:%ld errmsg:%s\n",
+                                        code, errtype, errfile, errline, errmsg));
+            }
+            else{
+                LOGERROR((FFWORKER_PHP, "eval_string function %s exception", code));
+            }
             status = FAIL;
+            
+            dumpDebugTrace();
         } zend_end_try();
 
         //POP_CTX();
@@ -124,6 +149,7 @@ public:
             count = vec_params->size();
             params = &((*vec_params)[0]);
         }
+
         zend_try {
             // convert the function name to a zval
             zval *function_name = NULL;
@@ -163,7 +189,7 @@ public:
                 std::string errmsg = PG(last_error_message);
                 std::string errfile = PG(last_error_file)?PG(last_error_file):"-";
                 long errline = PG(last_error_lineno);
-                
+
                 LOGERROR((FFWORKER_PHP, "calling function %s errtype:%ld,%s:%ld errmsg:%s\n",
                                         funcname, errtype, errfile, errline, errmsg));
             }
@@ -172,14 +198,7 @@ public:
             }
             status = FAIL;
             
-            // long options = DEBUG_BACKTRACE_PROVIDE_OBJECT;
-            // long limit = 0;
-
-            
-            // //array_init(retval);
-            // zend_fetch_debug_backtrace(retval, 1, options, limit TSRMLS_CC);
-            // printf("zend_hash_num_elements %d\n", zend_hash_num_elements(Z_ARRVAL_P(retval)));
-            // zval_ptr_dtor(&retval);
+            dumpDebugTrace();
         } zend_end_try() {
         }
 
@@ -941,7 +960,6 @@ static void when_syncSharedData(int32_t cmd, const std::string& data){
 }
 static ScriptArgObjPtr toScriptArg(zval* pvalue_){
     ScriptArgObjPtr ret = new ScriptArgObj();
-
     if (Z_TYPE_P(pvalue_) == IS_BOOL){
         int n = Z_BVAL_P(pvalue_)? 1: 0;
         ret->toInt(n);
@@ -1052,7 +1070,7 @@ PHP_METHOD(h2ext, callFunc)
     long strlen = 0;
 
     zval* args[9];
-    memset(args, sizeof(args), 0);
+    memset(args, 0, sizeof(args));
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|zzzzzzzzz", &strarg, &strlen,
         &args[0], &args[1], &args[2],
         &args[3], &args[4], &args[5],

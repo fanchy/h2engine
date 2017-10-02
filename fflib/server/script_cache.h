@@ -22,7 +22,6 @@ public:
     }
     ScriptArgObjPtr get(const std::string& key)
     {
-        printf("get.........[%s]\n", key.c_str());
         if (key.empty()){
             return m_dataCache;
         }
@@ -78,7 +77,6 @@ public:
         return curData;
     }
     bool set(const std::string& key, ScriptArgObjPtr v){
-        printf("set.........[%s:%s]\n", key.c_str(), v->getString().c_str());
         if (key.empty()){
             return false;
         }
@@ -93,7 +91,6 @@ public:
                 return false;
             }
             
-            printf("set->.........[%d:%s]\n", i, curKey.c_str());
             if (false == (*curData)->isDict()){
                 (*curData)->toDict();
             }
