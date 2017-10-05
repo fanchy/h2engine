@@ -211,12 +211,23 @@ public:
         }
         return 0;
     }
-    
+    ScriptArgObjPtr multiget(const std::vector<std::string>& keys)
+    {
+        ScriptArgObjPtr ret = new ScriptArgObj();
+        ret->toDict();
+        for (size_t i = 0; i < keys.size(); ++i){
+            ScriptArgObjPtr retEach = this->get(keys[i]);
+            ret->dictVal[keys[i]] = retEach;
+        }
+        
+        return ret;
+    }
     bool init(){
         SCRIPT_UTIL.reg("Cache.get", &ScriptCache::get, this);
         SCRIPT_UTIL.reg("Cache.set", &ScriptCache::set, this);
         SCRIPT_UTIL.reg("Cache.del", &ScriptCache::del, this);
         SCRIPT_UTIL.reg("Cache.size", &ScriptCache::size, this);
+        SCRIPT_UTIL.reg("Cache.multiget", &ScriptCache::multiget, this);
         return true;
     }
     
