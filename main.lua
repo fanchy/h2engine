@@ -41,8 +41,6 @@ function vd(data, max_level)
     var_dump(data, max_level or 5)  
 end  
 
-CMD_LOGIN = 1
-CMD_CHAT  = 2
 function onSessionReq(sessionid, cmd, body)
     print('onSessionReq', sessionid, cmd, body)
     ip = h2ext.getSessionIp(sessionid)
@@ -52,81 +50,6 @@ end
 function onSessionOffline(sessionid)
     print('onSessionOffline', sessionid)
 end
--- class Player:
-    -- function __init__(self, sessionid)
-        -- self.sessionid = sessionid
-        -- self.name = ''
-    -- function sendChat(self, data):
-        -- return h2ext.sessionSendMsg(self.sessionid, CMD_CHAT, data)
--- class PlayerMgr:
-    -- function __init__(self):
-        -- self.allSession2Player = {}
-    -- function allocPlayer(self, sessionid):
-        -- player = self.allSession2Player.get(sessionid)
-        -- if not player:
-            -- player = Player(sessionid)
-            -- self.allSession2Player[sessionid] = player
-        -- return player
-    -- function delPlayer(self, sessionid):
-        -- return self.allSession2Player.pop(sessionid, None)
-    -- function findPlayerByName(self, name):
-        -- for k, v in self.allSession2Player.iteritems():
-            -- if v.name == name:
-                -- return v
-        -- return None
-    -- function foreach(self, func):
-        -- for k, v in self.allSession2Player.iteritems():
-            -- func(v)
-
--- objMgr = PlayerMgr()
--- function onSessionReq(sessionid, cmd, body)
-    -- print('onSessionReq', sessionid, cmd, body)
-    -- player = objMgr.allocPlayer(sessionid)
-    -- if cmd == CMD_LOGIN then
-        -- name = body
-        -- oldPlayer = objMgr.findPlayerByName(name)
-        -- if oldPlayer then
-            -- h2ext.sessionClose(oldPlayer.sessionid)
-            -- objMgr.delPlayer(sessionid)
-        -- end
-        -- player.name = name
-        -- print('player.name', player.name)
-        -- allPlayerList = []
-        -- function getAllPlayer(eachPlayer)
-            -- allPlayerList.append(eachPlayer.name)
-        -- end
-        -- objMgr.foreach(getAllPlayer)
-        -- function notifyOnline(eachPlayer):
-            -- eachPlayer.sendChat('[%s] online ip=[%s]'%(name, h2ext.getSessionIp(sessionid)))
-            -- eachPlayer.sendChat('current online list:%s'%(str(allPlayerList)))
-        -- end
-        -- objMgr.foreach(notifyOnline)
-    -- else if cmd == CMD_CHAT
-        -- msg = '[%s] say:%s'%(player.name, body)
-        -- function notifyOnline(eachPlayer)
-            -- eachPlayer.sendChat(msg)
-        -- end
-        -- objMgr.foreach(notifyOnline)
-    -- end
--- function onSessionOffline(sessionid):
-    -- print('onSessionOffline', sessionid)
-    -- oldPlayer = objMgr.delPlayer(sessionid)
-    -- if oldPlayer then
-        -- allPlayerList = []
-        -- function getAllPlayer(eachPlayer)
-            -- allPlayerList.append(eachPlayer.name)
-        -- end
-        -- objMgr.foreach(getAllPlayer)
-        -- function notifyOnline(eachPlayer)
-            -- eachPlayer.sendChat('%s offline！'%(eachPlayer.name))
-            -- eachPlayer.sendChat('current online list:%s'%(str(allPlayerList)))
-        -- end
-        -- objMgr.foreach(notifyOnline)
-    -- end
--- function sharedMemTest()
-    -- d = h2ext.get_shared_data(0, sessionid)
-    -- print('shared_data', sessionid, d.strData)
--- end
 function onWorkerCall(cmd, body)
     print('onWorkerCall', cmd, body)
     return "ohok"
@@ -183,3 +106,9 @@ function testScriptCall(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
     return 1122334
 end
 
+h2ext.callFunc("Cache.set", "m.n[10]", "mmm1")
+cacheRet = h2ext.callFunc("Cache.get", "m.n[10]")
+print("cacheRet", cacheRet)
+cacheRet = h2ext.callFunc("Cache.get", "")
+var_dump(cacheRet)
+print("cacheRet", h2ext.callFunc("Cache.size", "m"), h2ext.callFunc("Cache.size", "m.n"))

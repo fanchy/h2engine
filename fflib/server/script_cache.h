@@ -134,6 +134,69 @@ public:
         
         return true;
     }
+    bool del(const std::string& key){
+        if (key.empty()){
+            return false;
+        }
+        std::vector<std::string> keyArgs;
+        StrTool::split(key, keyArgs, ".");
+        
+        ScriptArgObjPtr* curData = &m_dataCache;
+        size_t i = 0;
+        for (; i < keyArgs.size(); ++i){
+            const std::string& curKey = keyArgs[i];
+            if (curKey.empty()){
+                return false;
+            }
+            
+            if (false == (*curData)->isDict()){
+                (*curData)->toDict();
+            }
+
+            std::map<std::string, ScriptArgObjPtr>& dataDict = (*curData)->dictVal;
+            if (curKey[curKey.size() - 1] != ']')//!dict set 
+            {
+                if (i == keyArgs.size() -1){
+                    dataDict.erase(curKey);
+                    return true;
+                }
+                curData = &dataDict[curKey];
+                if (!(*curData)){
+                    (*curData) = new ScriptArgObj();
+                }
+            }
+            else{
+                std::vector<std::string> indexArgs;
+                StrTool::split(curKey, indexArgs, "[");
+                if (indexArgs.size() != 2){
+                    return m_nullData;
+                }
+                if (dataDict.find(indexArgs[0]) == dataDict.end()){
+                    return false;
+                }
+                curData = &dataDict[indexArgs[0]];
+                if (!(*curData)){
+                    return false;
+                }
+                if (false == (*curData)->isList()){
+                    return false;
+                }
+                
+                int nIndex = ::atoi(indexArgs[1].c_str());
+                if (nIndex < 0 || nIndex >= (int)(*curData)->getList().size()){
+                    return false;
+                }
+                if (i == keyArgs.size() -1){
+                    (*curData)->listVal.erase((*curData)->listVal.begin() + nIndex);
+                    return true;
+                }
+                
+                curData = &((*curData)->listVal[nIndex]);
+            }
+        }
+        
+        return true;
+    }
     size_t size(const std::string& key)
     {
         ScriptArgObjPtr ret = this->get(key);
@@ -152,6 +215,7 @@ public:
     bool init(){
         SCRIPT_UTIL.reg("Cache.get", &ScriptCache::get, this);
         SCRIPT_UTIL.reg("Cache.set", &ScriptCache::set, this);
+        SCRIPT_UTIL.reg("Cache.del", &ScriptCache::del, this);
         SCRIPT_UTIL.reg("Cache.size", &ScriptCache::size, this);
         return true;
     }
