@@ -26,7 +26,7 @@ public:
 public:
     SharedPtr();
     SharedPtr(object_t* p);
-    SharedPtr(self_type_t& p);
+    SharedPtr(const self_type_t& p);
     template<typename R>
     SharedPtr(const SharedPtr<R>& p):
         m_dest_ptr(p.get()),
@@ -92,7 +92,7 @@ SharedPtr<T>::SharedPtr(object_t* p):
 }
 
 template<typename T>
-SharedPtr<T>::SharedPtr(self_type_t& p):
+SharedPtr<T>::SharedPtr(const self_type_t& p):
     m_dest_ptr(p.get()),
     m_ref_data(p.ger_ref_count())
 {
