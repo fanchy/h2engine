@@ -752,7 +752,7 @@ template<> struct luacpp_op_t<ScriptArgObjPtr>
 	static int luareturn2cpp(lua_State* ls_, int pos_, ScriptArgObjPtr& param_)
 	{
         param_ = toScriptArg(ls_, pos_);
-        printf("param_:%d\n", param_->getInt());
+        //printf("param_:%d\n", param_->getInt());
 		return 0;
 	}
 };
@@ -762,6 +762,7 @@ static bool callScriptImpl(const std::string& funcName, ScriptArgs& varScript){
     {
         return false;
     }
+    
     lua_args_t luaarg;
     luaarg.arg_num = varScript.args.size();
     luaarg.pdata = &varScript;

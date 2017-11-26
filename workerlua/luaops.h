@@ -727,18 +727,36 @@ struct lua_args_t{
 struct luaops_t{
 
     template<typename RET>
-    typename func_ret_type_traits<RET>::RET_TYPE call(const std::string& func_name_, const lua_args_t& luaarg){
+    typename func_ret_type_traits<RET>::RET_TYPE call(const std::string& funcNameArg, const lua_args_t& luaarg){
         typedef typename func_ret_type_traits<RET>::RET_TYPE RET_V;
         
         RET_V ret = cpptype_init_traits_t<RET_V>::value();
-        
-        lua_getglobal(m_ls, func_name_.c_str());
+        std::string func_name_ = funcNameArg;
+   		std::vector<std::string> vt;
+		StrTool::split(funcNameArg, vt, ".");
+		if (vt.size() == 2){
+			std::string scriptName;
+			scriptName = vt[0];
+			func_name_ = vt[1];
+			//load_file(scriptName+".lua");
+			std::string s = "require '" + scriptName + "'";
+			run_string(s);
+			lua_getglobal(m_ls, scriptName.c_str());
+			if (lua_istable(m_ls, -1)){
+				lua_getfield(m_ls, -1, func_name_.c_str());
+				lua_remove(m_ls, -2);
+			}
+			
+		}
+		else{
+			lua_getglobal(m_ls, func_name_.c_str());
+		}
 
         luaarg.cpp2luastack(m_ls);
         
         if (lua_pcall(m_ls, luaarg.get_arg_num(), 1, 0) != 0)
         {
-            std::string err = lua_err_handler_t::luatraceback(m_ls, "lua_pcall failed func_name<%s>", func_name_.c_str());
+            std::string err = lua_err_handler_t::luatraceback(m_ls, "lua_pcall failed func_name<%s>", funcNameArg.c_str());
             lua_pop(m_ls, 1);
             throw lua_err_t(err);
         }
@@ -747,7 +765,7 @@ struct luaops_t{
         {
             lua_pop(m_ls, 1);
             char buff[512];
-            snprintf(buff, sizeof(buff), "callfunc [arg1] luareturn2cpp failed  func_name<%s>", func_name_.c_str());
+            snprintf(buff, sizeof(buff), "callfunc [arg1] luareturn2cpp failed  func_name<%s>", funcNameArg.c_str());
             throw lua_err_t(buff);
         }
 

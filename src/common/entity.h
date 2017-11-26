@@ -92,7 +92,7 @@ typedef SharedPtr<Entity> EntityPtr;
 typedef WeakPtr<Entity>   EntityRef;
 #define NEW_ENTITY(ntype, id) Entity::genEntity(ntype, id)
 #define TO_ENTITY(ptr) Entity::toEntity(long(ptr))
-
+#define UID_TO_ENTITY(ntype, id) Singleton<EntityMgr>::instance().get(ntype, id)
 class EntityField//!entity的字段基类
 {
 public:

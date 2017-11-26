@@ -52,6 +52,7 @@ set(GAME_EXAMPLE_SRC
     ${PROJECT_SOURCE_DIR}/src/map/map.cpp
     ${PROJECT_SOURCE_DIR}/src/task/task.cpp
     ${PROJECT_SOURCE_DIR}/src/item/item.cpp
+    ${PROJECT_SOURCE_DIR}/src/npc/npc.cpp
 )
 set(ENGINE_SRC_LIST 
     ${ENGINE_LIB_SRC}
