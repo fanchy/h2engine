@@ -13,7 +13,11 @@ using namespace std;
 bool NPCMgr::init(){
 	return true;
 }
-
+EntityPtr NPCMgr::addNPC(NPCConfigPtr cfg){
+	static int nId = 0;
+	EntityPtr eNPC = NEW_ENTITY(ENTITY_NPC, ++nId);
+	return eNPC;
+}
 
 bool NPCCtrl::processNPC(EntityPtr npc, const std::string& arg)
 {

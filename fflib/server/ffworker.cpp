@@ -51,7 +51,7 @@ static bool callExitFunc(){
     }
     return true;
 }
-FFWorker::FFWorker():m_allocID(0),m_ffrpc(NULL)
+FFWorker::FFWorker():m_nWorkerIndex(0), m_allocID(0),m_ffrpc(NULL)
 {
     
 }
@@ -71,6 +71,7 @@ int FFWorker::open(const string& brokercfg, int worker_index)
     LOGTRACE((FFWORKER, "FFWorker::open begin"));
     FFWorker::gSingletonWorker = this;
     
+    m_nWorkerIndex = worker_index;
     char msgbuff[128] = {0};
     snprintf(msgbuff, sizeof(msgbuff), "worker#%d", worker_index);
     

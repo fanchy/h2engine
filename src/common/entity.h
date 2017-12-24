@@ -18,10 +18,9 @@ class EntityField;
 template <typename T>
 struct FieldIndexUtil_t{
     static int FIELD_INDEX;
+    static int getFieldIndex();
 };
 
-template <typename T>
-int FieldIndexUtil_t<T>::FIELD_INDEX = -1;
 
 enum EntityTypeDef{
     ENTITY_MIN_TYPE        = 0,
@@ -44,7 +43,7 @@ public:
     
     template<typename T>
     T* get(){
-        int index = FieldIndexUtil_t<T>::FIELD_INDEX;
+        int index = FieldIndexUtil_t<T>::getFieldIndex();
         if (index == -1)
             return NULL;
         if (index >= (int)m_fields.size()){
@@ -125,6 +124,15 @@ public:
     int m_index;
 };
 
+template <typename T>
+int FieldIndexUtil_t<T>::FIELD_INDEX = -1;
+template <typename T>
+int FieldIndexUtil_t<T>::getFieldIndex(){
+    if (FIELD_INDEX == -1){
+        Singleton<EntityFieldReg>::instance().reg<T>();
+    }
+    return FIELD_INDEX;
+}
 class EntityMgr{
 public:
     EntityMgr(){}

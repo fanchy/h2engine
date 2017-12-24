@@ -14,13 +14,13 @@ namespace ff
 {
 
 struct TaskConfig{
-    TaskConfig():cfgid(0), taskType(0){}
+    TaskConfig():cfgid(0), taskLine(0), nextTask(0){}
     int64_t getPropNum(const std::string& key);
     std::string getPropStr(const std::string& key);
 
     int             cfgid;
-    int             taskType;
-    std::string     name;
+    int             taskLine;//!任务线id
+    int             nextTask;//!后续任务id
 
     std::map<std::string, int64_t>      numProp;
     std::map<std::string, std::string>  strProp;
@@ -39,53 +39,40 @@ public:
     std::map<int/*taskType*/,  std::map<int/*cfgid*/, TaskConfigPtr> >  m_type2TaskCfg;
 };
 
-class TaskObj
+enum TaskStatusDef{
+    TASK_GOT    = 0, //!任务已获取
+    TASK_ACCEPTED,   //!任务已接取
+    TASK_FINISHED,   //!任务已经完成
+    TASK_END         //!任务已经结束
+};
+struct TaskObj
 {
-public:
-    TaskConfigPtr getCfg()          { return m_TaskConfig; }
-    void setCfg(TaskConfigPtr c)    { m_TaskConfig = c;    }
-    
-    int getCfgId()                  {return m_TaskConfig->cfgid;    }
-    int getTaskType()               {return m_TaskConfig->taskType; }
-    const std::string& getCfgName() {return m_TaskConfig->name;     }
-public:
-    TaskConfigPtr       m_TaskConfig;
+    TaskObj():status(0), value(0), tmUpdate(0){}
+
+    TaskConfigPtr       taskCfg;
+    int                 status;
+    int                 value;
+    time_t              tmUpdate;//!上次状态改变时间
 };
 typedef SharedPtr<TaskObj> TaskObjPtr;
 
 class TaskCtrl:public EntityField
 {
 public:
-    TaskCtrl():m_nMaxNum(0){}
+    TaskCtrl():m_nMaxNum(10){}
 
     void addTask(TaskObjPtr Task);
     TaskObjPtr genTask(int cfgid);
     bool delTask(int cfgid);
-    void clear() { m_allTasks.clear(); }
     
     TaskObjPtr getTask(int cfgid);
-    int        getTask(int cfgid, std::vector<TaskObjPtr>& ret);
-    TaskObjPtr getTask(const std::string& name);
-    int        getTask(const std::string& name, std::vector<TaskObjPtr>& ret);
-    
-    TaskObjPtr getTaskByProp(const std::string& key, int64_t propVal);
-    TaskObjPtr getTaskByProp(const std::string& key, const std::string& propVal);
-    int       getTaskByProp(const std::string& key, int propVal, std::vector<TaskObjPtr>& ret);
-    int       getTaskByProp(const std::string& key, const std::string& propVal, std::vector<TaskObjPtr>& ret);
     
     int curSize() const     { return m_allTasks.size(); }
-    int maxNum()  const     { return m_nMaxNum;         }
-    void setMaxNum(int n)   { m_nMaxNum  = n;           }
     int leftNum() const     { return m_nMaxNum - m_allTasks.size();}
-    
-    template<typename T>
-    void foreach(T func){
-        for (std::map<int, TaskObjPtr>::iterator it = m_allTasks.begin(); it != m_allTasks.end(); ++it){
-            func(it->second);
-        }
-    }
+ 
+    bool loadFromDB(const std::vector<std::string>& filedNames, const std::vector<std::vector<std::string> >& fieldDatas);
 public:
-    int                                 m_nMaxNum;
+    int                            m_nMaxNum;
     std::map<int, TaskObjPtr>      m_allTasks;
 };
 

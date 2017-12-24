@@ -171,6 +171,7 @@ public:
     virtual std::string onWorkerCall(uint16_t cmd, const std::string& body);
    
     userid_t allocUid() { return ++m_allocID; }
+    int      getWorkerIndex() const { return m_nWorkerIndex; }
     
 protected:
     //! 处理client 进入场景
@@ -183,6 +184,7 @@ protected:
     int processWorkerCall(ffreq_t<WorkerCallMsgt::in_t, WorkerCallMsgt::out_t>& req_);
     
 protected:
+    int                                         m_nWorkerIndex;//! worker index num
     userid_t                                    m_allocID;
     std::string                                 m_logic_name;
     SharedPtr<FFRpc>                            m_ffrpc;

@@ -37,6 +37,7 @@ public:
     int  syncQueryDBGroupMod(const std::string& strGroupName, long mod, const std::string& sql_, 
                      std::vector<std::vector<std::string> >& ret_data_,
                      std::vector<std::string>& col_, std::string& errinfo, int& affectedRows_);
+    uint64_t allocId(int nType);
 private:
     void queryDBImpl(db_connection_info_t* db_connection_info_, const std::string& sql_, FFSlot::FFCallBack* callback_);
     void syncQueryDBImpl(db_connection_info_t* db_connection_info_, const std::string& sql_, std::vector<std::vector<std::string> >* pRet, std::vector<std::string>* col_, std::string* errinfo, int* affectedRows_);

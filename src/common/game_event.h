@@ -5,6 +5,28 @@
 #include "common/entity.h"
 
 namespace ff{
+//!entity 数据载入开始，正常情况下entity的数据载入是异步的，所以entity载入分两步，LoadBegin和LoadEnd 
+class EntityDataLoadBegin:public Event<EntityDataLoadBegin>
+{
+public:
+    EntityDataLoadBegin(EntityPtr e):entity(e){}
+    
+    EntityPtr entity;
+    std::map<std::string/*module name*/, std::vector<std::string>  /*sql list*/>    moduleLoadSql;
+};
+class EntityDataLoadEnd:public Event<EntityDataLoadEnd>
+{
+public:
+    struct SqlResult{
+        std::vector<std::string>                fieldNames;
+        std::vector<std::vector<std::string> >  fieldDatas;
+    };
+    EntityDataLoadEnd(EntityPtr e):entity(e){}
+    
+    EntityPtr entity;
+    std::map<std::string/*module name*/, std::vector<SqlResult> >    moduleDatas;
+};
+
 class MapObj;
 class EnterMapCheckEvent:public Event<EnterMapCheckEvent>
 {

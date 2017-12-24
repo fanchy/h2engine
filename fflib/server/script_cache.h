@@ -68,7 +68,7 @@ public:
                 }
                 
                 int nIndex = ::atoi(indexArgs[1].c_str());
-                if (nIndex < 0 || nIndex >= curData->getList().size()){
+                if (nIndex < 0 || nIndex >= (int)curData->getList().size()){
                     return m_nullData;
                 }
                 curData = curData->getList()[nIndex];

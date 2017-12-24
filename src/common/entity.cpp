@@ -92,6 +92,7 @@ static bool initEntityEnvir(){
     //!这里演示的是如何注册脚本接口
     SCRIPT_UTIL.reg("Entity.getUid", Entity_getUid);
     SCRIPT_UTIL.reg("Entity.totalNum", Entity_totalNum);
+    /*example code
     printf("initEntityEnvir....\n");
     
     
@@ -104,16 +105,20 @@ static bool initEntityEnvir(){
     for (int i = 0; i < 1; ++i)
         ret = SCRIPT_UTIL.callScript<int>("testScriptCall", arg1, arg2, arg3, arg1, arg2, arg3, arg1, arg2, arg3);
     printf("initEntityEnvir....callScript:%d\n", ret);
+    */
     return true;
 }
 static bool cleanupEntityEnvir(){
+    /*example code
     printf("cleanupEntityEnvir....\n");
     
     SCRIPT_UTIL.callScript<void>("testScriptCall");
+    */
     return true;
     
 }
 
 WORKER_AT_SETUP(initEntityEnvir);
 WORKER_AT_EXIT(cleanupEntityEnvir);
+
 

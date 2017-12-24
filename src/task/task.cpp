@@ -2,6 +2,8 @@
 
 #include "task/task.h"
 #include "server/db_mgr.h"
+#include "common/game_event.h"
+#include "server/ffworker.h"
 
 using namespace ff;
 using namespace std;
@@ -64,11 +66,10 @@ bool TaskMgr::init(){
         }
         
         cfgTask->cfgid = int(cfgTask->getPropNum("cfgid"));
-        cfgTask->taskType = int(cfgTask->getPropNum("taskType"));
-        cfgTask->name  = cfgTask->getPropStr("name");
+        cfgTask->taskLine = int(cfgTask->getPropNum("taskLine"));
         
         m_TaskCfgs[cfgTask->cfgid] = cfgTask;
-        m_type2TaskCfg[cfgTask->taskType][cfgTask->cfgid] = cfgTask;
+        m_type2TaskCfg[cfgTask->taskLine][cfgTask->cfgid] = cfgTask;
     }
     return true;
 }
@@ -81,67 +82,8 @@ TaskObjPtr TaskCtrl::getTask(int cfgid){
     return NULL;
 }
 
-int TaskCtrl::getTask(int cfgid, std::vector<TaskObjPtr>& ret){
-    for (std::map<int, TaskObjPtr>::iterator it = m_allTasks.begin(); it != m_allTasks.end(); ++it){
-        if (it->second->getCfg()->cfgid == cfgid){
-            ret.push_back(it->second); 
-        }
-    }
-    return int(ret.size());
-}
-
-TaskObjPtr TaskCtrl::getTask(const string& name){
-    for (std::map<int, TaskObjPtr>::iterator it = m_allTasks.begin(); it != m_allTasks.end(); ++it){
-        if (it->second->getCfg()->name == name){
-            return it->second; 
-        }
-    }
-    return NULL;
-}
-int TaskCtrl::getTask(const string& name, std::vector<TaskObjPtr>& ret){
-    for (std::map<int, TaskObjPtr>::iterator it = m_allTasks.begin(); it != m_allTasks.end(); ++it){
-        if (it->second->getCfg()->name == name){
-            ret.push_back(it->second); 
-        }
-    }
-    return int(ret.size());
-}
-
-TaskObjPtr TaskCtrl::getTaskByProp(const std::string& key, int64_t propVal){
-    for (std::map<int, TaskObjPtr>::iterator it = m_allTasks.begin(); it != m_allTasks.end(); ++it){
-        if (it->second->getCfg()->getPropNum(key) == propVal){
-            return it->second; 
-        }
-    }
-    return NULL;
-}
-TaskObjPtr TaskCtrl::getTaskByProp(const std::string& key, const std::string& propVal){
-    for (std::map<int, TaskObjPtr>::iterator it = m_allTasks.begin(); it != m_allTasks.end(); ++it){
-        if (it->second->getCfg()->getPropStr(key) == propVal){
-            return it->second; 
-        }
-    }
-    return NULL;
-}
-int TaskCtrl::getTaskByProp(const std::string& key, int propVal, std::vector<TaskObjPtr>& ret){
-    for (std::map<int, TaskObjPtr>::iterator it = m_allTasks.begin(); it != m_allTasks.end(); ++it){
-        if (it->second->getCfg()->getPropNum(key) == propVal){
-            ret.push_back(it->second); 
-        }
-    }
-    return int(ret.size());
-}
-int TaskCtrl::getTaskByProp(const std::string& key, const std::string& propVal, std::vector<TaskObjPtr>& ret){
-    for (std::map<int, TaskObjPtr>::iterator it = m_allTasks.begin(); it != m_allTasks.end(); ++it){
-        if (it->second->getCfg()->getPropStr(key) == propVal){
-            ret.push_back(it->second); 
-        }
-    }
-    return int(ret.size());
-}
-
 void TaskCtrl::addTask(TaskObjPtr Task){
-    m_allTasks[Task->getCfgId()] = Task;
+    m_allTasks[Task->taskCfg->cfgid] = Task;
 }
 
 TaskObjPtr TaskCtrl::genTask(int cfgid){
@@ -151,7 +93,7 @@ TaskObjPtr TaskCtrl::genTask(int cfgid){
     }
     
     TaskObjPtr Task = new TaskObj();
-    Task->setCfg(cfg);
+    Task->taskCfg = cfg;
     this->addTask(Task);
     
     return Task;
@@ -165,3 +107,41 @@ bool TaskCtrl::delTask(int cfgid){
     }
     return false;
 }
+
+bool TaskCtrl::loadFromDB(const std::vector<std::string>& filedNames, const std::vector<std::vector<std::string> >& fieldDatas){
+    for (size_t i = 0; i < fieldDatas.size(); ++i){
+        const std::vector<std::string>& row = fieldDatas[i];
+        int cfgid  = ::atoi(row[0].c_str());
+        TaskObjPtr task = genTask(cfgid);
+        if (!task){
+            continue;
+        }
+        task->status   = ::atoi(row[1].c_str());
+        task->value    = ::atoi(row[2].c_str());
+        task->tmUpdate = ::atoi(row[1].c_str());
+        m_allTasks[task->taskCfg->cfgid] = task;
+    }
+    return true;
+}
+static void handleEntityDataLoadBegin(EntityDataLoadBegin& e){
+    char sql[512] = {0};
+    snprintf(sql, sizeof(sql), "select cfgid,status,value,updatetime from task where uid = '%lu'", e.entity->getUid());
+    e.moduleLoadSql[e.entity->get<TaskCtrl>()->getFieldName()].push_back(sql);
+}
+static void handleEntityDataLoadEnd(EntityDataLoadEnd& e){
+    std::vector<EntityDataLoadEnd::SqlResult>& sqlResult = e.moduleDatas[e.entity->get<TaskCtrl>()->getFieldName()];
+    if (false == sqlResult.empty()){
+        e.entity->get<TaskCtrl>()->loadFromDB(sqlResult[0].fieldNames, sqlResult[0].fieldDatas);
+    }
+    else{
+        std::vector<std::string> tmp1;
+        std::vector<std::vector<std::string> > tmp2;
+    }
+}
+
+static bool initEnvir(){
+    EVENT_BUS_LISTEN(&handleEntityDataLoadBegin);
+    EVENT_BUS_LISTEN(&handleEntityDataLoadEnd);
+    return true;
+}
+WORKER_AT_SETUP(initEnvir);
