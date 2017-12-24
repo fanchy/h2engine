@@ -2,7 +2,7 @@
 
 import h2ext
 
-def cleanup():
+def init():
     print('py init.....')
 def cleanup():
     print('py cleanup.....')
