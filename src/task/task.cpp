@@ -1,35 +1,29 @@
 #include <ctype.h>
+#include <algorithm>
 
 #include "task/task.h"
 #include "server/db_mgr.h"
 #include "common/game_event.h"
 #include "server/ffworker.h"
+#include "base/log.h"
+#include "base/time_tool.h"
 
 using namespace ff;
 using namespace std;
 
 int64_t TaskConfig::getPropNum(const std::string& key){
-    std::map<std::string, int64_t>::iterator it = numProp.find(key);
-    if (it != numProp.end()){
-        return it->second;
+    string v = getPropStr(key);
+    if (v.empty() == false){
+        return ::atol(v.c_str());
     }
     return 0;
 }
-static bool isNumberStr(const string& s){
-    if (s.empty()){
-        return false;
-    }
-    for (size_t i = 0; i < s.size(); ++i){
-        if (!::isdigit(s[i])){
-            return false;
-        }
-    }
-    return false;
-}
 
 string TaskConfig::getPropStr(const std::string& key){
-    std::map<std::string, std::string>::iterator it = strProp.find(key);
-    if (it != strProp.end()){
+    string keyname = key;
+    std::transform(keyname.begin(), keyname.end(), keyname.begin(), ::toupper);
+    std::map<std::string, std::string>::iterator it = allProp.find(keyname);
+    if (it != allProp.end()){
         return it->second;
     }
     return "";
@@ -42,38 +36,75 @@ bool TaskMgr::init(){
     int affectedRows = 0;
     
     string sql = "select * from Taskcfg";
-    DB_MGR_OBJ.syncQueryDBGroupMod("cfgDB", 0, sql, retdata, col, errinfo, affectedRows);
+    DB_MGR_OBJ.syncQueryDBGroupMod(CFG_DB, 0, sql, retdata, col, errinfo, affectedRows);
     
-    if (retdata.empty()){
+    if (errinfo.empty() == false)
+    {
+        LOGERROR((GAME_LOG, "TaskMgr::init failed:%s", errinfo));
         return false;
     }
+    if (retdata.empty()){
+        LOGWARN((GAME_LOG, "TaskMgr::init load none data"));
+        return true;
+    }
     
-    m_TaskCfgs.clear();
-    m_type2TaskCfg.clear();
-    
+    allTaskCfg.clear();
+    taskLine2Task.clear();
+    map<int, vector<TaskConfigPtr> > tmpLine2task;
     for (size_t i = 0; i < retdata.size(); ++i){
         vector<string>& row = retdata[i];
-        TaskConfigPtr cfgTask = new TaskConfig();
+        TaskConfigPtr taskCfg = new TaskConfig();
         
         for (size_t j = 0; j < row.size(); ++j){
-            const string& keyname = col[j];
-            if (isNumberStr(row[j])){
-                cfgTask->numProp[keyname] = ::atol(row[j].c_str());
-            }
-            else{
-                cfgTask->strProp[keyname] = row[j];
-            }
+            string& keyname = col[j];
+            std::transform(keyname.begin(), keyname.end(), keyname.begin(), ::toupper);
+            taskCfg->allProp[keyname] = row[j];
         }
         
-        cfgTask->cfgid = int(cfgTask->getPropNum("cfgid"));
-        cfgTask->taskLine = int(cfgTask->getPropNum("taskLine"));
+        taskCfg->cfgid    = (int)taskCfg->getPropNum("cfgid");
+        taskCfg->taskLine = (int)taskCfg->getPropNum("taskLine");
+        taskCfg->nextTask = (int)taskCfg->getPropNum("nextTask");
         
-        m_TaskCfgs[cfgTask->cfgid] = cfgTask;
-        m_type2TaskCfg[cfgTask->taskLine][cfgTask->cfgid] = cfgTask;
+        taskCfg->triggerPropertyType   = taskCfg->getPropStr("triggerPropertyType");
+        taskCfg->triggerPropertyValue  = (int)taskCfg->getPropNum("triggerPropertyValue");
+        taskCfg->finishConditionType   = taskCfg->getPropStr("finishConditionType");
+        taskCfg->finishConditionObject = taskCfg->getPropStr("finishConditionObject");
+        taskCfg->finishConditionValue  = (int)taskCfg->getPropNum("finishConditionValue");
+        
+        if (taskCfg->finishConditionObject.empty() == false &&
+            taskCfg->finishConditionObject[taskCfg->finishConditionObject.size() - 1] != ','){
+            taskCfg->finishConditionObject += ",";
+        }
+        allTaskCfg[taskCfg->cfgid] = taskCfg;
+        tmpLine2task[taskCfg->taskLine].push_back(taskCfg);
+    }
+    for (map<int, vector<TaskConfigPtr> >::iterator it = tmpLine2task.begin(); it != tmpLine2task.end(); ++it){
+        TaskConfigPtr firstTask = it->second[0];
+        for (size_t i = 0; i < it->second.size(); ++i){
+            TaskConfigPtr preTask;
+            for (size_t j = 0; j < it->second.size(); ++j){
+                if (it->second[j]->nextTask == firstTask->cfgid){
+                    preTask = it->second[j];
+                    break;
+                }
+            }
+            if (!preTask){
+                break;
+            }
+            firstTask = preTask;
+        }
+        taskLine2Task[it->first] = firstTask;
+        LOGINFO((GAME_LOG, "TaskMgr::init load taskline %d->%d", it->first, firstTask->cfgid));
     }
     return true;
 }
-
+static  bool isCondititonObjectEqual(const string& cfgObject, const string& strTriggerObject){
+    std::size_t it = cfgObject.find(strTriggerObject);
+    if (it == string::npos || it >= (cfgObject.size() - 1) || strTriggerObject[it+1] != ','){
+        return false;
+    }
+    return true;
+}
 TaskObjPtr TaskCtrl::getTask(int cfgid){
     std::map<int, TaskObjPtr>::iterator it = m_allTasks.find(cfgid);
     if (it != m_allTasks.end()){
@@ -86,28 +117,72 @@ void TaskCtrl::addTask(TaskObjPtr Task){
     m_allTasks[Task->taskCfg->cfgid] = Task;
 }
 
-TaskObjPtr TaskCtrl::genTask(int cfgid){
-    TaskConfigPtr cfg = Singleton<TaskMgr>::instance().getCfg(cfgid);
+TaskObjPtr TaskCtrl::genTask(int cfgid, int status){
+    TaskConfigPtr cfg = gTaskMgr.getCfg(cfgid);
     if (!cfg){
         return NULL;
     }
     
-    TaskObjPtr Task = new TaskObj();
-    Task->taskCfg = cfg;
-    this->addTask(Task);
+    TaskObjPtr task = new TaskObj();
+    task->taskCfg   = cfg;
+    task->status    = status;
+    task->tmUpdate  = ::time(NULL);
+    this->addTask(task);
     
-    return Task;
+    char sql[512] = {0};
+    snprintf(sql, sizeof(sql), "insert into task (`uid`, `cfgid`, `status`, `value`, `tmUpdate`) values (%lu, %d, %d, %d, '%s')",
+                                this->getOwner()->getUid(), task->taskCfg->cfgid, task->status, task->value, TimeTool::formattm(task->tmUpdate).c_str());
+    
+    DB_MGR_OBJ.queryDBGroupMod(USER_DB, this->getOwner()->getUid(), sql);
+    return task;
 }
 
 bool TaskCtrl::delTask(int cfgid){
     std::map<int, TaskObjPtr>::iterator it = m_allTasks.find(cfgid);
     if (it != m_allTasks.end()){
         m_allTasks.erase(it);
+        char sql[512] = {0};
+        snprintf(sql, sizeof(sql), "delete from task where `uid` = '%lu' and `cfgid` = '%d' ",
+                                    this->getOwner()->getUid(), cfgid);
+        
+        DB_MGR_OBJ.queryDBGroupMod(USER_DB, this->getOwner()->getUid(), sql);
         return true;
     }
     return false;
 }
 
+bool TaskCtrl::changeTaskStatus(TaskObjPtr task, int status){
+    task->status  = status;
+    task->tmUpdate= ::time(NULL);
+    char sql[512] = {0};
+    snprintf(sql, sizeof(sql), "update task set status = %d, tmUpdate = '%s' where `uid` = '%lu' and `cfgid` = '%d' ",
+                                status, TimeTool::formattm(task->tmUpdate).c_str(), this->getOwner()->getUid(), task->taskCfg->cfgid);
+    
+    DB_MGR_OBJ.queryDBGroupMod(USER_DB, this->getOwner()->getUid(), sql);
+    return true;
+}
+bool TaskCtrl::acceptTask(int cfgid){
+    TaskObjPtr task = getTask(cfgid);
+    if (!task || task->status != TASK_GOT){
+        return false;
+    }
+    changeTaskStatus(task, TASK_FINISHED);
+    return true;
+}
+bool TaskCtrl::finishTask(int cfgid){
+    TaskObjPtr task = getTask(cfgid);
+    if (!task || task->status != TASK_ACCEPTED){
+        return false;
+    }
+    changeTaskStatus(task, TASK_FINISHED);
+    if (task->taskCfg->nextTask){
+        TaskObjPtr nextTask = this->getTask(task->taskCfg->nextTask);
+        if (nextTask){
+            this->delTask(cfgid);
+        }
+    }
+    return true;
+}
 bool TaskCtrl::loadFromDB(const std::vector<std::string>& filedNames, const std::vector<std::vector<std::string> >& fieldDatas){
     for (size_t i = 0; i < fieldDatas.size(); ++i){
         const std::vector<std::string>& row = fieldDatas[i];
@@ -118,10 +193,52 @@ bool TaskCtrl::loadFromDB(const std::vector<std::string>& filedNames, const std:
         }
         task->status   = ::atoi(row[1].c_str());
         task->value    = ::atoi(row[2].c_str());
-        task->tmUpdate = ::atoi(row[1].c_str());
+        task->tmUpdate = TimeTool::str2time(row[3]);
         m_allTasks[task->taskCfg->cfgid] = task;
     }
+    
     return true;
+}
+bool TaskCtrl::checkNewTask(){
+    //!检查每一条任务线，是否有新的任务线可以加入
+    map<int/*taskLine*/,  TaskConfigPtr> allTaskLine = gTaskMgr.taskLine2Task;
+    std::map<int, TaskObjPtr>::iterator it = m_allTasks.begin();
+    for (; it != m_allTasks.end(); ++it){
+        allTaskLine.erase(it->second->taskCfg->cfgid);
+    }
+    map<int/*taskLine*/,  TaskConfigPtr>::iterator it2 = allTaskLine.begin();
+    for (; it2 != gTaskMgr.taskLine2Task.end(); ++it2){
+        //!检查属性是否满足, 如果满足增加任务
+        TaskConfigPtr& taskCfg = it2->second;
+        
+        if (this->getOwner()->getPropValue(taskCfg->triggerPropertyType) >= taskCfg->triggerPropertyValue)
+        {
+            this->genTask(taskCfg->cfgid);
+        }
+    }
+    return true;
+}
+int TaskCtrl::triggerEvent(const std::string& triggerType, const std::string& triggerObject, int value, std::vector<int>* changeTask){
+    //!检查自己的任务有没有可以完成的
+    std::map<int, TaskObjPtr>::iterator it = m_allTasks.begin();
+    for (; it != m_allTasks.end(); ++it){
+        TaskObj& task = *(it->second);
+        if (task.status != TASK_ACCEPTED){
+            continue;
+        }
+        TaskConfig& taskCfg = *task.taskCfg;
+        if (taskCfg.finishConditionType == triggerType && isCondititonObjectEqual(taskCfg.finishConditionObject, triggerObject)){
+            task.value += value;
+            if (task.value >= taskCfg.finishConditionValue){
+                task.value = taskCfg.finishConditionValue;
+                task.status = TASK_FINISHED;
+            }
+            if (changeTask){
+                (*changeTask).push_back(taskCfg.cfgid);
+            }
+        }
+    }
+    return 0;
 }
 static void handleEntityDataLoadBegin(EntityDataLoadBegin& e){
     char sql[512] = {0};
@@ -136,6 +253,7 @@ static void handleEntityDataLoadEnd(EntityDataLoadEnd& e){
     else{
         std::vector<std::string> tmp1;
         std::vector<std::vector<std::string> > tmp2;
+        e.entity->get<TaskCtrl>()->loadFromDB(tmp1, tmp2);
     }
 }
 

@@ -9,7 +9,7 @@ using namespace std;
 #define FFWORKER                   "FFWORKER"
 WorkerInitFileInfo FFWorker::gSetupFunc[100];
 WorkerFunc FFWorker::gExitFunc[100];
-int FFWorker::regSetupFunc(WorkerFunc f, const char* file, int line){
+int FFWorker::regSetupFunc(WorkerFunc f, const char* file, int line, int priority){
     static int index = -1;
     if (index == -1){
         memset(gSetupFunc, 0, sizeof(gSetupFunc));
@@ -18,6 +18,7 @@ int FFWorker::regSetupFunc(WorkerFunc f, const char* file, int line){
     gSetupFunc[n].func    = f;
     gSetupFunc[n].strFile = file;
     gSetupFunc[n].nLine   = line;
+    gSetupFunc[n].priority= priority;
     //printf("regSetupFunc %d %s %d\n", n, file, line);
     return 0;
 }
@@ -30,11 +31,15 @@ int FFWorker::regExitFunc(WorkerFunc f){
     gExitFunc[n] = f;
     return 0;
 }
-
+//自定义排序函数  
+static bool cmpTmp(const WorkerInitFileInfo& a, const WorkerInitFileInfo& b){
+    return a.priority > b.priority;//从大到小排序，从小到大排序为a<b  
+}
 static bool callSetupFunc(){
+    std::sort(FFWorker::gSetupFunc, FFWorker::gSetupFunc+(sizeof(FFWorker::gSetupFunc) / sizeof(WorkerInitFileInfo)), cmpTmp);
     for (size_t i = 0; i < sizeof(FFWorker::gSetupFunc) / sizeof(WorkerFunc); ++i){
         if (FFWorker::gSetupFunc[i].func == NULL)
-            return true;
+            continue;
         if ((*(FFWorker::gSetupFunc[i].func))() == false){
             LOGERROR((FFWORKER, "FFWorker::open failed when exe %s[%d]",
                                 FFWorker::gSetupFunc[i].strFile, FFWorker::gSetupFunc[i].nLine));

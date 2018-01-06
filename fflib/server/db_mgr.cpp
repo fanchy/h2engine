@@ -71,8 +71,10 @@ void DbMgr::queryDB(long db_id_,const string& sql_, FFSlot::FFCallBack* callback
     if (NULL == db_connection_info || !db_connection_info->tq)
     {
         queryDBResult_t ret;
-        callback_->exe(&ret);
-        delete callback_;
+        if (callback_){
+            callback_->exe(&ret);
+            delete callback_;
+        }
         return;
     }
     else
@@ -96,8 +98,10 @@ void DbMgr::queryDBGroupMod(const std::string& strGroupName, long mod, const std
     if (NULL == db_connection_info || !db_connection_info->tq)
     {
         queryDBResult_t ret;
-        callback_->exe(&ret);
-        delete callback_;
+        if (callback_){
+            callback_->exe(&ret);
+            delete callback_;
+        }
         return;
     }
     else

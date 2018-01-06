@@ -54,8 +54,10 @@ struct WorkerInitFileInfo{
     const char* strFile;
     int         nLine;
     WorkerFunc  func;
+    int         priority;
 };
 #define WORKER_AT_SETUP(f) static int gSetup_##f = FFWorker::regSetupFunc(f, __FILE__, __LINE__)
+#define WORKER_AT_SETUP_PRIORITY(f, p) static int gSetup_##f = FFWorker::regSetupFunc(f, __FILE__, __LINE__, p)
 #define WORKER_AT_EXIT(f)  static int gExit_##f = FFWorker::regExitFunc(f)
 
 class SessionMsgFunctor{
@@ -73,7 +75,7 @@ public:
     static FFWorker* gSingletonWorker;
     static WorkerInitFileInfo gSetupFunc[100];
     static WorkerFunc gExitFunc[100];
-    static int regSetupFunc(WorkerFunc f, const char* file, int line);
+    static int regSetupFunc(WorkerFunc f, const char* file, int line, int priority = 0);
     static int regExitFunc(WorkerFunc f);
     typedef int (*logic_FFCallBack)(userid_t , uint16_t , const std::string& );
     typedef int (*offline_FFCallBack)(userid_t);

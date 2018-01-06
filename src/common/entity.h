@@ -13,6 +13,10 @@
 namespace ff
 {
 
+#define GAME_LOG "GAME_LOG"
+#define CFG_DB  "cfgDB"
+#define USER_DB "userDB"
+
 class EntityField;
 
 template <typename T>
@@ -77,6 +81,8 @@ public:
     bool sendMsg(uint16_t cmd, const std::string& msg);
 
     SharedPtr<Entity> toPtr();
+    
+    int64_t getPropValue(const std::string& strPropName){ return 0; }
 private:
     void initField(EntityField* ret, const std::string& name);
 public:

@@ -10,7 +10,7 @@
 #include <set>
 #include <vector>
 #include <fstream>
-
+#include <string>
 
 //! 获取特定时间的unix 时间戳
 struct TimeTool
@@ -38,6 +38,23 @@ struct TimeTool
         long ret = (long)now + (month_day_num - tm_val.tm_mday)*86400 + (23 - tm_val.tm_hour)*3600 +
                    (59 - tm_val.tm_min)*60 + (60 - tm_val.tm_sec);
         return ret;
+    }
+    static std::string formattm(time_t curtm){
+        struct tm tm_val = *localtime(&curtm);
+
+        std::string ret;
+        char buff[512];
+        ::snprintf(buff, sizeof(buff), "%d-%02d-%02d %02d:%02d:%02d",
+                    tm_val.tm_year + 1900, tm_val.tm_mon + 1, tm_val.tm_mday,
+                    tm_val.tm_hour, tm_val.tm_min, tm_val.tm_sec);
+        ret = buff;
+        return ret;
+    }
+    static time_t str2time(const std::string& strTime){
+        tm tm_;
+        ::strptime(strTime.c_str(), "%Y-%m-%d %H:%M:%S", &tm_);
+        tm_.tm_isdst = -1;  
+        return ::mktime(&tm_);
     }
 };
 

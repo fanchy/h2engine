@@ -29,11 +29,11 @@ public:
     int stop();
 
     long connectDB(const std::string& host_, const std::string& groupName);
-    void queryDB(long db_id_,const std::string& sql_, FFSlot::FFCallBack* callback_);
+    void queryDB(long db_id_,const std::string& sql_, FFSlot::FFCallBack* callback_ = NULL);
     int  syncQueryDB(long db_id_,const std::string& sql_, std::vector<std::vector<std::string> >& ret_data_,
                      std::vector<std::string>& col_, std::string& errinfo, int& affectedRows_);
 
-    void queryDBGroupMod(const std::string& strGroupName, long mod, const std::string& sql_, FFSlot::FFCallBack* callback_);
+    void queryDBGroupMod(const std::string& strGroupName, long mod, const std::string& sql_, FFSlot::FFCallBack* callback_ = NULL);
     int  syncQueryDBGroupMod(const std::string& strGroupName, long mod, const std::string& sql_, 
                      std::vector<std::vector<std::string> >& ret_data_,
                      std::vector<std::string>& col_, std::string& errinfo, int& affectedRows_);
