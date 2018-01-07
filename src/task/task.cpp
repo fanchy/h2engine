@@ -155,6 +155,8 @@ bool TaskCtrl::delTask(int cfgid){
 }
 
 bool TaskCtrl::changeTaskStatus(TaskObjPtr task, int status){
+    if (!task)
+        return false;
     task->status  = status;
     task->tmUpdate= ::time(NULL);
     char sql[512] = {0};
@@ -216,7 +218,7 @@ bool TaskCtrl::checkNewTask(){
         //!检查属性是否满足, 如果满足增加任务
         TaskConfigPtr& taskCfg = it2->second;
         
-        if (this->getOwner()->getPropValue(taskCfg->triggerPropertyType) >= taskCfg->triggerPropertyValue)
+        if (PROP_MGR.get(this->getOwner(), taskCfg->triggerPropertyType) >= taskCfg->triggerPropertyValue)
         {
             this->genTask(taskCfg->cfgid);
         }
@@ -262,23 +264,55 @@ static void handleEntityDataLoadEnd(EntityDataLoadEnd& e){
     }
 }
 
-struct TestInfo{
-    int a;
-};
 static bool initEnvir(){
     EVENT_BUS_LISTEN(&handleEntityDataLoadBegin);
     EVENT_BUS_LISTEN(&handleEntityDataLoadEnd);
 
-    TestInfo arg;
-    arg.a = 10;
-    try{
-        int m = 100;
-        TestInfo ret = SCRIPT_UTIL.callScript<TestInfo>(string("test"), arg, m);
-        printf("ret:%d\n", ret.a);
+    //!注册操作任务的脚本接口
+    if (false == TASK_MGR.init()){
+        return false;
     }
-    catch(exception& e){
-        printf("exception:%s\n", e.what());
-    }
+    struct ScriptFunctor{
+        static int genTask(EntityPtr p, int cfgid){
+            if (p->get<TaskCtrl>()->genTask(cfgid)){
+                return cfgid;
+            }
+            return 0;
+        }
+        static bool delTask(EntityPtr p, int cfgid){
+            return p->get<TaskCtrl>()->delTask(cfgid);
+        }
+        static bool changeTaskStatus(EntityPtr p, int cfgid, int status){
+            return p->get<TaskCtrl>()->changeTaskStatus(p->get<TaskCtrl>()->getTask(cfgid), status);
+        }
+        static vector<int> getTask(EntityPtr p, int cfgid){
+            vector<int> ret;
+            TaskObjPtr task = p->get<TaskCtrl>()->getTask(cfgid);
+            if (task){
+                ret.push_back(task->status);
+                ret.push_back(task->value);
+                ret.push_back(task->taskCfg->finishConditionValue);
+            }
+            return ret;
+        }
+        static bool acceptTask(EntityPtr p, int cfgid){
+            return p->get<TaskCtrl>()->acceptTask(cfgid);
+        }
+        static bool finishTask(EntityPtr p, int cfgid){
+            return p->get<TaskCtrl>()->finishTask(cfgid);
+        }
+        static bool checkNewTask(EntityPtr p){
+            return p->get<TaskCtrl>()->checkNewTask();
+        }
+    };          
+    SCRIPT_UTIL.reg("Task.genTask",            ScriptFunctor::genTask);
+    SCRIPT_UTIL.reg("Task.delTask",            ScriptFunctor::delTask);
+    SCRIPT_UTIL.reg("Task.changeTaskStatus",   ScriptFunctor::changeTaskStatus);
+    SCRIPT_UTIL.reg("Task.getTask",            ScriptFunctor::getTask);
+    SCRIPT_UTIL.reg("Task.acceptTask",         ScriptFunctor::acceptTask);
+    SCRIPT_UTIL.reg("Task.finishTask",         ScriptFunctor::finishTask);
+    SCRIPT_UTIL.reg("Task.checkNewTask",       ScriptFunctor::checkNewTask);
+    
     return true;
 }
 WORKER_AT_SETUP(initEnvir);

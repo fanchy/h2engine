@@ -9,6 +9,7 @@
 #include "base/fftype.h"
 #include "base/smart_ptr.h"
 #include "server/script.h"
+#include "common/prop.h"
 
 namespace ff
 {
@@ -82,7 +83,6 @@ public:
 
     SharedPtr<Entity> toPtr();
     
-    int64_t getPropValue(const std::string& strPropName){ return 0; }
 private:
     void initField(EntityField* ret, const std::string& name);
 public:
@@ -98,6 +98,9 @@ typedef WeakPtr<Entity>   EntityRef;
 #define NEW_ENTITY(ntype, id) Entity::genEntity(ntype, id)
 #define TO_ENTITY(ptr) Entity::toEntity(long(ptr))
 #define UID_TO_ENTITY(ntype, id) Singleton<EntityMgr>::instance().get(ntype, id)
+
+#define PROP_MGR Singleton<PropCommonMgr<EntityPtr> >::instance()
+
 class EntityField//!entity的字段基类
 {
 public:

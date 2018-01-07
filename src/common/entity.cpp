@@ -1,6 +1,7 @@
 #include "common/entity.h"
 #include "server/ffworker.h"
 #include "server/script.h"
+#include "common/prop.h"
 
 using namespace ff;
 using namespace std;
@@ -88,10 +89,12 @@ static userid_t Entity_getUid(EntityPtr p){
 static size_t Entity_totalNum(){
     return Entity::EntityPtr2Ref.size();
 }
+int64_t gInt = 0;
 static bool initEntityEnvir(){
     //!这里演示的是如何注册脚本接口
     SCRIPT_UTIL.reg("Entity.getUid", Entity_getUid);
     SCRIPT_UTIL.reg("Entity.totalNum", Entity_totalNum);
+
     /*example code
     printf("initEntityEnvir....\n");
     
