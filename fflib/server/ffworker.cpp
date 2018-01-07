@@ -37,7 +37,7 @@ static bool cmpTmp(const WorkerInitFileInfo& a, const WorkerInitFileInfo& b){
 }
 static bool callSetupFunc(){
     std::sort(FFWorker::gSetupFunc, FFWorker::gSetupFunc+(sizeof(FFWorker::gSetupFunc) / sizeof(WorkerInitFileInfo)), cmpTmp);
-    for (size_t i = 0; i < sizeof(FFWorker::gSetupFunc) / sizeof(WorkerFunc); ++i){
+    for (size_t i = 0; i < sizeof(FFWorker::gSetupFunc) / sizeof(WorkerInitFileInfo); ++i){
         if (FFWorker::gSetupFunc[i].func == NULL)
             continue;
         if ((*(FFWorker::gSetupFunc[i].func))() == false){

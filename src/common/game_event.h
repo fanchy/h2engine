@@ -96,5 +96,15 @@ public:
     EntityPtr entity;
 };
 
+//!任务相关的事件
+class TaskStatusChange:public Event<TaskStatusChange>
+{
+public:
+    TaskStatusChange(EntityPtr e, int taskid, int status):entity(e), takkCfgId(taskid), taskStatus(status){}
+    EntityPtr entity;
+    int takkCfgId;
+    int taskStatus;
+};
+
 }
 #endif

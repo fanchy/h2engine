@@ -118,7 +118,7 @@ void TaskCtrl::addTask(TaskObjPtr Task){
 }
 
 TaskObjPtr TaskCtrl::genTask(int cfgid, int status){
-    TaskConfigPtr cfg = gTaskMgr.getCfg(cfgid);
+    TaskConfigPtr cfg = TASK_MGR.getCfg(cfgid);
     if (!cfg){
         return NULL;
     }
@@ -134,6 +134,9 @@ TaskObjPtr TaskCtrl::genTask(int cfgid, int status){
                                 this->getOwner()->getUid(), task->taskCfg->cfgid, task->status, task->value, TimeTool::formattm(task->tmUpdate).c_str());
     
     DB_MGR_OBJ.queryDBGroupMod(USER_DB, this->getOwner()->getUid(), sql);
+
+    TaskStatusChange eTask(this->getOwner(), task->taskCfg->cfgid, task->status);
+    EVENT_BUS_FIRE(eTask);
     return task;
 }
 
@@ -159,6 +162,8 @@ bool TaskCtrl::changeTaskStatus(TaskObjPtr task, int status){
                                 status, TimeTool::formattm(task->tmUpdate).c_str(), this->getOwner()->getUid(), task->taskCfg->cfgid);
     
     DB_MGR_OBJ.queryDBGroupMod(USER_DB, this->getOwner()->getUid(), sql);
+    TaskStatusChange eTask(this->getOwner(), task->taskCfg->cfgid, task->status);
+    EVENT_BUS_FIRE(eTask);
     return true;
 }
 bool TaskCtrl::acceptTask(int cfgid){
@@ -201,13 +206,13 @@ bool TaskCtrl::loadFromDB(const std::vector<std::string>& filedNames, const std:
 }
 bool TaskCtrl::checkNewTask(){
     //!检查每一条任务线，是否有新的任务线可以加入
-    map<int/*taskLine*/,  TaskConfigPtr> allTaskLine = gTaskMgr.taskLine2Task;
+    map<int/*taskLine*/,  TaskConfigPtr> allTaskLine = TASK_MGR.taskLine2Task;
     std::map<int, TaskObjPtr>::iterator it = m_allTasks.begin();
     for (; it != m_allTasks.end(); ++it){
         allTaskLine.erase(it->second->taskCfg->cfgid);
     }
     map<int/*taskLine*/,  TaskConfigPtr>::iterator it2 = allTaskLine.begin();
-    for (; it2 != gTaskMgr.taskLine2Task.end(); ++it2){
+    for (; it2 != TASK_MGR.taskLine2Task.end(); ++it2){
         //!检查属性是否满足, 如果满足增加任务
         TaskConfigPtr& taskCfg = it2->second;
         
@@ -257,9 +262,24 @@ static void handleEntityDataLoadEnd(EntityDataLoadEnd& e){
     }
 }
 
+struct TestInfo{
+    int a;
+};
 static bool initEnvir(){
     EVENT_BUS_LISTEN(&handleEntityDataLoadBegin);
     EVENT_BUS_LISTEN(&handleEntityDataLoadEnd);
+
+    TestInfo arg;
+    arg.a = 10;
+    try{
+        int m = 100;
+        TestInfo ret = SCRIPT_UTIL.callScript<TestInfo>(string("test"), arg, m);
+        printf("ret:%d\n", ret.a);
+    }
+    catch(exception& e){
+        printf("exception:%s\n", e.what());
+    }
     return true;
 }
 WORKER_AT_SETUP(initEnvir);
+

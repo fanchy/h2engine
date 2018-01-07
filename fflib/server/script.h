@@ -248,13 +248,49 @@ struct ScriptFunctorUtil;
 
 template<typename RET>
 struct CallFuncRetUtil;//!ret type traits
+
+class ArgDataCacheBase{
+public:
+    virtual ~ArgDataCacheBase(){};
+};
+template<typename T>
+class ArgDataCacheCommon: public ArgDataCacheBase{
+public:
+    ArgDataCacheCommon(T& a):data(a){}
+    T data;
+};
+struct TmpCacheArg{
+    std::map<std::string, ArgDataCacheBase*> cacheData;
+    ~TmpCacheArg(){
+        clear();
+    }
+    void clear(){
+        for (std::map<std::string, ArgDataCacheBase*>::iterator it = cacheData.begin(); it != cacheData.end(); ++it)
+        {
+            delete it->second;
+        }
+        cacheData.clear();
+    }
+};
+#define gTmpCacheArg Singleton<TmpCacheArg>::instance()
+
 template<typename T>
 struct CppScriptValutil{
     static void toScriptVal(ScriptArgObjPtr retVal, T& a){
-        retVal->toInt(a);
+        char strAddr[256] = {0};
+        static unsigned int addr = 0;
+        snprintf(strAddr, sizeof(strAddr), "%s#%d", TYPE_NAME(T).c_str(), ++addr);
+        gTmpCacheArg.cacheData[strAddr] = new ArgDataCacheCommon<T>(a);
+        retVal->toString(strAddr);
     }
     static void toCppVal(ScriptArgObjPtr argVal, T& a){
-        a = (T)(argVal->getInt());
+        std::string strAddr = argVal->getString();
+        std::string strTypeName = TYPE_NAME(T);
+        strTypeName += "#";
+        if (strAddr.find(strTypeName) == std::string::npos){
+            return;
+        }
+        a = ((ArgDataCacheCommon<T>*)gTmpCacheArg.cacheData[strAddr])->data;
     }
 };
 template<typename ARG_TYPE>
@@ -318,6 +354,7 @@ public:
         else{
             printf("callScriptRaw none script impl functor\n");
         }
+        gTmpCacheArg.clear();
         return ret;
     }
     template<typename RET>
@@ -477,6 +514,78 @@ template<typename ARG_TYPE>
 ARG_TYPE TypeInitValUtil<ARG_TYPE>::gInitVal;
 
 
+template<>
+struct CppScriptValutil<int8_t>{
+    static void toScriptVal(ScriptArgObjPtr retVal, int8_t a){
+        retVal->toInt(a);
+    }
+    static void toCppVal(ScriptArgObjPtr argVal, int8_t& a){
+        a = (int8_t)argVal->getInt();
+    }
+};
+template<>
+struct CppScriptValutil<uint8_t>{
+    static void toScriptVal(ScriptArgObjPtr retVal, uint8_t a){
+        retVal->toInt(a);
+    }
+    static void toCppVal(ScriptArgObjPtr argVal, uint8_t& a){
+        a = (uint8_t)argVal->getInt();
+    }
+};
+template<>
+struct CppScriptValutil<int16_t>{
+    static void toScriptVal(ScriptArgObjPtr retVal, int16_t a){
+        retVal->toInt(a);
+    }
+    static void toCppVal(ScriptArgObjPtr argVal, int16_t& a){
+        a = (int16_t)argVal->getInt();
+    }
+};
+template<>
+struct CppScriptValutil<uint16_t>{
+    static void toScriptVal(ScriptArgObjPtr retVal, uint16_t a){
+        retVal->toInt(a);
+    }
+    static void toCppVal(ScriptArgObjPtr argVal, uint16_t& a){
+        a = (uint16_t)argVal->getInt();
+    }
+};
+template<>
+struct CppScriptValutil<int32_t>{
+    static void toScriptVal(ScriptArgObjPtr retVal, int32_t a){
+        retVal->toInt(a);
+    }
+    static void toCppVal(ScriptArgObjPtr argVal, int32_t& a){
+        a = (int32_t)argVal->getInt();
+    }
+};
+template<>
+struct CppScriptValutil<uint32_t>{
+    static void toScriptVal(ScriptArgObjPtr retVal, uint32_t a){
+        retVal->toInt(a);
+    }
+    static void toCppVal(ScriptArgObjPtr argVal, uint32_t& a){
+        a = (uint32_t)argVal->getInt();
+    }
+};
+template<>
+struct CppScriptValutil<int64_t>{
+    static void toScriptVal(ScriptArgObjPtr retVal, int64_t a){
+        retVal->toInt(a);
+    }
+    static void toCppVal(ScriptArgObjPtr argVal, int64_t& a){
+        a = (int64_t)argVal->getInt();
+    }
+};
+template<>
+struct CppScriptValutil<uint64_t>{
+    static void toScriptVal(ScriptArgObjPtr retVal, uint64_t a){
+        retVal->toInt(a);
+    }
+    static void toCppVal(ScriptArgObjPtr argVal, uint64_t& a){
+        a = (uint64_t)argVal->getInt();
+    }
+};
 template<>
 struct CppScriptValutil<std::string>{
     static void toScriptVal(ScriptArgObjPtr retVal, const std::string& a){

@@ -44,7 +44,7 @@ public:
     std::map<int/*cfgid*/, TaskConfigPtr>                               allTaskCfg;
     std::map<int/*taskLine*/,  TaskConfigPtr>                           taskLine2Task;
 };
-#define gTaskMgr Singleton<TaskMgr>::instance()
+#define TASK_MGR Singleton<TaskMgr>::instance()
 
 enum TaskStatusDef{
     TASK_GOT    = 0, //!任务已获取
