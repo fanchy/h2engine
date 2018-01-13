@@ -1123,17 +1123,21 @@ int FFWorkerJs::processInit(ConditionVar* var, int* ret, const string& js_root)
                 }
             }
             SCRIPT_UTIL.setCallScriptFunc(callScriptImpl);
-            this->initModule();
-            {
-                HANDLE_SCOPE_DEF_VAR;
-                string funcname = "init";
-                Handle<v8::Value> value = PERSISTENT2LOCAL(_global_context)->Global()->Get(NewStrValue(funcname.c_str(), funcname.size()));
-                if (value->IsFunction()) {
-                    persistent_lambda_ptr_t pf = new persistent_lambda_t(v8::Handle<v8::Function>::Cast(value));
-                    call(pf);
+            if (this->initModule()){
+                *ret = 0;
+                {
+                    HANDLE_SCOPE_DEF_VAR;
+                    string funcname = "init";
+                    Handle<v8::Value> value = PERSISTENT2LOCAL(_global_context)->Global()->Get(NewStrValue(funcname.c_str(), funcname.size()));
+                    if (value->IsFunction()) {
+                        persistent_lambda_ptr_t pf = new persistent_lambda_t(v8::Handle<v8::Function>::Cast(value));
+                        call(pf);
+                    }
                 }
             }
-            *ret = 0;
+            else
+                *ret = -1;
+            
         }
     }
     catch(exception& e_)

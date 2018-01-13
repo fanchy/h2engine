@@ -74,15 +74,14 @@ public:
     bool            changeTaskStatus(TaskObjPtr task, int status);
     TaskObjPtr      getTask(int cfgid);
     bool            acceptTask(int cfgid);     //!接受任务
-    bool            finishTask(int cfgid);     //!完成任务
+    bool            endTask(int cfgid);     //!完成任务
     bool            checkNewTask();            //!检查是否有新任务
     
     int curSize() const     { return m_allTasks.size(); }
     int leftNum() const     { return m_nMaxNum - m_allTasks.size();}
  
     bool loadFromDB(const std::vector<std::string>& filedNames, const std::vector<std::vector<std::string> >& fieldDatas);
-    int triggerEvent(const std::string& triggerType, const std::string& triggerObject, int value = 1,
-                     std::vector<int>* changeTask = NULL);
+    int triggerEvent(const std::string& triggerType, const std::string& triggerObject, int value = 1);
 public:
     int                            m_nMaxNum;
     std::map<int, TaskObjPtr>      m_allTasks;

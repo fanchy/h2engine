@@ -574,7 +574,7 @@ static PyObject* fromScriptArgToPy(ScriptArgObjPtr pvalue){
     Py_RETURN_NONE;
 }
 static PyObject* callFunc(PyObject* pvalue){
-    LOGINFO((FFWORKER_PYTHON, "FFWorkerPython::callFunc begin 1"));
+    //LOGINFO((FFWORKER_PYTHON, "FFWorkerPython::callFunc begin 1"));
     if (!pvalue){
         Py_RETURN_NONE;
     }
@@ -605,7 +605,7 @@ static PyObject* callFunc(PyObject* pvalue){
         scriptArgs.args.push_back(elem);
     }
     
-    LOGTRACE((FFWORKER_PYTHON, "FFWorkerPython::callFunc begin argsize=%d", scriptArgs.args.size()));
+    //LOGTRACE((FFWORKER_PYTHON, "FFWorkerPython::callFunc begin argsize=%d", scriptArgs.args.size()));
     if (false == SCRIPT_UTIL.callFunc(funcName, scriptArgs)){
         LOGERROR((FFWORKER_PYTHON, "FFWorkerPython::callFunc no funcname:%s", funcName));
         Py_RETURN_NONE;
@@ -838,8 +838,12 @@ int FFWorkerPython::processInit(ConditionVar* var, int* ret)
     try{
         (*m_ffpython).load(m_ext_name);
         SCRIPT_UTIL.setCallScriptFunc(callScriptImpl);
-        this->initModule();
-        *ret = 0;
+        if (this->initModule()){
+            (*m_ffpython).call<void>(m_ext_name, string("init"));
+            *ret = 0;
+        }
+        else
+            *ret = -1;
     }
     catch(exception& e_)
     {

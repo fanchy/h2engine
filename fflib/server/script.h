@@ -343,6 +343,7 @@ public:
         m_funcCallScript = f;
     }
     bool isExceptEnable() const { return m_flagCallScript != 0;}
+    void setExceptEnable(int flag) { m_flagCallScript = flag;}
     
     template<typename RET>
     typename CallFuncRetUtil<RET>::RET_TYPE callScriptRaw(const std::string& funcName, ScriptArgs& scriptArg){
@@ -636,7 +637,8 @@ struct CppScriptValutil<std::vector<T> >{
     static void toScriptVal(ScriptArgObjPtr retVal, const std::vector<T>& a){
         retVal->toList();
         for (size_t i = 0; i < a.size(); ++i){
-            ScriptArgObjPtr val = new ScriptArgObj(a[i]);
+            ScriptArgObjPtr val = new ScriptArgObj();
+            CppScriptValutil<T>::toScriptVal(val, a[i]);
             retVal->listVal.push_back(val);
         }
     }
@@ -653,7 +655,8 @@ struct CppScriptValutil<std::list<T> >{
     static void toScriptVal(ScriptArgObjPtr retVal, const std::list<T>& a){
         retVal->toList();
         for (typename std::list<T>::const_iterator it = a.begin(); it != a.end(); ++it){
-            ScriptArgObjPtr val = new ScriptArgObj(*it);
+            ScriptArgObjPtr val = new ScriptArgObj();
+            CppScriptValutil<T>::toScriptVal(val, *it);
             retVal->listVal.push_back(val);
         }
     }
@@ -670,7 +673,8 @@ struct CppScriptValutil<std::set<T> >{
     static void toScriptVal(ScriptArgObjPtr retVal, const std::set<T>& a){
         retVal->toList();
         for (typename std::set<T>::const_iterator it = a.begin(); it != a.end(); ++it){
-            ScriptArgObjPtr val = new ScriptArgObj(*it);
+            ScriptArgObjPtr val = new ScriptArgObj();
+            CppScriptValutil<T>::toScriptVal(val, *it);
             retVal->listVal.push_back(val);
         }
     }
@@ -687,8 +691,10 @@ struct CppScriptValutil<std::map<T, R> >{
     static void toScriptVal(ScriptArgObjPtr retVal, const std::map<T, R>& a){
         retVal->toDict();
         for (typename std::map<T, R>::const_iterator it = a.begin(); it != a.end(); ++it){
-            ScriptArgObjPtr key = new ScriptArgObj(it->first);
-            ScriptArgObjPtr val = new ScriptArgObj(it->second);
+            ScriptArgObjPtr key = new ScriptArgObj();
+            ScriptArgObjPtr val = new ScriptArgObj();
+            CppScriptValutil<T>::toScriptVal(key, it->first);
+            CppScriptValutil<T>::toScriptVal(val, it->second);
             retVal->dictVal[key->getString()] = val;
         }
     }

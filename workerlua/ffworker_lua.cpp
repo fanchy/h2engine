@@ -875,10 +875,14 @@ int FFWorkerLua::processInit(ConditionVar* var, int* ret)
     try{
         (*m_fflua).do_file(m_ext_name);
         SCRIPT_UTIL.setCallScriptFunc(callScriptImpl);
-        this->initModule();
-        lua_args_t luaarg;
-        (*m_fflua).call<void>("init", luaarg);
-        *ret = 0;
+        if (this->initModule()){
+            *ret = 0;
+
+            lua_args_t luaarg;
+            (*m_fflua).call<void>("init", luaarg);
+        }
+        else
+            *ret = -1;
     }
     catch(exception& e_)
     {

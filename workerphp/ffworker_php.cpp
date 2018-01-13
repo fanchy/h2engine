@@ -1274,11 +1274,14 @@ int FFWorkerPhp::processInit(ConditionVar* var, int* ret)
         }
         else{
             SCRIPT_UTIL.setCallScriptFunc(callScriptImpl);
-            this->initModule();
+            if (this->initModule()){
+                *ret = 0;
+                Singleton<FFWorkerPhp>::instance().m_php->call_function("init");
+                printf("load ok\n");
+            }
+            else
+                *ret = -1;
                 
-            Singleton<FFWorkerPhp>::instance().m_php->call_function("init");
-            printf("load ok\n");
-            *ret = 0;
         }
     }
     catch(std::exception& e_)

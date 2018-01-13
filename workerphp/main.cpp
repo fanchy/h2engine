@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        LOG.start("-log_path ./log -log_filename log -log_class DB_MGR,XX,BROKER,FFRPC,FFGATE,FFWORKER,FFWORKER_PYTHON,FFWORKER_LUA,FFWORKER_JS,FFNET,HHTP_MGR,FFWORKER_PHP -log_print_screen true -log_print_file true -log_level 4");
+        LOG.start("-log_path ./log -log_filename log -log_class DB_MGR,GAME_LOG,BROKER,FFRPC,FFGATE,FFWORKER,FFWORKER_PYTHON,FFWORKER_LUA,FFWORKER_JS,FFNET,HHTP_MGR,FFWORKER_PHP -log_print_screen true -log_print_file true -log_level 4");
     }
     std::string perf_path = "./perf";
     long perf_timeout = 10*60;//! second

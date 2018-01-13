@@ -140,6 +140,7 @@ int DbMgr::syncQueryDB(long db_id_,const string& sql_, vector<vector<string> >& 
         map<long/*dbid*/, db_connection_info_t>::iterator it = m_db_connection.find(db_id_);
         if (it == m_db_connection.end())
         {
+            errinfo = "no config dbid found";
         	return -1;
 		}
         db_connection_info = &(it->second);
@@ -165,6 +166,8 @@ int  DbMgr::syncQueryDBGroupMod(const std::string& strGroupName, long mod, const
         std::vector<long>& groupConnections = m_group2connection[strGroupName];
         if (groupConnections.empty()){
             LOGERROR((DB_MGR, "DbMgr::syncQueryDBGroupMod failed emptyGroup<%s>, while sql<%s>", strGroupName, sql_));
+            errinfo = "no config found:";
+            errinfo += strGroupName;
             return -1;
         }
         long db_id_ = groupConnections[mod % groupConnections.size()];
