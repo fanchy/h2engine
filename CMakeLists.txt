@@ -6,6 +6,7 @@ include_directories(${PROJECT_SOURCE_DIR}/fflib ${PROJECT_SOURCE_DIR}/lib3party 
             ${PROJECT_SOURCE_DIR}/lib3party/php/main ${PROJECT_SOURCE_DIR}/lib3party/php/Zend
             ${PROJECT_SOURCE_DIR}/lib3party/php/TSRM
             /usr/include/mysql/ /usr/include/python2.7/ /usr/include/python2.6/ 
+            /usr/include/lua5.2/ /usr/include/lua5.1/
 )
 link_directories(/usr/local/lib /usr/lib64/mysql ${PROJECT_SOURCE_DIR})
 
