@@ -11,4 +11,5 @@ script:
   - cmake CMakeCache.txt 
   - make h2engine
   - make h2workerpy
+  - make h2workerlua
 

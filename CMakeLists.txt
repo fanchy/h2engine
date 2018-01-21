@@ -87,7 +87,7 @@ add_executable(h2workerpy ${WORKER_PY_SRC_LIST})
 target_link_libraries(h2workerpy pthread dl mysqlclient crypto ssl z curl python2.7)
 
 add_executable(h2workerlua ${WORKER_LUA_SRC_LIST})
-target_link_libraries(h2workerlua pthread dl mysqlclient crypto ssl z curl lua)
+target_link_libraries(h2workerlua pthread dl mysqlclient crypto ssl z curl lua5.2)
 
 add_executable(h2workerjs ${WORKER_JS_SRC_LIST})
 target_link_libraries(h2workerjs pthread dl mysqlclient crypto ssl z curl v8)
