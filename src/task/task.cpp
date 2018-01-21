@@ -373,7 +373,7 @@ static bool initEnvir(){
     SCRIPT_UTIL.reg("Task.getTask",            ScriptFunctor::getTask);
     SCRIPT_UTIL.reg("Task.getTaskByStatus",    ScriptFunctor::getTaskByStatus);
     SCRIPT_UTIL.reg("Task.acceptTask",         ScriptFunctor::acceptTask);
-    SCRIPT_UTIL.reg("Task.endTask",         ScriptFunctor::endTask);
+    SCRIPT_UTIL.reg("Task.endTask",            ScriptFunctor::endTask);
     SCRIPT_UTIL.reg("Task.checkNewTask",       ScriptFunctor::checkNewTask);
     SCRIPT_UTIL.reg("Task.triggerEvent",       ScriptFunctor::triggerEvent);
     SCRIPT_UTIL.reg("Task.getTaskCfg",         ScriptFunctor::getTaskCfg);

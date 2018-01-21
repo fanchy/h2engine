@@ -112,6 +112,44 @@ struct StrTool
         oss << v;
         return oss.str();
     }
+    static bool loadCsvFromString(const std::string& data, std::vector<std::vector<std::string> >& ret, std::string delimiter = ",")
+	{
+		std::string linesep = "\n";
+		std::string::size_type pos = data.find(linesep);
+		if (pos != std::string::npos && pos > 0 && data[pos - 1] == '\r'){
+			linesep = "\r\n";
+		}
+
+		std::vector<std::string> allLines;
+		StrTool::split(data, allLines, linesep);
+		std::vector<std::string> tmpRow;
+		for (size_t i = 0; i < allLines.size(); ++i){
+			ret.push_back(tmpRow);
+			StrTool::split(allLines[i], ret.back(), delimiter);
+
+			for (size_t j = 0; j < ret.back().size(); ++j){
+				std::string& eachFiled = ret.back()[j];
+				if (eachFiled.empty() == false && eachFiled[0] == '"'){
+					std::string newVal;
+					size_t m = 0;
+					while (m < eachFiled.size()){
+						if (eachFiled[m] == '"'){
+							if (m + 1 < eachFiled.size() && eachFiled[m + 1] == '"'){
+								newVal += '"';
+								++m;
+							}
+						}
+						else{
+							newVal += eachFiled[m];
+						}
+						++m;
+					}
+					eachFiled = newVal;
+				}
+			}
+		}
+		return true;
+	}
 };
 
 typedef StrTool StrTool_t;

@@ -302,7 +302,7 @@ struct TypeInitValUtil
 typedef bool (*CallScriptFunctor)(const std::string&, ScriptArgs&);
 class ScriptUtil{
 public:
-    ScriptUtil():m_funcCallScript(false), m_flagCallScript(0){}
+    ScriptUtil():m_funcCallScript(NULL), m_flagCallScript(0){}
     ~ScriptUtil(){
         std::map<std::string/*funcName*/, ScriptFunctor*>::iterator  it = m_functors.begin();
         for (; it != m_functors.end(); ++it){
