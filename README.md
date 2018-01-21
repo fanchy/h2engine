@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/fanchy/h2engine.svg?branch=master)](https://travis-ci.org/fanchy/h2engine)
+
 # H2Engine 服务器引擎
 H2服务器引擎架构是轻量级的，与其说是引擎，个人觉得称之为平台更为合适。因为它封装的功能少之又少，但是提供了非常简洁方便的扩展机制，使得可以用C++、python、lua、js、php来开发具体的服务器功能。H2引擎的灵感来源于web服务器Apache。
 
