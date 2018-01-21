@@ -1,10 +1,10 @@
 language: cpp
 compiler: gcc
 install:
-  - sudo apt install libmysqlclient-dev 
-  - sudo apt install libssl-dev 
-  - sudo apt install liblua5.2-dev 
-  - sudo apt install libcurl4-openssl-dev
+  - sudo apt install -y libmysqlclient-dev 
+  - sudo apt install -y libssl-dev 
+  - sudo apt install -y liblua5.2-dev 
+  - sudo apt install -y libcurl4-openssl-dev
 
 script: 
   - cmake CMakeCache.txt 
