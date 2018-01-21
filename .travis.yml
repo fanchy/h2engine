@@ -6,6 +6,7 @@ install:
   - sudo apt install -y liblua5.2-dev 
   - sudo apt install -y libcurl4-openssl-dev
   - sudo apt install -y libpython-dev
+  - sudo apt install -y libv8-dev
 
 script: 
   - cmake CMakeCache.txt 
