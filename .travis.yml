@@ -1,5 +1,13 @@
 language: cpp
 compiler: gcc
-install: sudo apt install libmysqlclient-dev && sudo apt install libssl-dev && sudo apt install liblua5.2-dev && sudo apt install libcurl4-openssl-dev
-script: cmake CMakeCache.txt && make h2engine
+install:
+  - sudo apt install libmysqlclient-dev 
+  - sudo apt install libssl-dev 
+  - sudo apt install liblua5.2-dev 
+  - sudo apt install libcurl4-openssl-dev
+
+script: 
+  - cmake CMakeCache.txt 
+  - make h2engine
+  - make h2workerpy
 
