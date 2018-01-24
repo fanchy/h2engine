@@ -2,7 +2,7 @@
 #include "net/ctrlimpl/socket_ctrl_gate.h"
 #include "net/net_stat.h"
 #include "base/log.h"
-#include "base/strtool.h"
+#include "base/str_tool.h"
 #include "net/codec.h"
 
 #include <openssl/evp.h>

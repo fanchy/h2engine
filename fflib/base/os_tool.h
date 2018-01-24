@@ -14,7 +14,7 @@
 namespace ff
 {
 
-struct OsTool
+struct OSTool
 {
     static bool ls(const std::string& path_, std::vector<std::string>& ret_)
     {

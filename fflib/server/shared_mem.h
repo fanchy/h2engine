@@ -7,7 +7,7 @@
 #include "base/fftype.h"
 #include "base/daemon_tool.h"
 #include "base/arg_helper.h"
-#include "base/strtool.h"
+#include "base/str_tool.h"
 #include "base/smart_ptr.h"
 
 #include "base/log.h"

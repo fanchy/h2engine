@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #include "db/ffdb.h"
-#include "base/strtool.h"
+#include "base/str_tool.h"
 #include "db/sqlite_ops.h"
 #include "db/mysql_ops.h"
 using namespace std;

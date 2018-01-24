@@ -3,7 +3,7 @@
 #endif
 
 #include "db/mysql_ops.h"
-#include "base/strtool.h"
+#include "base/str_tool.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>

@@ -49,12 +49,11 @@ set(ENGINE_LIB_SRC
 )
 set(GAME_EXAMPLE_SRC
     ${PROJECT_SOURCE_DIR}/src/common/entity.cpp
-    ${PROJECT_SOURCE_DIR}/src/player/cmd_player.cpp
-    ${PROJECT_SOURCE_DIR}/src/player/db_player.cpp
     ${PROJECT_SOURCE_DIR}/src/map/map.cpp
     ${PROJECT_SOURCE_DIR}/src/task/task.cpp
     ${PROJECT_SOURCE_DIR}/src/item/item.cpp
     ${PROJECT_SOURCE_DIR}/src/npc/npc.cpp
+    ${PROJECT_SOURCE_DIR}/src/player/player.cpp
 )
 set(ENGINE_SRC_LIST 
     ${ENGINE_LIB_SRC}
@@ -87,7 +86,7 @@ add_executable(h2workerpy ${WORKER_PY_SRC_LIST})
 target_link_libraries(h2workerpy pthread dl mysqlclient crypto ssl z curl python2.7)
 
 add_executable(h2workerlua ${WORKER_LUA_SRC_LIST})
-target_link_libraries(h2workerlua pthread dl mysqlclient crypto ssl z curl lua)
+target_link_libraries(h2workerlua pthread dl mysqlclient crypto ssl z curl lua5.2)
 
 add_executable(h2workerjs ${WORKER_JS_SRC_LIST})
 target_link_libraries(h2workerjs pthread dl mysqlclient crypto ssl z curl v8)

@@ -1,6 +1,6 @@
 
 #include "xml/ffxml.h"
-#include "base/strtool.h"
+#include "base/str_tool.h"
 #include "tinyxml.h"
 using namespace ff;
 

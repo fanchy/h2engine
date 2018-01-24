@@ -123,16 +123,16 @@ static bool requirejs(const string& js_root, Handle<Value>* ret = NULL)
     TryCatch try_catch;
     
     string filename = js_root;
-    if (OsTool::isFile(filename) == false){
+    if (OSTool::isFile(filename) == false){
         filename = Singleton<FFWorkerJs>::instance().m_jspath + filename;
-        if (OsTool::isFile(filename) == false){
+        if (OSTool::isFile(filename) == false){
             LOGERROR((FFWORKER_JS, "FFWorkerJs::requirejs exception=no file:%s", filename));
             return false;
         }
     }
 
     string filedata;
-    if (false == OsTool::readFile(js_root, filedata)){
+    if (false == OSTool::readFile(js_root, filedata)){
         LOGERROR((FFWORKER_JS, "FFWorkerJs::requirejs exception=no file:%s", filename));
         return false;
     }
@@ -178,7 +178,7 @@ static BIND_FUNC_RET_TYPE js_isFile(const Arguments& args)
     CHECK_ARG_NUM(args, 1);
     string  name        = js2string(args[0]);
 
-    if (OsTool::isFile(name)){
+    if (OSTool::isFile(name)){
         BIND_FUNC_RET_TRUE;
     }
     BIND_FUNC_RET_FALSE;
@@ -188,7 +188,7 @@ static BIND_FUNC_RET_TYPE js_isDir(const Arguments& args)
     CHECK_ARG_NUM(args, 1);
     string  name        = js2string(args[0]);
 
-    if (OsTool::isDir(name)){
+    if (OSTool::isDir(name)){
         BIND_FUNC_RET_TRUE;
     }
     BIND_FUNC_RET_FALSE;
@@ -199,7 +199,7 @@ static BIND_FUNC_RET_TYPE js_ls(const Arguments& args)
     string  path        = js2string(args[0]);
 
     vector<string> files;
-    if (OsTool::ls(path, files)){
+    if (OSTool::ls(path, files)){
         Local<Array> row_array = ARRAY_NEW(files.size());
         for (size_t j = 0; j < files.size(); ++j){
             Handle<String> v = NewStrValue(files[j].c_str(), files[j].size());
@@ -215,7 +215,7 @@ static BIND_FUNC_RET_TYPE js_readFile(const Arguments& args)
     string  path        = js2string(args[0]);
 
     string data;
-    if (OsTool::readFile(path, data)){
+    if (OSTool::readFile(path, data)){
         Handle<String> v = NewStrValue(data.c_str(), data.size());
         BIND_FUNC_RET_VAL(v);
     }

@@ -3,7 +3,7 @@
 #include "npc/npc.h"
 #include "server/db_mgr.h"
 #include "common/game_event.h"
-#include "base/strtool.h"
+#include "base/str_tool.h"
 #include "server/script.h"
 
 using namespace ff;

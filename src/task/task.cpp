@@ -7,6 +7,7 @@
 #include "server/ffworker.h"
 #include "base/log.h"
 #include "base/time_tool.h"
+#include "base/os_tool.h"
 
 using namespace ff;
 using namespace std;
@@ -30,19 +31,11 @@ string TaskConfig::getPropStr(const std::string& key){
 }
 
 bool TaskMgr::init(){
-    vector<vector<string> > retdata; 
-    vector<string> col;
-    string errinfo;
-    int affectedRows = 0;
-    
-    string sql = "select * from Taskcfg";
-    DB_MGR_OBJ.syncQueryDBGroupMod(CFG_DB, 0, sql, retdata, col, errinfo, affectedRows);
-    
-    if (errinfo.empty() == false)
-    {
-        LOGERROR((GAME_LOG, "TaskMgr::init failed:%s", errinfo));
-        return true;
-    }
+    vector<vector<string> > retdata;
+    string csvData;
+    OSTool::readFile("config/task_config.csv", csvData);
+    StrTool::loadCsvFromString(csvData, retdata);
+
     if (retdata.empty()){
         LOGWARN((GAME_LOG, "TaskMgr::init load none data"));
         return true;
@@ -51,7 +44,8 @@ bool TaskMgr::init(){
     allTaskCfg.clear();
     taskLine2Task.clear();
     map<int, vector<TaskConfigPtr> > tmpLine2task;
-    for (size_t i = 0; i < retdata.size(); ++i){
+    vector<string>& col = retdata[0];
+    for (size_t i = 1; i < retdata.size(); ++i){
         vector<string>& row = retdata[i];
         TaskConfigPtr taskCfg = new TaskConfig();
         
