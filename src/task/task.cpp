@@ -212,7 +212,7 @@ bool TaskCtrl::checkNewTask(){
         //!检查属性是否满足, 如果满足增加任务
         TaskConfigPtr& taskCfg = it2->second;
         
-        if (PROP_MGR.get(this->getOwner(), taskCfg->triggerPropertyType) >= taskCfg->triggerPropertyValue)
+        if (ENTITY_GET_PROP_FIELD(this->getOwner(), taskCfg->triggerPropertyType) >= taskCfg->triggerPropertyValue)
         {
             this->genTask(taskCfg->cfgid);
         }

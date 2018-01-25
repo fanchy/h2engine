@@ -124,6 +124,7 @@ struct EntityPropGetterSetterTool{
     }
 };
 #define ENTITY_REG_PROP_FIELD(strName, field) EntityPropGetterSetterTool::regGetterSetter(strName, field)
+#define ENTITY_GET_PROP_FIELD(entityptr, strName) PROP_MGR.get(entityptr, strName)
 
 class EntityField//!entity的字段基类
 {
