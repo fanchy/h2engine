@@ -17,7 +17,7 @@ public:
     PlayerProp(){}
 
 public:
-    int64_t nAttack;
+    int nAttack;
     int64_t nAttackMagic;
     int64_t nDefend;
     int64_t nDefendMagic;
