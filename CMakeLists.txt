@@ -10,88 +10,82 @@ include_directories(${PROJECT_SOURCE_DIR}/fflib ${PROJECT_SOURCE_DIR}/lib3party 
 )
 link_directories(/usr/local/lib /usr/lib64/mysql ${PROJECT_SOURCE_DIR})
 
-set(ENGINE_LIB_SRC 
-    ${PROJECT_SOURCE_DIR}/fflib/db/sqlite3.c
-    ${PROJECT_SOURCE_DIR}/fflib/db/sqlite_ops.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/db/ffdb.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/db/mysql_ops.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/net/socketimpl/socket_win.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/net/socketimpl/socket_linux.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/net/eventloopimpl/epoll.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/net/eventloopimpl/select.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/net/ctrlimpl/socket_ctrl_gate.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/net/ctrlimpl/socket_ctrl_common.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/net/acceptorimpl/acceptor_linux_gate.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/net/acceptorimpl/acceptor_linux.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/net/codec.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/net/net_stat.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/base/lock.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/base/event_bus.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/base/thread.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/base/log.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/base/performance_daemon.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/rpc/ffrpc.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/rpc/ffbroker.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/rpc/msg_def/ffrpc_msg_types.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/rpc/msg_def/ffrpc_msg_constants.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/server/gen-cpp/msg_constants.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/server/gen-cpp/msg_types.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/server/ffgate.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/server/http_mgr.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/server/db_mgr.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/server/ffworker.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/server/shared_mem.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/xml/tinystr.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/xml/tinyxml.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/xml/tinyxmlerror.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/xml/ffxml.cpp
-    ${PROJECT_SOURCE_DIR}/fflib/xml/tinyxmlparser.cpp
-)
-set(GAME_EXAMPLE_SRC
-    ${PROJECT_SOURCE_DIR}/src/common/entity.cpp
-    ${PROJECT_SOURCE_DIR}/src/map/map.cpp
-    ${PROJECT_SOURCE_DIR}/src/task/task.cpp
-    ${PROJECT_SOURCE_DIR}/src/item/item.cpp
-    ${PROJECT_SOURCE_DIR}/src/npc/npc.cpp
-    ${PROJECT_SOURCE_DIR}/src/player/player.cpp
-)
+file(GLOB_RECURSE ENGINE_LIB_SRC "fflib/*.c*") 
+foreach(filename ${ENGINE_LIB_SRC})  
+message(${filename})
+endforeach()
+
+file(GLOB_RECURSE GAME_IMPL_SRC "src/*.cpp") 
+foreach(filename ${GAME_IMPL_SRC})  
+message(${filename})
+endforeach()
+
+file(GLOB_RECURSE WORKER_PY_SRC "workerpy/*.cpp") 
+foreach(filename ${WORKER_PY_SRC})  
+message(${filename})
+endforeach()
+file(GLOB_RECURSE WORKER_LUA_SRC "workerlua/*.cpp") 
+foreach(filename ${WORKER_LUA_SRC})  
+message(${filename})
+endforeach()
+file(GLOB_RECURSE WORKER_JS_SRC "workerjs/*.cpp") 
+foreach(filename ${WORKER_JS_SRC})  
+message(${filename})
+endforeach()
+file(GLOB_RECURSE WORKER_PHP_SRC "workerphp/*.cpp") 
+foreach(filename ${WORKER_PHP_SRC})  
+message(${filename})
+endforeach()
+
+
 set(ENGINE_SRC_LIST 
     ${ENGINE_LIB_SRC}
     ${PROJECT_SOURCE_DIR}/engine/main.cpp
 )
 set(WORKER_PY_SRC_LIST 
-    ${ENGINE_LIB_SRC} ${GAME_EXAMPLE_SRC}
-    ${PROJECT_SOURCE_DIR}/workerpy/ffworker_python.cpp
-    ${PROJECT_SOURCE_DIR}/workerpy/main.cpp
+    ${ENGINE_LIB_SRC} ${GAME_IMPL_SRC} ${WORKER_PY_SRC}
 )
 set(WORKER_LUA_SRC_LIST 
-    ${ENGINE_LIB_SRC} ${GAME_EXAMPLE_SRC}
-    ${PROJECT_SOURCE_DIR}/workerlua/ffworker_lua.cpp
-    ${PROJECT_SOURCE_DIR}/workerlua/main.cpp
+    ${ENGINE_LIB_SRC} ${GAME_IMPL_SRC} ${WORKER_LUA_SRC}
 )
 set(WORKER_JS_SRC_LIST 
-    ${ENGINE_LIB_SRC} ${GAME_EXAMPLE_SRC}
-    ${PROJECT_SOURCE_DIR}/workerjs/ffworker_js.cpp
-    ${PROJECT_SOURCE_DIR}/workerjs/main.cpp
+    ${ENGINE_LIB_SRC} ${GAME_IMPL_SRC} ${WORKER_JS_SRC}
 )
 set(WORKER_PHP_SRC_LIST 
-    ${ENGINE_LIB_SRC} ${GAME_EXAMPLE_SRC}
-    ${PROJECT_SOURCE_DIR}/workerphp/ffworker_php.cpp
-    ${PROJECT_SOURCE_DIR}/workerphp/main.cpp
+    ${ENGINE_LIB_SRC} ${GAME_IMPL_SRC} ${WORKER_PHP_SRC}
 )
 add_executable(h2engine ${ENGINE_SRC_LIST})
 target_link_libraries(h2engine pthread dl mysqlclient crypto ssl z curl)
 
+if(PYVER)
+    message("user python version:" ${PYVER})
+else()
+    message("user default python version:python2.7")
+    set(PYVER "python2.7") 
+endif()
+if(LUAVER)
+    message("user lua version:" ${LUAVER})
+else()
+    message("user default lua version:lua5.2")
+    set(LUAVER "lua5.2") 
+endif()
+if(PHPVER)
+    message("user php version:" ${PHPVER})
+else()
+    message("user default php version:lua5.2")
+    set(PHPVER "php5") 
+endif()
+
 add_executable(h2workerpy ${WORKER_PY_SRC_LIST})
-target_link_libraries(h2workerpy pthread dl mysqlclient crypto ssl z curl python2.7)
+target_link_libraries(h2workerpy pthread dl mysqlclient crypto ssl z curl ${PYVER})
 
 add_executable(h2workerlua ${WORKER_LUA_SRC_LIST})
-target_link_libraries(h2workerlua pthread dl mysqlclient crypto ssl z curl lua5.2)
+target_link_libraries(h2workerlua pthread dl mysqlclient crypto ssl z curl ${LUAVER})
 
 add_executable(h2workerjs ${WORKER_JS_SRC_LIST})
 target_link_libraries(h2workerjs pthread dl mysqlclient crypto ssl z curl v8)
 
 add_executable(h2workerphp ${WORKER_PHP_SRC_LIST})
-target_link_libraries(h2workerphp pthread dl mysqlclient crypto ssl z curl php5)
+target_link_libraries(h2workerphp pthread dl mysqlclient crypto ssl z curl PHPVER)
 
 
