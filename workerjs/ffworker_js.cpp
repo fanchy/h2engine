@@ -402,10 +402,70 @@ static BIND_FUNC_RET_TYPE js_connectDB(const Arguments& args)
     string host_ = js2string(args[0]);
     string group_ = js2string(args[1]);
     
-    long ret = DB_MGR_OBJ.connectDB(host_, group_);
+    long ret = DB_MGR.connectDB(host_, group_);
     BIND_FUNC_RET_VAL(NewNumberValue(ret));
 }
-
+struct AsyncQueryCB
+{
+    AsyncQueryCB(persistent_lambda_ptr_t f):funcptr(f){}
+    void operator()(DbMgr::queryDBResult_t& result)
+    {
+        DbMgr::queryDBResult_t* data = (DbMgr::queryDBResult_t*)(&result);
+        call_js(funcptr, data->errinfo, data->result_data, data->col_names, data->affectedRows);
+    }
+    void call_js(persistent_lambda_ptr_t funcptr, string errinfo, vector<vector<string> > ret_, 
+                        vector<string> col_, int affectedRows)
+    {
+        HANDLE_SCOPE_DEF_VAR;
+        if(funcptr){
+            Local<Object> retDict = OBJECT_NEW();
+            {
+                string key = "datas";
+                Handle<String> hk = NewStrValue(key.c_str(), key.size());
+                Local<Array> datas_array = ARRAY_NEW(ret_.size());
+                for (size_t i = 0; i < ret_.size(); ++i){
+                    Local<Array> row_array = ARRAY_NEW(ret_[i].size());
+                    for (size_t j = 0; j < ret_[i].size(); ++j){
+                        Handle<String> v = NewStrValue(ret_[i][j].c_str(), ret_[i][j].size());
+                        row_array->Set(j, v);
+                    }
+                    datas_array->Set(i, row_array);
+                }
+                retDict->Set(hk, datas_array);
+            }
+            {
+                string key = "fields";
+                Handle<String> hk = NewStrValue(key.c_str(), key.size());
+                Local<Array> datas_array = ARRAY_NEW(col_.size());
+                for (size_t i = 0; i < col_.size(); ++i){
+                    Handle<String> v = NewStrValue(col_[i].c_str(), col_[i].size());
+                    datas_array->Set(i, v);
+                }
+                retDict->Set(hk, datas_array);
+            }
+            {
+                string key = "errinfo";
+                Handle<String> hk = NewStrValue(key.c_str(), key.size());
+                Handle<String> v = NewStrValue(errinfo.c_str(), errinfo.size());
+                retDict->Set(hk, v);
+            }
+            {
+                string key = "affectedRows";
+                Handle<String> hk = NewStrValue(key.c_str(), key.size());
+                Handle<Value> v = NewNumberValue(affectedRows);
+                retDict->Set(hk, v);
+            }
+            Handle<Value> argv[1];
+            argv[0] = retDict;
+            Singleton<FFWorkerJs>::instance().call(funcptr, 1, argv);
+        }
+        else{
+            LOGERROR((FFWORKER_JS, "ffscene_js_t::js_asyncQuery no callback"));
+        }
+    }
+    
+    persistent_lambda_ptr_t funcptr;
+};
 static BIND_FUNC_RET_TYPE js_asyncQuery(const Arguments& args)
 {
     CHECK_ARG_NUM(args, 3);
@@ -418,176 +478,99 @@ static BIND_FUNC_RET_TYPE js_asyncQuery(const Arguments& args)
         funcptr = new persistent_lambda_t(func);
     }
     
-    struct lambda_cb: public FFSlot::FFCallBack
-    {
-        lambda_cb(persistent_lambda_ptr_t f):funcptr(f){}
-        virtual void exe(FFSlot::CallBackArg* args_)
-        {
-            if (args_->type() != TYPEID(DbMgr::queryDBResult_t))
-            {
-                return;
-            }
-            DbMgr::queryDBResult_t* data = (DbMgr::queryDBResult_t*)args_;
-
-            
-            Singleton<FFWorkerJs>::instance().getRpc().get_tq().produce(TaskBinder::gen(&lambda_cb::call_js, funcptr,
-                                                                   data->errinfo, data->result_data, data->col_names, data->affectedRows));
-        }
-        static void call_js(persistent_lambda_ptr_t funcptr, string errinfo, vector<vector<string> > ret_, 
-                            vector<string> col_, int affectedRows)
-        {
-            HANDLE_SCOPE_DEF_VAR;
-            if(funcptr){
-                Local<Object> retDict = OBJECT_NEW();
-                {
-                    string key = "datas";
-                    Handle<String> hk = NewStrValue(key.c_str(), key.size());
-                    Local<Array> datas_array = ARRAY_NEW(ret_.size());
-                    for (size_t i = 0; i < ret_.size(); ++i){
-                        Local<Array> row_array = ARRAY_NEW(ret_[i].size());
-                        for (size_t j = 0; j < ret_[i].size(); ++j){
-                            Handle<String> v = NewStrValue(ret_[i][j].c_str(), ret_[i][j].size());
-                            row_array->Set(j, v);
-                        }
-                        datas_array->Set(i, row_array);
-                    }
-                    retDict->Set(hk, datas_array);
-                }
-                {
-                    string key = "fields";
-                    Handle<String> hk = NewStrValue(key.c_str(), key.size());
-                    Local<Array> datas_array = ARRAY_NEW(col_.size());
-                    for (size_t i = 0; i < col_.size(); ++i){
-                        Handle<String> v = NewStrValue(col_[i].c_str(), col_[i].size());
-                        datas_array->Set(i, v);
-                    }
-                    retDict->Set(hk, datas_array);
-                }
-                {
-                    string key = "errinfo";
-                    Handle<String> hk = NewStrValue(key.c_str(), key.size());
-                    Handle<String> v = NewStrValue(errinfo.c_str(), errinfo.size());
-                    retDict->Set(hk, v);
-                }
-                {
-                    string key = "affectedRows";
-                    Handle<String> hk = NewStrValue(key.c_str(), key.size());
-                    Handle<Value> v = NewNumberValue(affectedRows);
-                    retDict->Set(hk, v);
-                }
-                Handle<Value> argv[1];
-                argv[0] = retDict;
-                Singleton<FFWorkerJs>::instance().call(funcptr, 1, argv);
-            }
-            else{
-                LOGERROR((FFWORKER_JS, "ffscene_js_t::js_asyncQuery no callback"));
-            }
-        }
-        virtual FFSlot::FFCallBack* fork() { return new lambda_cb(funcptr); }
-        persistent_lambda_ptr_t funcptr;
-    };
-    
-
-    DB_MGR_OBJ.queryDB(db_id_, sql_,  new lambda_cb(funcptr));
+    AsyncQueryCB cb(funcptr);
+    DB_MGR.asyncQueryModId(db_id_, sql_,  cb, &(Singleton<FFWorkerJs>::instance().getRpc().get_tq()));
     BIND_FUNC_RET_TRUE;
 }
+struct AsyncQueryNameCB
+{
+    AsyncQueryNameCB(persistent_lambda_ptr_t f):funcptr(f){}
+    void operator()(DbMgr::queryDBResult_t& result)
+    {
+        DbMgr::queryDBResult_t* data = (DbMgr::queryDBResult_t*)(&result);
 
+        call_js(funcptr, data->errinfo, data->result_data, data->col_names, data->affectedRows);
+    }
+    void call_js(persistent_lambda_ptr_t funcptr, string errinfo, vector<vector<string> > ret_, 
+                        vector<string> col_, int affectedRows)
+    {
+        HANDLE_SCOPE_DEF_VAR;
+        if(funcptr){
+            Local<Object> retDict = OBJECT_NEW();
+            {
+                string key = "datas";
+                Handle<String> hk = NewStrValue(key.c_str(), key.size());
+                Local<Array> datas_array = ARRAY_NEW(ret_.size());
+                for (size_t i = 0; i < ret_.size(); ++i){
+                    Local<Array> row_array = ARRAY_NEW(ret_[i].size());
+                    for (size_t j = 0; j < ret_[i].size(); ++j){
+                        Handle<String> v = NewStrValue(ret_[i][j].c_str(), ret_[i][j].size());
+                        row_array->Set(j, v);
+                    }
+                    datas_array->Set(i, row_array);
+                }
+                retDict->Set(hk, datas_array);
+            }
+            {
+                string key = "fields";
+                Handle<String> hk = NewStrValue(key.c_str(), key.size());
+                Local<Array> datas_array = ARRAY_NEW(col_.size());
+                for (size_t i = 0; i < col_.size(); ++i){
+                    Handle<String> v = NewStrValue(col_[i].c_str(), col_[i].size());
+                    datas_array->Set(i, v);
+                }
+                retDict->Set(hk, datas_array);
+            }
+            {
+                string key = "errinfo";
+                Handle<String> hk = NewStrValue(key.c_str(), key.size());
+                Handle<String> v = NewStrValue(errinfo.c_str(), errinfo.size());
+                retDict->Set(hk, v);
+            }
+            {
+                string key = "affectedRows";
+                Handle<String> hk = NewStrValue(key.c_str(), key.size());
+                Handle<Value> v = NewNumberValue(affectedRows);
+                retDict->Set(hk, v);
+            }
+            Handle<Value> argv[1];
+            argv[0] = retDict;
+            Singleton<FFWorkerJs>::instance().call(funcptr, 1, argv);
+        }
+        else{
+            LOGERROR((FFWORKER_JS, "ffscene_js_t::js_asyncQuery no callback"));
+        }
+    }
+    persistent_lambda_ptr_t funcptr;
+};
 static BIND_FUNC_RET_TYPE js_asyncQueryGroupMod(const Arguments& args)
 {
-    CHECK_ARG_NUM(args, 4);
+    CHECK_ARG_NUM(args, 3);
     string group_ = js2string(args[0]);
-    long mod_ = (long)js2num(args[1]);
-    string sql_ = js2string(args[2]);
+    string sql_ = js2string(args[1]);
     persistent_lambda_ptr_t funcptr;
 
-    if (args[3]->IsFunction()){
-        Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(args[3]);
+    if (args[2]->IsFunction()){
+        Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(args[2]);
         funcptr = new persistent_lambda_t(func);
     }
     
-    struct lambda_cb: public FFSlot::FFCallBack
-    {
-        lambda_cb(persistent_lambda_ptr_t f):funcptr(f){}
-        virtual void exe(FFSlot::CallBackArg* args_)
-        {
-            if (args_->type() != TYPEID(DbMgr::queryDBResult_t))
-            {
-                return;
-            }
-            DbMgr::queryDBResult_t* data = (DbMgr::queryDBResult_t*)args_;
-
-            
-            Singleton<FFWorkerJs>::instance().getRpc().get_tq().produce(TaskBinder::gen(&lambda_cb::call_js, funcptr,
-                                                                   data->errinfo, data->result_data, data->col_names, data->affectedRows));
-        }
-        static void call_js(persistent_lambda_ptr_t funcptr, string errinfo, vector<vector<string> > ret_, 
-                            vector<string> col_, int affectedRows)
-        {
-            HANDLE_SCOPE_DEF_VAR;
-            if(funcptr){
-                Local<Object> retDict = OBJECT_NEW();
-                {
-                    string key = "datas";
-                    Handle<String> hk = NewStrValue(key.c_str(), key.size());
-                    Local<Array> datas_array = ARRAY_NEW(ret_.size());
-                    for (size_t i = 0; i < ret_.size(); ++i){
-                        Local<Array> row_array = ARRAY_NEW(ret_[i].size());
-                        for (size_t j = 0; j < ret_[i].size(); ++j){
-                            Handle<String> v = NewStrValue(ret_[i][j].c_str(), ret_[i][j].size());
-                            row_array->Set(j, v);
-                        }
-                        datas_array->Set(i, row_array);
-                    }
-                    retDict->Set(hk, datas_array);
-                }
-                {
-                    string key = "fields";
-                    Handle<String> hk = NewStrValue(key.c_str(), key.size());
-                    Local<Array> datas_array = ARRAY_NEW(col_.size());
-                    for (size_t i = 0; i < col_.size(); ++i){
-                        Handle<String> v = NewStrValue(col_[i].c_str(), col_[i].size());
-                        datas_array->Set(i, v);
-                    }
-                    retDict->Set(hk, datas_array);
-                }
-                {
-                    string key = "errinfo";
-                    Handle<String> hk = NewStrValue(key.c_str(), key.size());
-                    Handle<String> v = NewStrValue(errinfo.c_str(), errinfo.size());
-                    retDict->Set(hk, v);
-                }
-                {
-                    string key = "affectedRows";
-                    Handle<String> hk = NewStrValue(key.c_str(), key.size());
-                    Handle<Value> v = NewNumberValue(affectedRows);
-                    retDict->Set(hk, v);
-                }
-                Handle<Value> argv[1];
-                argv[0] = retDict;
-                Singleton<FFWorkerJs>::instance().call(funcptr, 1, argv);
-            }
-            else{
-                LOGERROR((FFWORKER_JS, "ffscene_js_t::js_asyncQuery no callback"));
-            }
-        }
-        virtual FFSlot::FFCallBack* fork() { return new lambda_cb(funcptr); }
-        persistent_lambda_ptr_t funcptr;
-    };
     
-    DB_MGR_OBJ.queryDBGroupMod(group_, mod_, sql_,  new lambda_cb(funcptr));
+    AsyncQueryNameCB cb(funcptr);
+    DB_MGR.asyncQueryByName(group_, sql_,  cb, &(Singleton<FFWorkerJs>::instance().getRpc().get_tq()));
     BIND_FUNC_RET_TRUE;
 }
 static BIND_FUNC_RET_TYPE js_query(const Arguments& args)
 {
-    CHECK_ARG_NUM(args, 2);
-    long db_id_ = (long)js2num(args[0]);
-    string sql_ = js2string(args[1]);
+    CHECK_ARG_NUM(args, 1);
+    //long db_id_ = (long)js2num(args[0]);
+    string sql_ = js2string(args[0]);
     
     string errinfo;
     vector<vector<string> > ret_;
     vector<string> col_;
     int affectedRows = 0;
-    DB_MGR_OBJ.syncQueryDB(db_id_, sql_, ret_, col_, errinfo, affectedRows);
+    DB_MGR.query(sql_, &ret_, &errinfo, &affectedRows, &col_);
     
 
     Local<Object> retDict = OBJECT_NEW();
@@ -632,16 +615,15 @@ static BIND_FUNC_RET_TYPE js_query(const Arguments& args)
 
 static BIND_FUNC_RET_TYPE js_queryGroupMod(const Arguments& args)
 {
-    CHECK_ARG_NUM(args, 3);
+    CHECK_ARG_NUM(args, 2);
     string group_ = js2string(args[0]);
-    long mod_ = (long)js2num(args[1]);
-    string sql_ = js2string(args[2]);
+    string sql_ = js2string(args[1]);
     
     string errinfo;
     vector<vector<string> > ret_;
     vector<string> col_;
     int affectedRows = 0;
-    DB_MGR_OBJ.syncQueryDBGroupMod(group_, mod_, sql_, ret_, col_, errinfo, affectedRows);
+    DB_MGR.queryByName(group_, sql_, &ret_, &errinfo, &affectedRows, &col_);
     
 
     Local<Object> retDict = OBJECT_NEW();
@@ -973,7 +955,21 @@ int FFWorkerJs::scriptInit(const string& js_root)
     
     getSharedMem().setNotifyFunc(when_syncSharedData);
 
-    DB_MGR_OBJ.start();
+    DB_MGR.start();
+    ArgHelper& arg_helper = Singleton<ArgHelper>::instance();
+    if (arg_helper.isEnableOption("-db")){
+        int nDbNum = DB_THREAD_NUM;
+        if (arg_helper.getOptionValue("-db").find("sqlite://") != std::string::npos){
+            nDbNum = 1;
+        }
+        for (int i = 0; i < nDbNum; ++i){
+            if (0 == DB_MGR.connectDB(arg_helper.getOptionValue("-db"), DB_DEFAULT_NAME)){
+                LOGERROR((FFWORKER_JS, "db connect failed"));
+                return -1;
+                break;
+            }
+        }
+    }
     
     int ret = -2;
     
@@ -1044,8 +1040,8 @@ int FFWorkerJs::processInit(ConditionVar* var, int* ret, const string& js_root)
             global->Set(NewStrValue2("connectDB"),FUNCTIONTEMPLATE_NEW(js_connectDB));
             global->Set(NewStrValue2("asyncQuery"),FUNCTIONTEMPLATE_NEW(js_asyncQuery));
             global->Set(NewStrValue2("query"),FUNCTIONTEMPLATE_NEW(js_query));
-            global->Set(NewStrValue2("asyncQueryGroupMod"),FUNCTIONTEMPLATE_NEW(js_asyncQueryGroupMod));
-            global->Set(NewStrValue2("queryGroupMod"),FUNCTIONTEMPLATE_NEW(js_queryGroupMod));
+            global->Set(NewStrValue2("asyncQueryByName"),FUNCTIONTEMPLATE_NEW(js_asyncQueryGroupMod));
+            global->Set(NewStrValue2("queryByName"),FUNCTIONTEMPLATE_NEW(js_queryGroupMod));
             global->Set(NewStrValue2("workerRPC"),FUNCTIONTEMPLATE_NEW(js_workerRPC));
             global->Set(NewStrValue2("syncSharedData"),FUNCTIONTEMPLATE_NEW(js_syncSharedData));
             global->Set(NewStrValue2("asyncHttp"),FUNCTIONTEMPLATE_NEW(js_asyncHttp));
@@ -1162,7 +1158,7 @@ void FFWorkerJs::scriptCleanup()
     }
     this->cleanupModule();
     m_enable_call = false;
-    DB_MGR_OBJ.stop();
+    DB_MGR.stop();
     getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerJs::scriptRelease, this));
 }
 

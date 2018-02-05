@@ -4,7 +4,8 @@
 using namespace ff;
 using namespace std;
 
-#define DB_MGR "DB_MGR"
+
+#define DB_MGR_LOG "DB_MGR"
 
 DbMgr::DbMgr():
     m_db_index(0)
@@ -16,7 +17,7 @@ DbMgr::~DbMgr()
 
 int DbMgr::start()
 {
-    for (size_t i = 0; i < 10; ++i)
+    for (size_t i = 0; i < DB_THREAD_NUM; ++i)
     {
         m_tq.push_back(new TaskQueue());
         m_thread.create_thread(TaskBinder::gen(&TaskQueue::run, (m_tq[i]).get()), 1);
@@ -25,23 +26,23 @@ int DbMgr::start()
 }
 int DbMgr::stop()
 {
-    LOGINFO((DB_MGR, "DbMgr::stop begin..."));
+    LOGINFO((DB_MGR_LOG, "DbMgr::stop begin..."));
     for (size_t i = 0; i < m_tq.size(); ++i)
     {
         m_tq[i]->close();
     }
     m_thread.join();
-    LOGINFO((DB_MGR, "DbMgr::stop end"));
+    LOGINFO((DB_MGR_LOG, "DbMgr::stop end"));
     return 0;
 }
 
 
-long DbMgr::connectDB(const string& host_, const std::string& groupName)
+long DbMgr::connectDB(const string& host_, const std::string& name)
 {
     SharedPtr<FFDb> db(new FFDb());
     if (db->connect(host_))
     {
-        LOGERROR((DB_MGR, "DbMgr::connectDB failed<%s>", db->errorMsg()));
+        LOGERROR((DB_MGR_LOG, "DbMgr::connectDB failed<%s>", db->errorMsg()));
         return 0;
     }
     
@@ -51,169 +52,123 @@ long DbMgr::connectDB(const string& host_, const std::string& groupName)
         static long autoid = 0;
         db_id = ++autoid;
         
-        db_connection_info_t& db_connection_info = m_db_connection[db_id];
-        db_connection_info.db = db;
-        db_connection_info.tq = m_tq[m_db_index++ % m_tq.size()];
-        db_connection_info.host_cfg = host_;
+        DBConnectionInfo& varDbConnection = m_db_connection[db_id];
+        varDbConnection.db = db;
+        varDbConnection.tq = m_tq[m_db_index++ % m_tq.size()];
+        varDbConnection.host_cfg = host_;
         
-        m_group2connection[groupName].push_back(db_id);
+        if (name == DB_DEFAULT_NAME){
+            char buff[256] = {0};
+            ::snprintf(buff, sizeof(buff), "%s#%d", DB_DEFAULT_NAME, getNumLike(DB_DEFAULT_NAME)+1);
+            m_name2connection[buff] = &varDbConnection;
+        }
+        else{
+            m_name2connection[name] = &varDbConnection;
+        }
     }
+    LOGINFO((DB_MGR_LOG, "DbMgr::connectDB host<%s>,groupName<%s>", host_, name));
     return db_id;
 }
 
-void DbMgr::queryDB(long db_id_,const string& sql_, FFSlot::FFCallBack* callback_)
-{
-    db_connection_info_t* db_connection_info = NULL;
+void DbMgr::asyncQueryModId(long mod, const std::string& sql_){
+    char buff[256] = {0};
+    ::snprintf(buff, sizeof(buff), "%s#%ld", DB_DEFAULT_NAME, mod % DB_THREAD_NUM);
+    asyncQueryByName(buff, sql_);
+}
+int  DbMgr::query(const std::string& sql_, std::vector<std::vector<std::string> >* ret_data_,
+                     std::string* errinfo, int* affectedRows_, std::vector<std::string>* col_){
+    return queryByName(DB_DEFAULT_NAME_1, sql_, ret_data_, errinfo, affectedRows_, col_);
+}
+void DbMgr::asyncQueryByName(const std::string& strName, const std::string& sql_){
+    DBConnectionInfo* varDbConnection = NULL;
     {
         LockGuard lock(m_mutex);
-        db_connection_info = &(m_db_connection[db_id_]);
+        varDbConnection = getConnectionByName(strName);
     }
-    if (NULL == db_connection_info || !db_connection_info->tq)
+    if (NULL == varDbConnection)
     {
-        queryDBResult_t ret;
-        if (callback_){
-            callback_->exe(&ret);
-            delete callback_;
-        }
         return;
     }
     else
     {
-        db_connection_info->tq->produce(TaskBinder::gen(&DbMgr::queryDBImpl, this, db_connection_info, sql_, callback_));
+        FFSlot::FFCallBack* callback_ = NULL;
+        varDbConnection->tq->produce(TaskBinder::gen(&DbMgr::queryDBImpl, this, varDbConnection, sql_, callback_));
     }
 }
-
-void DbMgr::queryDBGroupMod(const std::string& strGroupName, long mod, const std::string& sql_, FFSlot::FFCallBack* callback_){
-    db_connection_info_t* db_connection_info = NULL;
-    {
-        LockGuard lock(m_mutex);
-        std::vector<long>& groupConnections = m_group2connection[strGroupName];
-        if (groupConnections.empty()){
-            LOGERROR((DB_MGR, "DbMgr::queryDBGroupMod failed emptyGroup<%s>, while sql<%s>", strGroupName, sql_));
-            return;
-        }
-        long db_id_ = groupConnections[mod % groupConnections.size()];
-        db_connection_info = &(m_db_connection[db_id_]);
-    }
-    if (NULL == db_connection_info || !db_connection_info->tq)
-    {
-        queryDBResult_t ret;
-        if (callback_){
-            callback_->exe(&ret);
-            delete callback_;
-        }
-        return;
-    }
-    else
-    {
-        db_connection_info->tq->produce(TaskBinder::gen(&DbMgr::queryDBImpl, this, db_connection_info, sql_, callback_));
-    }
-}
-void DbMgr::queryDBImpl(db_connection_info_t* db_connection_info_, const string& sql_, FFSlot::FFCallBack* callback_)
+void DbMgr::queryDBImpl(DBConnectionInfo* varDbConnection_, const string& sql_, FFSlot::FFCallBack* callback_)
 {
-    LOGTRACE((DB_MGR, "DbMgr::queryDBImpl sql=%s", sql_));
+    LOGTRACE((DB_MGR_LOG, "DbMgr::queryDBImpl sql=%s", sql_));
     AUTO_PERF();
-    db_connection_info_->ret.clear();
-    if (0 == db_connection_info_->db->exeSql(sql_, db_connection_info_->ret.result_data, db_connection_info_->ret.col_names))
+    varDbConnection_->ret.clear();
+    if (0 == varDbConnection_->db->exeSql(sql_, varDbConnection_->ret.result_data, varDbConnection_->ret.col_names))
     {
-        db_connection_info_->ret.ok = true;
-        db_connection_info_->ret.affectedRows = db_connection_info_->db->affectedRows();
+        varDbConnection_->ret.ok = true;
+        varDbConnection_->ret.affectedRows = varDbConnection_->db->affectedRows();
     }
     else
     {
-        db_connection_info_->ret.errinfo = db_connection_info_->db->errorMsg();
-        LOGERROR((DB_MGR, "DbMgr::queryDB failed<%s>, while sql<%s>", db_connection_info_->db->errorMsg(), sql_));
+        varDbConnection_->ret.errinfo = varDbConnection_->db->errorMsg();
+        LOGERROR((DB_MGR_LOG, "DbMgr::queryDB failed<%s>, while sql<%s>", varDbConnection_->db->errorMsg(), sql_));
     }
     if (callback_)
     {
-        callback_->exe(&(db_connection_info_->ret));
+        callback_->exe(&(varDbConnection_->ret));
         delete callback_;
     }
 }
 
-int DbMgr::syncQueryDB(long db_id_,const string& sql_, vector<vector<string> >& ret_data_, vector<string>& col_, string& errinfo, int& affectedRows_)
+int  DbMgr::queryByName(const std::string& strName, const std::string& sql_, 
+                     std::vector<std::vector<std::string> >* ret_data_,
+                     std::string* errinfo, int* affectedRows_, std::vector<std::string>* col_)
 {
     AUTO_PERF();
-    db_connection_info_t* db_connection_info = NULL;
-    {
-        LockGuard lock(m_mutex);
-        map<long/*dbid*/, db_connection_info_t>::iterator it = m_db_connection.find(db_id_);
-        if (it == m_db_connection.end())
-        {
-            errinfo = "no config dbid found";
-        	return -1;
-		}
-        db_connection_info = &(it->second);
-    }
-    if (NULL == db_connection_info || !db_connection_info->tq)
+    LockGuard lock(m_mutex);
+    DBConnectionInfo* varDbConnection = getConnectionByName(strName);
+    if (NULL == varDbConnection)
     {
         return -1;
     }
-    
-    db_connection_info->result_flag = 0;//!标记开始同步查询
-    db_connection_info->tq->produce(TaskBinder::gen(&DbMgr::syncQueryDBImpl, this, db_connection_info, sql_, &ret_data_, &col_, &errinfo, &affectedRows_));
-    db_connection_info->wait();
+    QueryDBResult result;
+    varDbConnection->result_flag = 0;//!标记开始同步查询
+    varDbConnection->tq->produce(TaskBinder::gen(&DbMgr::syncQueryDBImpl, this, varDbConnection, sql_, &result));
+    varDbConnection->wait();
+    if (ret_data_){
+        *ret_data_ = result.result_data;
+    }
+    if (errinfo){
+        *errinfo = result.errinfo;
+    }
+    if (affectedRows_){
+        *affectedRows_ = result.affectedRows;
+    }
+    if (col_){
+        *col_ = result.col_names;
+    }
     return 0;
 }
-int  DbMgr::syncQueryDBGroupMod(const std::string& strGroupName, long mod, const std::string& sql_, 
-                     std::vector<std::vector<std::string> >& ret_data_,
-                     std::vector<std::string>& col_, std::string& errinfo, int& affectedRows_)
+void DbMgr::syncQueryDBImpl(DBConnectionInfo* varDbConnection, const string& sql_,  QueryDBResult* result)
 {
-    AUTO_PERF();
-    db_connection_info_t* db_connection_info = NULL;
+    LOGTRACE((DB_MGR_LOG, "DbMgr::syncQueryDBImpl sql=%s", sql_));
+    if (0 == varDbConnection->db->exeSql(sql_, result->result_data, result->col_names))
     {
-        LockGuard lock(m_mutex);
-        std::vector<long>& groupConnections = m_group2connection[strGroupName];
-        if (groupConnections.empty()){
-            LOGERROR((DB_MGR, "DbMgr::syncQueryDBGroupMod failed emptyGroup<%s>, while sql<%s>", strGroupName, sql_));
-            errinfo = "no config found:";
-            errinfo += strGroupName;
-            return -1;
-        }
-        long db_id_ = groupConnections[mod % groupConnections.size()];
-        
-        map<long/*dbid*/, db_connection_info_t>::iterator it = m_db_connection.find(db_id_);
-        if (it == m_db_connection.end())
-        {
-        	return -1;
-		}
-        db_connection_info = &(it->second);
-    }
-    if (NULL == db_connection_info || !db_connection_info->tq)
-    {
-        return -1;
-    }
-    
-    db_connection_info->result_flag = 0;//!标记开始同步查询
-    db_connection_info->tq->produce(TaskBinder::gen(&DbMgr::syncQueryDBImpl, this, db_connection_info, sql_, &ret_data_, &col_, &errinfo, &affectedRows_));
-    db_connection_info->wait();
-    return 0;
-}
-void DbMgr::syncQueryDBImpl(db_connection_info_t* db_connection_info, const string& sql_, vector<vector<string> >* pRet, vector<string>* col_, string* errinfo, int* affectedRows_)
-{
-    LOGTRACE((DB_MGR, "DbMgr::syncQueryDBImpl sql=%s", sql_));
-    db_connection_info->ret.clear();
-    if (0 == db_connection_info->db->exeSql(sql_, *pRet, *col_))
-    {
-        *affectedRows_ = db_connection_info->db->affectedRows();
+        result->affectedRows = varDbConnection->db->affectedRows();
     }
     else
     {
-        *errinfo = db_connection_info->db->errorMsg();
-        LOGERROR((DB_MGR, "DbMgr::syncQueryDB failed<%s>, while sql<%s>", db_connection_info->db->errorMsg(), sql_));
+        result->errinfo = varDbConnection->db->errorMsg();
+        LOGERROR((DB_MGR_LOG, "DbMgr::syncQueryDB failed<%s>, while sql<%s>", varDbConnection->db->errorMsg(), sql_));
     }
-    db_connection_info->signal();
+    varDbConnection->signal();
 }
-void DbMgr::db_connection_info_t::signal()
+void DbMgr::DBConnectionInfo::signal()
 {
     LockGuard lock(mutex);
     result_flag = 1;
     cond.signal();
 }
 
-int DbMgr::db_connection_info_t::wait()
+int DbMgr::DBConnectionInfo::wait()
 {
-    LockGuard lock(mutex);
     if (1 == result_flag)
     {
         return 0;
@@ -299,5 +254,14 @@ uint64_t DbMgr::allocId(int nType)
     return ret;
 }
 
-
-
+int DbMgr::getNumLike(const std::string& strName){
+    int ret = 0;
+    string nameLike = strName + "#";
+    std::map<std::string, DBConnectionInfo*>::iterator it =  m_name2connection.begin();
+    for (; it != m_name2connection.end(); ++it){
+        if (it->first.find(nameLike) != string::npos){
+            ++ ret;
+        }
+    }
+    return ret;
+}

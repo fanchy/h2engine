@@ -72,7 +72,7 @@ endif()
 if(PHPVER)
     message("user php version:" ${PHPVER})
 else()
-    message("user default php version:lua5.2")
+    message("user default php version:php5")
     set(PHPVER "php5") 
 endif()
 
@@ -86,6 +86,5 @@ add_executable(h2workerjs ${WORKER_JS_SRC_LIST})
 target_link_libraries(h2workerjs pthread dl mysqlclient crypto ssl z curl v8)
 
 add_executable(h2workerphp ${WORKER_PHP_SRC_LIST})
-target_link_libraries(h2workerphp pthread dl mysqlclient crypto ssl z curl PHPVER)
-
+target_link_libraries(h2workerphp pthread dl mysqlclient crypto ssl z curl ${PHPVER})
 

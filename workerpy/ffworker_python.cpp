@@ -102,185 +102,167 @@ static bool py_regTimer(int mstimeout_, PyObject* pFuncSrc)
 //!数据库相关操作
 static long py_connectDB(const string& host_, const string& group_)
 {
-    return DB_MGR_OBJ.connectDB(host_, group_);
+    return DB_MGR.connectDB(host_, group_);
 }
-static void py_asyncQuery(long db_id_,const string& sql_, PyObject* pFuncArg)
+struct PyQueryCallBack
 {
-    struct lambda_cb: public FFSlot::FFCallBack
-    {
-        lambda_cb(PyObject* pFuncSrc):pFunc(pFuncSrc){}
-        virtual void exe(FFSlot::CallBackArg* args_)
+    PyQueryCallBack(PyObject* pFuncSrc):pFunc(pFuncSrc){
+        if (pFunc != NULL)
         {
-            if (NULL == pFunc)
-            {
-                return;
-            }
-            if (args_->type() != TYPEID(DbMgr::queryDBResult_t))
-            {
-                return;
-            }
-            DbMgr::queryDBResult_t* data = (DbMgr::queryDBResult_t*)args_;
-
-            Singleton<FFWorkerPython>::instance().getRpc().get_tq().produce(TaskBinder::gen(&lambda_cb::call_python, pFunc,
-                                                                   data->errinfo, data->result_data, data->col_names, data->affectedRows));
+            Py_INCREF(pFunc);
         }
-        static void call_python(PyObject* pFuncSrc, string errinfo, vector<vector<string> > ret_, vector<string> col_, int affectedRows)
-        {
-            if (pFuncSrc == NULL)
-            {
-                return;
-            }
-            
-            PyObject* pyRet = PyDict_New();
-            {
-                string key = "datas";
-                PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
-                PyObject *v = pytype_traits_t<vector<vector<string> > >::pyobj_from_cppobj(ret_);
-                PyDict_SetItem(pyRet, k, v);
-                Py_DECREF(k);
-                Py_DECREF(v);
-            }
-            {
-                string key = "fields";
-                PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
-                PyObject *v = pytype_traits_t<vector<string> >::pyobj_from_cppobj(col_);
-                PyDict_SetItem(pyRet, k, v);
-                Py_DECREF(k);
-                Py_DECREF(v);
-            }
-            {
-                string key = "errinfo";
-                PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
-                PyObject *v = pytype_traits_t<string>::pyobj_from_cppobj(errinfo);
-                PyDict_SetItem(pyRet, k, v);
-                Py_DECREF(k);
-                Py_DECREF(v);
-            }
-            {
-                string key = "affectedRows";
-                PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
-                PyObject *v = pytype_traits_t<int>::pyobj_from_cppobj(affectedRows);
-                PyDict_SetItem(pyRet, k, v);
-                Py_DECREF(k);
-                Py_DECREF(v);
-            }
-            try
-            {
-                if (Singleton<FFWorkerPython>::instance().m_enable_call)
-                {
-                    Singleton<FFWorkerPython>::instance().getFFpython().call_lambda<void>(pFuncSrc, pyRet);
-                }
-            }
-            catch(exception& e_)
-            {
-                LOGERROR((FFWORKER_PYTHON, "workerobj_python_t::gen_queryDB_callback exception<%s>", e_.what()));
-            }
-            Py_XDECREF(pFuncSrc);
-            Py_DECREF(pyRet);
-        }
-        virtual FFSlot::FFCallBack* fork() { return new lambda_cb(pFunc); }
-        PyObject*          pFunc;
-    };
-    
-    if (pFuncArg != NULL)
-    {
-        Py_INCREF(pFuncArg);
     }
-    DB_MGR_OBJ.queryDB(db_id_, sql_,  new lambda_cb(pFuncArg));
-}
-static void py_asyncQueryGroupMod(const string& group_, int mod_, const string& sql_, PyObject* pFuncArg)
+    void operator()(DbMgr::queryDBResult_t& result){
+        call_python(pFunc, result.errinfo, result.result_data, result.col_names, result.affectedRows);
+    }
+    void call_python(PyObject* pFuncSrc, string errinfo, vector<vector<string> > ret_, vector<string> col_, int affectedRows)
+    {
+        if (pFuncSrc == NULL)
+        {
+            return;
+        }
+        
+        PyObject* pyRet = PyDict_New();
+        {
+            string key = "datas";
+            PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
+            PyObject *v = pytype_traits_t<vector<vector<string> > >::pyobj_from_cppobj(ret_);
+            PyDict_SetItem(pyRet, k, v);
+            Py_DECREF(k);
+            Py_DECREF(v);
+        }
+        {
+            string key = "fields";
+            PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
+            PyObject *v = pytype_traits_t<vector<string> >::pyobj_from_cppobj(col_);
+            PyDict_SetItem(pyRet, k, v);
+            Py_DECREF(k);
+            Py_DECREF(v);
+        }
+        {
+            string key = "errinfo";
+            PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
+            PyObject *v = pytype_traits_t<string>::pyobj_from_cppobj(errinfo);
+            PyDict_SetItem(pyRet, k, v);
+            Py_DECREF(k);
+            Py_DECREF(v);
+        }
+        {
+            string key = "affectedRows";
+            PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
+            PyObject *v = pytype_traits_t<int>::pyobj_from_cppobj(affectedRows);
+            PyDict_SetItem(pyRet, k, v);
+            Py_DECREF(k);
+            Py_DECREF(v);
+        }
+        try
+        {
+            if (Singleton<FFWorkerPython>::instance().m_enable_call)
+            {
+                Singleton<FFWorkerPython>::instance().getFFpython().call_lambda<void>(pFuncSrc, pyRet);
+            }
+        }
+        catch(exception& e_)
+        {
+            LOGERROR((FFWORKER_PYTHON, "workerobj_python_t::gen_queryDB_callback exception<%s>", e_.what()));
+        }
+        Py_XDECREF(pFuncSrc);
+        Py_DECREF(pyRet);
+    }
+    PyObject*          pFunc;
+};
+static void py_asyncQuery(long modid, const string& sql_, PyObject* pFuncArg)
 {
-    struct lambda_cb: public FFSlot::FFCallBack
-    {
-        lambda_cb(PyObject* pFuncSrc):pFunc(pFuncSrc){}
-        virtual void exe(FFSlot::CallBackArg* args_)
+    PyQueryCallBack cb(pFuncArg);
+    DB_MGR.asyncQueryModId(modid, sql_, cb, &(Singleton<FFWorkerPython>::instance().getRpc().get_tq()));
+}
+struct AsyncQueryNameCb
+{
+    AsyncQueryNameCb(PyObject* pFuncSrc):pFunc(pFuncSrc){
+        if (pFunc != NULL)
         {
-            if (NULL == pFunc)
-            {
-                return;
-            }
-            if (args_->type() != TYPEID(DbMgr::queryDBResult_t))
-            {
-                return;
-            }
-            DbMgr::queryDBResult_t* data = (DbMgr::queryDBResult_t*)args_;
-
-            Singleton<FFWorkerPython>::instance().getRpc().get_tq().produce(TaskBinder::gen(&lambda_cb::call_python, pFunc,
-                                                                   data->errinfo, data->result_data, data->col_names, data->affectedRows));
+            Py_INCREF(pFunc);
         }
-        static void call_python(PyObject* pFuncSrc, string errinfo, vector<vector<string> > ret_, vector<string> col_, int affectedRows)
-        {
-            if (pFuncSrc == NULL)
-            {
-                return;
-            }
-            
-            PyObject* pyRet = PyDict_New();
-            {
-                string key = "datas";
-                PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
-                PyObject *v = pytype_traits_t<vector<vector<string> > >::pyobj_from_cppobj(ret_);
-                PyDict_SetItem(pyRet, k, v);
-                Py_DECREF(k);
-                Py_DECREF(v);
-            }
-            {
-                string key = "fields";
-                PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
-                PyObject *v = pytype_traits_t<vector<string> >::pyobj_from_cppobj(col_);
-                PyDict_SetItem(pyRet, k, v);
-                Py_DECREF(k);
-                Py_DECREF(v);
-            }
-            {
-                string key = "errinfo";
-                PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
-                PyObject *v = pytype_traits_t<string>::pyobj_from_cppobj(errinfo);
-                PyDict_SetItem(pyRet, k, v);
-                Py_DECREF(k);
-                Py_DECREF(v);
-            }
-            {
-                string key = "affectedRows";
-                PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
-                PyObject *v = pytype_traits_t<int>::pyobj_from_cppobj(affectedRows);
-                PyDict_SetItem(pyRet, k, v);
-                Py_DECREF(k);
-                Py_DECREF(v);
-            }
-            try
-            {
-                if (Singleton<FFWorkerPython>::instance().m_enable_call)
-                {
-                    Singleton<FFWorkerPython>::instance().getFFpython().call_lambda<void>(pFuncSrc, pyRet);
-                }
-            }
-            catch(exception& e_)
-            {
-                LOGERROR((FFWORKER_PYTHON, "workerobj_python_t::gen_queryDB_callback exception<%s>", e_.what()));
-            }
-            Py_XDECREF(pFuncSrc);
-            Py_DECREF(pyRet);
-        }
-        virtual FFSlot::FFCallBack* fork() { return new lambda_cb(pFunc); }
-        PyObject*          pFunc;
-    };
-    
-    if (pFuncArg != NULL)
-    {
-        Py_INCREF(pFuncArg);
     }
-    DB_MGR_OBJ.queryDBGroupMod(group_, mod_, sql_, new lambda_cb(pFuncArg));
+    void operator()(QueryDBResult& result)
+    {
+        if (NULL == pFunc)
+        {
+            return;
+        }
+        QueryDBResult* data = &result;
+        call_python(pFunc, data->errinfo, data->result_data, data->col_names, data->affectedRows);
+    }
+    void call_python(PyObject* pFuncSrc, string errinfo, vector<vector<string> > ret_, vector<string> col_, int affectedRows)
+    {
+        if (pFuncSrc == NULL)
+        {
+            return;
+        }
+        
+        PyObject* pyRet = PyDict_New();
+        {
+            string key = "datas";
+            PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
+            PyObject *v = pytype_traits_t<vector<vector<string> > >::pyobj_from_cppobj(ret_);
+            PyDict_SetItem(pyRet, k, v);
+            Py_DECREF(k);
+            Py_DECREF(v);
+        }
+        {
+            string key = "fields";
+            PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
+            PyObject *v = pytype_traits_t<vector<string> >::pyobj_from_cppobj(col_);
+            PyDict_SetItem(pyRet, k, v);
+            Py_DECREF(k);
+            Py_DECREF(v);
+        }
+        {
+            string key = "errinfo";
+            PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
+            PyObject *v = pytype_traits_t<string>::pyobj_from_cppobj(errinfo);
+            PyDict_SetItem(pyRet, k, v);
+            Py_DECREF(k);
+            Py_DECREF(v);
+        }
+        {
+            string key = "affectedRows";
+            PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
+            PyObject *v = pytype_traits_t<int>::pyobj_from_cppobj(affectedRows);
+            PyDict_SetItem(pyRet, k, v);
+            Py_DECREF(k);
+            Py_DECREF(v);
+        }
+        try
+        {
+            if (Singleton<FFWorkerPython>::instance().m_enable_call)
+            {
+                Singleton<FFWorkerPython>::instance().getFFpython().call_lambda<void>(pFuncSrc, pyRet);
+            }
+        }
+        catch(exception& e_)
+        {
+            LOGERROR((FFWORKER_PYTHON, "workerobj_python_t::gen_queryDB_callback exception<%s>", e_.what()));
+        }
+        Py_XDECREF(pFuncSrc);
+        Py_DECREF(pyRet);
+    }
+    PyObject*          pFunc;
+};
+static void py_asyncQueryGroupMod(const string& name_, int mod_, const string& sql_, PyObject* pFuncArg)
+{
+    AsyncQueryNameCb cb(pFuncArg);
+    DB_MGR.asyncQueryByName(name_, sql_, cb, &(Singleton<FFWorkerPython>::instance().getRpc().get_tq()));
 }
 
-static PyObject* py_query(long db_id_,const string& sql_)
+static PyObject* py_query(const string& sql_)
 {
     PyObject* pyRet = PyDict_New();
     string errinfo;
     vector<vector<string> > retdata;
     vector<string> col;
     int affectedRows = 0;
-    DB_MGR_OBJ.syncQueryDB(db_id_, sql_, retdata, col, errinfo, affectedRows);
+    DB_MGR.query(sql_, &retdata, &errinfo, &affectedRows, &col);
     
     {
         string key = "datas";
@@ -317,14 +299,14 @@ static PyObject* py_query(long db_id_,const string& sql_)
     return pyRet;
 }
 
-static PyObject* py_queryGroupMod(const string& group_, int mod_,const string& sql_)
+static PyObject* py_queryGroupMod(const string& name_, const string& sql_)
 {
     PyObject* pyRet = PyDict_New();
     string errinfo;
     vector<vector<string> > retdata;
     vector<string> col;
     int affectedRows = 0;
-    DB_MGR_OBJ.syncQueryDBGroupMod(group_, mod_, sql_, retdata, col, errinfo, affectedRows);
+    DB_MGR.queryByName(name_, sql_, &retdata, &errinfo, &affectedRows, &col);
     
     {
         string key = "datas";
@@ -788,8 +770,8 @@ int FFWorkerPython::scriptInit(const string& py_root)
                  .reg(&py_connectDB, "connectDB")
                  .reg(&py_asyncQuery, "asyncQuery")
                  .reg(&py_query, "query")
-                 .reg(&py_asyncQueryGroupMod, "asyncQueryGroupMod")
-                 .reg(&py_queryGroupMod, "queryGroupMod")
+                 .reg(&py_asyncQueryGroupMod, "asyncQueryByName")
+                 .reg(&py_queryGroupMod, "queryByName")
                  .reg(&py_workerRPC, "workerRPC")
                  .reg(&py_syncSharedData, "syncSharedData")
                  .reg(&py_asyncHttp, "asyncHttp")
@@ -801,7 +783,21 @@ int FFWorkerPython::scriptInit(const string& py_root)
             
     (*m_ffpython).init(EXT_NAME);
 
-    DB_MGR_OBJ.start();
+    DB_MGR.start();
+    ArgHelper& arg_helper = Singleton<ArgHelper>::instance();
+    if (arg_helper.isEnableOption("-db")){
+        int nDbNum = DB_THREAD_NUM;
+        if (arg_helper.getOptionValue("-db").find("sqlite://") != std::string::npos){
+            nDbNum = 1;
+        }
+        for (int i = 0; i < nDbNum; ++i){
+            if (0 == DB_MGR.connectDB(arg_helper.getOptionValue("-db"), DB_DEFAULT_NAME)){
+                LOGERROR((FFWORKER_PYTHON, "FFWorkerPython::db connect failed"));
+                return -1;
+                break;
+            }
+        }
+    }
     
     int ret = -2;
     
@@ -866,7 +862,7 @@ void FFWorkerPython::scriptCleanup()
     }
     this->cleanupModule();
     m_enable_call = false;
-    DB_MGR_OBJ.stop();
+    DB_MGR.stop();
     LOGINFO((FFWORKER_PYTHON, "FFWorkerPython::scriptCleanup end"));
 }
 int FFWorkerPython::close()

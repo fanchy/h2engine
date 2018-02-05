@@ -12,8 +12,23 @@
 
 namespace ff
 {
+template<typename T> struct EntityFieldTool;
 
-
+template<typename BASE_TYPE, typename ObjType, typename RET, typename CLASS_TYPE>
+class FieldPropGetterSertter: public BASE_TYPE{
+public:
+    RET CLASS_TYPE::* ptr;
+    FieldPropGetterSertter(RET CLASS_TYPE::* p):ptr(p){}
+    virtual int64_t getProp(ObjType obj){
+        CLASS_TYPE* pField = EntityFieldTool<CLASS_TYPE>::getField(obj);
+        return (int64_t)(pField->*ptr);
+        return 0;
+    }
+    virtual void setProp(ObjType obj, int64_t v){
+        CLASS_TYPE* pField = EntityFieldTool<CLASS_TYPE>::getField(obj);
+        pField->*ptr = (RET)v;
+    }
+};
 //!各个属性对应一个总值 
 //!各个属性对应各个模块的分值
 template<typename T>
@@ -126,9 +141,15 @@ public:
     void regGetterSetter(const std::string& strName, PropGetterSetter* p){
         propName2GetterSetter[strName] = p;
     }
+    template<typename RET, typename CLASS_TYPE>
+    void regGetterSetter(const std::string& strName, RET CLASS_TYPE::* p_){
+        FieldPropGetterSertter<PropGetterSetter, ObjType, RET, CLASS_TYPE>* pdest = new FieldPropGetterSertter<PropGetterSetter, ObjType, RET, CLASS_TYPE>(p_);
+        regGetterSetter(strName, pdest);
+    }
 public:
     std::map<std::string, PropGetterSetter*>    propName2GetterSetter;
 };
+
 
 }
 #endif

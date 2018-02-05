@@ -127,7 +127,7 @@ TaskObjPtr TaskCtrl::genTask(int cfgid, int status){
     snprintf(sql, sizeof(sql), "insert into task (`uid`, `cfgid`, `status`, `value`, `tmUpdate`) values (%lu, %d, %d, %d, '%s')",
                                 this->getOwner()->getUid(), task->taskCfg->cfgid, task->status, task->value, TimeTool::formattm(task->tmUpdate).c_str());
     
-    DB_MGR_OBJ.queryDBGroupMod(USER_DB, this->getOwner()->getUid(), sql);
+    DB_MGR.asyncQueryModId(this->getOwner()->getUid(), sql);
 
     TaskStatusChange eTask(this->getOwner(), task->taskCfg->cfgid, task->status);
     EVENT_BUS_FIRE(eTask);
@@ -142,7 +142,7 @@ bool TaskCtrl::delTask(int cfgid){
         snprintf(sql, sizeof(sql), "delete from task where `uid` = '%lu' and `cfgid` = '%d' ",
                                     this->getOwner()->getUid(), cfgid);
         
-        DB_MGR_OBJ.queryDBGroupMod(USER_DB, this->getOwner()->getUid(), sql);
+        DB_MGR.asyncQueryModId(this->getOwner()->getUid(), sql);
         return true;
     }
     return false;
@@ -157,7 +157,7 @@ bool TaskCtrl::changeTaskStatus(TaskObjPtr task, int status){
     snprintf(sql, sizeof(sql), "update task set status = %d, tmUpdate = '%s' where `uid` = '%lu' and `cfgid` = '%d' ",
                                 status, TimeTool::formattm(task->tmUpdate).c_str(), this->getOwner()->getUid(), task->taskCfg->cfgid);
     
-    DB_MGR_OBJ.queryDBGroupMod(USER_DB, this->getOwner()->getUid(), sql);
+    DB_MGR.asyncQueryModId(this->getOwner()->getUid(), sql);
     TaskStatusChange eTask(this->getOwner(), task->taskCfg->cfgid, task->status);
     EVENT_BUS_FIRE(eTask);
     return true;
@@ -212,7 +212,7 @@ bool TaskCtrl::checkNewTask(){
         //!检查属性是否满足, 如果满足增加任务
         TaskConfigPtr& taskCfg = it2->second;
         
-        if (ENTITY_GET_PROP_FIELD(this->getOwner(), taskCfg->triggerPropertyType) >= taskCfg->triggerPropertyValue)
+        if (PROP_MGR.get(this->getOwner(), taskCfg->triggerPropertyType) >= taskCfg->triggerPropertyValue)
         {
             this->genTask(taskCfg->cfgid);
         }

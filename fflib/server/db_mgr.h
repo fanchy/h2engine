@@ -17,49 +17,15 @@
 namespace ff
 {
 
-class DbMgr
+class QueryDBResult: public FFSlot::CallBackArg
 {
 public:
-    struct db_connection_info_t;
-    class queryDBResult_t;
-public:
-    DbMgr();
-    ~DbMgr();
-    int start();
-    int stop();
-
-    long connectDB(const std::string& host_, const std::string& groupName);
-    void queryDB(long db_id_,const std::string& sql_, FFSlot::FFCallBack* callback_ = NULL);
-    int  syncQueryDB(long db_id_,const std::string& sql_, std::vector<std::vector<std::string> >& ret_data_,
-                     std::vector<std::string>& col_, std::string& errinfo, int& affectedRows_);
-
-    void queryDBGroupMod(const std::string& strGroupName, long mod, const std::string& sql_, FFSlot::FFCallBack* callback_ = NULL);
-    int  syncQueryDBGroupMod(const std::string& strGroupName, long mod, const std::string& sql_, 
-                     std::vector<std::vector<std::string> >& ret_data_,
-                     std::vector<std::string>& col_, std::string& errinfo, int& affectedRows_);
-    uint64_t allocId(int nType);
-private:
-    void queryDBImpl(db_connection_info_t* db_connection_info_, const std::string& sql_, FFSlot::FFCallBack* callback_);
-    void syncQueryDBImpl(db_connection_info_t* db_connection_info_, const std::string& sql_, std::vector<std::vector<std::string> >* pRet, std::vector<std::string>* col_, std::string* errinfo, int* affectedRows_);
-private:
-    long                                                m_db_index;
-    std::vector<SharedPtr<TaskQueue> >                  m_tq;
-    Mutex                                               m_mutex;
-    std::map<long/*dbid*/, db_connection_info_t>        m_db_connection;
-    Thread                                              m_thread;
-    std::map<std::string, std::vector<long> >           m_group2connection;
-};
-#define DB_MGR_OBJ Singleton<DbMgr>::instance()
-
-class DbMgr::queryDBResult_t: public FFSlot::CallBackArg
-{
-public:
-    queryDBResult_t():
+    QueryDBResult():
         ok(false)
     {}
     virtual int type()
     {
-        return TYPEID(queryDBResult_t);
+        return TYPEID(QueryDBResult);
     }
     void clear()
     {
@@ -73,33 +39,130 @@ public:
     std::string                             errinfo;
     int                                     affectedRows;
 };
-
-struct DbMgr::db_connection_info_t
+template <typename T>
+struct DbCallBack: public FFSlot::FFCallBack
 {
-    db_connection_info_t():result_flag(-1),cond(mutex)
+    DbCallBack(T pFuncArg, TaskQueue* ptq):pFunc(pFuncArg), tq(ptq){}
+    virtual void exe(FFSlot::CallBackArg* args_)
     {
+        QueryDBResult* data = (QueryDBResult*)args_;
+        if (!tq){
+            pFunc(*data);
+        }
+        else{
+            tq->produce(TaskBinder::gen(&DbCallBack<T>::tqCall, pFunc, *data));
+        }
     }
-    db_connection_info_t(const db_connection_info_t& src_):
-        tq(src_.tq),
-        db(src_.db),
-        result_flag(-1),
-        cond(mutex)
-    {
+    static void tqCall(T func, QueryDBResult& data){
+        func(data);
     }
-    void signal();
-    int  wait();
-    
-    SharedPtr<TaskQueue>            tq;
-    SharedPtr<FFDb>                 db;
-    queryDBResult_t                 ret;
-    std::string                     name;
-
-    //!条件变量，用于同步查询的接口
-    volatile int                    result_flag;
-    Mutex                           mutex;
-    ConditionVar                    cond;
-    std::string                     host_cfg;
+    virtual FFSlot::FFCallBack* fork() { return new DbCallBack<T>(pFunc, tq); }
+    T pFunc;
+    TaskQueue* tq;
 };
+#define DB_THREAD_NUM 10
+#define DB_DEFAULT_NAME "Default"
+#define DB_DEFAULT_NAME_1 "Default#1"
+
+class DbMgr
+{
+public:
+    struct DBConnectionInfo
+    {
+        DBConnectionInfo():result_flag(-1),cond(mutex)
+        {
+        }
+        DBConnectionInfo(const DBConnectionInfo& src_):
+            tq(src_.tq),
+            db(src_.db),
+            result_flag(-1),
+            cond(mutex)
+        {
+        }
+        void signal();
+        int  wait();
+        
+        SharedPtr<TaskQueue>            tq;
+        SharedPtr<FFDb>                 db;
+        QueryDBResult                   ret;
+        std::string                     name;
+
+        //!条件变量，用于同步查询的接口
+        volatile int                    result_flag;
+        Mutex                           mutex;
+        ConditionVar                    cond;
+        std::string                     host_cfg;
+    };
+    typedef QueryDBResult queryDBResult_t;
+public:
+    DbMgr();
+    ~DbMgr();
+    int start();
+    int stop();
+
+    long connectDB(const std::string& host_, const std::string& name);
+
+    template<typename T>
+    void asyncQueryModId(long mod, const std::string& sql_, T& func, TaskQueue* tq){
+        char buff[256] = {0};
+        ::snprintf(buff, sizeof(buff), "%s#%ld", DB_DEFAULT_NAME, mod % DB_THREAD_NUM);
+        asyncQueryByName(buff, sql_, func, tq);
+    }
+
+    void asyncQueryModId(long mod, const std::string& sql_);
+    int  query(const std::string& sql_, std::vector<std::vector<std::string> >* ret_data_ = NULL,
+                     std::string* errinfo = NULL, int* affectedRows_ = NULL, std::vector<std::string>* col_ = NULL);
+
+    template<typename T>
+    void asyncQueryByName(const std::string& strName, const std::string& sql_, T& func, TaskQueue* tq = NULL){
+        DBConnectionInfo* varDbConnection = NULL;
+        {
+            LockGuard lock(m_mutex);
+            varDbConnection = getConnectionByName(strName);
+        }
+        if (NULL == varDbConnection)
+        {
+            return;
+        }
+        else
+        {
+            varDbConnection->tq->produce(TaskBinder::gen(&DbMgr::queryDBImpl, this, varDbConnection, sql_, new DbCallBack<T>(func, tq)));
+        }
+    }
+    void asyncQueryByName(const std::string& strName, const std::string& sql_);
+    int  queryByName(const std::string& strName, const std::string& sql_, 
+                     std::vector<std::vector<std::string> >* ret_data_ = NULL,
+                     std::string* errinfo = NULL, int* affectedRows_ = NULL, std::vector<std::string>* col_ = NULL);
+    uint64_t allocId(int nType);
+private:
+    void queryDBImpl(DBConnectionInfo* db_connection_info_, const std::string& sql_, FFSlot::FFCallBack* callback_);
+    void syncQueryDBImpl(DBConnectionInfo* db_connection_info_, const std::string& sql_, QueryDBResult* result);
+    DBConnectionInfo* getConnectionById(long cid){
+        std::map<long/*dbid*/, DBConnectionInfo>::iterator it2 = m_db_connection.find(cid);
+        if (it2 != m_db_connection.end()){
+            return &(it2->second);
+        }
+        return NULL;
+    }
+    DBConnectionInfo* getConnectionByName(const std::string& name){
+        std::map<std::string, DBConnectionInfo*>::iterator it = m_name2connection.find(name);
+        if (it != m_name2connection.end()){
+            return it->second;
+        }
+        return NULL;
+    }
+    int getNumLike(const std::string& strName);
+private:
+    long                                                m_db_index;
+    std::vector<SharedPtr<TaskQueue> >                  m_tq;
+    Mutex                                               m_mutex;
+    std::map<long/*dbid*/, DBConnectionInfo>            m_db_connection;
+    Thread                                              m_thread;
+    std::map<std::string, DBConnectionInfo*>            m_name2connection;
+};
+#define DB_MGR Singleton<DbMgr>::instance()
+
+
 
 }
 

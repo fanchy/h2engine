@@ -130,8 +130,80 @@ static bool  lua_writeLockGuard(){
 //!数据库相关操作
 static long lua_connectDB(const string& host_, const string& group_)
 {
-    return DB_MGR_OBJ.connectDB(host_, group_);
+    return DB_MGR.connectDB(host_, group_);
 }
+struct AsyncQueryCB
+{
+    AsyncQueryCB(lua_State* lsaarg_, long idxarg):ls_(lsaarg_), idx(idxarg){}
+    void operator()(DbMgr::queryDBResult_t& result)
+    {
+        DbMgr::queryDBResult_t* data = &result;
+        call_lua(ls_, idx, data->errinfo, data->result_data, data->col_names, data->affectedRows);
+    }
+    void call_lua(lua_State* ls_, long idx, string errinfo, vector<vector<string> > ret_, vector<string> col_, int affectedRows)
+    {
+        if (Singleton<FFWorkerLua>::instance().m_enable_call == false)
+        {
+            return;
+        }
+        char fieldname[256] = {0};
+        snprintf(fieldname, sizeof(fieldname), "db#%ld", idx);
+        
+        lua_getglobal(ls_, EXT_NAME);
+        lua_pushstring(ls_, fieldname);
+        lua_gettable (ls_, -2);
+        
+        
+        lua_newtable(ls_);
+        {
+            string key = "datas";
+            luacpp_op_t<string>::cpp2luastack(ls_, key);
+            luacpp_op_t<vector<vector<string> > >::cpp2luastack(ls_, ret_);
+            lua_settable(ls_, -3);
+        }
+        
+        {
+            string key = "fields";
+            luacpp_op_t<string>::cpp2luastack(ls_, key);
+            luacpp_op_t<vector<string> >::cpp2luastack(ls_, col_);
+            lua_settable(ls_, -3);
+        }
+        {
+            string key = "errinfo";
+            luacpp_op_t<string>::cpp2luastack(ls_, key);
+            luacpp_op_t<string >::cpp2luastack(ls_, errinfo);
+            lua_settable(ls_, -3);
+        }
+        {
+            string key = "affectedRows";
+            
+            luacpp_op_t<string>::cpp2luastack(ls_, key);
+            luacpp_op_t<int >::cpp2luastack(ls_, affectedRows);
+            lua_settable(ls_, -3);
+        }
+        try
+        {
+            if (::lua_pcall(ls_, 1, 0, 0) != 0)
+            {
+                string err = lua_err_handler_t::luatraceback(ls_, "lua_pcall faled func_name<%s>", fieldname);
+                ::lua_pop(ls_, 1);
+                throw lua_err_t(err);
+            }
+            //Singleton<FFWorkerLua>::instance().getFFlua().call_lambda<void>(pFunc);
+        }
+        catch(exception& e_)
+        {
+            LOGERROR((FFWORKER_LUA, "workerobj_python_t::gen_queryDB_callback exception<%s>", e_.what()));
+        }
+        
+        lua_pushstring(ls_, fieldname);
+        lua_pushnil(ls_);
+        lua_settable(ls_, -3);
+        lua_pop(ls_, 1);
+    }
+    lua_State* ls_;
+    long idx;
+};
 
 static int lua_asyncQuery(lua_State* ls_)
 {
@@ -153,100 +225,93 @@ static int lua_asyncQuery(lua_State* ls_)
     lua_settable(ls_, -3);
     lua_pop(ls_, 1);
     
-    struct lambda_cb: public FFSlot::FFCallBack
-    {
-        lambda_cb(lua_State* lsaarg_, long idxarg):ls_(lsaarg_), idx(idxarg){}
-        virtual void exe(FFSlot::CallBackArg* args_)
-        {
-            if (args_->type() != TYPEID(DbMgr::queryDBResult_t))
-            {
-                return;
-            }
-            DbMgr::queryDBResult_t* data = (DbMgr::queryDBResult_t*)args_;
-
-            Singleton<FFWorkerLua>::instance().getRpc().get_tq().produce(TaskBinder::gen(&lambda_cb::call_lua, ls_, idx,
-                                                                   data->errinfo, data->result_data, data->col_names, data->affectedRows));
-        }
-        static void call_lua(lua_State* ls_, long idx, string errinfo, vector<vector<string> > ret_, vector<string> col_, int affectedRows)
-        {
-            if (Singleton<FFWorkerLua>::instance().m_enable_call == false)
-            {
-                return;
-            }
-            char fieldname[256] = {0};
-            snprintf(fieldname, sizeof(fieldname), "db#%ld", idx);
-            
-            lua_getglobal(ls_, EXT_NAME);
-            lua_pushstring(ls_, fieldname);
-            lua_gettable (ls_, -2);
-            
-            
-            lua_newtable(ls_);
-            {
-                string key = "datas";
-                luacpp_op_t<string>::cpp2luastack(ls_, key);
-                luacpp_op_t<vector<vector<string> > >::cpp2luastack(ls_, ret_);
-                lua_settable(ls_, -3);
-            }
-            
-            {
-                string key = "fields";
-                luacpp_op_t<string>::cpp2luastack(ls_, key);
-                luacpp_op_t<vector<string> >::cpp2luastack(ls_, col_);
-                lua_settable(ls_, -3);
-            }
-            {
-                string key = "errinfo";
-                luacpp_op_t<string>::cpp2luastack(ls_, key);
-                luacpp_op_t<string >::cpp2luastack(ls_, errinfo);
-                lua_settable(ls_, -3);
-            }
-            {
-                string key = "affectedRows";
-                
-                luacpp_op_t<string>::cpp2luastack(ls_, key);
-                luacpp_op_t<int >::cpp2luastack(ls_, affectedRows);
-                lua_settable(ls_, -3);
-            }
-            try
-            {
-                if (::lua_pcall(ls_, 1, 0, 0) != 0)
-                {
-                    string err = lua_err_handler_t::luatraceback(ls_, "lua_pcall faled func_name<%s>", fieldname);
-                    ::lua_pop(ls_, 1);
-                    throw lua_err_t(err);
-                }
-                //Singleton<FFWorkerLua>::instance().getFFlua().call_lambda<void>(pFunc);
-            }
-            catch(exception& e_)
-            {
-                LOGERROR((FFWORKER_LUA, "workerobj_python_t::gen_queryDB_callback exception<%s>", e_.what()));
-            }
-            
-            lua_pushstring(ls_, fieldname);
-            lua_pushnil(ls_);
-            lua_settable(ls_, -3);
-            lua_pop(ls_, 1);
-        }
-        virtual FFSlot::FFCallBack* fork() { return new lambda_cb(ls_, idx); }
-        lua_State* ls_;
-        long idx;
-    };
-    
-    DB_MGR_OBJ.queryDB(db_id_, sql_,  new lambda_cb(ls_, idx));
+    AsyncQueryCB cb(ls_, idx);
+    DB_MGR.asyncQueryModId(db_id_, sql_, cb, &(Singleton<FFWorkerLua>::instance().getRpc().get_tq()));
     return 0;
 }
+struct AsyncQueryNameCB
+{
+    AsyncQueryNameCB(lua_State* lsaarg_, long idxarg):ls_(lsaarg_), idx(idxarg){}
+    void operator()(DbMgr::queryDBResult_t& result)
+    {
+        DbMgr::queryDBResult_t* data = (DbMgr::queryDBResult_t*)(&result);
+        call_lua(ls_, idx, data->errinfo, data->result_data, data->col_names, data->affectedRows);
+    }
+    void call_lua(lua_State* ls_, long idx, string errinfo, vector<vector<string> > ret_, vector<string> col_, int affectedRows)
+    {
+        if (Singleton<FFWorkerLua>::instance().m_enable_call == false)
+        {
+            return;
+        }
+        char fieldname[256] = {0};
+        snprintf(fieldname, sizeof(fieldname), "db#%ld", idx);
+        
+        lua_getglobal(ls_, EXT_NAME);
+        lua_pushstring(ls_, fieldname);
+        lua_gettable (ls_, -2);
+        
+        
+        lua_newtable(ls_);
+        {
+            string key = "datas";
+            luacpp_op_t<string>::cpp2luastack(ls_, key);
+            luacpp_op_t<vector<vector<string> > >::cpp2luastack(ls_, ret_);
+            lua_settable(ls_, -3);
+        }
+        
+        {
+            string key = "fields";
+            luacpp_op_t<string>::cpp2luastack(ls_, key);
+            luacpp_op_t<vector<string> >::cpp2luastack(ls_, col_);
+            lua_settable(ls_, -3);
+        }
+        {
+            string key = "errinfo";
+            luacpp_op_t<string>::cpp2luastack(ls_, key);
+            luacpp_op_t<string >::cpp2luastack(ls_, errinfo);
+            lua_settable(ls_, -3);
+        }
+        {
+            string key = "affectedRows";
+            
+            luacpp_op_t<string>::cpp2luastack(ls_, key);
+            luacpp_op_t<int >::cpp2luastack(ls_, affectedRows);
+            lua_settable(ls_, -3);
+        }
+        try
+        {
+            if (::lua_pcall(ls_, 1, 0, 0) != 0)
+            {
+                string err = lua_err_handler_t::luatraceback(ls_, "lua_pcall faled func_name<%s>", fieldname);
+                ::lua_pop(ls_, 1);
+                throw lua_err_t(err);
+            }
+            //Singleton<FFWorkerLua>::instance().getFFlua().call_lambda<void>(pFunc);
+        }
+        catch(exception& e_)
+        {
+            LOGERROR((FFWORKER_LUA, "workerobj_python_t::gen_queryDB_callback exception<%s>", e_.what()));
+        }
+        
+        lua_pushstring(ls_, fieldname);
+        lua_pushnil(ls_);
+        lua_settable(ls_, -3);
+        lua_pop(ls_, 1);
+    }
+    lua_State* ls_;
+    long idx;
+};
 
 static int lua_asyncQueryGroupMod(lua_State* ls_)
 {
     string group_;
     luacpp_op_t<string>::lua2cpp(ls_, ADDR_ARG_POS(1), group_);
     
-    long mod_ = 0;
-    luacpp_op_t<long>::lua2cpp(ls_, ADDR_ARG_POS(2), mod_);
+    //long mod_ = 0;
+    //luacpp_op_t<long>::lua2cpp(ls_, ADDR_ARG_POS(2), mod_);
     
     string sql_;
-    luacpp_op_t<string>::lua2cpp(ls_, ADDR_ARG_POS(3), sql_);
+    luacpp_op_t<string>::lua2cpp(ls_, ADDR_ARG_POS(2), sql_);
     
     static int64_t db_idx = 0;
     char fieldname[256] = {0};
@@ -256,91 +321,12 @@ static int lua_asyncQueryGroupMod(lua_State* ls_)
     
     lua_getglobal(ls_, EXT_NAME);
     lua_pushstring(ls_, fieldname);
-    lua_pushvalue(ls_, ADDR_ARG_POS(4));
+    lua_pushvalue(ls_, ADDR_ARG_POS(3));
     lua_settable(ls_, -3);
     lua_pop(ls_, 1);
     
-    struct lambda_cb: public FFSlot::FFCallBack
-    {
-        lambda_cb(lua_State* lsaarg_, long idxarg):ls_(lsaarg_), idx(idxarg){}
-        virtual void exe(FFSlot::CallBackArg* args_)
-        {
-            if (args_->type() != TYPEID(DbMgr::queryDBResult_t))
-            {
-                return;
-            }
-            DbMgr::queryDBResult_t* data = (DbMgr::queryDBResult_t*)args_;
-
-            Singleton<FFWorkerLua>::instance().getRpc().get_tq().produce(TaskBinder::gen(&lambda_cb::call_lua, ls_, idx,
-                                                                   data->errinfo, data->result_data, data->col_names, data->affectedRows));
-        }
-        static void call_lua(lua_State* ls_, long idx, string errinfo, vector<vector<string> > ret_, vector<string> col_, int affectedRows)
-        {
-            if (Singleton<FFWorkerLua>::instance().m_enable_call == false)
-            {
-                return;
-            }
-            char fieldname[256] = {0};
-            snprintf(fieldname, sizeof(fieldname), "db#%ld", idx);
-            
-            lua_getglobal(ls_, EXT_NAME);
-            lua_pushstring(ls_, fieldname);
-            lua_gettable (ls_, -2);
-            
-            
-            lua_newtable(ls_);
-            {
-                string key = "datas";
-                luacpp_op_t<string>::cpp2luastack(ls_, key);
-                luacpp_op_t<vector<vector<string> > >::cpp2luastack(ls_, ret_);
-                lua_settable(ls_, -3);
-            }
-            
-            {
-                string key = "fields";
-                luacpp_op_t<string>::cpp2luastack(ls_, key);
-                luacpp_op_t<vector<string> >::cpp2luastack(ls_, col_);
-                lua_settable(ls_, -3);
-            }
-            {
-                string key = "errinfo";
-                luacpp_op_t<string>::cpp2luastack(ls_, key);
-                luacpp_op_t<string >::cpp2luastack(ls_, errinfo);
-                lua_settable(ls_, -3);
-            }
-            {
-                string key = "affectedRows";
-                
-                luacpp_op_t<string>::cpp2luastack(ls_, key);
-                luacpp_op_t<int >::cpp2luastack(ls_, affectedRows);
-                lua_settable(ls_, -3);
-            }
-            try
-            {
-                if (::lua_pcall(ls_, 1, 0, 0) != 0)
-                {
-                    string err = lua_err_handler_t::luatraceback(ls_, "lua_pcall faled func_name<%s>", fieldname);
-                    ::lua_pop(ls_, 1);
-                    throw lua_err_t(err);
-                }
-                //Singleton<FFWorkerLua>::instance().getFFlua().call_lambda<void>(pFunc);
-            }
-            catch(exception& e_)
-            {
-                LOGERROR((FFWORKER_LUA, "workerobj_python_t::gen_queryDB_callback exception<%s>", e_.what()));
-            }
-            
-            lua_pushstring(ls_, fieldname);
-            lua_pushnil(ls_);
-            lua_settable(ls_, -3);
-            lua_pop(ls_, 1);
-        }
-        virtual FFSlot::FFCallBack* fork() { return new lambda_cb(ls_, idx); }
-        lua_State* ls_;
-        long idx;
-    };
-    
-    DB_MGR_OBJ.queryDBGroupMod(group_, mod_, sql_, new lambda_cb(ls_, idx));
+    AsyncQueryNameCB cb(ls_, idx);
+    DB_MGR.asyncQueryByName(group_, sql_, cb, &(Singleton<FFWorkerLua>::instance().getRpc().get_tq()));
     return 0;
 }
 static int lua_query(lua_State* ls_)
@@ -358,7 +344,7 @@ static int lua_query(lua_State* ls_)
     vector<vector<string> > retdata;
     vector<string> col;
     int affectedRows = 0;
-    DB_MGR_OBJ.syncQueryDBGroupMod(group_, mod_, sql_, retdata, col, errinfo, affectedRows);
+    DB_MGR.queryByName(group_, sql_, &retdata, &errinfo, &affectedRows, &col);
     
     lua_newtable(ls_);
     {
@@ -402,7 +388,7 @@ static int lua_queryGroupMod(lua_State* ls_)
     vector<vector<string> > retdata;
     vector<string> col;
     int affectedRows = 0;
-    DB_MGR_OBJ.syncQueryDB(db_id_, sql_, retdata, col, errinfo, affectedRows);
+    DB_MGR.query(sql_, &retdata, &errinfo, &affectedRows, &col);
     
     lua_newtable(ls_);
     {
@@ -805,8 +791,8 @@ static bool  lua_reg(lua_State* ls)
                  .def(&lua_connectDB, "connectDB")
                  .def(&lua_asyncQuery, "asyncQuery")
                  .def(&lua_query, "query")
-                 .def(&lua_asyncQueryGroupMod, "asyncQueryGroupMod")
-                 .def(&lua_queryGroupMod, "queryGroupMod")
+                 .def(&lua_asyncQueryGroupMod, "asyncQueryByName")
+                 .def(&lua_queryGroupMod, "queryByName")
                  .def(&lua_workerRPC, "workerRPC")
                  .def(&lua_syncSharedData, "syncSharedData")
                  .def(&lua_asyncHttp, "asyncHttp")
@@ -840,7 +826,21 @@ int FFWorkerLua::scriptInit(const string& lua_root)
     (*m_fflua).reg(lua_reg);
 
 
-    DB_MGR_OBJ.start();
+    DB_MGR.start();
+    ArgHelper& arg_helper = Singleton<ArgHelper>::instance();
+    if (arg_helper.isEnableOption("-db")){
+        int nDbNum = DB_THREAD_NUM;
+        if (arg_helper.getOptionValue("-db").find("sqlite://") != std::string::npos){
+            nDbNum = 1;
+        }
+        for (int i = 0; i < nDbNum; ++i){
+            if (0 == DB_MGR.connectDB(arg_helper.getOptionValue("-db"), DB_DEFAULT_NAME)){
+                LOGERROR((FFWORKER_LUA, "db connect failed"));
+                return -1;
+                break;
+            }
+        }
+    }
     
     int ret = -2;
     
@@ -905,7 +905,7 @@ void FFWorkerLua::scriptCleanup()
     }
     this->cleanupModule();
     m_enable_call = false;
-    DB_MGR_OBJ.stop();
+    DB_MGR.stop();
 }
 int FFWorkerLua::close()
 {

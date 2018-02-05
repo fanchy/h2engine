@@ -3,6 +3,7 @@
 #include "item/item.h"
 #include "server/db_mgr.h"
 #include "common/game_event.h"
+#include "base/os_tool.h"
 
 using namespace ff;
 using namespace std;
@@ -36,19 +37,24 @@ string ItemConfig::getPropStr(const std::string& key){
 }
 bool ItemMgr::init(){
     vector<vector<string> > retdata; 
-    vector<string> col;
     string errinfo;
-    int affectedRows = 0;
     
-    string sql = "select * from itemcfg";
-    DB_MGR_OBJ.syncQueryDBGroupMod("cfgDB", 0, sql, retdata, col, errinfo, affectedRows);
-    
+    string csvData;
+    OSTool::readFile("config/item_config.csv", csvData);
+    StrTool::loadCsvFromString(csvData, retdata);
+
+    if (retdata.empty()){
+        LOGWARN((GAME_LOG, "TaskMgr::init load none data"));
+        return true;
+    }
+
     if (retdata.empty()){
         return false;
     }
     
     m_itemCfgs.clear();
-    for (size_t i = 0; i < retdata.size(); ++i){
+    vector<string>& col = retdata[0];
+    for (size_t i = 1; i < retdata.size(); ++i){
         vector<string>& row = retdata[i];
         ItemConfigPtr cfgItem = new ItemConfig();
         

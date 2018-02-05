@@ -100,31 +100,8 @@ typedef WeakPtr<Entity>   EntityRef;
 #define TO_ENTITY(ptr) Entity::toEntity(long(ptr))
 #define UID_TO_ENTITY(ntype, id) Singleton<EntityMgr>::instance().get(ntype, id)
 
+template<typename T> struct EntityFieldTool{ static T* getField(EntityPtr e){ return e->get<T>();} };
 #define PROP_MGR Singleton<PropCommonMgr<EntityPtr> >::instance()
-
-template<typename RET, typename CLASS_TYPE>
-class TmpPropGetterSertter: public PropCommonMgr<EntityPtr>::PropGetterSetter{
-public:
-    RET CLASS_TYPE::* ptr;
-    TmpPropGetterSertter(RET CLASS_TYPE::* p):ptr(p){}
-    virtual int64_t getProp(EntityPtr obj){
-        CLASS_TYPE* pField = obj->get<CLASS_TYPE>();
-        return (int64_t)(pField->*ptr);
-    }
-    virtual void setProp(EntityPtr obj, int64_t v){
-        CLASS_TYPE* pField = obj->get<CLASS_TYPE>();
-        pField->*ptr = (RET)v;
-    }
-};
-struct EntityPropGetterSetterTool{
-    template<typename RET, typename CLASS_TYPE>
-    static void regGetterSetter(const std::string& strName, RET CLASS_TYPE::* p_){
-        TmpPropGetterSertter<RET, CLASS_TYPE>* pdest = new TmpPropGetterSertter<RET, CLASS_TYPE>(p_);
-        PROP_MGR.regGetterSetter(strName, pdest);
-    }
-};
-#define ENTITY_REG_PROP_FIELD(strName, field) EntityPropGetterSetterTool::regGetterSetter(strName, field)
-#define ENTITY_GET_PROP_FIELD(entityptr, strName) PROP_MGR.get(entityptr, strName)
 
 class EntityField//!entity的字段基类
 {

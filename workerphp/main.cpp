@@ -46,7 +46,8 @@ static bool flagok = false;
 
 int main(int argc, char* argv[])
 {
-	ArgHelper arg_helper(argc, argv);
+	ArgHelper& arg_helper = Singleton<ArgHelper>::instance();
+	arg_helper.load(argc, argv);
     if (arg_helper.isEnableOption("-f"))
     {
         arg_helper.loadFromFile(arg_helper.getOptionValue("-f"));

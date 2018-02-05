@@ -11,6 +11,7 @@
 class ArgHelper
 {
 public:
+    ArgHelper(){}
     ArgHelper(int argc, char* argv[])
     {
         for (int i = 0; i < argc; ++i)
@@ -31,6 +32,18 @@ public:
         {
             loadFromFile(getOptionValue("-f"));
         }
+    }
+    bool load(int argc, char* argv[])
+    {
+        for (int i = 0; i < argc; ++i)
+        {
+            m_args.push_back(argv[i]);
+        }
+        if (isEnableOption("-f"))
+        {
+            loadFromFile(getOptionValue("-f"));
+        }
+        return true;
     }
     std::string getOption(int idx_) const
     {   

@@ -513,11 +513,62 @@ PHP_METHOD(h2ext, connectDB)
 	}
     std::string host_(strarg, strlen);
     std::string group_(strarg2, strlen2);
-    long ret = DB_MGR_OBJ.connectDB(host_, group_);
+    long ret = DB_MGR.connectDB(host_, group_);
     
     RETURN_LONG(ret);
 }
 
+struct AsyncQueryCB
+{
+    AsyncQueryCB(long idxarg):idx(idxarg){}
+    void operator()(DbMgr::queryDBResult_t& result)
+    {
+        DbMgr::queryDBResult_t* data = (DbMgr::queryDBResult_t*)(&result);
+        call_php(idx, data->errinfo, data->result_data, data->col_names, data->affectedRows);
+    }
+    void call_php(long idx, std::string errinfo, std::vector<std::vector<std::string> > ret_, std::vector<std::string> col_, int affectedRows)
+    {
+        if (Singleton<FFWorkerPhp>::instance().m_enable_call == false)
+        {
+            return;
+        }
+        char fieldname[256] = {0};
+        snprintf(fieldname, sizeof(fieldname), "db#%ld", idx);
+        
+        zval* retval = NULL;
+        MAKE_STD_ZVAL(retval);
+        array_init(retval);
+
+        {
+            std::string key = "datas";
+            
+            zval* val_arr = NULL;
+            MAKE_STD_ZVAL(val_arr);
+            array_init(val_arr);
+            
+            for (size_t i = 0; i < ret_.size(); ++i){
+                php_wrap_t::array_append(val_arr, php_wrap_t::vecstr2zval(ret_[i]));
+            }
+            php_wrap_t::array_add(retval, key, val_arr);
+        }
+        
+        {
+            std::string key = "fields";
+            php_wrap_t::array_add(retval, key, php_wrap_t::vecstr2zval(col_));
+        }
+        {
+            std::string key = "errinfo";
+            php_wrap_t::array_add_str(retval, key, errinfo);
+        }
+        {
+            std::string key = "affectedRows";
+            php_wrap_t::array_add_int(retval, key, affectedRows);
+        }
+        Singleton<FFWorkerPhp>::instance().m_php->call_phpcallback(fieldname, retval);
+        zval_ptr_dtor(&retval);
+    }
+    long idx;
+};
 
 PHP_METHOD(h2ext, asyncQuery)
 {
@@ -539,80 +590,72 @@ PHP_METHOD(h2ext, asyncQuery)
     snprintf(fieldname, sizeof(fieldname), "db#%ld", idx);
     Singleton<FFWorkerPhp>::instance().m_php->global_cache(fieldname, funccb);
     
-    struct lambda_cb: public FFSlot::FFCallBack
-    {
-        lambda_cb(long idxarg):idx(idxarg){}
-        virtual void exe(FFSlot::CallBackArg* args_)
-        {
-            if (args_->type() != TYPEID(DbMgr::queryDBResult_t))
-            {
-                return;
-            }
-            DbMgr::queryDBResult_t* data = (DbMgr::queryDBResult_t*)args_;
-
-            Singleton<FFWorkerPhp>::instance().getRpc().get_tq().produce(TaskBinder::gen(&lambda_cb::call_php, idx,
-                                                                   data->errinfo, data->result_data, data->col_names, data->affectedRows));
-        }
-        static void call_php(long idx, std::string errinfo, std::vector<std::vector<std::string> > ret_, std::vector<std::string> col_, int affectedRows)
-        {
-            if (Singleton<FFWorkerPhp>::instance().m_enable_call == false)
-            {
-                return;
-            }
-            char fieldname[256] = {0};
-            snprintf(fieldname, sizeof(fieldname), "db#%ld", idx);
-            
-            zval* retval = NULL;
-            MAKE_STD_ZVAL(retval);
-            array_init(retval);
-
-            {
-                std::string key = "datas";
-                
-                zval* val_arr = NULL;
-                MAKE_STD_ZVAL(val_arr);
-                array_init(val_arr);
-                
-                for (size_t i = 0; i < ret_.size(); ++i){
-                    php_wrap_t::array_append(val_arr, php_wrap_t::vecstr2zval(ret_[i]));
-                }
-                php_wrap_t::array_add(retval, key, val_arr);
-            }
-            
-            {
-                std::string key = "fields";
-                php_wrap_t::array_add(retval, key, php_wrap_t::vecstr2zval(col_));
-            }
-            {
-                std::string key = "errinfo";
-                php_wrap_t::array_add_str(retval, key, errinfo);
-            }
-            {
-                std::string key = "affectedRows";
-                php_wrap_t::array_add_int(retval, key, affectedRows);
-            }
-            Singleton<FFWorkerPhp>::instance().m_php->call_phpcallback(fieldname, retval);
-            zval_ptr_dtor(&retval);
-        }
-        virtual FFSlot::FFCallBack* fork() { return new lambda_cb(idx); }
-        long idx;
-    };
-    
-    DB_MGR_OBJ.queryDB(db_id_, sql_,  new lambda_cb(idx));
+    AsyncQueryCB cb(idx);
+    DB_MGR.asyncQueryModId(db_id_, sql_,  cb, &(Singleton<FFWorkerPhp>::instance().getRpc().get_tq()));
     RETURN_TRUE;
 }
+struct AsyncQueryNameCB
+{
+    AsyncQueryNameCB(long idxarg):idx(idxarg){}
+    void operator()(DbMgr::queryDBResult_t& result)
+    {
+        DbMgr::queryDBResult_t* data = (DbMgr::queryDBResult_t*)(&result);
+        call_php(idx, data->errinfo, data->result_data, data->col_names, data->affectedRows);
+    }
+    void call_php(long idx, std::string errinfo, std::vector<std::vector<std::string> > ret_, std::vector<std::string> col_, int affectedRows)
+    {
+        if (Singleton<FFWorkerPhp>::instance().m_enable_call == false)
+        {
+            return;
+        }
+        char fieldname[256] = {0};
+        snprintf(fieldname, sizeof(fieldname), "db#%ld", idx);
+        
+        zval* retval = NULL;
+        MAKE_STD_ZVAL(retval);
+        array_init(retval);
 
-PHP_METHOD(h2ext, asyncQueryGroupMod)
+        {
+            std::string key = "datas";
+            
+            zval* val_arr = NULL;
+            MAKE_STD_ZVAL(val_arr);
+            array_init(val_arr);
+            
+            for (size_t i = 0; i < ret_.size(); ++i){
+                php_wrap_t::array_append(val_arr, php_wrap_t::vecstr2zval(ret_[i]));
+            }
+            php_wrap_t::array_add(retval, key, val_arr);
+        }
+        
+        {
+            std::string key = "fields";
+            php_wrap_t::array_add(retval, key, php_wrap_t::vecstr2zval(col_));
+        }
+        {
+            std::string key = "errinfo";
+            php_wrap_t::array_add_str(retval, key, errinfo);
+        }
+        {
+            std::string key = "affectedRows";
+            php_wrap_t::array_add_int(retval, key, affectedRows);
+        }
+        Singleton<FFWorkerPhp>::instance().m_php->call_phpcallback(fieldname, retval);
+        zval_ptr_dtor(&retval);
+    }
+    long idx;
+};
+PHP_METHOD(h2ext, asyncQueryByName)
 {
     char *strgroup  = NULL;
     long lengroup = 0;
     
-    long mod_ = 0;
+    //long mod_ = 0;
 	char *strarg  = NULL;
     long strlen = 0;
     zval* funccb = NULL;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "slsz", &strgroup, &lengroup, &mod_, &strarg, &strlen, &funccb) == FAILURE || funccb == NULL) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ssz", &strgroup, &lengroup, &strarg, &strlen, &funccb) == FAILURE || funccb == NULL) {
 		RETURN_FALSE;
 	}
     
@@ -626,66 +669,8 @@ PHP_METHOD(h2ext, asyncQueryGroupMod)
     snprintf(fieldname, sizeof(fieldname), "db#%ld", idx);
     Singleton<FFWorkerPhp>::instance().m_php->global_cache(fieldname, funccb);
     
-    struct lambda_cb: public FFSlot::FFCallBack
-    {
-        lambda_cb(long idxarg):idx(idxarg){}
-        virtual void exe(FFSlot::CallBackArg* args_)
-        {
-            if (args_->type() != TYPEID(DbMgr::queryDBResult_t))
-            {
-                return;
-            }
-            DbMgr::queryDBResult_t* data = (DbMgr::queryDBResult_t*)args_;
-
-            Singleton<FFWorkerPhp>::instance().getRpc().get_tq().produce(TaskBinder::gen(&lambda_cb::call_php, idx,
-                                                                   data->errinfo, data->result_data, data->col_names, data->affectedRows));
-        }
-        static void call_php(long idx, std::string errinfo, std::vector<std::vector<std::string> > ret_, std::vector<std::string> col_, int affectedRows)
-        {
-            if (Singleton<FFWorkerPhp>::instance().m_enable_call == false)
-            {
-                return;
-            }
-            char fieldname[256] = {0};
-            snprintf(fieldname, sizeof(fieldname), "db#%ld", idx);
-            
-            zval* retval = NULL;
-            MAKE_STD_ZVAL(retval);
-            array_init(retval);
-
-            {
-                std::string key = "datas";
-                
-                zval* val_arr = NULL;
-                MAKE_STD_ZVAL(val_arr);
-                array_init(val_arr);
-                
-                for (size_t i = 0; i < ret_.size(); ++i){
-                    php_wrap_t::array_append(val_arr, php_wrap_t::vecstr2zval(ret_[i]));
-                }
-                php_wrap_t::array_add(retval, key, val_arr);
-            }
-            
-            {
-                std::string key = "fields";
-                php_wrap_t::array_add(retval, key, php_wrap_t::vecstr2zval(col_));
-            }
-            {
-                std::string key = "errinfo";
-                php_wrap_t::array_add_str(retval, key, errinfo);
-            }
-            {
-                std::string key = "affectedRows";
-                php_wrap_t::array_add_int(retval, key, affectedRows);
-            }
-            Singleton<FFWorkerPhp>::instance().m_php->call_phpcallback(fieldname, retval);
-            zval_ptr_dtor(&retval);
-        }
-        virtual FFSlot::FFCallBack* fork() { return new lambda_cb(idx); }
-        long idx;
-    };
-    
-    DB_MGR_OBJ.queryDBGroupMod(group_, mod_, sql_,  new lambda_cb(idx));
+    AsyncQueryNameCB cb(idx);
+    DB_MGR.asyncQueryByName(group_, sql_,  cb, &(Singleton<FFWorkerPhp>::instance().getRpc().get_tq()));
     RETURN_TRUE;
 }
 PHP_METHOD(h2ext, query)
@@ -704,7 +689,7 @@ PHP_METHOD(h2ext, query)
     std::vector<std::vector<std::string> > ret_;
     std::vector<std::string> col_;
     int affectedRows = 0;
-    DB_MGR_OBJ.syncQueryDB(db_id_, sql_, ret_, col_, errinfo, affectedRows);
+    DB_MGR.query(sql_, &ret_, &errinfo, &affectedRows, &col_);
     
     zval* retval = NULL;
     MAKE_STD_ZVAL(retval);
@@ -737,16 +722,16 @@ PHP_METHOD(h2ext, query)
     }
     RETURN_ZVAL(retval, 0, 1);
 }
-PHP_METHOD(h2ext, queryGroupMod)
+PHP_METHOD(h2ext, queryByName)
 {
     char *strgroup  = NULL;
     long lengroup = 0;
     
-    long mod_ = 0;
+    //long mod_ = 0;
 	char *strarg  = NULL;
     long strlen = 0;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sls", &strgroup, &lengroup, &mod_, &strarg, &strlen) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &strgroup, &lengroup, &strarg, &strlen) == FAILURE) {
 		RETURN_FALSE;
 	}
     std::string group_(strgroup, lengroup);
@@ -756,7 +741,7 @@ PHP_METHOD(h2ext, queryGroupMod)
     std::vector<std::vector<std::string> > ret_;
     std::vector<std::string> col_;
     int affectedRows = 0;
-    DB_MGR_OBJ.syncQueryDBGroupMod(group_, mod_, sql_, ret_, col_, errinfo, affectedRows);
+    DB_MGR.queryByName(group_, sql_, &ret_, &errinfo, &affectedRows, &col_);
     
     zval* retval = NULL;
     MAKE_STD_ZVAL(retval);
@@ -1145,8 +1130,8 @@ zend_function_entry h2ext_class_functions[] = {
     PHP_ME(h2ext, connectDB, NULL, ZEND_ACC_STATIC)
     PHP_ME(h2ext, asyncQuery, NULL, ZEND_ACC_STATIC)
     PHP_ME(h2ext, query, NULL, ZEND_ACC_STATIC)
-    PHP_ME(h2ext, asyncQueryGroupMod, NULL, ZEND_ACC_STATIC)
-    PHP_ME(h2ext, queryGroupMod, NULL, ZEND_ACC_STATIC)
+    PHP_ME(h2ext, asyncQueryByName, NULL, ZEND_ACC_STATIC)
+    PHP_ME(h2ext, queryByName, NULL, ZEND_ACC_STATIC)
     PHP_ME(h2ext, workerRPC, NULL, ZEND_ACC_STATIC)
     PHP_ME(h2ext, syncSharedData, NULL, ZEND_ACC_STATIC)
     PHP_ME(h2ext, asyncHttp, NULL, ZEND_ACC_STATIC)
@@ -1215,7 +1200,21 @@ int FFWorkerPhp::scriptInit(const std::string& root)
 
     getSharedMem().setNotifyFunc(when_syncSharedData);
 
-    DB_MGR_OBJ.start();
+    DB_MGR.start();
+    ArgHelper& arg_helper = Singleton<ArgHelper>::instance();
+    if (arg_helper.isEnableOption("-db")){
+        int nDbNum = DB_THREAD_NUM;
+        if (arg_helper.getOptionValue("-db").find("sqlite://") != std::string::npos){
+            nDbNum = 1;
+        }
+        for (int i = 0; i < nDbNum; ++i){
+            if (0 == DB_MGR.connectDB(arg_helper.getOptionValue("-db"), DB_DEFAULT_NAME)){
+                LOGERROR((FFWORKER_PHP, "db connect failed"));
+                return -1;
+                break;
+            }
+        }
+    }
     
     int ret = -2;
     
@@ -1305,7 +1304,7 @@ void FFWorkerPhp::scriptCleanup()
     this->cleanupModule();
     LOGINFO((FFWORKER_PHP, "scriptCleanup end"));
     m_enable_call = false;
-    DB_MGR_OBJ.stop();
+    DB_MGR.stop();
 }
 int FFWorkerPhp::close()
 {

@@ -18,6 +18,7 @@
 #include "server/ffgate.h"
 #include "server/shared_mem.h"
 #include "server/http_mgr.h"
+#include "server/db_mgr.h"
 
 #include "./ffworker_python.h"
 
@@ -47,7 +48,8 @@ static bool flagok = false;
 
 int main(int argc, char* argv[])
 {
-	ArgHelper arg_helper(argc, argv);
+    ArgHelper& arg_helper = Singleton<ArgHelper>::instance();
+	arg_helper.load(argc, argv);
     if (arg_helper.isEnableOption("-f"))
     {
         arg_helper.loadFromFile(arg_helper.getOptionValue("-f"));
