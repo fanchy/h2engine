@@ -203,7 +203,7 @@ public:
         }
 
         if(status == FAIL){
-            throw std::runtime_error("call func failed");
+            //throw std::runtime_error("call func failed");
         }
         return rrv;
     }
@@ -524,7 +524,7 @@ struct AsyncQueryCB
     void operator()(DbMgr::queryDBResult_t& result)
     {
         DbMgr::queryDBResult_t* data = (DbMgr::queryDBResult_t*)(&result);
-        call_php(idx, data->errinfo, data->result_data, data->col_names, data->affectedRows);
+        call_php(idx, data->errinfo, data->dataResult, data->fieldNames, data->affectedRows);
     }
     void call_php(long idx, std::string errinfo, std::vector<std::vector<std::string> > ret_, std::vector<std::string> col_, int affectedRows)
     {
@@ -600,7 +600,7 @@ struct AsyncQueryNameCB
     void operator()(DbMgr::queryDBResult_t& result)
     {
         DbMgr::queryDBResult_t* data = (DbMgr::queryDBResult_t*)(&result);
-        call_php(idx, data->errinfo, data->result_data, data->col_names, data->affectedRows);
+        call_php(idx, data->errinfo, data->dataResult, data->fieldNames, data->affectedRows);
     }
     void call_php(long idx, std::string errinfo, std::vector<std::vector<std::string> > ret_, std::vector<std::string> col_, int affectedRows)
     {

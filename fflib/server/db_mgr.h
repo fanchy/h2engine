@@ -17,6 +17,7 @@
 namespace ff
 {
 
+#define DB_MGR_LOG "DB_MGR"
 class QueryDBResult: public FFSlot::CallBackArg
 {
 public:
@@ -30,12 +31,12 @@ public:
     void clear()
     {
         ok = false;
-        result_data.clear();
-        col_names.clear();
+        dataResult.clear();
+        fieldNames.clear();
     }
     bool                                    ok;
-    std::vector<std::vector<std::string> >  result_data;
-    std::vector<std::string>                col_names;
+    std::vector<std::vector<std::string> >  dataResult;
+    std::vector<std::string>                fieldNames;
     std::string                             errinfo;
     int                                     affectedRows;
 };
@@ -45,6 +46,8 @@ struct DbCallBack: public FFSlot::FFCallBack
     DbCallBack(T pFuncArg, TaskQueue* ptq):pFunc(pFuncArg), tq(ptq){}
     virtual void exe(FFSlot::CallBackArg* args_)
     {
+        //LOGINFO((DB_MGR_LOG, "DbMgr::DbCallBack tq:%d", long(tq)));
+        //sleep(10);
         QueryDBResult* data = (QueryDBResult*)args_;
         if (!tq){
             pFunc(*data);
@@ -105,7 +108,8 @@ public:
     template<typename T>
     void asyncQueryModId(long mod, const std::string& sql_, T& func, TaskQueue* tq){
         char buff[256] = {0};
-        ::snprintf(buff, sizeof(buff), "%s#%ld", DB_DEFAULT_NAME, mod % DB_THREAD_NUM);
+        int nMod = (m_defaultDbNum != 0)? m_defaultDbNum: 1;
+        ::snprintf(buff, sizeof(buff), "%s#%ld", DB_DEFAULT_NAME, mod % nMod + 1);
         asyncQueryByName(buff, sql_, func, tq);
     }
 
@@ -114,14 +118,24 @@ public:
                      std::string* errinfo = NULL, int* affectedRows_ = NULL, std::vector<std::string>* col_ = NULL);
 
     template<typename T>
-    void asyncQueryByName(const std::string& strName, const std::string& sql_, T& func, TaskQueue* tq = NULL){
+    void asyncQueryByName(const std::string& strName, const std::string& sql_, T& func, TaskQueue* tq){
         DBConnectionInfo* varDbConnection = NULL;
         {
             LockGuard lock(m_mutex);
             varDbConnection = getConnectionByName(strName);
         }
+        //LOGINFO(("DB_MGR", "DbMgr::asyncQueryByName name<%s>, sql<%s> varDbConnection:%p", strName, sql_, long(varDbConnection)));
         if (NULL == varDbConnection)
         {
+            QueryDBResult result;
+            result.errinfo = "no db cfg";
+            if (tq){
+                tq->produce(TaskBinder::gen(&DbCallBack<T>::tqCall, func, result));
+            }
+            else{
+                func(result);
+            }
+            
             return;
         }
         else
@@ -154,6 +168,7 @@ private:
     int getNumLike(const std::string& strName);
 private:
     long                                                m_db_index;
+    int                                                 m_defaultDbNum;
     std::vector<SharedPtr<TaskQueue> >                  m_tq;
     Mutex                                               m_mutex;
     std::map<long/*dbid*/, DBConnectionInfo>            m_db_connection;

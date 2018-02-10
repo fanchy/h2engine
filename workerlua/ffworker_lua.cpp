@@ -138,7 +138,7 @@ struct AsyncQueryCB
     void operator()(DbMgr::queryDBResult_t& result)
     {
         DbMgr::queryDBResult_t* data = &result;
-        call_lua(ls_, idx, data->errinfo, data->result_data, data->col_names, data->affectedRows);
+        call_lua(ls_, idx, data->errinfo, data->dataResult, data->fieldNames, data->affectedRows);
     }
     void call_lua(lua_State* ls_, long idx, string errinfo, vector<vector<string> > ret_, vector<string> col_, int affectedRows)
     {
@@ -193,7 +193,7 @@ struct AsyncQueryCB
         }
         catch(exception& e_)
         {
-            LOGERROR((FFWORKER_LUA, "workerobj_python_t::gen_queryDB_callback exception<%s>", e_.what()));
+            LOGERROR((FFWORKER_LUA, "workerobj_lua_t::gen_queryDB_callback exception<%s>", e_.what()));
         }
         
         lua_pushstring(ls_, fieldname);
@@ -205,6 +205,7 @@ struct AsyncQueryCB
     long idx;
 };
 
+static int64_t db_idx = 0;
 static int lua_asyncQuery(lua_State* ls_)
 {
     long db_id_ = 0;
@@ -213,7 +214,6 @@ static int lua_asyncQuery(lua_State* ls_)
     string sql_;
     luacpp_op_t<string>::lua2cpp(ls_, ADDR_ARG_POS(2), sql_);
     
-    static int64_t db_idx = 0;
     char fieldname[256] = {0};
     ++db_idx;
     long idx = long(db_idx);
@@ -235,7 +235,7 @@ struct AsyncQueryNameCB
     void operator()(DbMgr::queryDBResult_t& result)
     {
         DbMgr::queryDBResult_t* data = (DbMgr::queryDBResult_t*)(&result);
-        call_lua(ls_, idx, data->errinfo, data->result_data, data->col_names, data->affectedRows);
+        call_lua(ls_, idx, data->errinfo, data->dataResult, data->fieldNames, data->affectedRows);
     }
     void call_lua(lua_State* ls_, long idx, string errinfo, vector<vector<string> > ret_, vector<string> col_, int affectedRows)
     {
@@ -290,7 +290,7 @@ struct AsyncQueryNameCB
         }
         catch(exception& e_)
         {
-            LOGERROR((FFWORKER_LUA, "workerobj_python_t::gen_queryDB_callback exception<%s>", e_.what()));
+            LOGERROR((FFWORKER_LUA, "workerobj_lua_t::gen_queryDB_callback exception<%s>", e_.what()));
         }
         
         lua_pushstring(ls_, fieldname);
@@ -302,10 +302,10 @@ struct AsyncQueryNameCB
     long idx;
 };
 
-static int lua_asyncQueryGroupMod(lua_State* ls_)
+static int lua_asyncQueryByName(lua_State* ls_)
 {
-    string group_;
-    luacpp_op_t<string>::lua2cpp(ls_, ADDR_ARG_POS(1), group_);
+    string name;
+    luacpp_op_t<string>::lua2cpp(ls_, ADDR_ARG_POS(1), name);
     
     //long mod_ = 0;
     //luacpp_op_t<long>::lua2cpp(ls_, ADDR_ARG_POS(2), mod_);
@@ -313,7 +313,6 @@ static int lua_asyncQueryGroupMod(lua_State* ls_)
     string sql_;
     luacpp_op_t<string>::lua2cpp(ls_, ADDR_ARG_POS(2), sql_);
     
-    static int64_t db_idx = 0;
     char fieldname[256] = {0};
     ++db_idx;
     long idx = long(db_idx);
@@ -326,25 +325,25 @@ static int lua_asyncQueryGroupMod(lua_State* ls_)
     lua_pop(ls_, 1);
     
     AsyncQueryNameCB cb(ls_, idx);
-    DB_MGR.asyncQueryByName(group_, sql_, cb, &(Singleton<FFWorkerLua>::instance().getRpc().get_tq()));
+    DB_MGR.asyncQueryByName(name, sql_, cb, &(Singleton<FFWorkerLua>::instance().getRpc().get_tq()));
     return 0;
 }
-static int lua_query(lua_State* ls_)
+static int lua_queryByName(lua_State* ls_)
 {
-    string group_;
-    luacpp_op_t<string>::lua2cpp(ls_, ADDR_ARG_POS(1), group_);
+    string name;
+    luacpp_op_t<string>::lua2cpp(ls_, ADDR_ARG_POS(1), name);
     
-    long mod_ = 0;
-    luacpp_op_t<long>::lua2cpp(ls_, ADDR_ARG_POS(2), mod_);
+    //long mod_ = 0;
+    //luacpp_op_t<long>::lua2cpp(ls_, ADDR_ARG_POS(2), mod_);
     
     string sql_;
-    luacpp_op_t<string>::lua2cpp(ls_, ADDR_ARG_POS(3), sql_);
+    luacpp_op_t<string>::lua2cpp(ls_, ADDR_ARG_POS(2), sql_);
     
     string errinfo;
     vector<vector<string> > retdata;
     vector<string> col;
     int affectedRows = 0;
-    DB_MGR.queryByName(group_, sql_, &retdata, &errinfo, &affectedRows, &col);
+    DB_MGR.queryByName(name, sql_, &retdata, &errinfo, &affectedRows, &col);
     
     lua_newtable(ls_);
     {
@@ -376,13 +375,13 @@ static int lua_query(lua_State* ls_)
     return 1;
 }
 
-static int lua_queryGroupMod(lua_State* ls_)
+static int lua_query(lua_State* ls_)
 {
-    long db_id_ = 0;
-    luacpp_op_t<long>::lua2cpp(ls_, ADDR_ARG_POS(1), db_id_);
+    //long db_id_ = 0;
+    //luacpp_op_t<long>::lua2cpp(ls_, ADDR_ARG_POS(1), db_id_);
     
     string sql_;
-    luacpp_op_t<string>::lua2cpp(ls_, ADDR_ARG_POS(2), sql_);
+    luacpp_op_t<string>::lua2cpp(ls_, ADDR_ARG_POS(1), sql_);
     
     string errinfo;
     vector<vector<string> > retdata;
@@ -556,7 +555,7 @@ static int lua_asyncHttp(lua_State* ls_)
             }
             catch(exception& e_)
             {
-                LOGERROR((FFWORKER_LUA, "workerobj_python_t::gen_queryDB_callback exception<%s>", e_.what()));
+                LOGERROR((FFWORKER_LUA, "workerobj_lua_t::gen_queryDB_callback exception<%s>", e_.what()));
             }
             
             lua_pushstring(ls_, fieldname);
@@ -791,8 +790,8 @@ static bool  lua_reg(lua_State* ls)
                  .def(&lua_connectDB, "connectDB")
                  .def(&lua_asyncQuery, "asyncQuery")
                  .def(&lua_query, "query")
-                 .def(&lua_asyncQueryGroupMod, "asyncQueryByName")
-                 .def(&lua_queryGroupMod, "queryByName")
+                 .def(&lua_asyncQueryByName, "asyncQueryByName")
+                 .def(&lua_queryByName, "queryByName")
                  .def(&lua_workerRPC, "workerRPC")
                  .def(&lua_syncSharedData, "syncSharedData")
                  .def(&lua_asyncHttp, "asyncHttp")

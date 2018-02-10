@@ -1,6 +1,4 @@
-function init(){
-    h2ext.print("js init ok");
-}
+
 function cleanup(){
     h2ext.print("js cleanup ok");
 }
@@ -24,20 +22,31 @@ function timercb(){
     h2ext.regTimer(1, timercb);
 }
 
-dbid = h2ext.connectDB("sqlite://./test.db", 'TestGroup');
-sql = 'create table  IF NOT EXISTS foo (num integer);';
-sql = "insert into foo (num) values ('棒！');";
-sql = 'select * from foo';
-function dbcb(retdata){
+function dbTest(){
     
-    h2ext.print('asyncQuery callback', retdata['datas'], retdata['affectedRows'], retdata['errinfo']);
-    //h2ext.asyncQuery(dbid, sql, dbcb);
+    sql = 'create table IF NOT EXISTS foo (num integer);';
+    h2ext.query(sql);
+    
+    sql = "insert into foo (num) values ('100');";
+    ret = h2ext.query(sql);
+    
+    h2ext.print('dbTest');
+    
+    ret = h2ext.query('select * from foo limit 1')  ;     
+    h2ext.print('dbTest query', ret);
+    function dbTestCb(ret){
+        h2ext.print('dbTest asyncQuery')
+        //var_dump(ret)
+    }
+    //h2ext.asyncQuery(0, 'select * from foo limit 1', dbTestCb);
+    //return;
+    dbname = 'myDB'
+    h2ext.connectDB("sqlite://./test.db", dbname)
+    ret = h2ext.queryByName(dbname, 'select * from foo limit 1')
+    h2ext.print('dbTest queryByName')
+    //var_dump(ret)
+    h2ext.asyncQueryByName(dbname, 'select * from foo limit 2', dbTestCb)
 }
-h2ext.asyncQuery(dbid, sql, dbcb);
-
-
-var retdata = h2ext.query(dbid, sql);
-dbcb(retdata)
 
 
 h2ext.asyncHttp("https://git.oschina.net/ownit/spython/raw/master/ma.py", 1, function(ret){
@@ -64,10 +73,16 @@ function testScriptCall(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9){
     h2ext.print('testScriptCall', arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
     return 1122334;
 }
-
-h2ext.callFunc("Cache.set", "m.n[10]", "mmm1");
-cacheRet = h2ext.callFunc("Cache.get", "m.n[10]");
-h2ext.print("cacheRet", cacheRet);
-cacheRet = h2ext.callFunc("Cache.get", "");
-h2ext.print(cacheRet['m']['n']);
-h2ext.print("cacheRet", h2ext.callFunc("Cache.size", "m"), h2ext.callFunc("Cache.size", "m.n"));
+function testCode(){
+    h2ext.callFunc("Cache.set", "m.n[10]", "mmm1");
+    cacheRet = h2ext.callFunc("Cache.get", "m.n[10]");
+    h2ext.print("cacheRet", cacheRet);
+    cacheRet = h2ext.callFunc("Cache.get", "");
+    h2ext.print(cacheRet['m']['n']);
+    h2ext.print("cacheRet", h2ext.callFunc("Cache.size", "m"), h2ext.callFunc("Cache.size", "m.n"));
+    dbTest();
+}
+function init(){
+    testCode();
+    h2ext.print("js init ok");
+}

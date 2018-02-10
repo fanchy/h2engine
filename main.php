@@ -87,4 +87,31 @@ function testScriptCache(){
 }
 
 testScriptCache();
+
+function dbTestCb($ret){
+    var_dump('dbTest asyncQuery');
+    //var_dump(ret)
+}
+function dbTest(){
+    
+    $sql = 'create table IF NOT EXISTS foo (num integer);';
+    h2ext::query($sql);
+    
+    $sql = "insert into foo (num) values ('100');";
+    $ret = h2ext::query($sql);
+    
+    var_dump('dbTest');
+    
+    $ret = h2ext::query('select * from foo limit 1')  ;     
+    //h2ext::print('dbTest', ret);
+    
+    h2ext::asyncQuery(0, 'select * from foo limit 1', dbTestCb);
+    $dbname = 'myDB';
+    h2ext::connectDB("sqlite://./test.db", $dbname);
+    $ret = h2ext::queryByName($dbname, 'select * from foo limit 1');
+    //h2ext::print('dbTest queryByName')
+    //var_dump(ret)
+    h2ext::asyncQueryByName(dbname, 'select * from foo limit 2', dbTestCb);
+}
+dbTest();
 ?>

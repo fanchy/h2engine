@@ -410,12 +410,14 @@ struct AsyncQueryCB
     AsyncQueryCB(persistent_lambda_ptr_t f):funcptr(f){}
     void operator()(DbMgr::queryDBResult_t& result)
     {
+        LOGINFO((FFWORKER_JS, "FFWorkerJs::call_js **********"));
         DbMgr::queryDBResult_t* data = (DbMgr::queryDBResult_t*)(&result);
-        call_js(funcptr, data->errinfo, data->result_data, data->col_names, data->affectedRows);
+        call_js(funcptr, data->errinfo, data->dataResult, data->fieldNames, data->affectedRows);
     }
     void call_js(persistent_lambda_ptr_t funcptr, string errinfo, vector<vector<string> > ret_, 
                         vector<string> col_, int affectedRows)
     {
+        
         HANDLE_SCOPE_DEF_VAR;
         if(funcptr){
             Local<Object> retDict = OBJECT_NEW();
@@ -489,7 +491,7 @@ struct AsyncQueryNameCB
     {
         DbMgr::queryDBResult_t* data = (DbMgr::queryDBResult_t*)(&result);
 
-        call_js(funcptr, data->errinfo, data->result_data, data->col_names, data->affectedRows);
+        call_js(funcptr, data->errinfo, data->dataResult, data->fieldNames, data->affectedRows);
     }
     void call_js(persistent_lambda_ptr_t funcptr, string errinfo, vector<vector<string> > ret_, 
                         vector<string> col_, int affectedRows)
@@ -543,7 +545,7 @@ struct AsyncQueryNameCB
     }
     persistent_lambda_ptr_t funcptr;
 };
-static BIND_FUNC_RET_TYPE js_asyncQueryGroupMod(const Arguments& args)
+static BIND_FUNC_RET_TYPE js_asyncQueryByName(const Arguments& args)
 {
     CHECK_ARG_NUM(args, 3);
     string group_ = js2string(args[0]);
@@ -613,7 +615,7 @@ static BIND_FUNC_RET_TYPE js_query(const Arguments& args)
     BIND_FUNC_RET_VAL(retDict);
 }
 
-static BIND_FUNC_RET_TYPE js_queryGroupMod(const Arguments& args)
+static BIND_FUNC_RET_TYPE js_QueryByName(const Arguments& args)
 {
     CHECK_ARG_NUM(args, 2);
     string group_ = js2string(args[0]);
@@ -935,6 +937,9 @@ static bool callScriptImpl(const std::string& funcName, ScriptArgs& varScript){
     }
     return true;
 }
+static void DoNone(){
+    usleep(500);
+}
 int FFWorkerJs::scriptInit(const string& js_root)
 {
     string path;
@@ -980,6 +985,7 @@ int FFWorkerJs::scriptInit(const string& js_root)
         
         LockGuard lock(mutex);
         getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerJs::processInit, this, &cond, &ret, js_root));
+        //getRpc().get_tq().produce(TaskBinder::gen(&DoNone));
         while (ret == -2){
             cond.time_wait(100);
         }
@@ -995,7 +1001,7 @@ int FFWorkerJs::scriptInit(const string& js_root)
         return -1;
     }
     m_started = true;
-    LOGTRACE((FFWORKER_JS, "FFWorkerJs::scriptInit end ok"));
+    LOGINFO((FFWORKER_JS, "FFWorkerJs::scriptInit end ok"));
     return ret;
 }
 
@@ -1040,8 +1046,8 @@ int FFWorkerJs::processInit(ConditionVar* var, int* ret, const string& js_root)
             global->Set(NewStrValue2("connectDB"),FUNCTIONTEMPLATE_NEW(js_connectDB));
             global->Set(NewStrValue2("asyncQuery"),FUNCTIONTEMPLATE_NEW(js_asyncQuery));
             global->Set(NewStrValue2("query"),FUNCTIONTEMPLATE_NEW(js_query));
-            global->Set(NewStrValue2("asyncQueryByName"),FUNCTIONTEMPLATE_NEW(js_asyncQueryGroupMod));
-            global->Set(NewStrValue2("queryByName"),FUNCTIONTEMPLATE_NEW(js_queryGroupMod));
+            global->Set(NewStrValue2("asyncQueryByName"),FUNCTIONTEMPLATE_NEW(js_asyncQueryByName));
+            global->Set(NewStrValue2("queryByName"),FUNCTIONTEMPLATE_NEW(js_QueryByName));
             global->Set(NewStrValue2("workerRPC"),FUNCTIONTEMPLATE_NEW(js_workerRPC));
             global->Set(NewStrValue2("syncSharedData"),FUNCTIONTEMPLATE_NEW(js_syncSharedData));
             global->Set(NewStrValue2("asyncHttp"),FUNCTIONTEMPLATE_NEW(js_asyncHttp));
@@ -1097,7 +1103,7 @@ int FFWorkerJs::processInit(ConditionVar* var, int* ret, const string& js_root)
                 if (value->IsFunction()) {
                     m_func_enter = new persistent_lambda_t(v8::Handle<v8::Function>::Cast(value));
                 }else{
-                    LOGERROR((FFWORKER_JS, "FFWorkerJs::open failed no onSessionEnter"));
+                    LOGERROR((FFWORKER_JS, "FFWorkerJs:: no onSessionEnter"));
                 }
             }
             {
@@ -1115,7 +1121,7 @@ int FFWorkerJs::processInit(ConditionVar* var, int* ret, const string& js_root)
                 if (value->IsFunction()) {
                     m_func_sync = new persistent_lambda_t(v8::Handle<v8::Function>::Cast(value));
                 }else{
-                    LOGERROR((FFWORKER_JS, "FFWorkerJs::open failed no when_syncSharedData"));
+                    LOGERROR((FFWORKER_JS, "FFWorkerJs:: no when_syncSharedData"));
                 }
             }
             SCRIPT_UTIL.setCallScriptFunc(callScriptImpl);
@@ -1182,14 +1188,15 @@ void FFWorkerJs::scriptRelease(){
 }
 int FFWorkerJs::close()
 {
+    LOGINFO((FFWORKER_JS, "FFWorkerJs::close begin"));
     getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerJs::scriptCleanup, this));
-
+    LOGINFO((FFWORKER_JS, "FFWorkerJs::close begin to close"));
     FFWorker::close();
     if (false == m_started)
         return 0;
     m_started = false;
 
-
+    LOGINFO((FFWORKER_JS, "FFWorkerJs::close end"));
     return 0;
 }
 

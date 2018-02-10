@@ -5,10 +5,9 @@ using namespace ff;
 using namespace std;
 
 
-#define DB_MGR_LOG "DB_MGR"
 
 DbMgr::DbMgr():
-    m_db_index(0)
+    m_db_index(0), m_defaultDbNum(0)
 {
 }
 DbMgr::~DbMgr()
@@ -58,8 +57,9 @@ long DbMgr::connectDB(const string& host_, const std::string& name)
         varDbConnection.host_cfg = host_;
         
         if (name == DB_DEFAULT_NAME){
+            ++m_defaultDbNum;
             char buff[256] = {0};
-            ::snprintf(buff, sizeof(buff), "%s#%d", DB_DEFAULT_NAME, getNumLike(DB_DEFAULT_NAME)+1);
+            ::snprintf(buff, sizeof(buff), "%s#%d", DB_DEFAULT_NAME, m_defaultDbNum);
             m_name2connection[buff] = &varDbConnection;
         }
         else{
@@ -72,7 +72,8 @@ long DbMgr::connectDB(const string& host_, const std::string& name)
 
 void DbMgr::asyncQueryModId(long mod, const std::string& sql_){
     char buff[256] = {0};
-    ::snprintf(buff, sizeof(buff), "%s#%ld", DB_DEFAULT_NAME, mod % DB_THREAD_NUM);
+    int nMod = (m_defaultDbNum != 0)? m_defaultDbNum: 1;
+    ::snprintf(buff, sizeof(buff), "%s#%ld", DB_DEFAULT_NAME, mod % nMod + 1);
     asyncQueryByName(buff, sql_);
 }
 int  DbMgr::query(const std::string& sql_, std::vector<std::vector<std::string> >* ret_data_,
@@ -97,10 +98,18 @@ void DbMgr::asyncQueryByName(const std::string& strName, const std::string& sql_
 }
 void DbMgr::queryDBImpl(DBConnectionInfo* varDbConnection_, const string& sql_, FFSlot::FFCallBack* callback_)
 {
-    LOGTRACE((DB_MGR_LOG, "DbMgr::queryDBImpl sql=%s", sql_));
     AUTO_PERF();
+    if (!varDbConnection_){
+        if (callback_)
+        {
+            QueryDBResult result;
+            callback_->exe(&(result));
+            delete callback_;
+        }
+        return;
+    }
     varDbConnection_->ret.clear();
-    if (0 == varDbConnection_->db->exeSql(sql_, varDbConnection_->ret.result_data, varDbConnection_->ret.col_names))
+    if (0 == varDbConnection_->db->exeSql(sql_, varDbConnection_->ret.dataResult, varDbConnection_->ret.fieldNames))
     {
         varDbConnection_->ret.ok = true;
         varDbConnection_->ret.affectedRows = varDbConnection_->db->affectedRows();
@@ -115,15 +124,21 @@ void DbMgr::queryDBImpl(DBConnectionInfo* varDbConnection_, const string& sql_, 
         callback_->exe(&(varDbConnection_->ret));
         delete callback_;
     }
+    LOGINFO((DB_MGR_LOG, "DbMgr::queryDBImpl sql=%s end callback_:%d", sql_, long(callback_)));
 }
 
 int  DbMgr::queryByName(const std::string& strName, const std::string& sql_, 
                      std::vector<std::vector<std::string> >* ret_data_,
                      std::string* errinfo, int* affectedRows_, std::vector<std::string>* col_)
 {
+    LOGTRACE((DB_MGR_LOG, "DbMgr::queryByName name<%s>, while sql<%s>", strName, sql_));
     AUTO_PERF();
-    LockGuard lock(m_mutex);
-    DBConnectionInfo* varDbConnection = getConnectionByName(strName);
+    DBConnectionInfo* varDbConnection = NULL;
+    {
+        LockGuard lock(m_mutex);
+        varDbConnection = getConnectionByName(strName);
+    }
+
     if (NULL == varDbConnection)
     {
         return -1;
@@ -133,7 +148,7 @@ int  DbMgr::queryByName(const std::string& strName, const std::string& sql_,
     varDbConnection->tq->produce(TaskBinder::gen(&DbMgr::syncQueryDBImpl, this, varDbConnection, sql_, &result));
     varDbConnection->wait();
     if (ret_data_){
-        *ret_data_ = result.result_data;
+        *ret_data_ = result.dataResult;
     }
     if (errinfo){
         *errinfo = result.errinfo;
@@ -142,14 +157,14 @@ int  DbMgr::queryByName(const std::string& strName, const std::string& sql_,
         *affectedRows_ = result.affectedRows;
     }
     if (col_){
-        *col_ = result.col_names;
+        *col_ = result.fieldNames;
     }
     return 0;
 }
 void DbMgr::syncQueryDBImpl(DBConnectionInfo* varDbConnection, const string& sql_,  QueryDBResult* result)
 {
     LOGTRACE((DB_MGR_LOG, "DbMgr::syncQueryDBImpl sql=%s", sql_));
-    if (0 == varDbConnection->db->exeSql(sql_, result->result_data, result->col_names))
+    if (0 == varDbConnection->db->exeSql(sql_, result->dataResult, result->fieldNames))
     {
         result->affectedRows = varDbConnection->db->affectedRows();
     }
@@ -169,6 +184,7 @@ void DbMgr::DBConnectionInfo::signal()
 
 int DbMgr::DBConnectionInfo::wait()
 {
+    LockGuard lock(mutex);
     if (1 == result_flag)
     {
         return 0;

@@ -149,8 +149,9 @@ int main(int argc, char* argv[])
 	flagok = true;  
 #endif
 err_proc:
-    
+    printf("*************recv stop signal*************\n"); 
     Singleton<FFWorkerJs>::instance().close();
+    printf("*************recv stop signal*************1\n"); 
     PERF_MONITOR.stop();
     usleep(100);
     NetFactory::stop();

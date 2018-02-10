@@ -77,18 +77,27 @@ end
 h2ext.regTimer(1000, timerSync)
 h2ext.regTimer(2000, timerSync)
 h2ext.regTimer(3000, timerSync)
--- function dbTest()
-    -- dbhost = "mysql://127.0.0.1:3306/root/rootpassword/dbname"
-    -- dbid   = h2ext.connectDB(dbhost, 'TestGroup')
-    -- function cb(ret)
-        -- print('cb', ret)
-        -- return
-    -- end
-    -- h2ext.asyncQuery(dbid, 'select * from user_log limit 1', cb)   #async
-    -- ret = h2ext.query(dbid, 'select * from user_log limit 1')       #sync
--- end
--- print('main.py'+'*'*10)
-
+function dbTest()
+    sql = 'create table IF NOT EXISTS foo (num integer);';
+    h2ext.query(sql)
+    sql = "insert into foo (num) values ('100');";
+    ret = h2ext.query(sql)
+    print('dbTest', ret)
+    ret = h2ext.query('select * from foo limit 1')       -- sync
+    print('dbTest', ret)
+    function dbTestCb(ret)
+        print('dbTest asyncQuery')
+        var_dump(ret)
+    end
+    h2ext.asyncQuery(0, 'select * from foo limit 1', dbTestCb)   -- async
+    dbname = 'myDB'
+    h2ext.connectDB("sqlite://./test.db", dbname)
+    ret = h2ext.queryByName(dbname, 'select * from foo limit 1')
+    print('dbTest queryByName')
+    var_dump(ret)
+    h2ext.asyncQueryByName(dbname, 'select * from foo limit 2', dbTestCb)
+end
+--dbTest()
 print("main.lua................................")
 
 function httpcb(retdata)
