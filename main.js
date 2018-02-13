@@ -49,9 +49,9 @@ function dbTest(){
 }
 
 
-h2ext.asyncHttp("https://git.oschina.net/ownit/spython/raw/master/ma.py", 1, function(ret){
-    h2ext.print("http", ret);
-});
+// h2ext.asyncHttp("https://git.oschina.net/ownit/spython/raw/master/ma.py", 1, function(ret){
+    // h2ext.print("http", ret);
+// });
 
 // var ret = h2ext.require("foo.js");
 // h2ext.print(ret);
@@ -62,9 +62,9 @@ function onWorkerCall(cmd, data){
     return 'gotit';
 }
 
-h2ext.workerRPC(0, 101, 'OhNice', function(rpcret){
-        h2ext.print('rpcret', rpcret);
-});
+// h2ext.workerRPC(0, 101, 'OhNice', function(rpcret){
+        // h2ext.print('rpcret', rpcret);
+// });
 
 // var ret = h2ext.callFunc("Server.foo", 1, 2.2, "s3");
 // h2ext.print(ret);
@@ -84,5 +84,6 @@ function testCode(){
 }
 function init(){
     testCode();
+    dbTest();
     h2ext.print("js init ok");
 }

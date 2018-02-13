@@ -39,7 +39,7 @@ public:
     ConditionVar(Mutex& mutex_);
     ~ConditionVar();
     bool wait();
-    bool time_wait(int us_);
+    //bool time_wait(int us_);
     bool signal();
     bool broadcast();
 

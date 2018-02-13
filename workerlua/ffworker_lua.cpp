@@ -575,16 +575,16 @@ static string lua_syncHttp(const string& url, int timeoutsec)
 {
     return Singleton<FFWorkerLua>::instance().syncHttp(url, timeoutsec);
 }
-static void when_syncSharedData(int32_t cmd, const string& data){
+static void onSyncSharedData(int32_t cmd, const string& data){
     try{
         lua_args_t luaarg;
         luaarg.add((int64_t)cmd);
         luaarg.add(data);
-        Singleton<FFWorkerLua>::instance().getFFlua().call<void>("when_syncSharedData", luaarg);
+        Singleton<FFWorkerLua>::instance().getFFlua().call<void>("onSyncSharedData", luaarg);
     }
     catch(exception& e_)
     {
-        LOGERROR((FFWORKER_LUA, "FFWorkerLua::when_syncSharedData exception=%s", e_.what()));
+        LOGERROR((FFWORKER_LUA, "FFWorkerLua::onSyncSharedData exception=%s", e_.what()));
     }
 }
 static ScriptArgObjPtr toScriptArg(lua_State* ls_, int pos_){
@@ -821,7 +821,7 @@ int FFWorkerLua::scriptInit(const string& lua_root)
     
     LOGTRACE((FFWORKER_LUA, "FFWorkerLua::scriptInit begin path:%s, m_ext_name:%s", path, m_ext_name));
 
-    getSharedMem().setNotifyFunc(when_syncSharedData);
+    getSharedMem().setNotifyFunc(onSyncSharedData);
     (*m_fflua).reg(lua_reg);
 
 
@@ -848,11 +848,10 @@ int FFWorkerLua::scriptInit(const string& lua_root)
         Mutex                    mutex;
         ConditionVar            cond(mutex);
         
+        getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerLua::processInit, this, &mutex, &cond, &ret));
         LockGuard lock(mutex);
-        getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerLua::processInit, this, &cond, &ret));
-        while (ret == -2)
-        {
-            cond.time_wait(100);
+        if (ret == -2){
+            cond.wait();
         }
         if (ret < 0)
         {
@@ -869,7 +868,7 @@ int FFWorkerLua::scriptInit(const string& lua_root)
     return ret;
 }
 //!!处理初始化逻辑
-int FFWorkerLua::processInit(ConditionVar* var, int* ret)
+int FFWorkerLua::processInit(Mutex* mutex, ConditionVar* var, int* ret)
 {
     try{
         (*m_fflua).do_file(m_ext_name);
@@ -888,6 +887,7 @@ int FFWorkerLua::processInit(ConditionVar* var, int* ret)
         *ret = -1;
         LOGERROR((FFWORKER_LUA, "FFWorkerLua::open failed er=<%s>", e_.what()));
     }
+    LockGuard lock(*mutex);
     var->signal();
     return 0;
 }

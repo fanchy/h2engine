@@ -789,7 +789,7 @@ static BIND_FUNC_RET_TYPE js_syncHttp(const Arguments& args)
     BIND_FUNC_RET_VAL(NewStrValue(ret.c_str(), ret.size()));
 }
 
-static void when_syncSharedData(int32_t cmd, const string& data){
+static void onSyncSharedData(int32_t cmd, const string& data){
 
     try{
         HANDLE_SCOPE_DEF_VAR;
@@ -800,7 +800,7 @@ static void when_syncSharedData(int32_t cmd, const string& data){
     }
     catch(exception& e_)
     {
-        LOGERROR((FFWORKER_JS, "FFWorkerJs::when_syncSharedData exception=%s", e_.what()));
+        LOGERROR((FFWORKER_JS, "FFWorkerJs::onSyncSharedData exception=%s", e_.what()));
     }
     
 }
@@ -937,9 +937,7 @@ static bool callScriptImpl(const std::string& funcName, ScriptArgs& varScript){
     }
     return true;
 }
-static void DoNone(){
-    usleep(500);
-}
+
 int FFWorkerJs::scriptInit(const string& js_root)
 {
     string path;
@@ -958,7 +956,7 @@ int FFWorkerJs::scriptInit(const string& js_root)
     m_jspath = path;
     LOGINFO((FFWORKER_JS, "FFWorkerJs::scriptInit begin path:%s, m_ext_name:%s", path, ext_name));
     
-    getSharedMem().setNotifyFunc(when_syncSharedData);
+    getSharedMem().setNotifyFunc(onSyncSharedData);
 
     DB_MGR.start();
     ArgHelper& arg_helper = Singleton<ArgHelper>::instance();
@@ -981,13 +979,13 @@ int FFWorkerJs::scriptInit(const string& js_root)
     try{
         
         Mutex                    mutex;
-        ConditionVar            cond(mutex);
+        ConditionVar             cond(mutex);
+        
+        getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerJs::processInit, this, &mutex, &cond, &ret, js_root));
         
         LockGuard lock(mutex);
-        getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerJs::processInit, this, &cond, &ret, js_root));
-        //getRpc().get_tq().produce(TaskBinder::gen(&DoNone));
-        while (ret == -2){
-            cond.time_wait(100);
+        if (ret == -2){
+            cond.wait();
         }
         
         if (ret < 0)
@@ -1006,7 +1004,7 @@ int FFWorkerJs::scriptInit(const string& js_root)
 }
 
 //!!处理初始化逻辑
-int FFWorkerJs::processInit(ConditionVar* var, int* ret, const string& js_root)
+int FFWorkerJs::processInit(Mutex* mutex, ConditionVar* var, int* ret, const string& js_root)
 {
     try{
         m_v8init = new v8init_t();
@@ -1116,17 +1114,18 @@ int FFWorkerJs::processInit(ConditionVar* var, int* ret, const string& js_root)
                 }
             }
             {
-                string funcname = "when_syncSharedData";
+                string funcname = "onSyncSharedData";
                 Handle<v8::Value> value = PERSISTENT2LOCAL(_global_context)->Global()->Get(NewStrValue(funcname.c_str(), funcname.size()));
                 if (value->IsFunction()) {
                     m_func_sync = new persistent_lambda_t(v8::Handle<v8::Function>::Cast(value));
                 }else{
-                    LOGERROR((FFWORKER_JS, "FFWorkerJs:: no when_syncSharedData"));
+                    LOGERROR((FFWORKER_JS, "FFWorkerJs:: no onSyncSharedData"));
                 }
             }
             SCRIPT_UTIL.setCallScriptFunc(callScriptImpl);
             if (this->initModule()){
                 *ret = 0;
+                LOGINFO((FFWORKER_JS, "FFWorkerJs::processInit end ok0"));
                 {
                     HANDLE_SCOPE_DEF_VAR;
                     string funcname = "init";
@@ -1147,8 +1146,11 @@ int FFWorkerJs::processInit(ConditionVar* var, int* ret, const string& js_root)
         *ret = -1;
         LOGERROR((FFWORKER_JS, "FFWorkerJs::open failed er=<%s>", e_.what()));
     }
+    LOGINFO((FFWORKER_JS, "FFWorkerJs::processInit end ok1"));
+    LockGuard lock(*mutex);
     var->signal();
 
+    LOGINFO((FFWORKER_JS, "FFWorkerJs::processInit end ok"));
     return 0;
 }
 void FFWorkerJs::scriptCleanup()

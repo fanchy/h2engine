@@ -40,12 +40,15 @@ static bool callSetupFunc(){
     for (size_t i = 0; i < sizeof(FFWorker::gSetupFunc) / sizeof(WorkerInitFileInfo); ++i){
         if (FFWorker::gSetupFunc[i].func == NULL)
             continue;
+        LOGINFO((FFWORKER, "FFWorker start exe setupfun %s[%d]",
+                                FFWorker::gSetupFunc[i].strFile, FFWorker::gSetupFunc[i].nLine));
         if ((*(FFWorker::gSetupFunc[i].func))() == false){
             LOGERROR((FFWORKER, "FFWorker::open failed when exe %s[%d]",
                                 FFWorker::gSetupFunc[i].strFile, FFWorker::gSetupFunc[i].nLine));
             return false;
         }
     }
+    LOGINFO((FFWORKER, "FFWorker start exe all setupfun ok"));
     return true;
 }
 static bool callExitFunc(){

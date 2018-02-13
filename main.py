@@ -54,8 +54,8 @@ print('main.py'+'*'*10)
 def httpcb(retdata):
     print('httpcb', retdata)
 #h2ext.asyncHttp("http://www.baidu.com", 1, httpcb)
-def when_syncSharedData(cmd, data):
-    print('when_syncSharedData', cmd, data)
+def onSyncSharedData(cmd, data):
+    print('onSyncSharedData', cmd, data)
   
 #ret = h2ext.callFunc("Entity.totalNum")
 #print('ret', type(ret), ret)

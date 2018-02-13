@@ -123,6 +123,7 @@ int main(int argc, char* argv[])
             printf("FFWorkerJs scriptInit error!\n");
             goto err_proc;
         }
+        printf("FFWorkerJs scriptInit ok!\n");
     }
     catch(exception& e_)
     {

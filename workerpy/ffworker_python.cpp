@@ -113,7 +113,7 @@ struct PyQueryCallBack
         }
     }
     void operator()(DbMgr::queryDBResult_t& result){
-        call_python(pFunc, result.errinfo, result.result_data, result.col_names, result.affectedRows);
+        call_python(pFunc, result.errinfo, result.dataResult, result.fieldNames, result.affectedRows);
     }
     void call_python(PyObject* pFuncSrc, string errinfo, vector<vector<string> > ret_, vector<string> col_, int affectedRows)
     {
@@ -191,7 +191,7 @@ struct AsyncQueryNameCb
             return;
         }
         QueryDBResult* data = &result;
-        call_python(pFunc, data->errinfo, data->result_data, data->col_names, data->affectedRows);
+        call_python(pFunc, data->errinfo, data->dataResult, data->fieldNames, data->affectedRows);
     }
     void call_python(PyObject* pFuncSrc, string errinfo, vector<vector<string> > ret_, vector<string> col_, int affectedRows)
     {
@@ -249,7 +249,7 @@ struct AsyncQueryNameCb
     }
     PyObject*          pFunc;
 };
-static void py_asyncQueryGroupMod(const string& name_, int mod_, const string& sql_, PyObject* pFuncArg)
+static void py_asyncQueryByName(const string& name_, const string& sql_, PyObject* pFuncArg)
 {
     AsyncQueryNameCb cb(pFuncArg);
     DB_MGR.asyncQueryByName(name_, sql_, cb, &(Singleton<FFWorkerPython>::instance().getRpc().get_tq()));
@@ -299,7 +299,7 @@ static PyObject* py_query(const string& sql_)
     return pyRet;
 }
 
-static PyObject* py_queryGroupMod(const string& name_, const string& sql_)
+static PyObject* py_QueryByName(const string& name_, const string& sql_)
 {
     PyObject* pyRet = PyDict_New();
     string errinfo;
@@ -442,15 +442,15 @@ static string py_syncHttp(const string& url_, int timeoutsec)
 {
     return Singleton<FFWorkerPython>::instance().syncHttp(url_, timeoutsec);
 }
-static void when_syncSharedData(int32_t cmd, const string& data){
+static void onSyncSharedData(int32_t cmd, const string& data){
     try{
         Singleton<FFWorkerPython>::instance().getFFpython().call<void>(
                     Singleton<FFWorkerPython>::instance().m_ext_name,
-                    "when_syncSharedData", cmd, data);
+                    "onSyncSharedData", cmd, data);
     }
     catch(exception& e_)
     {
-        LOGERROR((FFWORKER_PYTHON, "FFWorkerPython::when_syncSharedData exception=%s", e_.what()));
+        LOGERROR((FFWORKER_PYTHON, "FFWorkerPython::onSyncSharedData exception=%s", e_.what()));
     }
 }
 static ScriptArgObjPtr toScriptArg(PyObject* pvalue_){
@@ -753,7 +753,7 @@ int FFWorkerPython::scriptInit(const string& py_root)
 
     LOGTRACE((FFWORKER_PYTHON, "FFWorkerPython::scriptInit begin path:%s, m_ext_name:%s", path, m_ext_name));
     
-    getSharedMem().setNotifyFunc(when_syncSharedData);
+    getSharedMem().setNotifyFunc(onSyncSharedData);
     
     (*m_ffpython).reg(&FFDb::escape, "escape")
                  .reg(&py_send_msg_session, "sessionSendMsg")
@@ -770,8 +770,8 @@ int FFWorkerPython::scriptInit(const string& py_root)
                  .reg(&py_connectDB, "connectDB")
                  .reg(&py_asyncQuery, "asyncQuery")
                  .reg(&py_query, "query")
-                 .reg(&py_asyncQueryGroupMod, "asyncQueryByName")
-                 .reg(&py_queryGroupMod, "queryByName")
+                 .reg(&py_asyncQueryByName, "asyncQueryByName")
+                 .reg(&py_QueryByName, "queryByName")
                  .reg(&py_workerRPC, "workerRPC")
                  .reg(&py_syncSharedData, "syncSharedData")
                  .reg(&py_asyncHttp, "asyncHttp")
@@ -806,13 +806,12 @@ int FFWorkerPython::scriptInit(const string& py_root)
         Mutex                    mutex;
         ConditionVar            cond(mutex);
         
-        LockGuard lock(mutex);
-        getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerPython::processInit, this, &cond, &ret));
+        getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerPython::processInit, this, &mutex, &cond, &ret));
         LOGINFO((FFWORKER_PYTHON, "FFWorkerPython::begin init py"));
-        do {
-            LOGINFO((FFWORKER_PYTHON, "FFWorkerPython::wait init"));
-            cond.time_wait(100);
-        }while (ret == -2);
+        LockGuard lock(mutex);
+        if (ret == -2){
+            cond.wait();
+        }
         LOGINFO((FFWORKER_PYTHON, "FFWorkerPython::processInit return"));
         if (ret < 0)
         {
@@ -829,7 +828,7 @@ int FFWorkerPython::scriptInit(const string& py_root)
     return ret;
 }
 //!!处理初始化逻辑
-int FFWorkerPython::processInit(ConditionVar* var, int* ret)
+int FFWorkerPython::processInit(Mutex* mutex, ConditionVar* var, int* ret)
 {
     try{
         (*m_ffpython).load(m_ext_name);
@@ -846,6 +845,7 @@ int FFWorkerPython::processInit(ConditionVar* var, int* ret)
         *ret = -1;
         LOGERROR((FFWORKER_PYTHON, "FFWorkerPython::open failed er=<%s>", e_.what()));
     }
+    LockGuard lock(*mutex);
     var->signal();
     LOGINFO((FFWORKER_PYTHON, "FFWorkerPython::processInit end"));
     return 0;

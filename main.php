@@ -105,13 +105,13 @@ function dbTest(){
     $ret = h2ext::query('select * from foo limit 1')  ;     
     //h2ext::print('dbTest', ret);
     
-    h2ext::asyncQuery(0, 'select * from foo limit 1', dbTestCb);
+    h2ext::asyncQuery(0, 'select * from foo limit 1', 'dbTestCb');
     $dbname = 'myDB';
     h2ext::connectDB("sqlite://./test.db", $dbname);
     $ret = h2ext::queryByName($dbname, 'select * from foo limit 1');
     //h2ext::print('dbTest queryByName')
     //var_dump(ret)
-    h2ext::asyncQueryByName(dbname, 'select * from foo limit 2', dbTestCb);
+    h2ext::asyncQueryByName(dbname, 'select * from foo limit 2', 'dbTestCb');
 }
 dbTest();
 ?>

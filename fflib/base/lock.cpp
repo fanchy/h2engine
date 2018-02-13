@@ -97,16 +97,16 @@ bool ConditionVar::wait()
     return 0 == pthread_cond_wait(&m_cond, &m_mutex.get_mutex());
 }
 
-bool ConditionVar::time_wait(int us_)
-{
-    struct timeval now;
-    struct timespec outtime;
-    ::gettimeofday(&now, NULL);
-    outtime.tv_sec = now.tv_sec + us_/1000;
-    outtime.tv_nsec = now.tv_usec * 1000 + (us_%1000)*1000;
+// bool ConditionVar::time_wait(int us_)
+// {
+    // struct timeval now;
+    // struct timespec outtime;
+    // ::gettimeofday(&now, NULL);
+    // outtime.tv_sec = now.tv_sec + us_/1000;
+    // outtime.tv_nsec = now.tv_usec * 1000 + (us_%1000)*1000;
     
-    return 0 == pthread_cond_timedwait(&m_cond, &m_mutex.get_mutex(), &outtime);
-}
+    // return 0 == pthread_cond_timedwait(&m_cond, &m_mutex.get_mutex(), &outtime);
+// }
 
 bool ConditionVar::signal()
 {

@@ -569,7 +569,7 @@ struct AsyncQueryCB
     }
     long idx;
 };
-
+static int64_t db_idx = 0;
 PHP_METHOD(h2ext, asyncQuery)
 {
     long db_id_ = 0;
@@ -583,7 +583,7 @@ PHP_METHOD(h2ext, asyncQuery)
     
     std::string sql_(strarg, strlen);
     
-    static int64_t db_idx = 0;
+    
     char fieldname[256] = {0};
     ++db_idx;
     long idx = long(db_idx);
@@ -662,7 +662,6 @@ PHP_METHOD(h2ext, asyncQueryByName)
     std::string group_(strgroup, lengroup);
     std::string sql_(strarg, strlen);
     
-    static int64_t db_idx = 0;
     char fieldname[256] = {0};
     ++db_idx;
     long idx = long(db_idx);
@@ -934,13 +933,13 @@ PHP_METHOD(h2ext, escape)
     RETURN_STRINGL(ret.c_str(), ret.size(), 1);
 }
 
-static void when_syncSharedData(int32_t cmd, const std::string& data){
+static void onSyncSharedData(int32_t cmd, const std::string& data){
     try{
-        Singleton<FFWorkerPhp>::instance().m_php->call_void("when_syncSharedData", cmd, data);
+        Singleton<FFWorkerPhp>::instance().m_php->call_void("onSyncSharedData", cmd, data);
     }
     catch(std::exception& e_)
     {
-        LOGERROR((FFWORKER_PHP, "FFWorkerPhp::when_syncSharedData std::exception=%s", e_.what()));
+        LOGERROR((FFWORKER_PHP, "FFWorkerPhp::onSyncSharedData std::exception=%s", e_.what()));
     }
 }
 static ScriptArgObjPtr toScriptArg(zval* pvalue_){
@@ -1198,7 +1197,7 @@ int FFWorkerPhp::scriptInit(const std::string& root)
     
     LOGTRACE((FFWORKER_PHP, "FFWorkerPhp::scriptInit begin path:%s, m_ext_name:%s", path, m_ext_name));
 
-    getSharedMem().setNotifyFunc(when_syncSharedData);
+    getSharedMem().setNotifyFunc(onSyncSharedData);
 
     DB_MGR.start();
     ArgHelper& arg_helper = Singleton<ArgHelper>::instance();
@@ -1223,10 +1222,10 @@ int FFWorkerPhp::scriptInit(const std::string& root)
         Mutex                    mutex;
         ConditionVar            cond(mutex);
         
+        getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerPhp::processInit, this, &mutex, &cond, &ret));
         LockGuard lock(mutex);
-        getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerPhp::processInit, this, &cond, &ret));
-        while (ret == -2){
-            cond.time_wait(100);
+        if (ret == -2){
+            cond.wait();
         }
         
         if (ret < 0)
@@ -1244,7 +1243,7 @@ int FFWorkerPhp::scriptInit(const std::string& root)
     return ret;
 }
 //!!处理初始化逻辑
-int FFWorkerPhp::processInit(ConditionVar* var, int* ret)
+int FFWorkerPhp::processInit(Mutex* mutex, ConditionVar* var, int* ret)
 {
     try{
         zend_startup_module(&php_mymod_entry);
@@ -1288,6 +1287,7 @@ int FFWorkerPhp::processInit(ConditionVar* var, int* ret)
         *ret = -1;
         LOGERROR((FFWORKER_PHP, "FFWorkerPhp::open failed er=<%s>", e_.what()));
     }
+    LockGuard lock(*mutex);
     var->signal();
     return 0;
 }

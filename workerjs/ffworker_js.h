@@ -193,7 +193,7 @@ public:
 
 
     //!!处理初始化逻辑
-    int                     processInit(ConditionVar* var, int* ret, const std::string& js_root);
+    int                     processInit(Mutex* mutex, ConditionVar* var, int* ret, const std::string& js_root);
     
     //**************************************************重载的接口***************************************
     //! 转发client消息
