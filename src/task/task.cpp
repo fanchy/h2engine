@@ -257,7 +257,101 @@ static void handleEntityDataLoadEnd(EntityDataLoadEnd& e){
         e.entity->get<TaskCtrl>()->loadFromDB(tmp1, tmp2);
     }
 }
-
+struct TaskScriptFunctor{
+    static int genTask(EntityPtr p, int cfgid){
+        if (p->get<TaskCtrl>()->genTask(cfgid)){
+            return cfgid;
+        }
+        return 0;
+    }
+    static bool delTask(EntityPtr p, int cfgid){
+        return p->get<TaskCtrl>()->delTask(cfgid);
+    }
+    static bool changeTaskStatus(EntityPtr p, int cfgid, int status){
+        return p->get<TaskCtrl>()->changeTaskStatus(p->get<TaskCtrl>()->getTask(cfgid), status);
+    }
+    static vector<int> getTask(EntityPtr p, int cfgid){
+        vector<int>  ret;
+        TaskObjPtr task = p->get<TaskCtrl>()->getTask(cfgid);
+        if (task){
+            ret.push_back(task->status);
+            ret.push_back(task->value);
+            ret.push_back(task->taskCfg->finishConditionValue);
+        }
+        return ret;
+    }
+    static vector<vector<int> > getTaskByStatus(EntityPtr p, int status){
+        vector<vector<int> > ret;
+        std::map<int, TaskObjPtr>&      m_allTasks = p->get<TaskCtrl>()->m_allTasks;
+        for (std::map<int, TaskObjPtr>::iterator it = m_allTasks.begin(); it != m_allTasks.end(); ++it){
+            TaskObjPtr task = it->second;
+            if (task->status != status)
+                continue;
+            vector<int> tmp;
+            tmp.push_back(task->status);
+            tmp.push_back(task->value);
+            tmp.push_back(task->taskCfg->finishConditionValue);
+            ret.push_back(tmp);
+        }
+        
+        return ret;
+    }
+    static bool acceptTask(EntityPtr p, int cfgid){
+        return p->get<TaskCtrl>()->acceptTask(cfgid);
+    }
+    static bool endTask(EntityPtr p, int cfgid){
+        return p->get<TaskCtrl>()->endTask(cfgid);
+    }
+    static bool checkNewTask(EntityPtr p){
+        return p->get<TaskCtrl>()->checkNewTask();
+    }
+    static void triggerEvent(EntityPtr e, const std::string& triggerType, const std::string& triggerObject, int value){
+        e->get<TaskCtrl>()->triggerEvent(triggerType, triggerObject, value);
+    }
+    static map<string, string> getTaskCfg(int cfgid){
+        map<string, string> ret;
+        TaskConfigPtr taskCfg = TASK_MGR.getCfg(cfgid);
+        if (taskCfg){
+            ret.insert(taskCfg->allProp.begin(), taskCfg->allProp.end());
+            ret["cfgid"] = StrTool::num2str(taskCfg->cfgid);
+            ret["taskLine"] = StrTool::num2str(taskCfg->taskLine);
+            ret["nextTask"] = StrTool::num2str(taskCfg->nextTask);
+            ret["triggerPropertyType"] = StrTool::num2str(taskCfg->triggerPropertyType);
+            ret["triggerPropertyValue"] = StrTool::num2str(taskCfg->triggerPropertyValue);
+            ret["finishConditionType"] = StrTool::num2str(taskCfg->finishConditionType);
+            ret["finishConditionObject"] = StrTool::num2str(taskCfg->finishConditionObject);
+            ret["finishConditionValue"] = StrTool::num2str(taskCfg->finishConditionValue);
+        }
+        return ret;
+    }
+    static bool addTaskCfg(map<string, string>& args){
+        TaskConfigPtr taskCfg = new TaskConfig();
+    
+        for (map<string, string>::iterator it = args.begin(); it != args.end(); ++it){
+            string keyname = it->first;
+            std::transform(keyname.begin(), keyname.end(), keyname.begin(), ::toupper);
+            taskCfg->allProp[keyname] = it->second;
+        }
+        
+        taskCfg->cfgid    = (int)taskCfg->getPropNum("cfgid");
+        taskCfg->taskLine = (int)taskCfg->getPropNum("taskLine");
+        taskCfg->nextTask = (int)taskCfg->getPropNum("nextTask");
+        //LOGINFO((GAME_LOG, "task cfgid:%d, nextTask:%d", taskCfg->cfgid, taskCfg->nextTask));
+        
+        taskCfg->triggerPropertyType   = taskCfg->getPropStr("triggerPropertyType");
+        taskCfg->triggerPropertyValue  = (int)taskCfg->getPropNum("triggerPropertyValue");
+        taskCfg->finishConditionType   = taskCfg->getPropStr("finishConditionType");
+        taskCfg->finishConditionObject = taskCfg->getPropStr("finishConditionObject");
+        taskCfg->finishConditionValue  = (int)taskCfg->getPropNum("finishConditionValue");
+        
+        if (taskCfg->finishConditionObject.empty() == false &&
+            taskCfg->finishConditionObject[taskCfg->finishConditionObject.size() - 1] != ','){
+            taskCfg->finishConditionObject += ",";
+        }
+        TASK_MGR.allTaskCfg[taskCfg->cfgid] = taskCfg;
+        return true;
+    }
+};  
 static bool initEnvir(){
     EVENT_BUS_LISTEN(&handleEntityDataLoadBegin);
     EVENT_BUS_LISTEN(&handleEntityDataLoadEnd);
@@ -266,112 +360,18 @@ static bool initEnvir(){
     if (false == TASK_MGR.init()){
         return false;
     }
-    struct ScriptFunctor{
-        static int genTask(EntityPtr p, int cfgid){
-            if (p->get<TaskCtrl>()->genTask(cfgid)){
-                return cfgid;
-            }
-            return 0;
-        }
-        static bool delTask(EntityPtr p, int cfgid){
-            return p->get<TaskCtrl>()->delTask(cfgid);
-        }
-        static bool changeTaskStatus(EntityPtr p, int cfgid, int status){
-            return p->get<TaskCtrl>()->changeTaskStatus(p->get<TaskCtrl>()->getTask(cfgid), status);
-        }
-        static vector<int> getTask(EntityPtr p, int cfgid){
-            vector<int>  ret;
-            TaskObjPtr task = p->get<TaskCtrl>()->getTask(cfgid);
-            if (task){
-                ret.push_back(task->status);
-                ret.push_back(task->value);
-                ret.push_back(task->taskCfg->finishConditionValue);
-            }
-            return ret;
-        }
-        static vector<vector<int> > getTaskByStatus(EntityPtr p, int status){
-            vector<vector<int> > ret;
-            std::map<int, TaskObjPtr>&      m_allTasks = p->get<TaskCtrl>()->m_allTasks;
-            for (std::map<int, TaskObjPtr>::iterator it = m_allTasks.begin(); it != m_allTasks.end(); ++it){
-                TaskObjPtr task = it->second;
-                if (task->status != status)
-                    continue;
-                vector<int> tmp;
-                tmp.push_back(task->status);
-                tmp.push_back(task->value);
-                tmp.push_back(task->taskCfg->finishConditionValue);
-                ret.push_back(tmp);
-            }
             
-            return ret;
-        }
-        static bool acceptTask(EntityPtr p, int cfgid){
-            return p->get<TaskCtrl>()->acceptTask(cfgid);
-        }
-        static bool endTask(EntityPtr p, int cfgid){
-            return p->get<TaskCtrl>()->endTask(cfgid);
-        }
-        static bool checkNewTask(EntityPtr p){
-            return p->get<TaskCtrl>()->checkNewTask();
-        }
-        static void triggerEvent(EntityPtr e, const std::string& triggerType, const std::string& triggerObject, int value){
-            e->get<TaskCtrl>()->triggerEvent(triggerType, triggerObject, value);
-        }
-        static map<string, string> getTaskCfg(int cfgid){
-            map<string, string> ret;
-            TaskConfigPtr taskCfg = TASK_MGR.getCfg(cfgid);
-            if (taskCfg){
-                ret.insert(taskCfg->allProp.begin(), taskCfg->allProp.end());
-                ret["cfgid"] = StrTool::num2str(taskCfg->cfgid);
-                ret["taskLine"] = StrTool::num2str(taskCfg->taskLine);
-                ret["nextTask"] = StrTool::num2str(taskCfg->nextTask);
-                ret["triggerPropertyType"] = StrTool::num2str(taskCfg->triggerPropertyType);
-                ret["triggerPropertyValue"] = StrTool::num2str(taskCfg->triggerPropertyValue);
-                ret["finishConditionType"] = StrTool::num2str(taskCfg->finishConditionType);
-                ret["finishConditionObject"] = StrTool::num2str(taskCfg->finishConditionObject);
-                ret["finishConditionValue"] = StrTool::num2str(taskCfg->finishConditionValue);
-            }
-            return ret;
-        }
-        static bool addTaskCfg(map<string, string>& args){
-            TaskConfigPtr taskCfg = new TaskConfig();
-        
-            for (map<string, string>::iterator it = args.begin(); it != args.end(); ++it){
-                string keyname = it->first;
-                std::transform(keyname.begin(), keyname.end(), keyname.begin(), ::toupper);
-                taskCfg->allProp[keyname] = it->second;
-            }
-            
-            taskCfg->cfgid    = (int)taskCfg->getPropNum("cfgid");
-            taskCfg->taskLine = (int)taskCfg->getPropNum("taskLine");
-            taskCfg->nextTask = (int)taskCfg->getPropNum("nextTask");
-            //LOGINFO((GAME_LOG, "task cfgid:%d, nextTask:%d", taskCfg->cfgid, taskCfg->nextTask));
-            
-            taskCfg->triggerPropertyType   = taskCfg->getPropStr("triggerPropertyType");
-            taskCfg->triggerPropertyValue  = (int)taskCfg->getPropNum("triggerPropertyValue");
-            taskCfg->finishConditionType   = taskCfg->getPropStr("finishConditionType");
-            taskCfg->finishConditionObject = taskCfg->getPropStr("finishConditionObject");
-            taskCfg->finishConditionValue  = (int)taskCfg->getPropNum("finishConditionValue");
-            
-            if (taskCfg->finishConditionObject.empty() == false &&
-                taskCfg->finishConditionObject[taskCfg->finishConditionObject.size() - 1] != ','){
-                taskCfg->finishConditionObject += ",";
-            }
-            TASK_MGR.allTaskCfg[taskCfg->cfgid] = taskCfg;
-            return true;
-        }
-    };          
-    SCRIPT_UTIL.reg("Task.genTask",            ScriptFunctor::genTask);
-    SCRIPT_UTIL.reg("Task.delTask",            ScriptFunctor::delTask);
-    SCRIPT_UTIL.reg("Task.changeTaskStatus",   ScriptFunctor::changeTaskStatus);
-    SCRIPT_UTIL.reg("Task.getTask",            ScriptFunctor::getTask);
-    SCRIPT_UTIL.reg("Task.getTaskByStatus",    ScriptFunctor::getTaskByStatus);
-    SCRIPT_UTIL.reg("Task.acceptTask",         ScriptFunctor::acceptTask);
-    SCRIPT_UTIL.reg("Task.endTask",            ScriptFunctor::endTask);
-    SCRIPT_UTIL.reg("Task.checkNewTask",       ScriptFunctor::checkNewTask);
-    SCRIPT_UTIL.reg("Task.triggerEvent",       ScriptFunctor::triggerEvent);
-    SCRIPT_UTIL.reg("Task.getTaskCfg",         ScriptFunctor::getTaskCfg);
-    SCRIPT_UTIL.reg("Task.addTaskCfg",         ScriptFunctor::addTaskCfg);
+    SCRIPT_UTIL.reg("Task.genTask",            TaskScriptFunctor::genTask);
+    SCRIPT_UTIL.reg("Task.delTask",            TaskScriptFunctor::delTask);
+    SCRIPT_UTIL.reg("Task.changeTaskStatus",   TaskScriptFunctor::changeTaskStatus);
+    SCRIPT_UTIL.reg("Task.getTask",            TaskScriptFunctor::getTask);
+    SCRIPT_UTIL.reg("Task.getTaskByStatus",    TaskScriptFunctor::getTaskByStatus);
+    SCRIPT_UTIL.reg("Task.acceptTask",         TaskScriptFunctor::acceptTask);
+    SCRIPT_UTIL.reg("Task.endTask",            TaskScriptFunctor::endTask);
+    SCRIPT_UTIL.reg("Task.checkNewTask",       TaskScriptFunctor::checkNewTask);
+    SCRIPT_UTIL.reg("Task.triggerEvent",       TaskScriptFunctor::triggerEvent);
+    SCRIPT_UTIL.reg("Task.getTaskCfg",         TaskScriptFunctor::getTaskCfg);
+    SCRIPT_UTIL.reg("Task.addTaskCfg",         TaskScriptFunctor::addTaskCfg);
     
     //EntityPtr entity = NEW_ENTITY(1, 1);
     //SCRIPT_UTIL.callScript<void>("testTask", entity);

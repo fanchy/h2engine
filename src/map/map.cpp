@@ -6,9 +6,28 @@
 #include "server/ffworker.h"
 #include "map/map.h"
 #include "common/game_event.h"
+#include "base/os_tool.h"
 
 using namespace ff;
 using namespace std;
+
+int64_t MapConfig::getPropNum(const std::string& key){
+    string v = getPropStr(key);
+    if (v.empty() == false){
+        return ::atol(v.c_str());
+    }
+    return 0;
+}
+
+string MapConfig::getPropStr(const std::string& key){
+    string keyname = key;
+    std::transform(keyname.begin(), keyname.end(), keyname.begin(), ::toupper);
+    std::map<std::string, std::string>::iterator it = allProp.find(keyname);
+    if (it != allProp.end()){
+        return it->second;
+    }
+    return "";
+}
 
 void MapPoint::getAllSession(std::vector<userid_t>& ret){
     map<userid_t, EntityRef>::iterator it2 = this->entities.begin();
@@ -48,14 +67,14 @@ void Map9Grid::getAllEntity(std::vector<EntityPtr>& ret, userid_t uidIgnore){
     }
 }
 
-MapObj::MapObj(std::string s, int w, int h):name(s), width(w), height(h)
+MapObj::MapObj(std::string s, MapConfigPtr mapCfg):mapId(s), width(mapCfg->width), height(mapCfg->height)
 {
     m_allPos.resize(width * height);
     int nEachGridSize = GRID_SIZE;
     width9Grid  = int(::ceil(width * 1.0 / nEachGridSize));
     height9Grid = int(::ceil(height * 1.0 / nEachGridSize));
     
-    LOGTRACE(("XX", "MapObj mapname:%s,w:%d,h:%d,gridw:%d,gridh:%d,nEachGridSize:%d", name, width, height, width9Grid, height9Grid, nEachGridSize));
+    LOGTRACE(("XX", "MapObj mapname:%s,w:%d,h:%d,gridw:%d,gridh:%d,nEachGridSize:%d", mapId, width, height, width9Grid, height9Grid, nEachGridSize));
 }
 
 std::vector<EntityPtr> MapObj::rangeGetEntities(int x, int y, int radius){
@@ -318,21 +337,57 @@ bool MapObj::move(EntityPtr& entity, int xTo, int yTo)
 }
 
 bool MapMgr::init(){
+    vector<vector<string> > retdata;
+    string csvData;
+    OSTool::readFile("config/map_config.csv", csvData);
+    StrTool::loadCsvFromString(csvData, retdata);
+
+    if (retdata.empty()){
+        LOGWARN((GAME_LOG, "MapMgr::init load none data"));
+        return true;
+    }
+    vector<string>& col = retdata[0];
+    for (size_t i = 1; i < retdata.size(); ++i){
+        vector<string>& row = retdata[i];
+        MapConfigPtr mapCfg = new MapConfig();
+
+        for (size_t j = 0; j < row.size(); ++j){
+            string& keyname = col[j];
+            std::transform(keyname.begin(), keyname.end(), keyname.begin(), ::toupper);
+            mapCfg->allProp[keyname] = row[j];
+        }
+        mapCfg->cfgName   = mapCfg->getPropStr("cfgName");
+        mapCfg->width     = (int)mapCfg->getPropNum("width");
+        mapCfg->height    = (int)mapCfg->getPropNum("height");
+        m_allMapCfg[mapCfg->cfgName] = mapCfg;
+    }
     return true;
 }
 bool MapMgr::cleanup(){
     return true;
 }
 
-MapObjPtr MapMgr::gen(const std::string& s, int w, int h){
-    MapObjPtr ret = new MapObj(s, w, h);
-    m_maps[s] = ret;
+MapObjPtr MapMgr::allocMap(const std::string& cfgName, std::string mapId){
+    MapConfigPtr mapCfg = getMapCfg(cfgName);
+    if (!mapCfg){
+        return NULL;
+    }
+    if (mapId.empty()){
+        char tmpMapId[256] = {0};
+        ::snprintf(tmpMapId, sizeof(tmpMapId), "%s#%d", cfgName.c_str(), getMapNumByCfgName(cfgName));
+        mapId = tmpMapId;
+    }
+    if (this->getMap(mapId)){
+        return NULL;
+    }
+    MapObjPtr ret = new MapObj(mapId, mapCfg);
+    addMap(ret);
     return ret;
 }
-void MapMgr::add(MapObjPtr& p){
-    m_maps[p->getName()] = p;
+void MapMgr::addMap(MapObjPtr& p){
+    m_maps[p->getMapId()] = p;
 }
-bool MapMgr::del(const std::string& s){
+bool MapMgr::delMap(const std::string& s){
     std::map<std::string, MapObjPtr>::iterator it = m_maps.find(s);
     if (it != m_maps.end()){
         m_maps.erase(it);
@@ -340,10 +395,82 @@ bool MapMgr::del(const std::string& s){
     }
     return false;
 }
-MapObjPtr MapMgr::get(const std::string& s){
+MapObjPtr MapMgr::getMap(const std::string& s){
     std::map<std::string, MapObjPtr>::iterator it = m_maps.find(s);
     if (it != m_maps.end()){
         return it->second;
     }
     return NULL;
 }
+int MapMgr::getMapNumByCfgName(const std::string& s){
+    int num = 0;
+    std::map<std::string, MapObjPtr>::iterator it = m_maps.begin();
+    for (; it != m_maps.end(); ++it){
+        if (it->second->mapCfg->cfgName == s){
+            ++num;
+        }
+    }
+    return num;
+}
+
+struct MapScriptFunctor{
+    static bool enter(EntityPtr p, const string& mapId, int x, int y){
+        return MAP_MGR.enter(p, mapId, x, y);
+    }
+    static bool move(EntityPtr p, int x, int y){
+        return p->get<MapCtrl>()->curMap->move(p, x, y);
+    }
+    static string getEntityMapId(EntityPtr p){
+        if (p->get<MapCtrl>()->curMap){
+            return p->get<MapCtrl>()->curMap->mapId;
+        }
+        return "";
+    }
+    static int getMapNumByCfgName(const string& cfgName){
+        return MAP_MGR.getMapNumByCfgName(cfgName);
+    }
+    static int getAllMapNum(){
+        return MAP_MGR.getAllMapNum();
+    }
+    static MapObjPtr allocMap(const std::string& cfgName, std::string mapId){
+        return MAP_MGR.allocMap(cfgName, mapId);
+    }
+    static bool delMap(const std::string& mapId){
+        return MAP_MGR.delMap(mapId);
+    }
+    static MapObjPtr getMap(const std::string& mapId){
+        return MAP_MGR.getMap(mapId);
+    }
+    static string getMapId(MapObjPtr mapObj){
+        return mapObj->mapId;
+    }
+    static string getMapCfgName(MapObjPtr mapObj){
+        return mapObj->mapCfg->cfgName;
+    }
+    static vector<EntityPtr> getAllEntity(const std::string& mapId, int nType){
+        vector<EntityPtr> ret;
+        MapObjPtr MapObj = MAP_MGR.getMap(mapId);
+        if (MapObj){
+            MapObj->getAllEntity(ret, nType);
+        }
+        return ret;
+    }
+};
+static bool initEnvir(){
+    //!注册操作任务的脚本接口
+    if (false == MAP_MGR.init()){
+        return false;
+    }
+    SCRIPT_UTIL.reg("Map.enter",              MapScriptFunctor::enter);
+    SCRIPT_UTIL.reg("Map.move",               MapScriptFunctor::move);
+    SCRIPT_UTIL.reg("Map.getEntityMapId",     MapScriptFunctor::getEntityMapId);
+    SCRIPT_UTIL.reg("Map.getMapNumByCfgName", MapScriptFunctor::getMapNumByCfgName);
+    SCRIPT_UTIL.reg("Map.getAllMapNum",       MapScriptFunctor::getAllMapNum);
+    SCRIPT_UTIL.reg("Map.delMap",             MapScriptFunctor::delMap);
+    SCRIPT_UTIL.reg("Map.getMap",             MapScriptFunctor::getMap);
+    SCRIPT_UTIL.reg("Map.getMapId",           MapScriptFunctor::getMapId);
+    SCRIPT_UTIL.reg("Map.getMapCfgName",      MapScriptFunctor::getMapCfgName);
+    SCRIPT_UTIL.reg("Map.getAllEntity",       MapScriptFunctor::getAllEntity);
+    return true;
+}
+WORKER_AT_SETUP(initEnvir);
