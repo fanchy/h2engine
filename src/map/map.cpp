@@ -77,11 +77,11 @@ MapObj::MapObj(std::string s, MapConfigPtr mapCfg):mapId(s), width(mapCfg->width
     LOGTRACE(("XX", "MapObj mapname:%s,w:%d,h:%d,gridw:%d,gridh:%d,nEachGridSize:%d", mapId, width, height, width9Grid, height9Grid, nEachGridSize));
 }
 
-std::vector<EntityPtr> MapObj::rangeGetEntities(int x, int y, int radius){
+std::vector<EntityPtr> MapObj::rangeGetEntities(int x, int y, int radius, bool includeCenter){
     vector<EntityPtr> ret;
-    for (int i = 1; i < radius; ++i){
+    for (int i = 1; i <= radius; ++i){
         int yoffset = y + i;
-        for (int j = 1; j < radius; ++j){
+        for (int j = 1; j <= radius; ++j){
             int xoffset = x + j;
             MapPoint* point = getPoint(xoffset, yoffset);
             if (point){
@@ -91,6 +91,17 @@ std::vector<EntityPtr> MapObj::rangeGetEntities(int x, int y, int radius){
                     if (p)
                         ret.push_back(p);
                 }
+            }
+        }
+    }
+    if (includeCenter){
+        MapPoint* point = getPoint(x, y);
+        if (point){
+            map<userid_t, EntityRef>::iterator it = point->entities.begin();
+            for (; it != point->entities.end(); ++it){
+                EntityPtr p = it->second.lock();
+                if (p)
+                    ret.push_back(p);
             }
         }
     }
@@ -449,9 +460,17 @@ struct MapScriptFunctor{
     }
     static vector<EntityPtr> getAllEntity(const std::string& mapId, int nType){
         vector<EntityPtr> ret;
-        MapObjPtr MapObj = MAP_MGR.getMap(mapId);
-        if (MapObj){
-            MapObj->getAllEntity(ret, nType);
+        MapObjPtr pMapObj = MAP_MGR.getMap(mapId);
+        if (pMapObj){
+            pMapObj->getAllEntity(ret, nType);
+        }
+        return ret;
+    }
+    static vector<EntityPtr> rangeGetEntities(const std::string& mapId, int x, int y, int radius, bool includeCenter){
+        vector<EntityPtr> ret;
+        MapObjPtr pMapObj = MAP_MGR.getMap(mapId);
+        if (pMapObj){
+            ret = pMapObj->rangeGetEntities(x, y, radius, includeCenter);
         }
         return ret;
     }
@@ -471,6 +490,7 @@ static bool initEnvir(){
     SCRIPT_UTIL.reg("Map.getMapId",           MapScriptFunctor::getMapId);
     SCRIPT_UTIL.reg("Map.getMapCfgName",      MapScriptFunctor::getMapCfgName);
     SCRIPT_UTIL.reg("Map.getAllEntity",       MapScriptFunctor::getAllEntity);
+    SCRIPT_UTIL.reg("Map.rangeGetEntities",   MapScriptFunctor::rangeGetEntities);
     return true;
 }
 WORKER_AT_SETUP(initEnvir);

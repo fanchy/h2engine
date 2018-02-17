@@ -49,7 +49,7 @@ public:
     
     const std::string& getMapId(){ return mapId; }
     
-    std::vector<EntityPtr> rangeGetEntities(int x, int y, int radius);
+    std::vector<EntityPtr> rangeGetEntities(int x, int y, int radius, bool includeCenter);
     MapPoint* getPoint(int x, int y);
     
     Map9Grid* getGrid(int x, int y, std::set<Map9Grid*>* retSet = NULL);
