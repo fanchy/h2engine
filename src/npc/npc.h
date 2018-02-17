@@ -55,6 +55,7 @@ public:
 
 public:
     userid_t        m_curNPCUid;
+    std::string     m_strLastNpcText;
 };
 
 }

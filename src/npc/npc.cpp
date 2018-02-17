@@ -31,6 +31,11 @@ bool NPCCtrl::processNPC(EntityPtr npc, const std::string& arg)
 	}
 	else{
 		funcName = vt[0];
+		string strCheck = "\"" + funcName + "\"";
+		if (m_strLastNpcText.find(strCheck) == string::npos){
+			LOGERROR((GAME_LOG, "npc check failed %s", strCheck));
+			return false;
+		}
 		if (vt.size() > 1){
 			vector<string> params;
 			StrTool::split(vt[1], params, "&");
@@ -67,7 +72,7 @@ bool NPCCtrl::processNPC(EntityPtr npc, const std::string& arg)
 		SCRIPT_UTIL.callScript<void>(callFunc, owner, npc, paramKey2Value);
 	}
 	catch(exception& e_){
-        //LOGERROR((FFWORKER_PYTHON, "ffscene_python_t::callScript exception<%s>", e_.what()));
+        LOGERROR((GAME_LOG, "npc callScript exception<%s>", e_.what()));
         //exceptInfo = e_.what();
         return false;
     }
