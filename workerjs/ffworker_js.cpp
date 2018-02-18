@@ -844,7 +844,7 @@ static ScriptArgObjPtr toScriptArg(Local<Value>& v){
     }
     else if (v->IsObject()){
         ret->toDict();
-        //Object* pa = v.As<Object>();
+        //Local<Object> pa = v.As<Object>();
     }
     return ret;
 }
@@ -904,28 +904,60 @@ static BIND_FUNC_RET_TYPE js_callFunc(const Arguments& args)
     Local<Value> ret = fromScriptArgToJs(scriptArgs.getReturnValue());
     BIND_FUNC_RET_VAL(ret);
 }
-static bool callScriptImpl(const std::string& funcName, ScriptArgs& varScript){
+static bool callScriptImpl(const std::string& funcNameArg, ScriptArgs& varScript){
     if (!Singleton<FFWorkerJs>::instance().m_enable_call)
     {
         return false;
     }
+    std::string scriptName;
+    std::string funcName;
+    std::vector<std::string> vtFuncStr;
+    StrTool::split(funcNameArg, vtFuncStr, ".");
+    if (vtFuncStr.size() == 2){
+        scriptName = vtFuncStr[0];
+        funcName = vtFuncStr[1];
+    }
+    else{
+        funcName = funcNameArg;
+    }
     std::string exceptInfo;
     try{
         HANDLE_SCOPE_DEF_VAR;
-        Handle<v8::Value> func = PERSISTENT2LOCAL(Singleton<FFWorkerJs>::instance()._global_context)->Global()->Get(NewStrValue(funcName.c_str(), funcName.size()));
-        if (!func->IsFunction()) {
-            LOGERROR((FFWORKER_JS, "FFWorkerJs::callScriptImpl failed no func:%s", funcName));
-            exceptInfo = "callScriptImpl failed no func:";
-            exceptInfo += funcName;
+        if (scriptName.empty()){
+            Handle<v8::Value> func = PERSISTENT2LOCAL(Singleton<FFWorkerJs>::instance()._global_context)->Global()->Get(NewStrValue(funcName.c_str(), funcName.size()));
+            if (!func->IsFunction()) {
+                LOGERROR((FFWORKER_JS, "FFWorkerJs::callScriptImpl failed no func:%s", funcNameArg));
+                exceptInfo = "callScriptImpl failed no func:";
+                exceptInfo += funcNameArg;
+            }
+            else{
+                Handle<Value> argv[9];
+                for (size_t i = 0; i < 9 && i < varScript.args.size(); ++i)
+                {
+                    argv[i] = fromScriptArgToJs(varScript.args[i]);
+                }
+                persistent_lambda_ptr_t funcScript = new persistent_lambda_t(v8::Handle<v8::Function>::Cast(func));
+                Singleton<FFWorkerJs>::instance().call(funcScript, varScript.args.size(), argv, NULL, &(varScript.ret));
+            }
         }
         else{
-            Handle<Value> argv[9];
-            for (size_t i = 0; i < 9 && i < varScript.args.size(); ++i)
-            {
-                argv[i] = fromScriptArgToJs(varScript.args[i]);
+            Handle<v8::Value> objHandler = PERSISTENT2LOCAL(Singleton<FFWorkerJs>::instance()._global_context)->Global()->Get(NewStrValue(scriptName.c_str(), scriptName.size()));
+            if (!objHandler->IsObject()) {
+                LOGERROR((FFWORKER_JS, "FFWorkerJs::callScriptImpl failed no objHandler:%s", funcNameArg));
+                exceptInfo = "callScriptImpl failed no obj:";
+                exceptInfo += funcNameArg;
             }
-            persistent_lambda_ptr_t funcScript = new persistent_lambda_t(v8::Handle<v8::Function>::Cast(func));
-            Singleton<FFWorkerJs>::instance().call(funcScript, varScript.args.size(), argv, NULL, &(varScript.ret));
+            else{
+                Handle<Object> pa = objHandler.As<Object>();
+                Handle<v8::Value> func = PERSISTENT2LOCAL(pa->Get(NewStrValue(funcName.c_str(), funcName.size())));
+                Handle<Value> argv[9];
+                for (size_t i = 0; i < 9 && i < varScript.args.size(); ++i)
+                {
+                    argv[i] = fromScriptArgToJs(varScript.args[i]);
+                }
+                persistent_lambda_ptr_t funcScript = new persistent_lambda_t(v8::Handle<v8::Function>::Cast(func));
+                Singleton<FFWorkerJs>::instance().call(funcScript, varScript.args.size(), argv, NULL, &(varScript.ret));
+            }
         }
     }
     catch(exception& e_)
