@@ -9,7 +9,7 @@
 #include "server/db_mgr.h"
 #include "server/fftask_processor.h"
 #include "server/ffworker.h"
-class phpops_t;
+class PhpOps;
 namespace ff
 {
 #define FFWORKER_PHP "FFWORKER_PHP"
@@ -48,7 +48,7 @@ public:
     bool                    m_enable_call;
     bool                    m_started;
     std::string             m_ext_name;
-    phpops_t*               m_php;
+    PhpOps*               m_php;
 };
 
 }

@@ -14,7 +14,7 @@ using namespace ff;
 #ifndef FAIL
 #define FAIL 1
 #endif
-struct php_wrap_t{
+struct PhpWrap{
     static zval* vecstr2zval(const std::vector<std::string>& data){
         zval* retval = NULL;
         MAKE_STD_ZVAL(retval);
@@ -25,19 +25,19 @@ struct php_wrap_t{
         }
         return retval;
     }
-    static bool array_add(zval* retval, const std::string& key, zval* val){
+    static bool arrayAdd(zval* retval, const std::string& key, zval* val){
         add_assoc_zval_ex(retval, key.c_str(), key.size()+1, val);
         return true;
     }
-    static bool array_add_str(zval* retval, const std::string& key, const std::string& val){
+    static bool arrayAddStr(zval* retval, const std::string& key, const std::string& val){
         add_assoc_stringl_ex(retval, (char*)key.c_str(), key.size()+1, (char*)val.c_str(), val.size(), true);
         return true;
     }
-    static bool array_add_int(zval* retval, const std::string& key, int64_t val){
+    static bool arrayAddInt(zval* retval, const std::string& key, int64_t val){
         add_assoc_long_ex(retval, (char*)key.c_str(), key.size()+1, (long)val);
         return true;
     }
-    static bool array_append(zval* retval, zval* val){
+    static bool arrayAppend(zval* retval, zval* val){
         add_next_index_zval(retval, val);
         return true;
     }
@@ -75,9 +75,9 @@ static void dumpDebugTrace(){
     // LOGERROR((FFWORKER_PHP, "zend_hash_num_elements %d\n", zend_hash_num_elements(Z_ARRVAL_P(retval))));
     // zval_ptr_dtor(&retval);
 }
-class phpops_t{
+class PhpOps{
 public:
-    phpops_t():global_array(NULL), global_instance(NULL){
+    PhpOps():global_array(NULL), global_instance(NULL){
         
         int argc = 1;
         char *argv[2] = { (char*)"h2workerphp", NULL };
@@ -88,7 +88,7 @@ public:
         
         MAKE_STD_ZVAL(global_instance);
     }
-    ~phpops_t(){
+    ~PhpOps(){
         zval_ptr_dtor(&global_array);
         global_array = NULL;
         
@@ -128,7 +128,7 @@ public:
         snprintf(buff, sizeof(buff), "include_once('%s');", filename.c_str());
         return eval_string(buff);
     }
-    bool global_cache(const std::string& keyname, zval* funccb){
+    bool globalCache(const std::string& keyname, zval* funccb){
         zval *data = NULL;
         MAKE_STD_ZVAL(data);
         *data = *funccb;
@@ -140,7 +140,7 @@ public:
         return true;
     }
 
-    zval * call_function(const std::string& funcname, std::vector<zval*>* vec_params = NULL, bool need_ret = false){
+    zval * callFunction(const std::string& funcNameArg, std::vector<zval*>* vec_params = NULL, bool need_ret = false){
         zval *rrv = NULL;
         int status = SUCCESS;
         zval **params = NULL;
@@ -149,21 +149,36 @@ public:
             count = vec_params->size();
             params = &((*vec_params)[0]);
         }
-
+        std::string scriptName;
+        std::string funcname;
+        std::vector<std::string> vtFuncStr;
+        StrTool::split(funcNameArg, vtFuncStr, ".");
+        if (vtFuncStr.size() == 2){
+            scriptName = vtFuncStr[0];
+            funcname = vtFuncStr[1];
+        }
+        else{
+            funcname = funcNameArg;
+        }
         zend_try {
             // convert the function name to a zval
             zval *function_name = NULL;
-            MAKE_STD_ZVAL(function_name);
-            ZVAL_STRING(function_name, funcname.c_str(), 0);
-            
+            if (scriptName.empty() == false){
+                function_name = PhpWrap::vecstr2zval(vtFuncStr);
+            }
+            else{
+                MAKE_STD_ZVAL(function_name);
+                ZVAL_STRING(function_name, funcname.c_str(), 0);
+            }
             //printf("TTTTTT %s\n", funcname.c_str());
 
             zval *rv = NULL;
             MAKE_STD_ZVAL(rv);
+
             if(call_user_function(EG(function_table), NULL, function_name, rv,
                                 count, params TSRMLS_CC) != SUCCESS)
             {
-                LOGERROR((FFWORKER_PHP, "calling function %s failed1\n", funcname.c_str()));
+                LOGERROR((FFWORKER_PHP, "calling function %s failed1\n", funcNameArg.c_str()));
                 status = FAIL;
             }
             
@@ -191,10 +206,10 @@ public:
                 long errline = PG(last_error_lineno);
 
                 LOGERROR((FFWORKER_PHP, "calling function %s errtype:%ld,%s:%ld errmsg:%s\n",
-                                        funcname, errtype, errfile, errline, errmsg));
+                                        funcNameArg, errtype, errfile, errline, errmsg));
             }
             else{
-                LOGERROR((FFWORKER_PHP, "calling function %s exception", funcname));
+                LOGERROR((FFWORKER_PHP, "calling function %s exception", funcNameArg));
             }
             status = FAIL;
             
@@ -208,49 +223,49 @@ public:
         return rrv;
     }
     
-    void call_phpcallback(const std::string& funcname){
+    void callPhpCallback(const std::string& funcname){
          std::vector<zval*> params;
-         params.push_back(php_wrap_t::build_cpy(global_array));
-         params.push_back(php_wrap_t::build_str(funcname));
-         call_function("h2ext_callback", &params);
+         params.push_back(PhpWrap::build_cpy(global_array));
+         params.push_back(PhpWrap::build_str(funcname));
+         callFunction("h2ext_callback", &params);
          
          zend_hash_del(Z_ARRVAL_P(global_array), funcname.c_str(), funcname.size() + 1);
     }
-    void call_phpcallback(const std::string& funcname, zval* arg){
+    void callPhpCallback(const std::string& funcname, zval* arg){
          std::vector<zval*> params;
-         params.push_back(php_wrap_t::build_cpy(global_array));
-         params.push_back(php_wrap_t::build_str(funcname));
+         params.push_back(PhpWrap::build_cpy(global_array));
+         params.push_back(PhpWrap::build_str(funcname));
          params.push_back(arg);
-         call_function("h2ext_callback1", &params);
+         callFunction("h2ext_callback1", &params);
          
          zend_hash_del(Z_ARRVAL_P(global_array), funcname.c_str(), funcname.size() + 1);
     }
     
-    void call_void(const std::string& funcname, int64_t nval){
+    void callVoid(const std::string& funcname, int64_t nval){
         std::vector<zval*> params;
-        params.push_back(php_wrap_t::build_int(nval));
-        call_function(funcname, &params);
+        params.push_back(PhpWrap::build_int(nval));
+        callFunction(funcname, &params);
     }
-    void call_void(const std::string& funcname, int64_t nval, const std::string& data){
+    void callVoid(const std::string& funcname, int64_t nval, const std::string& data){
         std::vector<zval*> params;
-        params.push_back(php_wrap_t::build_int(nval));
-        params.push_back(php_wrap_t::build_str(data));
-        call_function(funcname, &params);
+        params.push_back(PhpWrap::build_int(nval));
+        params.push_back(PhpWrap::build_str(data));
+        callFunction(funcname, &params);
     }
-    void call_void(const std::string& funcname, int64_t nval, int64_t nval2, const std::string& data){
+    void callVoid(const std::string& funcname, int64_t nval, int64_t nval2, const std::string& data){
         std::vector<zval*> params;
-        params.push_back(php_wrap_t::build_int(nval));
-        params.push_back(php_wrap_t::build_int(nval2));
-        params.push_back(php_wrap_t::build_str(data));
-        call_function(funcname, &params);
+        params.push_back(PhpWrap::build_int(nval));
+        params.push_back(PhpWrap::build_int(nval2));
+        params.push_back(PhpWrap::build_str(data));
+        callFunction(funcname, &params);
     }
-    std::string call_string(const std::string& funcname, int32_t cmd, const std::string& data){
+    std::string callString(const std::string& funcname, int32_t cmd, const std::string& data){
         std::string strret;
         
         std::vector<zval*> params;
-        params.push_back(php_wrap_t::build_int(cmd));
-        params.push_back(php_wrap_t::build_str(data));
-        zval* retval = call_function(funcname, &params, true);
+        params.push_back(PhpWrap::build_int(cmd));
+        params.push_back(PhpWrap::build_str(data));
+        zval* retval = callFunction(funcname, &params, true);
         
         if (retval){
             if(Z_TYPE_P(retval) == IS_STRING)
@@ -269,7 +284,7 @@ public:
 FFWorkerPhp::FFWorkerPhp():
     m_enable_call(true), m_started(false)
 {
-    m_php = new phpops_t();
+    m_php = new PhpOps();
 }
 FFWorkerPhp::~FFWorkerPhp()
 {
@@ -471,7 +486,7 @@ PHP_METHOD(h2ext, regTimer)
 		RETURN_FALSE;
 	}
 
-    Singleton<FFWorkerPhp>::instance().m_php->global_cache(fieldname, funccb);
+    Singleton<FFWorkerPhp>::instance().m_php->globalCache(fieldname, funccb);
 
     struct lambda_cb
     {
@@ -482,7 +497,7 @@ PHP_METHOD(h2ext, regTimer)
  
             try
             {
-                Singleton<FFWorkerPhp>::instance().m_php->call_phpcallback(fieldname);
+                Singleton<FFWorkerPhp>::instance().m_php->callPhpCallback(fieldname);
             }
             catch(std::exception& e_)
             {
@@ -547,24 +562,24 @@ struct AsyncQueryCB
             array_init(val_arr);
             
             for (size_t i = 0; i < ret_.size(); ++i){
-                php_wrap_t::array_append(val_arr, php_wrap_t::vecstr2zval(ret_[i]));
+                PhpWrap::arrayAppend(val_arr, PhpWrap::vecstr2zval(ret_[i]));
             }
-            php_wrap_t::array_add(retval, key, val_arr);
+            PhpWrap::arrayAdd(retval, key, val_arr);
         }
         
         {
             std::string key = "fields";
-            php_wrap_t::array_add(retval, key, php_wrap_t::vecstr2zval(col_));
+            PhpWrap::arrayAdd(retval, key, PhpWrap::vecstr2zval(col_));
         }
         {
             std::string key = "errinfo";
-            php_wrap_t::array_add_str(retval, key, errinfo);
+            PhpWrap::arrayAddStr(retval, key, errinfo);
         }
         {
             std::string key = "affectedRows";
-            php_wrap_t::array_add_int(retval, key, affectedRows);
+            PhpWrap::arrayAddInt(retval, key, affectedRows);
         }
-        Singleton<FFWorkerPhp>::instance().m_php->call_phpcallback(fieldname, retval);
+        Singleton<FFWorkerPhp>::instance().m_php->callPhpCallback(fieldname, retval);
         zval_ptr_dtor(&retval);
     }
     long idx;
@@ -588,7 +603,7 @@ PHP_METHOD(h2ext, asyncQuery)
     ++db_idx;
     long idx = long(db_idx);
     snprintf(fieldname, sizeof(fieldname), "db#%ld", idx);
-    Singleton<FFWorkerPhp>::instance().m_php->global_cache(fieldname, funccb);
+    Singleton<FFWorkerPhp>::instance().m_php->globalCache(fieldname, funccb);
     
     AsyncQueryCB cb(idx);
     DB_MGR.asyncQueryModId(db_id_, sql_,  cb, &(Singleton<FFWorkerPhp>::instance().getRpc().get_tq()));
@@ -623,24 +638,24 @@ struct AsyncQueryNameCB
             array_init(val_arr);
             
             for (size_t i = 0; i < ret_.size(); ++i){
-                php_wrap_t::array_append(val_arr, php_wrap_t::vecstr2zval(ret_[i]));
+                PhpWrap::arrayAppend(val_arr, PhpWrap::vecstr2zval(ret_[i]));
             }
-            php_wrap_t::array_add(retval, key, val_arr);
+            PhpWrap::arrayAdd(retval, key, val_arr);
         }
         
         {
             std::string key = "fields";
-            php_wrap_t::array_add(retval, key, php_wrap_t::vecstr2zval(col_));
+            PhpWrap::arrayAdd(retval, key, PhpWrap::vecstr2zval(col_));
         }
         {
             std::string key = "errinfo";
-            php_wrap_t::array_add_str(retval, key, errinfo);
+            PhpWrap::arrayAddStr(retval, key, errinfo);
         }
         {
             std::string key = "affectedRows";
-            php_wrap_t::array_add_int(retval, key, affectedRows);
+            PhpWrap::arrayAddInt(retval, key, affectedRows);
         }
-        Singleton<FFWorkerPhp>::instance().m_php->call_phpcallback(fieldname, retval);
+        Singleton<FFWorkerPhp>::instance().m_php->callPhpCallback(fieldname, retval);
         zval_ptr_dtor(&retval);
     }
     long idx;
@@ -666,7 +681,7 @@ PHP_METHOD(h2ext, asyncQueryByName)
     ++db_idx;
     long idx = long(db_idx);
     snprintf(fieldname, sizeof(fieldname), "db#%ld", idx);
-    Singleton<FFWorkerPhp>::instance().m_php->global_cache(fieldname, funccb);
+    Singleton<FFWorkerPhp>::instance().m_php->globalCache(fieldname, funccb);
     
     AsyncQueryNameCB cb(idx);
     DB_MGR.asyncQueryByName(group_, sql_,  cb, &(Singleton<FFWorkerPhp>::instance().getRpc().get_tq()));
@@ -702,22 +717,22 @@ PHP_METHOD(h2ext, query)
         array_init(val_arr);
         
         for (size_t i = 0; i < ret_.size(); ++i){
-            php_wrap_t::array_append(val_arr, php_wrap_t::vecstr2zval(ret_[i]));
+            PhpWrap::arrayAppend(val_arr, PhpWrap::vecstr2zval(ret_[i]));
         }
-        php_wrap_t::array_add(retval, key, val_arr);
+        PhpWrap::arrayAdd(retval, key, val_arr);
     }
     
     {
         std::string key = "fields";
-        php_wrap_t::array_add(retval, key, php_wrap_t::vecstr2zval(col_));
+        PhpWrap::arrayAdd(retval, key, PhpWrap::vecstr2zval(col_));
     }
     {
         std::string key = "errinfo";
-        php_wrap_t::array_add_str(retval, key, errinfo);
+        PhpWrap::arrayAddStr(retval, key, errinfo);
     }
     {
         std::string key = "affectedRows";
-        php_wrap_t::array_add_int(retval, key, affectedRows);
+        PhpWrap::arrayAddInt(retval, key, affectedRows);
     }
     RETURN_ZVAL(retval, 0, 1);
 }
@@ -754,22 +769,22 @@ PHP_METHOD(h2ext, queryByName)
         array_init(val_arr);
         
         for (size_t i = 0; i < ret_.size(); ++i){
-            php_wrap_t::array_append(val_arr, php_wrap_t::vecstr2zval(ret_[i]));
+            PhpWrap::arrayAppend(val_arr, PhpWrap::vecstr2zval(ret_[i]));
         }
-        php_wrap_t::array_add(retval, key, val_arr);
+        PhpWrap::arrayAdd(retval, key, val_arr);
     }
     
     {
         std::string key = "fields";
-        php_wrap_t::array_add(retval, key, php_wrap_t::vecstr2zval(col_));
+        PhpWrap::arrayAdd(retval, key, PhpWrap::vecstr2zval(col_));
     }
     {
         std::string key = "errinfo";
-        php_wrap_t::array_add_str(retval, key, errinfo);
+        PhpWrap::arrayAddStr(retval, key, errinfo);
     }
     {
         std::string key = "affectedRows";
-        php_wrap_t::array_add_int(retval, key, affectedRows);
+        PhpWrap::arrayAddInt(retval, key, affectedRows);
     }
     RETURN_ZVAL(retval, 0, 1);
 }
@@ -791,7 +806,7 @@ PHP_METHOD(h2ext, workerRPC)
     ++rpc_idx;
     long idx = long(rpc_idx);
     snprintf(fieldname, sizeof(fieldname), "rpc#%ld", idx);
-    Singleton<FFWorkerPhp>::instance().m_php->global_cache(fieldname, funccb);
+    Singleton<FFWorkerPhp>::instance().m_php->globalCache(fieldname, funccb);
     
     struct lambda_cb: public FFSlot::FFCallBack
     {
@@ -816,8 +831,8 @@ PHP_METHOD(h2ext, workerRPC)
             
             try
             {
-                zval* func_arg = php_wrap_t::build_str(retmsg.body);
-                Singleton<FFWorkerPhp>::instance().m_php->call_phpcallback(fieldname, func_arg);
+                zval* func_arg = PhpWrap::build_str(retmsg.body);
+                Singleton<FFWorkerPhp>::instance().m_php->callPhpCallback(fieldname, func_arg);
             }
             catch(std::exception& e_)
             {
@@ -863,7 +878,7 @@ PHP_METHOD(h2ext, asyncHttp)
     ++http_idx;
     long idx = long(http_idx);
     snprintf(fieldname, sizeof(fieldname), "http#%ld", idx);
-    Singleton<FFWorkerPhp>::instance().m_php->global_cache(fieldname, funccb);
+    Singleton<FFWorkerPhp>::instance().m_php->globalCache(fieldname, funccb);
     
     struct lambda_cb: public FFSlot::FFCallBack
     {
@@ -889,8 +904,8 @@ PHP_METHOD(h2ext, asyncHttp)
             
             try
             {
-                zval* func_arg = php_wrap_t::build_str(retdata);
-                Singleton<FFWorkerPhp>::instance().m_php->call_phpcallback(fieldname, func_arg);
+                zval* func_arg = PhpWrap::build_str(retdata);
+                Singleton<FFWorkerPhp>::instance().m_php->callPhpCallback(fieldname, func_arg);
             }
             catch(std::exception& e_)
             {
@@ -935,7 +950,7 @@ PHP_METHOD(h2ext, escape)
 
 static void onSyncSharedData(int32_t cmd, const std::string& data){
     try{
-        Singleton<FFWorkerPhp>::instance().m_php->call_void("onSyncSharedData", cmd, data);
+        Singleton<FFWorkerPhp>::instance().m_php->callVoid("onSyncSharedData", cmd, data);
     }
     catch(std::exception& e_)
     {
@@ -1034,7 +1049,7 @@ static zval* fromScriptArgToScript(ScriptArgObjPtr pvalue){
     else if (pvalue->isList()){
         array_init(ret);
         for (size_t i = 0; i < pvalue->listVal.size(); ++i){
-            php_wrap_t::array_append(ret, fromScriptArgToScript(pvalue->listVal[i]));
+            PhpWrap::arrayAppend(ret, fromScriptArgToScript(pvalue->listVal[i]));
         }
     }
     else if (pvalue->isDict()){
@@ -1043,7 +1058,7 @@ static zval* fromScriptArgToScript(ScriptArgObjPtr pvalue){
 
         for (; it != pvalue->dictVal.end(); ++it)
         {
-            php_wrap_t::array_add(ret, it->first, fromScriptArgToScript(it->second));
+            PhpWrap::arrayAdd(ret, it->first, fromScriptArgToScript(it->second));
         }
     }
     return ret;
@@ -1095,7 +1110,7 @@ static bool callScriptImpl(const std::string& funcName, ScriptArgs& varScript){
         for (size_t i = 0; i < varScript.args.size(); ++i){
             params.push_back(fromScriptArgToScript(varScript.at(i)));
         }
-        zval* retval = Singleton<FFWorkerPhp>::instance().m_php->call_function(funcName, &params, true);
+        zval* retval = Singleton<FFWorkerPhp>::instance().m_php->callFunction(funcName, &params, true);
         if (retval){
             varScript.ret = toScriptArg(retval);
             zval_ptr_dtor(&retval);
@@ -1256,7 +1271,7 @@ int FFWorkerPhp::processInit(Mutex* mutex, ConditionVar* var, int* ret)
         // snprintf(buff, sizeof(buff), "function __BuildObj__(){ $ret = new h2ext(); $GLOBALS['%s'] = $ret; return $ret;}", EXT_NAME);
         // m_php->eval_string(buff);
         
-        // zval* retval = m_php->call_function("__BuildObj__", NULL, true);
+        // zval* retval = m_php->callFunction("__BuildObj__", NULL, true);
         
         // if (retval){
             // *(m_php->global_instance) = *retval;
@@ -1274,7 +1289,7 @@ int FFWorkerPhp::processInit(Mutex* mutex, ConditionVar* var, int* ret)
             SCRIPT_UTIL.setCallScriptFunc(callScriptImpl);
             if (this->initModule()){
                 *ret = 0;
-                Singleton<FFWorkerPhp>::instance().m_php->call_function("init");
+                Singleton<FFWorkerPhp>::instance().m_php->callFunction("init");
                 printf("load ok\n");
             }
             else
@@ -1295,7 +1310,7 @@ void FFWorkerPhp::scriptCleanup()
 {
     try
     {
-        Singleton<FFWorkerPhp>::instance().m_php->call_function("cleanup");
+        Singleton<FFWorkerPhp>::instance().m_php->callFunction("cleanup");
     }
     catch(std::exception& e_)
     {
@@ -1373,7 +1388,7 @@ int FFWorkerPhp::onSessionReq(userid_t session_id_, uint16_t cmd_, const std::st
 {
     try
     {
-        Singleton<FFWorkerPhp>::instance().m_php->call_void("onSessionReq", session_id_, cmd_, data_);
+        Singleton<FFWorkerPhp>::instance().m_php->callVoid("onSessionReq", session_id_, cmd_, data_);
     }
     catch(std::exception& e_)
     {
@@ -1386,7 +1401,7 @@ int FFWorkerPhp::onSessionOffline(userid_t session_id)
 {
     try
     {
-        Singleton<FFWorkerPhp>::instance().m_php->call_void("onSessionOffline", session_id);
+        Singleton<FFWorkerPhp>::instance().m_php->callVoid("onSessionOffline", session_id);
     }
     catch(std::exception& e_)
     {
@@ -1398,7 +1413,7 @@ int FFWorkerPhp::FFWorkerPhp::onSessionEnter(userid_t session_id, const std::str
 {
     try
     {
-        Singleton<FFWorkerPhp>::instance().m_php->call_void("onSessionEnter", session_id, extra_data);
+        Singleton<FFWorkerPhp>::instance().m_php->callVoid("onSessionEnter", session_id, extra_data);
     }
     catch(std::exception& e_)
     {
@@ -1412,7 +1427,7 @@ std::string FFWorkerPhp::onWorkerCall(uint16_t cmd, const std::string& body)
     std::string ret;
     try
     {
-        ret = Singleton<FFWorkerPhp>::instance().m_php->call_string("onWorkerCall", cmd, body);
+        ret = Singleton<FFWorkerPhp>::instance().m_php->callString("onWorkerCall", cmd, body);
     }
     catch(std::exception& e_)
     {
