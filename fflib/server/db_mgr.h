@@ -24,6 +24,7 @@ public:
     QueryDBResult():
         ok(false)
     {}
+    virtual ~QueryDBResult(){}
     virtual int type()
     {
         return TYPEID(QueryDBResult);
@@ -66,7 +67,7 @@ struct DbCallBack: public FFSlot::FFCallBack
 #define DB_THREAD_NUM 10
 #define DB_DEFAULT_NAME "Default"
 #define DB_DEFAULT_NAME_1 "Default#1"
-
+typedef SharedPtr<FFSlot::FFCallBack> FFSlotCallBackPtr;
 class DbMgr
 {
 public:
@@ -149,7 +150,7 @@ public:
                      std::string* errinfo = NULL, int* affectedRows_ = NULL, std::vector<std::string>* col_ = NULL);
     uint64_t allocId(int nType);
 private:
-    void queryDBImpl(DBConnectionInfo* db_connection_info_, const std::string& sql_, FFSlot::FFCallBack* callback_);
+    void queryDBImpl(DBConnectionInfo* db_connection_info_, const std::string& sql_, FFSlotCallBackPtr callback_);
     void syncQueryDBImpl(DBConnectionInfo* db_connection_info_, const std::string& sql_, QueryDBResult* result);
     DBConnectionInfo* getConnectionById(long cid){
         std::map<long/*dbid*/, DBConnectionInfo>::iterator it2 = m_db_connection.find(cid);

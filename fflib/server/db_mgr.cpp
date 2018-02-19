@@ -96,7 +96,7 @@ void DbMgr::asyncQueryByName(const std::string& strName, const std::string& sql_
         varDbConnection->tq->produce(TaskBinder::gen(&DbMgr::queryDBImpl, this, varDbConnection, sql_, callback_));
     }
 }
-void DbMgr::queryDBImpl(DBConnectionInfo* varDbConnection_, const string& sql_, FFSlot::FFCallBack* callback_)
+void DbMgr::queryDBImpl(DBConnectionInfo* varDbConnection_, const string& sql_, FFSlotCallBackPtr callback_)
 {
     AUTO_PERF();
     if (!varDbConnection_){
@@ -104,7 +104,6 @@ void DbMgr::queryDBImpl(DBConnectionInfo* varDbConnection_, const string& sql_, 
         {
             QueryDBResult result;
             callback_->exe(&(result));
-            delete callback_;
         }
         return;
     }
@@ -122,7 +121,6 @@ void DbMgr::queryDBImpl(DBConnectionInfo* varDbConnection_, const string& sql_, 
     if (callback_)
     {
         callback_->exe(&(varDbConnection_->ret));
-        delete callback_;
     }
     LOGINFO((DB_MGR_LOG, "DbMgr::queryDBImpl sql=%s end callback_:%d", sql_, long(callback_)));
 }

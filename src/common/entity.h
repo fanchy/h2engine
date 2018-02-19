@@ -166,6 +166,7 @@ public:
 protected:
     std::map<int/*entity type*/, std::map<userid_t, EntityPtr> >   m_all_entity;
 };
+#define ENTITY_MGR Singleton<EntityMgr>::instance()
 
 #define DELETE_ENTITY(X) Singleton<EntityMgr>::instance().del(X->getType(), X->getUid());
 
