@@ -374,7 +374,8 @@ static bool initEnvir(){
     SCRIPT_UTIL.reg("Task.addTaskCfg",         TaskScriptFunctor::addTaskCfg);
     
     //EntityPtr entity = NEW_ENTITY(1, 1);
-    //SCRIPT_UTIL.callScript<void>("testTask", entity);
+    //string arg = "SoNice";
+    //SCRIPT_UTIL.callScript<void>(string("foo.sayhi"), arg);
     return true;
 }
 WORKER_AT_SETUP(initEnvir);

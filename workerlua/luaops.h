@@ -739,13 +739,23 @@ struct luaops_t{
 			scriptName = vt[0];
 			func_name_ = vt[1];
 			//load_file(scriptName+".lua");
-			std::string s = "require '" + scriptName + "'";
-			run_string(s);
+			
 			lua_getglobal(m_ls, scriptName.c_str());
+            if (lua_isnil(m_ls, -1)){
+                lua_remove(m_ls, -1);
+                std::string s = "require '" + scriptName + "'";
+			    run_string(s);
+                lua_getglobal(m_ls, scriptName.c_str());
+            }
 			if (lua_istable(m_ls, -1)){
 				lua_getfield(m_ls, -1, func_name_.c_str());
 				lua_remove(m_ls, -2);
 			}
+            else{
+                std::string err = lua_err_handler_t::luatraceback(m_ls, "lua_pcall failed func_name<%s>", funcNameArg.c_str());
+                lua_pop(m_ls, 1);
+                throw lua_err_t(err);
+            }
 			
 		}
 		else{
