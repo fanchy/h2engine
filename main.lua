@@ -121,3 +121,7 @@ print("cacheRet", cacheRet)
 cacheRet = h2ext.callFunc("Cache.get", "")
 var_dump(cacheRet)
 print("cacheRet", h2ext.callFunc("Cache.size", "m"), h2ext.callFunc("Cache.size", "m.n"))
+    
+function sayhi(arg)
+    print('sayhi *************')
+end

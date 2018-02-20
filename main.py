@@ -87,3 +87,6 @@ def testTask(entity):
     allTask = h2ext.callFunc("Task.getTask", entity, 2)
     print("testTask allTask", allTask)
     return
+    
+def sayhi(arg = None):
+    print('sayhi *************')

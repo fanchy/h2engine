@@ -114,4 +114,12 @@ function dbTest(){
     h2ext::asyncQueryByName(dbname, 'select * from foo limit 2', 'dbTestCb');
 }
 dbTest();
+class FooClass
+{
+    public static function sayhi($arg = 'nothing'){
+        print("hi !".$arg."\n");
+        return 0;
+    }
+};
+
 ?>

@@ -87,3 +87,9 @@ function init(){
     dbTest();
     h2ext.print("js init ok");
 }
+
+FooClass ={
+    'sayhi' : function(){
+        h2ext.print("Hello World S!");
+    }
+};
