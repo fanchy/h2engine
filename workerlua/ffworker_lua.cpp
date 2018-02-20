@@ -226,7 +226,7 @@ static int lua_asyncQuery(lua_State* ls_)
     lua_pop(ls_, 1);
     
     AsyncQueryCB cb(ls_, idx);
-    DB_MGR.asyncQueryModId(db_id_, sql_, cb, &(Singleton<FFWorkerLua>::instance().getRpc().get_tq()));
+    DB_MGR.asyncQueryModId(db_id_, sql_, cb, Singleton<FFWorkerLua>::instance().getRpc().getTaskQueue());
     return 0;
 }
 struct AsyncQueryNameCB
@@ -325,7 +325,7 @@ static int lua_asyncQueryByName(lua_State* ls_)
     lua_pop(ls_, 1);
     
     AsyncQueryNameCB cb(ls_, idx);
-    DB_MGR.asyncQueryByName(name, sql_, cb, &(Singleton<FFWorkerLua>::instance().getRpc().get_tq()));
+    DB_MGR.asyncQueryByName(name, sql_, cb, Singleton<FFWorkerLua>::instance().getRpc().getTaskQueue());
     return 0;
 }
 static int lua_queryByName(lua_State* ls_)
@@ -528,7 +528,7 @@ static int lua_asyncHttp(lua_State* ls_)
             }
             HttpMgr::http_result_t* data = (HttpMgr::http_result_t*)args_;
 
-            Singleton<FFWorkerLua>::instance().getRpc().get_tq().produce(TaskBinder::gen(&lambda_cb::call_lua, ls_, idx, data->ret));
+            Singleton<FFWorkerLua>::instance().getRpc().getTaskQueue()->post(TaskBinder::gen(&lambda_cb::call_lua, ls_, idx, data->ret));
         }
         static void call_lua(lua_State* ls_, long idx, string retdata)
         {
@@ -848,7 +848,7 @@ int FFWorkerLua::scriptInit(const string& lua_root)
         Mutex                    mutex;
         ConditionVar            cond(mutex);
         
-        getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerLua::processInit, this, &mutex, &cond, &ret));
+        getRpc().getTaskQueue()->post(TaskBinder::gen(&FFWorkerLua::processInit, this, &mutex, &cond, &ret));
         LockGuard lock(mutex);
         if (ret == -2){
             cond.wait();
@@ -908,7 +908,7 @@ void FFWorkerLua::scriptCleanup()
 }
 int FFWorkerLua::close()
 {
-    getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerLua::scriptCleanup, this));
+    getRpc().getTaskQueue()->post(TaskBinder::gen(&FFWorkerLua::scriptCleanup, this));
     FFWorker::close();
     if (false == m_started)
         return 0;

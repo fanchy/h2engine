@@ -606,7 +606,7 @@ PHP_METHOD(h2ext, asyncQuery)
     Singleton<FFWorkerPhp>::instance().m_php->globalCache(fieldname, funccb);
     
     AsyncQueryCB cb(idx);
-    DB_MGR.asyncQueryModId(db_id_, sql_,  cb, &(Singleton<FFWorkerPhp>::instance().getRpc().get_tq()));
+    DB_MGR.asyncQueryModId(db_id_, sql_,  cb, Singleton<FFWorkerPhp>::instance().getRpc().getTaskQueue());
     RETURN_TRUE;
 }
 struct AsyncQueryNameCB
@@ -684,7 +684,7 @@ PHP_METHOD(h2ext, asyncQueryByName)
     Singleton<FFWorkerPhp>::instance().m_php->globalCache(fieldname, funccb);
     
     AsyncQueryNameCB cb(idx);
-    DB_MGR.asyncQueryByName(group_, sql_,  cb, &(Singleton<FFWorkerPhp>::instance().getRpc().get_tq()));
+    DB_MGR.asyncQueryByName(group_, sql_,  cb, Singleton<FFWorkerPhp>::instance().getRpc().getTaskQueue());
     RETURN_TRUE;
 }
 PHP_METHOD(h2ext, query)
@@ -891,7 +891,7 @@ PHP_METHOD(h2ext, asyncHttp)
             }
             HttpMgr::http_result_t* data = (HttpMgr::http_result_t*)args_;
 
-            Singleton<FFWorkerPhp>::instance().getRpc().get_tq().produce(TaskBinder::gen(&lambda_cb::call_php, idx, data->ret));
+            Singleton<FFWorkerPhp>::instance().getRpc().getTaskQueue()->post(TaskBinder::gen(&lambda_cb::call_php, idx, data->ret));
         }
         static void call_php(long idx, std::string retdata)
         {
@@ -1237,7 +1237,7 @@ int FFWorkerPhp::scriptInit(const std::string& root)
         Mutex                    mutex;
         ConditionVar            cond(mutex);
         
-        getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerPhp::processInit, this, &mutex, &cond, &ret));
+        getRpc().getTaskQueue()->post(TaskBinder::gen(&FFWorkerPhp::processInit, this, &mutex, &cond, &ret));
         LockGuard lock(mutex);
         if (ret == -2){
             cond.wait();
@@ -1324,7 +1324,7 @@ void FFWorkerPhp::scriptCleanup()
 int FFWorkerPhp::close()
 {
     LOGINFO((FFWORKER_PHP, "close begin"));
-    getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerPhp::scriptCleanup, this));
+    getRpc().getTaskQueue()->post(TaskBinder::gen(&FFWorkerPhp::scriptCleanup, this));
     
     FFWorker::close();
     if (false == m_started)

@@ -36,7 +36,7 @@ public:
     int handleBroken(socket_ptr_t sock_);
     //! 处理消息
     int handleMsg(const Message& msg_, socket_ptr_t sock_);
-    TaskQueueI* getTqPtr();
+    TaskQueueI* getTaskQueue();
 
     //! 注册接口
     template <typename R, typename IN_T, typename OUT_T>
@@ -64,17 +64,15 @@ public:
     int callPB(const std::string& namespace_, const std::string& name_, T& req_, FFSlot::FFCallBack* callback_ = NULL);
 #endif
     
-    uint32_t get_callback_id() { return ++m_callback_id; }
     //! call 接口的实现函数，call会将请求投递到该线程，保证所有请求有序
     int call_impl(const std::string& service_name_, const std::string& msg_name_, const std::string& body_, FFSlot::FFCallBack* callback_);
     //! 调用接口后，需要回调消息给请求者
     virtual void response(const std::string& dest_namespace_, const std::string& msg_name_,  uint64_t dest_node_id_,
                           int64_t callback_id_, const std::string& body_, std::string err_info = "");
     //! 通过node id 发送消息给broker
-    void send_to_dest_node(const std::string& dest_namespace_, const std::string& service_name_, const std::string& msg_name_,
+    void sendToDestNode(const std::string& dest_namespace_, const std::string& service_name_, const std::string& msg_name_,
                            uint64_t dest_node_id_, int64_t callback_id_, const std::string& body_, std::string error_info = "");
-    //! 获取任务队列对象
-    TaskQueue& get_tq();
+
     //! 定时重连 broker master
     void timer_reconnect_broker();
 
@@ -110,32 +108,31 @@ private:
     int handle_broker_reg_response(RegisterToBroker::out_t& msg_, socket_ptr_t sock_);
     
 public:
-    bool                                    m_runing;
+    bool                                            m_runing;
 private:
-    std::string                                  m_host;
-    std::string                                  m_service_name;//! 注册的服务名称
-    uint64_t                                m_node_id;     //! 通过注册broker，分配的node id
+    std::string                                     m_host;
+    std::string                                     m_service_name;//! 注册的服务名称
+    uint64_t                                        m_node_id;     //! 通过注册broker，分配的node id
     
-    uint32_t                                m_callback_id;//! 回调函数的唯一id值
-    TaskQueue                            m_tq;
-    TimerService                         m_timer;
-    Thread                                m_thread;
-    FFSlot                                m_ffslot;//! 注册broker 消息的回调函数
-    FFSlot                                m_ffslot_interface;//! 通过reg 注册的接口会暂时的存放在这里
-    FFSlot                                m_ffslot_callback;//! 
-    socket_ptr_t                            m_master_broker_sock;
+    TaskQueue                                       m_tq;
+    TimerService                                    m_timer;
+    Thread                                          m_thread;
+    FFSlot                                          m_ffslot;//! 注册broker 消息的回调函数
+    FFSlot                                          m_ffslot_interface;//! 通过reg 注册的接口会暂时的存放在这里
+    FFSlot                                          m_ffslot_callback;//! 
+    socket_ptr_t                                    m_master_broker_sock;
 
-    std::map<uint32_t, slave_broker_info_t>      m_slave_broker_sockets;//! node id -> info
-    std::map<std::string, uint32_t>                   m_msg2id;
-    std::map<uint32_t, broker_client_info_t>     m_broker_client_info;//! node id -> service
-    std::map<std::string, uint32_t>                   m_broker_client_name2nodeid;//! service name -> service node id
+    std::map<uint32_t, slave_broker_info_t>         m_slave_broker_sockets;//! node id -> info
+    std::map<std::string, uint32_t>                 m_msg2id;
+    std::map<uint32_t, broker_client_info_t>        m_broker_client_info;//! node id -> service
+    std::map<std::string, uint32_t>                 m_broker_client_name2nodeid;//! service name -> service node id
     
     //!ff绑定的broker id
-    uint64_t                                m_bind_broker_id;
+    uint64_t                                        m_bind_broker_id;
     //!所有的broker socket
-    std::map<uint64_t, socket_ptr_t>             m_broker_sockets;
+    std::map<uint64_t, socket_ptr_t>                m_broker_sockets;
     //!ff new impl
-    RegisterToBroker::out_t             m_broker_data;
+    RegisterToBroker::out_t                         m_broker_data;
 };
 
 //! 注册接口
@@ -183,7 +180,7 @@ struct FFRpc::broker_client_info_t
 template <typename T>
 int FFRpc::call(const std::string& name_, T& req_, FFSlot::FFCallBack* callback_)
 {
-    m_tq.produce(TaskBinder::gen(&FFRpc::call_impl, this, name_, TYPE_NAME(T), FFThrift::EncodeAsString(req_), callback_));
+    m_tq.post(TaskBinder::gen(&FFRpc::call_impl, this, name_, TYPE_NAME(T), FFThrift::EncodeAsString(req_), callback_));
     return 0;
 }
 
@@ -196,7 +193,7 @@ int FFRpc::call(const std::string& namespace_, const std::string& name_, T& req_
         return this->call(name_, req_, callback_);
     }
     else{
-        m_tq.produce(TaskBinder::gen(&FFRpc::bridge_call_impl, this, namespace_, name_, TYPE_NAME(T), FFThrift::EncodeAsString(req_), callback_));
+        m_tq.post(TaskBinder::gen(&FFRpc::bridge_call_impl, this, namespace_, name_, TYPE_NAME(T), FFThrift::EncodeAsString(req_), callback_));
     }
     return 0;
 }
@@ -222,7 +219,7 @@ int FFRpc::callPB(const std::string& name_, T& req_, FFSlot::FFCallBack* callbac
 {
     std::string ret;
     req_.SerializeToString(&ret);
-    m_tq.produce(TaskBinder::gen(&FFRpc::call_impl, this, name_, TYPE_NAME(T), ret, callback_));
+    m_tq.post(TaskBinder::gen(&FFRpc::call_impl, this, name_, TYPE_NAME(T), ret, callback_));
     return 0;
 }
 
@@ -237,7 +234,7 @@ int FFRpc::callPB(const std::string& namespace_, const std::string& name_, T& re
     else{
         std::string ret;
         req_.SerializeToString(&ret);
-        m_tq.produce(TaskBinder::gen(&FFRpc::bridge_call_impl, this, namespace_, name_, TYPE_NAME(T), ret, callback_));
+        m_tq.post(TaskBinder::gen(&FFRpc::bridge_call_impl, this, namespace_, name_, TYPE_NAME(T), ret, callback_));
     }
     return 0;
 }

@@ -99,7 +99,7 @@ int FFWorker::open(const string& brokercfg, int worker_index)
     StrTool::split(host, args, ":");
     int port = ::atoi(args[2].c_str());
 
-    m_shared_mem_mgr.init_worker(port, worker_index, &(m_ffrpc->get_tq()));
+    m_shared_mem_mgr.init_worker(port, worker_index, m_ffrpc->getTaskQueue());
     Singleton<FFWorkerMgr>::instance().add(m_logic_name, this);
     
     LOGTRACE((FFWORKER_LOG, "FFWorker::open end ok"));

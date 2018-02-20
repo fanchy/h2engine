@@ -42,7 +42,7 @@ public:
     //! 处理消息
     int handleMsg(const Message& msg_, socket_ptr_t sock_);
     
-    TaskQueueI* getTqPtr();
+    TaskQueueI* getTaskQueue();
 public:
     int close_impl();
     //! 逻辑处理,转发消息到logic service
@@ -66,10 +66,10 @@ public:
 private:
     void cleanup_session(client_info_t& client_info, socket_ptr_t sock_, bool closesend = true);
 public:
-    userid_t                                    m_allocID;
-    int                                         m_gate_index;//!这是第几个gate，现在只有一个gate，如果以后想要有多个gate，这个要被正确的赋值
+    userid_t                                         m_allocID;
+    int                                              m_gate_index;//!这是第几个gate，现在只有一个gate，如果以后想要有多个gate，这个要被正确的赋值
     std::string                                      m_gate_name;
-    SharedPtr<FFRpc>                       m_ffrpc;
+    SharedPtr<FFRpc>                                 m_ffrpc;
 
     std::map<userid_t/*sessionid*/, client_info_t>   m_client_set;
 };

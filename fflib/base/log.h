@@ -165,7 +165,7 @@ protected:
 			const char* class_name_str = m_log->find_class_name(class_);							\
 			if (class_name_str)																		\
 			{																						\
-				m_task_queue.produce(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
+				m_task_queue.post(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
 									 class_name_str, std::string(fmt_), gettid()));								\
 			}																						\
 		}																							\
@@ -182,7 +182,7 @@ protected:
 			{																						\
 				str_format_t dest(fmt_);															\
 				dest.append(arg1_);																	\
-				m_task_queue.produce(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
+				m_task_queue.post(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
 									 class_name_str, dest.gen_result(), gettid()));						 	\
 			}																						\
 		}																							\
@@ -201,7 +201,7 @@ protected:
 				str_format_t dest(fmt_);															\
 				dest.append(arg1_);																	\
 				dest.append(arg2_);																	\
-				m_task_queue.produce(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
+				m_task_queue.post(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
 									 class_name_str, dest.gen_result(), gettid()));						 	\
 			}																						\
 		}																							\
@@ -221,7 +221,7 @@ protected:
 				dest.append(arg1_);																	\
 				dest.append(arg2_);																	\
 				dest.append(arg3_);																	\
-				m_task_queue.produce(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
+				m_task_queue.post(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
 									 class_name_str, dest.gen_result(), gettid()));						 	\
 			}																						\
 		}																							\
@@ -242,7 +242,7 @@ protected:
 				dest.append(arg2_);																	\
 				dest.append(arg3_);																	\
 				dest.append(arg4_);																	\
-				m_task_queue.produce(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
+				m_task_queue.post(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
 									 class_name_str, dest.gen_result(), gettid()));						 	\
 			}																						\
 		}																							\
@@ -264,7 +264,7 @@ protected:
 				dest.append(arg3_);																	\
 				dest.append(arg4_);																	\
 				dest.append(arg5_);																	\
-				m_task_queue.produce(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
+				m_task_queue.post(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
 									 class_name_str, dest.gen_result(), gettid()));						 	\
 			}																						\
 		}																							\
@@ -288,7 +288,7 @@ protected:
 				dest.append(arg4_);																	\
 				dest.append(arg5_);																	\
 				dest.append(arg6_);																	\
-				m_task_queue.produce(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
+				m_task_queue.post(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
 									 class_name_str, dest.gen_result(), gettid()));						 	\
 			}																						\
 		}																							\

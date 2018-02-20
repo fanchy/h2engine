@@ -120,11 +120,6 @@ int FFBroker::open(const string& listen, string bridge_broker, string master_bro
     return 0;
 }
 
-//! 获取任务队列对象
-TaskQueue& FFBroker::get_tq()
-{
-    return m_tq;
-}
 //! 定时器
 TimerService& FFBroker::getTimer()
 {
@@ -145,26 +140,26 @@ int FFBroker::close()
         return 0;
     m_acceptor->close();
     m_acceptor = NULL;
-    m_tq.produce(TaskBinder::gen(&FFBroker::real_cleaanup, this));
+    m_tq.post(TaskBinder::gen(&FFBroker::real_cleaanup, this));
     m_timer.stop();
     m_tq.close();
     m_thread.join();
     //usleep(100);
     return 0;
 }
-TaskQueueI* FFBroker::getTqPtr()
+TaskQueueI* FFBroker::getTaskQueue()
 {
     return &m_tq;
 }
 /*
 int FFBroker::handleBroken(socket_ptr_t sock_)
 {
-    m_tq.produce(TaskBinder::gen(&FFBroker::handleBroken_impl, this, sock_));
+    m_tq.post(TaskBinder::gen(&FFBroker::handleBroken_impl, this, sock_));
     return 0;
 }
 int FFBroker::handleMsg(const Message& msg_, socket_ptr_t sock_)
 {
-    m_tq.produce(TaskBinder::gen(&FFBroker::handleMsg_impl, this, msg_, sock_));
+    m_tq.post(TaskBinder::gen(&FFBroker::handleMsg_impl, this, msg_, sock_));
     return 0;
 }*/
 //! 当有连接断开，则被回调
@@ -529,7 +524,7 @@ int FFBroker::send_to_rpc_node(BrokerRouteMsg::in_t& msg_)
     if (pffrpc)
     {
         LOGTRACE((BROKER, "FFBroker::send_to_rpc_node memory post"));
-        pffrpc->get_tq().produce(TaskBinder::gen(&FFRpc::handle_rpc_call_msg, pffrpc, msg_, socket_ptr_t(NULL)));
+        pffrpc->getTaskQueue()->post(TaskBinder::gen(&FFRpc::handle_rpc_call_msg, pffrpc, msg_, socket_ptr_t(NULL)));
         return 0;
     }
     LOGINFO((BROKER, "FFBroker::send_to_rpc_node dest_node=%d bodylen=%d, by socket", msg_.dest_node_id, msg_.body.size()));
@@ -682,5 +677,5 @@ static void reconnect_loop(FFBroker* ffbroker_)
 //! 投递到ffrpc 特定的线程
 static void route_call_reconnect(FFBroker* ffbroker_)
 {
-    ffbroker_->get_tq().produce(TaskBinder::gen(&reconnect_loop, ffbroker_));
+    ffbroker_->getTaskQueue()->post(TaskBinder::gen(&reconnect_loop, ffbroker_));
 }

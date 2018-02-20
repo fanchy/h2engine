@@ -15,7 +15,7 @@ public:
     virtual int handleBroken(socket_ptr_t sock_)  = 0;
     virtual int handleMsg(const Message& msg_, socket_ptr_t sock_) = 0;
 
-    virtual TaskQueueI* getTqPtr() = 0;
+    virtual TaskQueueI* getTaskQueue() = 0;
 };
 
 typedef MsgHandlerI* msg_handler_ptr_t;

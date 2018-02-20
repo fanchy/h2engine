@@ -38,7 +38,7 @@ void SocketLinux::open()
 
 void SocketLinux::close()
 {
-    m_tq->produce(TaskBinder::gen(&SocketLinux::close_impl, this));
+    m_tq->post(TaskBinder::gen(&SocketLinux::close_impl, this));
 }
 
 void SocketLinux::close_impl()
@@ -53,7 +53,7 @@ void SocketLinux::close_impl()
 
 int SocketLinux::handleEpollRead()
 {
-    m_tq->produce(TaskBinder::gen(&SocketLinux::handleEpollRead_impl, this));
+    m_tq->post(TaskBinder::gen(&SocketLinux::handleEpollRead_impl, this));
     return 0;
 }
 
@@ -103,13 +103,13 @@ int SocketLinux::handleEpollRead_impl()
 
 int SocketLinux::handleEpollDel()
 {
-    m_tq->produce(TaskBinder::gen(&SocketCtrlI::handleError, this->get_sc(), this));
+    m_tq->post(TaskBinder::gen(&SocketCtrlI::handleError, this->get_sc(), this));
     return 0;
 }
 
 int SocketLinux::handleEpollWrite()
 {
-    m_tq->produce(TaskBinder::gen(&SocketLinux::handleEpollWrite_impl, this));
+    m_tq->post(TaskBinder::gen(&SocketLinux::handleEpollWrite_impl, this));
     return 0;
 }
 
@@ -148,7 +148,7 @@ int SocketLinux::handleEpollWrite_impl()
 
 void SocketLinux::asyncSend(const string& msg_)
 {
-    m_tq->produce(TaskBinder::gen(&SocketLinux::send_str_impl, this, msg_));
+    m_tq->post(TaskBinder::gen(&SocketLinux::send_str_impl, this, msg_));
 }
 
 void SocketLinux::send_str_impl(const string& buff_)
@@ -241,5 +241,5 @@ void SocketLinux::safeDelete()
             delete ((SocketLinux*)p_);
         }
     };
-    m_tq->produce(Task(&lambda_t::exe, this));
+    m_tq->post(Task(&lambda_t::exe, this));
 }

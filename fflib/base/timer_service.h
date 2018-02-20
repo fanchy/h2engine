@@ -104,7 +104,7 @@ public:
             ::close(m_efd);
             m_thread.join();
             if (clearpost && m_tq){
-                m_tq->produce(TaskBinder::gen(&TimerService::cleardata, this));
+                m_tq->post(TaskBinder::gen(&TimerService::cleardata, this));
             }
             else{
                 cleardata();
@@ -204,7 +204,7 @@ private:
             }
             
             if (m_tq){
-                m_tq->produce(last.callback); //! 投递到目标线程执行
+                m_tq->post(last.callback); //! 投递到目标线程执行
                 last.callback.clear();
             }
             else{

@@ -12,7 +12,6 @@ FFRpc::FFRpc(string service_name_):
     m_runing(false),
     m_service_name(service_name_),
     m_node_id(0),
-    m_callback_id(0),
     m_timer(&m_tq),
     m_master_broker_sock(NULL),
     m_bind_broker_id(0)
@@ -122,7 +121,7 @@ static void route_call_reconnect(FFRpc* ffrpc_)
 {
     if (ffrpc_->m_runing == false)
         return;
-    ffrpc_->get_tq().produce(TaskBinder::gen(&FFRpc::timer_reconnect_broker, ffrpc_));
+    ffrpc_->getTaskQueue()->post(TaskBinder::gen(&FFRpc::timer_reconnect_broker, ffrpc_));
 }
 //! 定时重连 broker master
 void FFRpc::timer_reconnect_broker()
@@ -169,23 +168,19 @@ void FFRpc::timer_reconnect_broker()
 }
 
 //! 获取任务队列对象
-TaskQueue& FFRpc::get_tq()
-{
-    return m_tq;
-}
-TaskQueueI* FFRpc::getTqPtr()
+TaskQueueI* FFRpc::getTaskQueue()
 {
     return &m_tq;
 }
 /*
 int FFRpc::handleBroken(socket_ptr_t sock_)
 {
-    m_tq.produce(TaskBinder::gen(&FFRpc::handleBroken_impl, this, sock_));
+    m_tq.post(TaskBinder::gen(&FFRpc::handleBroken_impl, this, sock_));
     return 0;
 }
 int FFRpc::handleMsg(const Message& msg_, socket_ptr_t sock_)
 {
-    m_tq.produce(TaskBinder::gen(&FFRpc::handleMsg_impl, this, msg_, sock_));
+    m_tq.post(TaskBinder::gen(&FFRpc::handleMsg_impl, this, msg_, sock_));
     return 0;
 }
 */
@@ -361,13 +356,13 @@ int FFRpc::call_impl(const string& service_name_, const string& msg_name_, const
     LOGTRACE((FFRPC, "FFRpc::call_impl end dest_id=%u callback_id=%u", it->second, callback_id));
 
     static string null_str;
-    send_to_dest_node(null_str, service_name_, msg_name_, it->second, callback_id, body_);
+    sendToDestNode(null_str, service_name_, msg_name_, it->second, callback_id, body_);
 
     return 0;
 }
 
 //! 通过node id 发送消息给broker
-void FFRpc::send_to_dest_node(const string& dest_namespace_, const string& service_name_, const string& msg_name_,
+void FFRpc::sendToDestNode(const string& dest_namespace_, const string& service_name_, const string& msg_name_,
                                 uint64_t dest_node_id_, int64_t callback_id_, const string& body_, string error_info)
 {
     LOGTRACE((FFRPC, "FFRpc::send_to_broker_by_nodeid begin dest_node_id[%u]", dest_node_id_));
@@ -392,7 +387,7 @@ void FFRpc::send_to_dest_node(const string& dest_namespace_, const string& servi
     if (pbroker)//!如果broker和本身都在同一个进程中,那么直接内存间投递即可
     {
         LOGTRACE((FFRPC, "FFRpc::send_to_broker_by_nodeid begin dest_node_id[%u], m_bind_broker_id=%u memory post", dest_node_id_, dest_broker_id));
-        pbroker->get_tq().produce(TaskBinder::gen(&FFBroker::send_to_rpc_node, pbroker, dest_msg));
+        pbroker->getTaskQueue()->post(TaskBinder::gen(&FFBroker::send_to_rpc_node, pbroker, dest_msg));
     }
     else if (dest_broker_id == 0)
     {
@@ -420,7 +415,7 @@ int FFRpc::bridge_call_impl(const string& broker_group_, const string& service_n
 {
     int64_t callback_id  = int64_t(callback_);
     m_ffslot_callback.bind(callback_id, callback_);
-    send_to_dest_node(broker_group_, service_name_, msg_name_, 0, callback_id, body_);
+    sendToDestNode(broker_group_, service_name_, msg_name_, 0, callback_id, body_);
     LOGINFO((FFRPC, "FFRpc::bridge_call_impl group<%s> service[%s] end ok", broker_group_, service_name_));
     return 0;
 }
@@ -430,7 +425,7 @@ int FFRpc::bridge_call_impl(const string& broker_group_, const string& service_n
 void FFRpc::response(const string& dest_namespace_, const string& msg_name_,  uint64_t dest_node_id_, int64_t callback_id_, const string& body_, string err_info)
 {
     static string null_str;
-    m_tq.produce(TaskBinder::gen(&FFRpc::send_to_dest_node, this, dest_namespace_, null_str, msg_name_, dest_node_id_, callback_id_, body_, err_info));
+    m_tq.post(TaskBinder::gen(&FFRpc::sendToDestNode, this, dest_namespace_, null_str, msg_name_, dest_node_id_, callback_id_, body_, err_info));
 }
 
 //! 处理注册, 

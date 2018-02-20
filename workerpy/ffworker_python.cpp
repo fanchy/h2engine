@@ -174,7 +174,7 @@ struct PyQueryCallBack
 static void py_asyncQuery(long modid, const string& sql_, PyObject* pFuncArg)
 {
     PyQueryCallBack cb(pFuncArg);
-    DB_MGR.asyncQueryModId(modid, sql_, cb, &(Singleton<FFWorkerPython>::instance().getRpc().get_tq()));
+    DB_MGR.asyncQueryModId(modid, sql_, cb, Singleton<FFWorkerPython>::instance().getRpc().getTaskQueue());
 }
 struct AsyncQueryNameCb
 {
@@ -252,7 +252,7 @@ struct AsyncQueryNameCb
 static void py_asyncQueryByName(const string& name_, const string& sql_, PyObject* pFuncArg)
 {
     AsyncQueryNameCb cb(pFuncArg);
-    DB_MGR.asyncQueryByName(name_, sql_, cb, &(Singleton<FFWorkerPython>::instance().getRpc().get_tq()));
+    DB_MGR.asyncQueryByName(name_, sql_, cb, Singleton<FFWorkerPython>::instance().getRpc().getTaskQueue());
 }
 
 static PyObject* py_query(const string& sql_)
@@ -409,7 +409,7 @@ static bool py_asyncHttp(const string& url_, int timeoutsec, PyObject* pFuncSrc)
             }
             HttpMgr::http_result_t* data = (HttpMgr::http_result_t*)args_;
 
-            Singleton<FFWorkerPython>::instance().getRpc().get_tq().produce(TaskBinder::gen(&lambda_cb::call_python, pFunc, data->ret));
+            Singleton<FFWorkerPython>::instance().getRpc().getTaskQueue()->post(TaskBinder::gen(&lambda_cb::call_python, pFunc, data->ret));
         }
         static void call_python(PyObject* pFunc, string retdata)
         {
@@ -806,7 +806,7 @@ int FFWorkerPython::scriptInit(const string& py_root)
         Mutex                    mutex;
         ConditionVar            cond(mutex);
         
-        getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerPython::processInit, this, &mutex, &cond, &ret));
+        getRpc().getTaskQueue()->post(TaskBinder::gen(&FFWorkerPython::processInit, this, &mutex, &cond, &ret));
         LOGINFO((FFWORKER_PYTHON, "FFWorkerPython::begin init py"));
         LockGuard lock(mutex);
         if (ret == -2){
@@ -867,7 +867,7 @@ void FFWorkerPython::scriptCleanup()
 }
 int FFWorkerPython::close()
 {
-    getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerPython::scriptCleanup, this));
+    getRpc().getTaskQueue()->post(TaskBinder::gen(&FFWorkerPython::scriptCleanup, this));
     FFWorker::close();
     if (false == m_started)
         return 0;

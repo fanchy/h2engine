@@ -29,7 +29,7 @@ public:
     	m_cond.broadcast();
     }
 
-    void multi_produce(const task_list_t& task_)
+    void multi_post(const task_list_t& task_)
     {
         LockGuard lock(m_mutex);
         bool need_sig = m_tasklist.empty();
@@ -44,7 +44,7 @@ public:
         	m_cond.signal();
         }
     }
-    void produce(const Task& task_)
+    void post(const Task& task_)
     {        
         LockGuard lock(m_mutex);
         bool need_sig = m_tasklist.empty();

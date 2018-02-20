@@ -90,8 +90,8 @@ public:
 public:
     virtual ~TaskQueueI(){}
     virtual void close() = 0;
-    virtual void produce(const Task& task_) =0;
-    virtual void multi_produce(const task_list_t& task_) =0;
+    virtual void post(const Task& task_) =0;
+    virtual void multi_post(const task_list_t& task_) =0;
     virtual int  consume(Task& task_) = 0;
     virtual int  consume_all(task_list_t&) = 0;
     virtual int run() = 0;

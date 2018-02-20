@@ -28,8 +28,8 @@ SocketCtrlCommon::~SocketCtrlCommon()
 //! logic layer has responsibily to deconstruct the socket object
 int SocketCtrlCommon::handleError(SocketI* sp_)
 {
-    if (m_msg_handler->getTqPtr()){
-        m_msg_handler->getTqPtr()->produce(TaskBinder::gen(&MsgHandlerI::handleBroken, m_msg_handler, sp_));
+    if (m_msg_handler->getTaskQueue()){
+        m_msg_handler->getTaskQueue()->post(TaskBinder::gen(&MsgHandlerI::handleBroken, m_msg_handler, sp_));
     }
     else{
         m_msg_handler->handleBroken(sp_);
@@ -71,8 +71,8 @@ int SocketCtrlCommon::handleRead(SocketI* sp_, const char* buff, size_t len)
 
 void SocketCtrlCommon::post_msg(SocketI* sp_)
 {
-    if (m_msg_handler->getTqPtr()){
-        m_msg_handler->getTqPtr()->produce(TaskBinder::gen(&MsgHandlerI::handleMsg,
+    if (m_msg_handler->getTaskQueue()){
+        m_msg_handler->getTaskQueue()->post(TaskBinder::gen(&MsgHandlerI::handleMsg,
                                              m_msg_handler, m_message, sp_));
     }
     else{

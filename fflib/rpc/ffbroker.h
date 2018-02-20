@@ -43,7 +43,7 @@ public:
     int handleBroken(socket_ptr_t sock_);
     //! 当有消息到来，被回调
     int handleMsg(const Message& msg_, socket_ptr_t sock_);
-    TaskQueueI* getTqPtr();
+    TaskQueueI* getTaskQueue();
 
     //! 处理其他broker或者client注册到此server
     int handle_regiter_to_broker(RegisterToBroker::in_t& msg_, socket_ptr_t sock_);
@@ -63,8 +63,6 @@ public:
     int close();
     void real_cleaanup();
 
-    //! 获取任务队列对象
-    TaskQueue& get_tq();
     //! 定时器
     TimerService& getTimer();
     

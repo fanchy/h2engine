@@ -59,7 +59,7 @@ int FFGate::open(const string& broker_addr, const string& gate_listen, int gate_
 int FFGate::close()
 {
     if (m_ffrpc)
-        m_ffrpc->get_tq().produce(TaskBinder::gen(&FFGate::close_impl, this));
+        m_ffrpc->getTaskQueue()->post(TaskBinder::gen(&FFGate::close_impl, this));
     return 0;
 }
 int FFGate::close_impl()
@@ -76,9 +76,9 @@ int FFGate::close_impl()
     return 0;
 }
 
-TaskQueueI* FFGate::getTqPtr()
+TaskQueueI* FFGate::getTaskQueue()
 {
-    return &(m_ffrpc->get_tq());
+    return m_ffrpc->getTaskQueue();
 }
 
 void FFGate::cleanup_session(client_info_t& client_info, socket_ptr_t sock_, bool closesend){

@@ -73,7 +73,7 @@ public:
         static void setup_timer(void* p_)
         {
             PerformanceDaemon_t* pd = (PerformanceDaemon_t*)p_;
-            pd->get_task_queue().produce(Task(&timer_lambda_t::exe, pd));
+            pd->get_task_queue().post(Task(&timer_lambda_t::exe, pd));
         }
     };
 public:

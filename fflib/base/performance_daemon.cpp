@@ -80,7 +80,7 @@ void PerformanceDaemon_t::post(const string& mod_, long arg_, long us_)
 {
     if (m_started)
     {
-        m_task_queue.produce(TaskBinder::gen(&PerformanceDaemon_t::add_perf_data, this, mod_, arg_, us_));
+        m_task_queue.post(TaskBinder::gen(&PerformanceDaemon_t::add_perf_data, this, mod_, arg_, us_));
     }
     else
     {

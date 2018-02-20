@@ -228,7 +228,7 @@ private:
             }
             toDel.push_back(it);
             if (m_tq){
-                m_tq->produce(last.callback); //! 投递到目标线程执行
+                m_tq->post(last.callback); //! 投递到目标线程执行
             }
             else{
                 last.callback.run();

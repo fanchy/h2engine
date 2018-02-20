@@ -481,7 +481,7 @@ static BIND_FUNC_RET_TYPE js_asyncQuery(const Arguments& args)
     }
     
     AsyncQueryCB cb(funcptr);
-    DB_MGR.asyncQueryModId(db_id_, sql_,  cb, &(Singleton<FFWorkerJs>::instance().getRpc().get_tq()));
+    DB_MGR.asyncQueryModId(db_id_, sql_,  cb, Singleton<FFWorkerJs>::instance().getRpc().getTaskQueue());
     BIND_FUNC_RET_TRUE;
 }
 struct AsyncQueryNameCB
@@ -559,7 +559,7 @@ static BIND_FUNC_RET_TYPE js_asyncQueryByName(const Arguments& args)
     
     
     AsyncQueryNameCB cb(funcptr);
-    DB_MGR.asyncQueryByName(group_, sql_,  cb, &(Singleton<FFWorkerJs>::instance().getRpc().get_tq()));
+    DB_MGR.asyncQueryByName(group_, sql_,  cb, Singleton<FFWorkerJs>::instance().getRpc().getTaskQueue());
     BIND_FUNC_RET_TRUE;
 }
 static BIND_FUNC_RET_TYPE js_query(const Arguments& args)
@@ -751,7 +751,7 @@ static BIND_FUNC_RET_TYPE js_asyncHttp(const Arguments& args)
             }
             HttpMgr::http_result_t* data = (HttpMgr::http_result_t*)args_;
 
-            Singleton<FFWorkerJs>::instance().getRpc().get_tq().produce(TaskBinder::gen(&lambda_cb::call_js, funcptr, data->ret));
+            Singleton<FFWorkerJs>::instance().getRpc().getTaskQueue()->post(TaskBinder::gen(&lambda_cb::call_js, funcptr, data->ret));
         }
         static void call_js(persistent_lambda_ptr_t funcptr, string retdata)
         {
@@ -1024,7 +1024,7 @@ int FFWorkerJs::scriptInit(const string& js_root)
         Mutex                    mutex;
         ConditionVar             cond(mutex);
         
-        getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerJs::processInit, this, &mutex, &cond, &ret, js_root));
+        getRpc().getTaskQueue()->post(TaskBinder::gen(&FFWorkerJs::processInit, this, &mutex, &cond, &ret, js_root));
         
         LockGuard lock(mutex);
         if (ret == -2){
@@ -1210,7 +1210,7 @@ void FFWorkerJs::scriptCleanup()
     this->cleanupModule();
     m_enable_call = false;
     DB_MGR.stop();
-    getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerJs::scriptRelease, this));
+    getRpc().getTaskQueue()->post(TaskBinder::gen(&FFWorkerJs::scriptRelease, this));
 }
 
 void FFWorkerJs::scriptRelease(){
@@ -1234,7 +1234,7 @@ void FFWorkerJs::scriptRelease(){
 int FFWorkerJs::close()
 {
     LOGINFO((FFWORKER_JS, "FFWorkerJs::close begin"));
-    getRpc().get_tq().produce(TaskBinder::gen(&FFWorkerJs::scriptCleanup, this));
+    getRpc().getTaskQueue()->post(TaskBinder::gen(&FFWorkerJs::scriptCleanup, this));
     LOGINFO((FFWORKER_JS, "FFWorkerJs::close begin to close"));
     FFWorker::close();
     if (false == m_started)

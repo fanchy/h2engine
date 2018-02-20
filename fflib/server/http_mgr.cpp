@@ -39,7 +39,7 @@ int HttpMgr::stop()
 
 void HttpMgr::request(const string& url_, int timeoutsec, FFSlot::FFCallBack* callback_)
 {
-    m_tq.produce(TaskBinder::gen(&HttpMgr::request_impl, this, url_, timeoutsec, callback_));
+    m_tq.post(TaskBinder::gen(&HttpMgr::request_impl, this, url_, timeoutsec, callback_));
 }
 
 void HttpMgr::request_impl(const string& sql_, int timeoutsec, FFSlot::FFCallBack* callback_)

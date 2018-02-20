@@ -407,18 +407,18 @@ int log_service_t::stop()
 
 void log_service_t::mod_level(int level_, bool flag_)
 {
-	m_task_queue.produce(TaskBinder::gen(&Log::mod_level, m_log, level_, flag_));
+	m_task_queue.post(TaskBinder::gen(&Log::mod_level, m_log, level_, flag_));
 }
 
 void log_service_t::mod_class(const string& class_, bool flag_)
 {
-	m_task_queue.produce(TaskBinder::gen(&Log::mod_class, m_log, class_, flag_));
+	m_task_queue.post(TaskBinder::gen(&Log::mod_class, m_log, class_, flag_));
 }
 void log_service_t::mod_print_file(bool flag_)
 {
-	m_task_queue.produce(TaskBinder::gen(&Log::mod_print_file, m_log, flag_));
+	m_task_queue.post(TaskBinder::gen(&Log::mod_print_file, m_log, flag_));
 }
 void log_service_t::mod_print_screen(bool flag_)
 {
-	m_task_queue.produce(TaskBinder::gen(&Log::mod_print_screen, m_log, flag_));
+	m_task_queue.post(TaskBinder::gen(&Log::mod_print_screen, m_log, flag_));
 }

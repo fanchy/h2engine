@@ -87,7 +87,7 @@ public:
     ~SharedSyncmemMgr();
     int init_master(int shared_key);
     
-    int init_worker(int shared_key, int work_index_, TaskQueue* tq = NULL);
+    int init_worker(int shared_key, int work_index_, TaskQueueI* tq = NULL);
 
     int processCmdQueue();
     
@@ -100,7 +100,7 @@ public:
         return &m_master_shm->master_lock;
     }
     
-    int workerRun(TaskQueue* tq = NULL);
+    int workerRun(TaskQueueI* tq = NULL);
     bool syncSharedData(int32_t cmd, const std::string& data);
     void cleanup();
 
@@ -115,12 +115,12 @@ public:
     int                                         m_worker_num;
     int                                         m_worker_index;
     int                                         m_worker_shmid;
-    MasterSharedData*                       m_master_shm;
+    MasterSharedData*                           m_master_shm;
     wroker_shared_data_t*                       m_worker_shm;
   
-    std::vector<SyncCmdData>                m_sync_cmd_queue;
-    Thread                                    m_thread;
-    Mutex                                     m_mutex;
+    std::vector<SyncCmdData>                    m_sync_cmd_queue;
+    Thread                                      m_thread;
+    Mutex                                       m_mutex;
     
     notify_func_t                               m_notify_func;
     

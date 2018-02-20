@@ -44,7 +44,7 @@ public:
 template <typename T>
 struct DbCallBack: public FFSlot::FFCallBack
 {
-    DbCallBack(T pFuncArg, TaskQueue* ptq):pFunc(pFuncArg), tq(ptq){}
+    DbCallBack(T pFuncArg, TaskQueueI* ptq):pFunc(pFuncArg), tq(ptq){}
     virtual void exe(FFSlot::CallBackArg* args_)
     {
         //LOGINFO((DB_MGR_LOG, "DbMgr::DbCallBack tq:%d", long(tq)));
@@ -54,7 +54,7 @@ struct DbCallBack: public FFSlot::FFCallBack
             pFunc(*data);
         }
         else{
-            tq->produce(TaskBinder::gen(&DbCallBack<T>::tqCall, pFunc, *data));
+            tq->post(TaskBinder::gen(&DbCallBack<T>::tqCall, pFunc, *data));
         }
     }
     static void tqCall(T func, QueryDBResult& data){
@@ -62,7 +62,7 @@ struct DbCallBack: public FFSlot::FFCallBack
     }
     virtual FFSlot::FFCallBack* fork() { return new DbCallBack<T>(pFunc, tq); }
     T pFunc;
-    TaskQueue* tq;
+    TaskQueueI* tq;
 };
 #define DB_THREAD_NUM 10
 #define DB_DEFAULT_NAME "Default"
@@ -107,7 +107,7 @@ public:
     long connectDB(const std::string& host_, const std::string& name);
 
     template<typename T>
-    void asyncQueryModId(long mod, const std::string& sql_, T& func, TaskQueue* tq){
+    void asyncQueryModId(long mod, const std::string& sql_, T& func, TaskQueueI* tq){
         char buff[256] = {0};
         int nMod = (m_defaultDbNum != 0)? m_defaultDbNum: 1;
         ::snprintf(buff, sizeof(buff), "%s#%ld", DB_DEFAULT_NAME, mod % nMod + 1);
@@ -119,7 +119,7 @@ public:
                      std::string* errinfo = NULL, int* affectedRows_ = NULL, std::vector<std::string>* col_ = NULL);
 
     template<typename T>
-    void asyncQueryByName(const std::string& strName, const std::string& sql_, T& func, TaskQueue* tq){
+    void asyncQueryByName(const std::string& strName, const std::string& sql_, T& func, TaskQueueI* tq){
         DBConnectionInfo* varDbConnection = NULL;
         {
             LockGuard lock(m_mutex);
@@ -131,7 +131,7 @@ public:
             QueryDBResult result;
             result.errinfo = "no db cfg";
             if (tq){
-                tq->produce(TaskBinder::gen(&DbCallBack<T>::tqCall, func, result));
+                tq->post(TaskBinder::gen(&DbCallBack<T>::tqCall, func, result));
             }
             else{
                 func(result);
@@ -141,7 +141,7 @@ public:
         }
         else
         {
-            varDbConnection->tq->produce(TaskBinder::gen(&DbMgr::queryDBImpl, this, varDbConnection, sql_, new DbCallBack<T>(func, tq)));
+            varDbConnection->tq->post(TaskBinder::gen(&DbMgr::queryDBImpl, this, varDbConnection, sql_, new DbCallBack<T>(func, tq)));
         }
     }
     void asyncQueryByName(const std::string& strName, const std::string& sql_);
