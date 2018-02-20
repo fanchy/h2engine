@@ -11,6 +11,7 @@ map<long, WeakPtr<Entity> > Entity::EntityPtr2Ref;
 SharedPtr<Entity> Entity::genEntity(int ntype, userid_t id, userid_t sid){
     SharedPtr<Entity> ret = new Entity(ntype, id, sid);
     Entity::EntityPtr2Ref[long(ret.get())] = ret;
+    ENTITY_MGR.add(ret);
     return ret;
 }
 SharedPtr<Entity> Entity::toEntity(long p){
@@ -28,7 +29,7 @@ Entity::~Entity(){
 bool Entity::sendMsg(uint16_t cmd, const std::string& msg)
 {
     if (m_sessionID){
-        FFWORKER_SINGLETON.sessionSendMsg(m_sessionID, cmd, msg);
+        FFWORKER.sessionSendMsg(m_sessionID, cmd, msg);
         return true;
     }
     return false;
@@ -60,20 +61,27 @@ void Entity::clearField(){
     m_fields.clear();
 }
 
-void EntityMgr::add(EntityPtr& p){
-    m_all_entity[p->getType()][p->getUid()] = p;
+void EntityMgr::add(EntityPtr p){
+    m_allEntity[p->getType()][p->getUid()] = p;
+    if (p->getSession()){
+        m_session2entity[p->getSession()] = p;
+    }
 }
 bool EntityMgr::del(int ntype, userid_t id){
-    std::map<userid_t, EntityPtr>& allEntity = m_all_entity[ntype];
+    std::map<userid_t, EntityPtr>& allEntity = m_allEntity[ntype];
     std::map<userid_t, EntityPtr>::iterator it = allEntity.find(id);
     if (it != allEntity.end()){
+        EntityPtr p = it->second;
+        if (p->getSession()){
+            m_session2entity.erase(p->getSession());
+        }
         allEntity.erase(it);
         return true;
     }
     return false;
 }
 EntityPtr EntityMgr::get(int ntype, userid_t id){
-    std::map<userid_t, EntityPtr>& allEntity = m_all_entity[ntype];
+    std::map<userid_t, EntityPtr>& allEntity = m_allEntity[ntype];
     std::map<userid_t, EntityPtr>::iterator it = allEntity.find(id);
     if (it != allEntity.end()){
         return it->second;
@@ -98,9 +106,9 @@ static bool initEntityEnvir(){
     /*example code
     printf("initEntityEnvir....\n");
     
+    ScriptArgObjPtr ret = SCRIPT_UTIL.callScript<ScriptArgObjPtr>("testScriptCall");
+    ret->dump();
     
-    ScriptArgs varScriptArgs;
-    SCRIPT_UTIL.callScriptRaw<void>("testScriptCall", varScriptArgs);
     int arg1 = 0;
     string arg2 = "sss";
     double arg3  = 3.14;

@@ -8,7 +8,10 @@ static void handleSessionCmd(SessionReqEvent& e){
     CmdHandlerPtr cmdHandler = CMD_MGR.getCmdHandler(e.cmd);
     if (cmdHandler){
         e.isDone = true;
-        cmdHandler->handleCmd(ENTITY_MGR.getBySession(e.session_id), e.cmd, e.data);
+        EntityPtr entity = ENTITY_MGR.getEntityBySession(e.session_id);
+        if (entity){
+            cmdHandler->handleCmd(entity, e.cmd, e.data);
+        }
     }
 }
 static bool initEnvir(){

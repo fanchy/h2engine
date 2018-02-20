@@ -844,7 +844,18 @@ static ScriptArgObjPtr toScriptArg(Local<Value>& v){
     }
     else if (v->IsObject()){
         ret->toDict();
-        //Local<Object> pa = v.As<Object>();
+        Local<Object> dictObj = v.As<Object>();
+        Local<Array> keyList  = dictObj->GetOwnPropertyNames();
+        uint32_t size = keyList->Length();
+        
+        for (uint32_t i = 0; i < size; ++i){
+            Local<Value> keyv = keyList->Get(i);
+            ScriptArgObjPtr ekey = toScriptArg(keyv);
+            string  strKey = ekey->getString();
+
+            Local<Value> elemVal = PERSISTENT2LOCAL(dictObj->Get(NewStrValue(strKey.c_str(), strKey.size())));
+            ret->dictVal[strKey] = toScriptArg(elemVal);
+        }
     }
     return ret;
 }

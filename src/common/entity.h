@@ -96,7 +96,7 @@ public:
 };
 typedef SharedPtr<Entity> EntityPtr;
 typedef WeakPtr<Entity>   EntityRef;
-#define NEW_ENTITY(ntype, id) Entity::genEntity(ntype, id)
+#define NEW_ENTITY(ntype, id, sessionId) Entity::genEntity(ntype, id, sessionId)
 #define TO_ENTITY(ptr) Entity::toEntity(long(ptr))
 #define UID_TO_ENTITY(ntype, id) Singleton<EntityMgr>::instance().get(ntype, id)
 
@@ -149,25 +149,31 @@ public:
     EntityMgr(){}
     virtual ~EntityMgr(){}
     
-    void add(EntityPtr& p);
+    void add(EntityPtr p);
     bool del(int ntype, userid_t id);
     EntityPtr get(int ntype, userid_t id);
-    size_t size(int ntype) { return m_all_entity[ntype].size(); }
+    size_t size(int ntype) { return m_allEntity[ntype].size(); }
     
     template <typename T>
     void foreach(int ntype, T f){
-        std::map<userid_t, EntityPtr>& allEntity = m_all_entity[ntype];
+        std::map<userid_t, EntityPtr>& allEntity = m_allEntity[ntype];
         std::map<userid_t, EntityPtr>::iterator it = allEntity.begin();
         for (; it != allEntity.end(); ++it){
             f(it->second);
         }
     }
 
-    EntityPtr getBySession(userid_t session_id){
-        return NULL;//!todo
+    EntityPtr getEntityBySession(userid_t sessionId){
+        std::map<userid_t, EntityPtr>::iterator it = m_session2entity.find(sessionId);
+        if (it != m_session2entity.end()){
+            return it->second;
+        }
+        return NULL;
     }
+
 protected:
-    std::map<int/*entity type*/, std::map<userid_t, EntityPtr> >   m_all_entity;
+    std::map<int/*entity type*/, std::map<userid_t, EntityPtr> >   m_allEntity;
+    std::map<userid_t, EntityPtr>                                  m_session2entity;
 };
 #define ENTITY_MGR Singleton<EntityMgr>::instance()
 

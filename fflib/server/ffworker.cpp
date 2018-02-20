@@ -6,7 +6,7 @@
 using namespace ff;
 using namespace std;
 
-#define FFWORKER                   "FFWORKER"
+#define FFWORKER_LOG                   "FFWORKER"
 WorkerInitFileInfo FFWorker::gSetupFunc[100];
 WorkerFunc FFWorker::gExitFunc[100];
 int FFWorker::regSetupFunc(WorkerFunc f, const char* file, int line, int priority){
@@ -41,7 +41,7 @@ static bool callSetupFunc(){
         if (FFWorker::gSetupFunc[i].func == NULL)
             continue;
         if ((*(FFWorker::gSetupFunc[i].func))() == false){
-            LOGERROR((FFWORKER, "FFWorker::open failed when exe %s[%d]",
+            LOGERROR((FFWORKER_LOG, "FFWorker::open failed when exe %s[%d]",
                                 FFWorker::gSetupFunc[i].strFile, FFWorker::gSetupFunc[i].nLine));
             return false;
         }
@@ -73,7 +73,7 @@ FFWorker* FFWorker::gSingletonWorker = NULL;
 //int FFWorker::open(ArgHelper& arg_helper, string worker_name)
 int FFWorker::open(const string& brokercfg, int worker_index)
 {
-    LOGTRACE((FFWORKER, "FFWorker::open begin"));
+    LOGTRACE((FFWORKER_LOG, "FFWorker::open begin"));
     FFWorker::gSingletonWorker = this;
     
     m_nWorkerIndex = worker_index;
@@ -90,7 +90,7 @@ int FFWorker::open(const string& brokercfg, int worker_index)
     
     if (m_ffrpc->open(brokercfg))
     {
-        LOGERROR((FFWORKER, "FFWorker::open failed check brokercfg %s", brokercfg));
+        LOGERROR((FFWORKER_LOG, "FFWorker::open failed check brokercfg %s", brokercfg));
         return -1;
     }
     string host = m_ffrpc->get_host();
@@ -102,7 +102,7 @@ int FFWorker::open(const string& brokercfg, int worker_index)
     m_shared_mem_mgr.init_worker(port, worker_index, &(m_ffrpc->get_tq()));
     Singleton<FFWorkerMgr>::instance().add(m_logic_name, this);
     
-    LOGTRACE((FFWORKER, "FFWorker::open end ok"));
+    LOGTRACE((FFWORKER_LOG, "FFWorker::open end ok"));
     
     SCRIPT_CACHE.init();
     return 0;
@@ -118,9 +118,9 @@ int FFWorker::close()
     return 0;
 }
 bool FFWorker::initModule(){
-    LOGINFO((FFWORKER, "FFWorker::open initModule begin ..."));
+    LOGINFO((FFWORKER_LOG, "FFWorker::open initModule begin ..."));
     if (false == callSetupFunc()){
-        LOGERROR((FFWORKER, "FFWorker::open initModule failed when callSetupFunc"));
+        LOGERROR((FFWORKER_LOG, "FFWorker::open initModule failed when callSetupFunc"));
         return false;
     }
     return true;
@@ -131,14 +131,14 @@ bool FFWorker::cleanupModule(){
     }
     catch(exception& e_)
     {
-        LOGERROR((FFWORKER, "cleanupModule failed er=<%s>", e_.what()));
+        LOGERROR((FFWORKER_LOG, "cleanupModule failed er=<%s>", e_.what()));
     }
     return true;
 }
 //! 转发client消息
 int FFWorker::processSessionReq(ffreq_t<RouteLogicMsg_t::in_t, RouteLogicMsg_t::out_t>& req_)
 {
-    LOGTRACE((FFWORKER, "FFWorker::processSessionReq begin cmd[%u]", req_.msg.cmd));
+    LOGTRACE((FFWORKER_LOG, "FFWorker::processSessionReq begin cmd[%u]", req_.msg.cmd));
     std::map<userid_t, WorkerClient>::iterator it = m_worker_client.find(req_.msg.session_id);
     if (it == m_worker_client.end()){
         WorkerClient& worker_client = m_worker_client[req_.msg.session_id];
@@ -170,7 +170,7 @@ int FFWorker::processSessionReq(ffreq_t<RouteLogicMsg_t::in_t, RouteLogicMsg_t::
         req_.response(out);
     }
     getSharedMem().writeLockEnd();
-    LOGTRACE((FFWORKER, "FFWorker::processSessionReq end ok"));
+    LOGTRACE((FFWORKER_LOG, "FFWorker::processSessionReq end ok"));
     return 0;
 }
 int FFWorker::onSessionReq(userid_t session_id_, uint16_t cmd_, const std::string& data_)
@@ -186,7 +186,7 @@ int FFWorker::onSessionReq(userid_t session_id_, uint16_t cmd_, const std::strin
 //! 处理client 下线
 int FFWorker::processSessionOffline(ffreq_t<SessionOffline::in_t, SessionOffline::out_t>& req_)
 {
-    LOGTRACE((FFWORKER, "FFWorker::processSessionOffline begin"));
+    LOGTRACE((FFWORKER_LOG, "FFWorker::processSessionOffline begin"));
     
     onSessionOffline(req_.msg.session_id);
     
@@ -194,7 +194,7 @@ int FFWorker::processSessionOffline(ffreq_t<SessionOffline::in_t, SessionOffline
     req_.response(out);
     m_worker_client.erase(req_.msg.session_id);
     getSharedMem().writeLockEnd();
-    LOGTRACE((FFWORKER, "FFWorker::processSessionOffline end ok"));
+    LOGTRACE((FFWORKER_LOG, "FFWorker::processSessionOffline end ok"));
     return 0;
 }
 int FFWorker::onSessionOffline(userid_t session_id)
@@ -209,7 +209,7 @@ int FFWorker::onSessionOffline(userid_t session_id)
 //! 处理client 跳转
 int FFWorker::processSessionEnter(ffreq_t<SessionEnterWorker::in_t, SessionEnterWorker::out_t>& req_)
 {
-    LOGTRACE((FFWORKER, "FFWorker::processSessionEnter begin gate[%s]", req_.msg.from_gate));
+    LOGTRACE((FFWORKER_LOG, "FFWorker::processSessionEnter begin gate[%s]", req_.msg.from_gate));
 
     WorkerClient& worker_client = m_worker_client[req_.msg.session_id];
     worker_client.from_gate = req_.msg.from_gate;
@@ -219,7 +219,7 @@ int FFWorker::processSessionEnter(ffreq_t<SessionEnterWorker::in_t, SessionEnter
     onSessionEnter(req_.msg.session_id, req_.msg.extra_data);
     
     getSharedMem().writeLockEnd();
-    LOGTRACE((FFWORKER, "FFWorker::processSessionEnter end ok"));
+    LOGTRACE((FFWORKER_LOG, "FFWorker::processSessionEnter end ok"));
 
     return 0;
 }
@@ -234,14 +234,14 @@ int FFWorker::FFWorker::onSessionEnter(userid_t session_id, const std::string& e
 //! scene 之间的互调用
 int FFWorker::processWorkerCall(ffreq_t<WorkerCallMsgt::in_t, WorkerCallMsgt::out_t>& req_)
 {
-    LOGTRACE((FFWORKER, "FFWorker::processWorkerCall begin cmd[%u]", req_.msg.cmd));
+    LOGTRACE((FFWORKER_LOG, "FFWorker::processWorkerCall begin cmd[%u]", req_.msg.cmd));
     
     WorkerCallMsgt::out_t out;
     out.body = onWorkerCall(req_.msg.cmd, req_.msg.body);
     req_.response(out);
 
     getSharedMem().writeLockEnd();
-    LOGTRACE((FFWORKER, "FFWorker::processWorkerCall end ok"));
+    LOGTRACE((FFWORKER_LOG, "FFWorker::processWorkerCall end ok"));
     return 0;
 }
 std::string FFWorker::onWorkerCall(uint16_t cmd, const string& body)
@@ -327,40 +327,40 @@ int FFWorker::sessionSendMsg(const string& gate_name, const userid_t& session_id
 {
     if (gate_name.empty())
         return -1;
-    LOGTRACE((FFWORKER, "FFWorker::send_msg_session begin session_id_<%ld>", session_id_));
+    LOGTRACE((FFWORKER_LOG, "FFWorker::send_msg_session begin session_id_<%ld>", session_id_));
 
     GateRouteMsgToSession::in_t msg;
     msg.session_id.push_back(session_id_);
     msg.cmd  = cmd_;
     msg.body = data_;
     m_ffrpc->call(gate_name, msg);
-    LOGTRACE((FFWORKER, "FFWorker::send_msg_session end ok gate[%s]", gate_name));
+    LOGTRACE((FFWORKER_LOG, "FFWorker::send_msg_session end ok gate[%s]", gate_name));
     return 0;
 }
 int FFWorker::sessionMulticastMsg(const string& gate_name, const vector<userid_t>& session_id_, uint16_t cmd_, const string& data_)
 {
-    LOGTRACE((FFWORKER, "FFWorker::multicast_msg_session begin session_id_<%u>", session_id_.size()));
+    LOGTRACE((FFWORKER_LOG, "FFWorker::multicast_msg_session begin session_id_<%u>", session_id_.size()));
 
     GateRouteMsgToSession::in_t msg;
     msg.session_id = session_id_;
     msg.cmd  = cmd_;
     msg.body = data_;
     m_ffrpc->call(gate_name, msg);
-    LOGTRACE((FFWORKER, "FFWorker::multicast_msg_session end ok gate[%s]", gate_name));
+    LOGTRACE((FFWORKER_LOG, "FFWorker::multicast_msg_session end ok gate[%s]", gate_name));
     return 0;
 }
 int FFWorker::sessionKFSendMsg(const string& group_name, const string& gate_name,
                                    const userid_t& session_id_,
                                    uint16_t cmd_, const string& data_)
 {
-    LOGTRACE((FFWORKER, "FFWorker::send_msg_session begin session_id_<%ld>", session_id_));
+    LOGTRACE((FFWORKER_LOG, "FFWorker::send_msg_session begin session_id_<%ld>", session_id_));
 
     GateRouteMsgToSession::in_t msg;
     msg.session_id.push_back(session_id_);
     msg.cmd  = cmd_;
     msg.body = data_;
     m_ffrpc->call(group_name, gate_name, msg);
-    LOGTRACE((FFWORKER, "FFWorker::send_msg_session end ok gate[%s]", gate_name));
+    LOGTRACE((FFWORKER_LOG, "FFWorker::send_msg_session end ok gate[%s]", gate_name));
     return 0;
 }
 //! 广播 整个gate

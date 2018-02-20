@@ -15,7 +15,7 @@ bool NPCMgr::init(){
 }
 EntityPtr NPCMgr::addNPC(NPCConfigPtr cfg){
 	static int nId = 0;
-	EntityPtr eNPC = NEW_ENTITY(ENTITY_NPC, ++nId);
+	EntityPtr eNPC = NEW_ENTITY(ENTITY_NPC, ++nId, 0);
 	return eNPC;
 }
 

@@ -252,7 +252,7 @@ public:
 private:
     std::map<std::string, FFWorker*>     m_all_worker;
 };
-#define FFWORKER_SINGLETON (*FFWorker::gSingletonWorker)
+#define FFWORKER (*FFWorker::gSingletonWorker)
 
 class FFWorker::session_enter_arg: public FFSlot::CallBackArg
 {
@@ -272,7 +272,7 @@ public:
     }
     std::string    session_ip;
     std::string    gate_name;
-    userid_t    session_id;//! 包含用户id
+    userid_t       session_id;//! 包含用户id
     std::string    from_worker;//! 从哪个scene跳转过来,若是第一次上线，from_worker为空
     std::string    to_worker;//! 跳到哪个scene上面去,若是下线，to_worker为空
     std::string    extra_data;//! 附带数据

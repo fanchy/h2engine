@@ -71,7 +71,7 @@ function onWorkerCall(cmd, data){
 
 function testScriptCall(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9){
     h2ext.print('testScriptCall', arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-    return 1122334;
+    return {'a': 'b', 'c': 'd', 1 : 'abc'};
 }
 function testCode(){
     h2ext.callFunc("Cache.set", "m.n[10]", "mmm1");
