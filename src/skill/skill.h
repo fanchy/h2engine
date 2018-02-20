@@ -21,8 +21,9 @@ public:
 typedef SharedPtr<SkillHurtHandler> SkillHurtHandlerPtr;
 
 template <typename T>
-struct SkillHurtHandlerCommon: public SkillHurtHandler
+class SkillHurtHandlerCommon: public SkillHurtHandler
 {
+public:
     SkillHurtHandlerCommon(T pFuncArg):pFunc(pFuncArg){}
     virtual bool useSkill(int skillid, EntityPtr owner, EntityPtr dest, int destX, int destY, const std::string& arg)
     {

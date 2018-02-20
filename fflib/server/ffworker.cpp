@@ -40,15 +40,12 @@ static bool callSetupFunc(){
     for (size_t i = 0; i < sizeof(FFWorker::gSetupFunc) / sizeof(WorkerInitFileInfo); ++i){
         if (FFWorker::gSetupFunc[i].func == NULL)
             continue;
-        LOGINFO((FFWORKER, "FFWorker start exe setupfun %s[%d]",
-                                FFWorker::gSetupFunc[i].strFile, FFWorker::gSetupFunc[i].nLine));
         if ((*(FFWorker::gSetupFunc[i].func))() == false){
             LOGERROR((FFWORKER, "FFWorker::open failed when exe %s[%d]",
                                 FFWorker::gSetupFunc[i].strFile, FFWorker::gSetupFunc[i].nLine));
             return false;
         }
     }
-    LOGINFO((FFWORKER, "FFWorker start exe all setupfun ok"));
     return true;
 }
 static bool callExitFunc(){
@@ -160,7 +157,11 @@ int FFWorker::processSessionReq(ffreq_t<RouteLogicMsg_t::in_t, RouteLogicMsg_t::
         //(itFunc->second)->onMsg(req_.msg.session_id, req_.msg.body);
     }
     else{
-        onSessionReq(req_.msg.session_id, req_.msg.cmd, req_.msg.body);  
+        SessionReqEvent eMsg(req_.msg.session_id, req_.msg.cmd, req_.msg.body);
+        EVENT_BUS_FIRE(eMsg);
+        if (eMsg.isDone == false){
+            onSessionReq(req_.msg.session_id, req_.msg.cmd, req_.msg.body);
+        }
     }
     
     if (req_.callback_id != 0)

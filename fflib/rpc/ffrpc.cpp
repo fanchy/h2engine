@@ -112,7 +112,7 @@ socket_ptr_t FFRpc::connect_to_broker(const string& host_, uint32_t node_id_)
     reg_msg.service_name = m_service_name;
     reg_msg.node_id = m_node_id;
     reg_msg.bind_broker_id = Singleton<FFRpcMemoryRoute>::instance().get_broker_in_mem();
-    msg_sender_t::send(sock, REGISTER_TO_BROKER_REQ, ffthrift_t::EncodeAsString(reg_msg));
+    msg_sender_t::send(sock, REGISTER_TO_BROKER_REQ, FFThrift::EncodeAsString(reg_msg));
     
     LOGINFO((FFRPC, "FFRpc::connect_to_broker end bind_broker_id=%d", reg_msg.bind_broker_id));
     return sock;
@@ -288,7 +288,7 @@ int FFRpc::handle_rpc_call_msg(BrokerRouteMsg::in_t& msg_, socket_ptr_t sock_)
             msg_.err_info = "interface named " + msg_.dest_msg_name + " not found in rpc";
             msg_.dest_node_id = msg_.from_node_id;
             msg_.dest_service_name.clear();
-            this->response(msg_.from_namespace, "", msg_.from_node_id, 0, ffthrift_t::EncodeAsString(msg_), msg_.err_info);
+            this->response(msg_.from_namespace, "", msg_.from_node_id, 0, FFThrift::EncodeAsString(msg_), msg_.err_info);
         }
     }
     else
@@ -396,11 +396,11 @@ void FFRpc::send_to_dest_node(const string& dest_namespace_, const string& servi
     }
     else if (dest_broker_id == 0)
     {
-        msg_sender_t::send(m_master_broker_sock, BROKER_ROUTE_MSG, ffthrift_t::EncodeAsString(dest_msg));
+        msg_sender_t::send(m_master_broker_sock, BROKER_ROUTE_MSG, FFThrift::EncodeAsString(dest_msg));
     }
     else
     {
-        msg_sender_t::send(m_broker_sockets[m_bind_broker_id], BROKER_ROUTE_MSG, ffthrift_t::EncodeAsString(dest_msg));
+        msg_sender_t::send(m_broker_sockets[m_bind_broker_id], BROKER_ROUTE_MSG, FFThrift::EncodeAsString(dest_msg));
     }
     return;
 }

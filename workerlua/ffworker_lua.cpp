@@ -455,7 +455,7 @@ static int lua_workerRPC(lua_State* ls_){
             ffslot_req_arg* msg_data = (ffslot_req_arg*)args_;
             WorkerCallMsgt::out_t retmsg;
             try{
-                ffthrift_t::DecodeFromString(retmsg, msg_data->body);
+                FFThrift::DecodeFromString(retmsg, msg_data->body);
             }
             catch(exception& e_)
             {

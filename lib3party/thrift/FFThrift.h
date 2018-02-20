@@ -16,7 +16,7 @@
 
 //#include <stdio.h>
 
-struct ffthrift_t
+struct FFThrift
 {
     template<typename T>
     static bool EncodeToString(T& msg_, std::string& data_)
@@ -34,7 +34,7 @@ struct ffthrift_t
     static std::string EncodeAsString(T& msg_)
     {
         std::string ret;
-        ffthrift_t::EncodeToString(msg_, ret);
+        FFThrift::EncodeToString(msg_, ret);
         return ret;
     }
     template<typename T>

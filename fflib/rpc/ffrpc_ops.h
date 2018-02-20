@@ -75,7 +75,7 @@ struct msg_tool_t
     {
         try{
             //msg_.decode_data(data_);
-            ffthrift_t::DecodeFromString(msg_, data_);
+            FFThrift::DecodeFromString(msg_, data_);
         }
         catch(std::exception& e)
         {
@@ -165,7 +165,7 @@ struct ffreq_t
     {
         if (0 != callback_id)
         {
-        	responser->response(dest_namespace, TYPE_NAME(OUT_T), dest_node_id, callback_id, ffthrift_t::EncodeAsString(out_));
+        	responser->response(dest_namespace, TYPE_NAME(OUT_T), dest_node_id, callback_id, FFThrift::EncodeAsString(out_));
             callback_id = 0;
 		}
             

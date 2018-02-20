@@ -11,10 +11,22 @@
 #include "rpc/ffrpc.h"
 #include "base/arg_helper.h"
 #include "server/shared_mem.h"
+#include "base/event_bus.h"
 
 namespace ff
 {
 #define EXT_NAME "h2ext"
+class SessionReqEvent:public Event<SessionReqEvent>
+{
+public:
+    SessionReqEvent(userid_t session_id_, uint16_t cmd_, const std::string& data_)
+        :session_id(session_id_), cmd(cmd_), data(data_), isDone(false){}
+    
+    userid_t session_id;
+    uint16_t cmd;
+    const std::string& data;
+    bool isDone;
+};
 
 class ClientData{
 public:

@@ -695,7 +695,7 @@ static BIND_FUNC_RET_TYPE js_workerRPC(const Arguments& args){
             {
                 WorkerCallMsgt::out_t retmsg;
                 try{
-                    ffthrift_t::DecodeFromString(retmsg, msg_data->body);
+                    FFThrift::DecodeFromString(retmsg, msg_data->body);
                 }
                 catch(exception& e_)
                 {

@@ -295,7 +295,7 @@ int FFBroker::handle_regiter_to_broker(RegisterToBroker::in_t& msg_, socket_ptr_
     {
         if (m_all_registered_info.broker_data.service2node_id.find(msg_.service_name) != m_all_registered_info.broker_data.service2node_id.end())
         {
-            msg_sender_t::send(sock_, REGISTER_TO_BROKER_RET, ffthrift_t::EncodeAsString(ret_msg));
+            msg_sender_t::send(sock_, REGISTER_TO_BROKER_RET, FFThrift::EncodeAsString(ret_msg));
             LOGERROR((BROKER, "FFBroker::handle_regiter_to_broker service<%s> exist", msg_.service_name));
             return 0;
         }
@@ -335,7 +335,7 @@ int FFBroker::handle_regiter_to_broker(RegisterToBroker::in_t& msg_, socket_ptr_
     }
     else
     {
-        msg_sender_t::send(sock_, REGISTER_TO_BROKER_RET, ffthrift_t::EncodeAsString(ret_msg));
+        msg_sender_t::send(sock_, REGISTER_TO_BROKER_RET, FFThrift::EncodeAsString(ret_msg));
         LOGERROR((BROKER, "FFBroker::handle_regiter_to_broker type invalid<%d>", msg_.node_type));
         return 0;
     }
@@ -387,7 +387,7 @@ int FFBroker::sync_node_info(RegisterToBroker::out_t& ret_msg, socket_ptr_t sock
         {
             ret_msg.register_flag = 0;
         }
-        msg_sender_t::send(it->second, REGISTER_TO_BROKER_RET, ffthrift_t::EncodeAsString(ret_msg));
+        msg_sender_t::send(it->second, REGISTER_TO_BROKER_RET, FFThrift::EncodeAsString(ret_msg));
     }
     return 0;
 }
@@ -416,7 +416,7 @@ int FFBroker::handle_broker_route_msg(BrokerRouteMsg::in_t& msg_, socket_ptr_t s
             map<uint64_t/* node id*/, socket_ptr_t>::iterator it2 = m_all_registered_info.node_sockets.find(it->second);
             if (it2 != m_all_registered_info.node_sockets.end())
             {
-                msg_sender_t::send(it2->second, BROKER_ROUTE_MSG, ffthrift_t::EncodeAsString(msg_));
+                msg_sender_t::send(it2->second, BROKER_ROUTE_MSG, FFThrift::EncodeAsString(msg_));
                 return 0;
             }
         }
@@ -424,7 +424,7 @@ int FFBroker::handle_broker_route_msg(BrokerRouteMsg::in_t& msg_, socket_ptr_t s
         msg_.dest_service_name.clear();
         msg_.dest_node_id = msg_.from_node_id;
         msg_.err_info = "dest_namespace named " + msg_.dest_namespace + " not exist in broker";
-        msg_sender_t::send(sock_, BROKER_TO_CLIENT_MSG, ffthrift_t::EncodeAsString(msg_));
+        msg_sender_t::send(sock_, BROKER_TO_CLIENT_MSG, FFThrift::EncodeAsString(msg_));
     }
     else if (BRIDGE_BROKER == psession->get_type())//!需要转给其rpc node
     {
@@ -439,7 +439,7 @@ int FFBroker::handle_broker_route_msg(BrokerRouteMsg::in_t& msg_, socket_ptr_t s
                 map<uint64_t/* node id*/, socket_ptr_t>::iterator it = m_all_registered_info.node_sockets.find(msg_.dest_node_id);
                 if (it != m_all_registered_info.node_sockets.end())
                 {
-                    msg_sender_t::send(it->second, BROKER_TO_CLIENT_MSG, ffthrift_t::EncodeAsString(msg_));
+                    msg_sender_t::send(it->second, BROKER_TO_CLIENT_MSG, FFThrift::EncodeAsString(msg_));
                     LOGTRACE((BROKER, "FFBroker::handle_broker_route_msg from BRIDGE_BROKER dest_node_id=%s", msg_.dest_node_id));
                     return 0;
                 }
@@ -450,7 +450,7 @@ int FFBroker::handle_broker_route_msg(BrokerRouteMsg::in_t& msg_, socket_ptr_t s
             map<uint64_t/* node id*/, socket_ptr_t>::iterator it = m_all_registered_info.node_sockets.find(msg_.dest_node_id);
             if (it != m_all_registered_info.node_sockets.end())
             {
-                msg_sender_t::send(it->second, BROKER_TO_CLIENT_MSG, ffthrift_t::EncodeAsString(msg_));
+                msg_sender_t::send(it->second, BROKER_TO_CLIENT_MSG, FFThrift::EncodeAsString(msg_));
                 LOGTRACE((BROKER, "FFBroker::handle_broker_route_msg from BRIDGE_BROKER callback dest_node_id=%s", msg_.dest_node_id));
                 return 0;
             }
@@ -459,7 +459,7 @@ int FFBroker::handle_broker_route_msg(BrokerRouteMsg::in_t& msg_, socket_ptr_t s
         msg_.dest_service_name.clear();
         msg_.dest_node_id = msg_.from_node_id;
         msg_.err_info = "dest_namespace named " + msg_.dest_namespace + "::" + msg_.dest_service_name + " not exist in broker";
-        msg_sender_t::send(sock_, BROKER_ROUTE_MSG, ffthrift_t::EncodeAsString(msg_));
+        msg_sender_t::send(sock_, BROKER_ROUTE_MSG, FFThrift::EncodeAsString(msg_));
         LOGTRACE((BROKER, "FFBroker::handle_broker_route_msg from BRIDGE_BROKER dest_service_name=%s not exist", msg_.dest_service_name));
     }
     LOGTRACE((BROKER, "FFBroker::handle_broker_route_msg end ok msg body_size=%d", msg_.body.size()));
@@ -483,7 +483,7 @@ int FFBroker::process_sync_client_req(BrokerRouteMsg::in_t& msg_, socket_ptr_t s
     {
         LOGWARN((BROKER, "FFBroker::process_sync_client_req dest_service_name=%s none", msg_.dest_service_name));
         msg_.err_info = "dest_service_name named " + msg_.dest_service_name + " not exist in broker";
-        msg_sender_t::send(sock_, BROKER_ROUTE_MSG, ffthrift_t::EncodeAsString(msg_));
+        msg_sender_t::send(sock_, BROKER_ROUTE_MSG, FFThrift::EncodeAsString(msg_));
         return 0;
     }
 
@@ -515,12 +515,12 @@ int FFBroker::send_to_rpc_node(BrokerRouteMsg::in_t& msg_)
                 msg_.err_info = "dest_namespace named " + msg_.dest_namespace + " not exist in broker";
                 msg_.dest_namespace.clear();
                 msg_.dest_service_name.clear();
-                msg_sender_t::send(it->second, BROKER_TO_CLIENT_MSG, ffthrift_t::EncodeAsString(msg_));
+                msg_sender_t::send(it->second, BROKER_TO_CLIENT_MSG, FFThrift::EncodeAsString(msg_));
             }
         }
         else
         {
-            msg_sender_t::send(*(bridge_socket.begin()), BROKER_ROUTE_MSG, ffthrift_t::EncodeAsString(msg_));
+            msg_sender_t::send(*(bridge_socket.begin()), BROKER_ROUTE_MSG, FFThrift::EncodeAsString(msg_));
         }
         return 0;
     }
@@ -536,7 +536,7 @@ int FFBroker::send_to_rpc_node(BrokerRouteMsg::in_t& msg_)
     map<uint64_t/* node id*/, socket_ptr_t>::iterator it = m_all_registered_info.node_sockets.find(msg_.dest_node_id);
     if (it != m_all_registered_info.node_sockets.end())
     {
-        msg_sender_t::send(it->second, BROKER_TO_CLIENT_MSG, ffthrift_t::EncodeAsString(msg_));
+        msg_sender_t::send(it->second, BROKER_TO_CLIENT_MSG, FFThrift::EncodeAsString(msg_));
     }
     else
     {
@@ -545,7 +545,7 @@ int FFBroker::send_to_rpc_node(BrokerRouteMsg::in_t& msg_)
         {
             msg_.err_info = "service named " + msg_.dest_service_name + " not exist in broker";
             msg_.dest_service_name.clear();
-            msg_sender_t::send(it->second, BROKER_TO_CLIENT_MSG, ffthrift_t::EncodeAsString(msg_));
+            msg_sender_t::send(it->second, BROKER_TO_CLIENT_MSG, FFThrift::EncodeAsString(msg_));
         }
         LOGERROR((BROKER, "FFBroker::handle_broker_route_msg end failed node=%d none exist", msg_.dest_node_id));
         return 0;
@@ -576,7 +576,7 @@ int FFBroker::connect_to_master_broker()
     reg_msg.node_type = SLAVE_BROKER;
     reg_msg.host      = m_listen_host;
     reg_msg.node_id   = 0;
-    msg_sender_t::send(m_master_broker_sock, REGISTER_TO_BROKER_REQ, ffthrift_t::EncodeAsString(reg_msg));
+    msg_sender_t::send(m_master_broker_sock, REGISTER_TO_BROKER_REQ, FFThrift::EncodeAsString(reg_msg));
 
     LOGINFO((BROKER, "FFBroker::connect_to_master_broker ok<%s>", m_broker_host.c_str()));
     return 0;
@@ -624,7 +624,7 @@ int FFBroker::connect_to_bridge_broker()
         {
             m_namespace = reg_msg.reg_namespace;
         }
-        msg_sender_t::send(it->second, REGISTER_TO_BROKER_REQ, ffthrift_t::EncodeAsString(reg_msg));
+        msg_sender_t::send(it->second, REGISTER_TO_BROKER_REQ, FFThrift::EncodeAsString(reg_msg));
     }
     LOGINFO((BROKER, "FFBroker::connect_to_bridge_broker end ok"));
     return ret;

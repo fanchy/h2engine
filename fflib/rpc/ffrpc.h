@@ -183,7 +183,7 @@ struct FFRpc::broker_client_info_t
 template <typename T>
 int FFRpc::call(const std::string& name_, T& req_, FFSlot::FFCallBack* callback_)
 {
-    m_tq.produce(TaskBinder::gen(&FFRpc::call_impl, this, name_, TYPE_NAME(T), ffthrift_t::EncodeAsString(req_), callback_));
+    m_tq.produce(TaskBinder::gen(&FFRpc::call_impl, this, name_, TYPE_NAME(T), FFThrift::EncodeAsString(req_), callback_));
     return 0;
 }
 
@@ -196,7 +196,7 @@ int FFRpc::call(const std::string& namespace_, const std::string& name_, T& req_
         return this->call(name_, req_, callback_);
     }
     else{
-        m_tq.produce(TaskBinder::gen(&FFRpc::bridge_call_impl, this, namespace_, name_, TYPE_NAME(T), ffthrift_t::EncodeAsString(req_), callback_));
+        m_tq.produce(TaskBinder::gen(&FFRpc::bridge_call_impl, this, namespace_, name_, TYPE_NAME(T), FFThrift::EncodeAsString(req_), callback_));
     }
     return 0;
 }

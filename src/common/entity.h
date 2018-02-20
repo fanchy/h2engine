@@ -163,6 +163,9 @@ public:
         }
     }
 
+    EntityPtr getBySession(userid_t session_id){
+        return NULL;//!todo
+    }
 protected:
     std::map<int/*entity type*/, std::map<userid_t, EntityPtr> >   m_all_entity;
 };

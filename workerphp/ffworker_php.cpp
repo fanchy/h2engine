@@ -820,7 +820,7 @@ PHP_METHOD(h2ext, workerRPC)
             ffslot_req_arg* msg_data = (ffslot_req_arg*)args_;
             WorkerCallMsgt::out_t retmsg;
             try{
-                ffthrift_t::DecodeFromString(retmsg, msg_data->body);
+                FFThrift::DecodeFromString(retmsg, msg_data->body);
             }
             catch(std::exception& e_)
             {
