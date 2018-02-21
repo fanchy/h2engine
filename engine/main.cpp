@@ -9,7 +9,7 @@
 #include "base/log.h"
 #include "base/signal_helper.h"
 #include "base/daemon_tool.h"
-#include "base/performance_daemon.h"
+#include "base/perf_monitor.h"
 
 #include "rpc/ffrpc.h"
 #include "rpc/ffbroker.h"
@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
             printf("broker open failed\n");
             goto err_proc;
         }
-        int port = ffbroker.get_port();
+        int port = ffbroker.getPortCfg();
         printf("broker open ok\n");
         if (Singleton<SharedSyncmemMgr>::instance().init_master(port)){
             printf("shared mem open failed\n");
