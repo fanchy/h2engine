@@ -9,7 +9,7 @@
 
 
 #include "net/msg_handler.h"
-#include "base/task_queue_impl.h"
+#include "base/task_queue.h"
 #include "base/ffslot.h"
 #include "base/thread.h"
 #include "base/smart_ptr.h"

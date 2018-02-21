@@ -5,8 +5,8 @@
 #include <list>
 
 
-#include "base/task_queue_i.h"
-#include "base/task_queue_impl.h"
+#include "base/task_queue.h"
+#include "base/task_queue.h"
 
 namespace ff {
 

@@ -18,7 +18,7 @@
 #include <fstream>
 
 
-#include "base/task_queue_impl.h"
+#include "base/task_queue.h"
 #include "base/thread.h"
 #include "base/singleton.h"
 #include "base/arg_helper.h"

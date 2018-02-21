@@ -19,7 +19,7 @@
 
 #include "base/thread.h"
 #include "base/lock.h"
-#include "base/task_queue_i.h"
+#include "base/task_queue.h"
 
 namespace ff {
 

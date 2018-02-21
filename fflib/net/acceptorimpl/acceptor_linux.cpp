@@ -26,7 +26,7 @@ using namespace std;
 #include "base/str_tool.h"
 #include "net/socket_op.h"
 #include "net/msg_handler.h"
-#include "base/task_queue_impl.h"
+#include "base/task_queue.h"
 
 using namespace ff;
 

@@ -13,7 +13,7 @@
 #include "net/socket_op.h"
 #include "base/singleton.h"
 #include "base/lock.h"
-#include "base/task_queue_i.h"
+#include "base/task_queue.h"
 #include "base/log.h"
 
 using namespace ff;
