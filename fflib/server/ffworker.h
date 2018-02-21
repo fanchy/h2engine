@@ -189,13 +189,13 @@ public:
     
 protected:
     //! 处理client 进入场景
-    int processSessionEnter(ffreq_t<SessionEnterWorker::in_t, SessionEnterWorker::out_t>& req_);
+    int processSessionEnter(RPCReq<SessionEnterWorker::in_t, SessionEnterWorker::out_t>& req_);
     //! 处理client 下线
-    int processSessionOffline(ffreq_t<SessionOffline::in_t, SessionOffline::out_t>& req_);
+    int processSessionOffline(RPCReq<SessionOffline::in_t, SessionOffline::out_t>& req_);
     //! 转发client消息
-    int processSessionReq(ffreq_t<RouteLogicMsg_t::in_t, RouteLogicMsg_t::out_t>& req_);
+    int processSessionReq(RPCReq<RouteLogicMsg_t::in_t, RouteLogicMsg_t::out_t>& req_);
     //! scene 之间的互调用
-    int processWorkerCall(ffreq_t<WorkerCallMsgt::in_t, WorkerCallMsgt::out_t>& req_);
+    int processWorkerCall(RPCReq<WorkerCallMsgt::in_t, WorkerCallMsgt::out_t>& req_);
     
 protected:
     int                                         m_nWorkerIndex;//! worker index num

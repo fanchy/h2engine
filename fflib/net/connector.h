@@ -25,9 +25,9 @@ namespace ff {
 class Connector
 {
 public:
-    static socket_ptr_t connect(const std::string& host_, EventLoopI* e_, MsgHandlerI* msg_handler_, TaskQueueI* tq_)
+    static SocketPtr connect(const std::string& host_, EventLoop* e_, MsgHandler* msg_handler_, TaskQueueI* tq_)
     {
-        socket_ptr_t ret = NULL;
+        SocketPtr ret = NULL;
         //! example tcp://192.168.1.1:1024
         std::vector<std::string> vt;
         StrTool::split(host_, vt, "://");
@@ -40,7 +40,7 @@ public:
         {
             vt2[0] = "127.0.0.1";
         }
-        socket_fd_t s;
+        SocketFd s;
         struct sockaddr_in addr;
         
         if((s = socket(AF_INET,SOCK_STREAM,0)) < 0)

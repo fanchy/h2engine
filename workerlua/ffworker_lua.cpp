@@ -448,11 +448,11 @@ static int lua_workerRPC(lua_State* ls_){
         lambda_cb(lua_State* lsarg, int idxarg):ls_(lsarg), idx(idxarg){}
         virtual void exe(FFSlot::CallBackArg* args_)
         {
-            if (args_->type() != TYPEID(ffslot_req_arg))
+            if (args_->type() != TYPEID(SlotReqArg))
             {
                 return;
             }
-            ffslot_req_arg* msg_data = (ffslot_req_arg*)args_;
+            SlotReqArg* msg_data = (SlotReqArg*)args_;
             WorkerCallMsgt::out_t retmsg;
             try{
                 FFThrift::DecodeFromString(retmsg, msg_data->body);

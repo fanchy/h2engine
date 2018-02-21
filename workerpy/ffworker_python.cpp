@@ -357,11 +357,11 @@ static void py_workerRPC(int workerindex, uint16_t cmd, const string& argdata, P
             {
                 return;
             }
-            if (args_->type() != TYPEID(ffslot_req_arg))
+            if (args_->type() != TYPEID(SlotReqArg))
             {
                 return;
             }
-            ffslot_req_arg* msg_data = (ffslot_req_arg*)args_;
+            SlotReqArg* msg_data = (SlotReqArg*)args_;
             try
             {
                 if (pFunc == NULL)

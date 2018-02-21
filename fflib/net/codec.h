@@ -84,25 +84,25 @@ struct endian_tool_t
 #define hton64(ll) (endian_tool_t::is_bigendian() ? ll : (endian_tool_t::hton_64(ll)) )
 #define ntoh64(ll) (endian_tool_t::is_bigendian() ? ll:  (endian_tool_t::ntoh_64(ll)))
     
-struct codec_i
+struct Codec
 {
-    virtual ~codec_i(){}
+    virtual ~Codec(){}
     virtual std::string encode_data()                      = 0;
     virtual void decode_data(const std::string& src_buff_) = 0;
 };
 
 class BinEncoder;
 class BinDecoder;
-struct codec_helper_i
+struct CodecHelper
 {
-    virtual ~codec_helper_i(){}
+    virtual ~CodecHelper(){}
     virtual void encode(BinEncoder&) const = 0;
     virtual void decode(BinDecoder&)       = 0;
 };
 
 
 template<typename T>
-struct codec_tool_t;
+struct CodecTool;
 class BinEncoder
 {
 public:
@@ -190,7 +190,7 @@ private:
 
 //! 用于traits 序列化的参数
 template<typename T>
-struct codec_tool_t
+struct CodecTool
 {
     static void encode(BinEncoder& en_, const T& val_)
     {
@@ -208,7 +208,7 @@ struct codec_tool_t
 //! 用于traits 序列化的参数
 #define GEN_CODE_ENCODE_DECODE(X)                                          \
 template<>                                                          \
-struct codec_tool_t<X>                                              \
+struct CodecTool<X>                                              \
 {                                                                   \
     static void encode(BinEncoder& en_, const X& val_)           \
     {                                                               \
@@ -222,7 +222,7 @@ struct codec_tool_t<X>                                              \
 
 #define GEN_CODE_ENCODE_DECODE_SHORT(X)                                          \
 template<>                                                          \
-struct codec_tool_t<X>                                              \
+struct CodecTool<X>                                              \
 {                                                                   \
     static void encode(BinEncoder& en_, const X& src_val_)       \
     {                                                               \
@@ -237,7 +237,7 @@ struct codec_tool_t<X>                                              \
 };
 #define GEN_CODE_ENCODE_DECODE_LONG(X)                                          \
 template<>                                                          \
-struct codec_tool_t<X>                                              \
+struct CodecTool<X>                                              \
 {                                                                   \
     static void encode(BinEncoder& en_, const X& src_val_)       \
     {                                                               \
@@ -252,7 +252,7 @@ struct codec_tool_t<X>                                              \
 };
 #define GEN_CODE_ENCODE_DECODE_64(X)                                \
 template<>                                                          \
-struct codec_tool_t<X>                                              \
+struct CodecTool<X>                                              \
 {                                                                   \
     static void encode(BinEncoder& en_, const X& src_val_)       \
     {                                                               \
@@ -269,7 +269,7 @@ struct codec_tool_t<X>                                              \
 
 //! 用于traits 序列化的参数
 template<>
-struct codec_tool_t<std::string>
+struct CodecTool<std::string>
 {
     static void encode(BinEncoder& en_, const std::string& val_)
     {
@@ -281,7 +281,7 @@ struct codec_tool_t<std::string>
     }
 };
 template<typename T>
-struct codec_tool_t<std::vector<T> >
+struct CodecTool<std::vector<T> >
 {
     static void encode(BinEncoder& en_, const std::vector<T>& val_)
     {
@@ -306,7 +306,7 @@ struct codec_tool_t<std::vector<T> >
     }
 };
 template<typename T>
-struct codec_tool_t<std::list<T> >
+struct CodecTool<std::list<T> >
 {
     static void encode(BinEncoder& en_, const std::list<T>& val_)
     {
@@ -331,7 +331,7 @@ struct codec_tool_t<std::list<T> >
     }
 };
 template<typename T>
-struct codec_tool_t<std::set<T> >
+struct CodecTool<std::set<T> >
 {
     static void encode(BinEncoder& en_, const std::set<T>& val_)
     {
@@ -356,7 +356,7 @@ struct codec_tool_t<std::set<T> >
     }
 };
 template<typename T, typename R>
-struct codec_tool_t<std::map<T, R> >
+struct CodecTool<std::map<T, R> >
 {
     static void encode(BinEncoder& en_, const std::map<T, R>& val_)
     {
@@ -395,17 +395,17 @@ GEN_CODE_ENCODE_DECODE_64(uint64_t)
 template<typename T>
 BinEncoder& BinEncoder::operator << (const T& val_)
 {
-    codec_tool_t<T>::encode(*this, val_);
+    CodecTool<T>::encode(*this, val_);
     return *this;
 }
 template<typename T>
 BinDecoder& BinDecoder::operator >> (T& val_)
 {
-    codec_tool_t<T>::decode(*this, val_);
+    CodecTool<T>::decode(*this, val_);
     return *this;
 }
 
-class msg_i : public codec_i
+class msg_i : public Codec
 {
 public:
     virtual ~msg_i(){}

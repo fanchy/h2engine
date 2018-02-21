@@ -13,21 +13,21 @@ namespace ff {
 
 //! #include "zlib_util.h"
 
-class msg_sender_t
+class MsgSender
 {
 public:
-    static void send(socket_ptr_t socket_ptr_, uint16_t cmd_, const std::string& str_)
+    static void send(SocketPtr pSocket, uint16_t cmd_, const std::string& str_)
     {
-        if (socket_ptr_)
+        if (pSocket)
         {
-            if (0 == socket_ptr_->get_sc()->get_type())
+            if (0 == pSocket->get_sc()->get_type())
             {
                 MessageHead h(cmd_);
                 h.size = str_.size();
                 h.hton();
                 std::string dest((const char*)&h, sizeof(h));
                 dest += str_;
-                socket_ptr_->asyncSend(dest);
+                pSocket->asyncSend(dest);
             }
             else
             {
@@ -35,15 +35,15 @@ public:
                 snprintf(msg, sizeof(msg), "cmd:%u\n", (uint32_t)cmd_);
                 std::string dest(msg);
                 dest += str_;
-                socket_ptr_->asyncSend(dest);
+                pSocket->asyncSend(dest);
             }
         }
     }
-    static void send(socket_ptr_t socket_ptr_, uint16_t cmd_, codec_i& msg_)
+    static void send(SocketPtr pSocket, uint16_t cmd_, Codec& msg_)
     {
-        if (socket_ptr_)
+        if (pSocket)
         {
-            if (0 == socket_ptr_->get_sc()->get_type())
+            if (0 == pSocket->get_sc()->get_type())
             {
                 std::string body = msg_.encode_data();
                 MessageHead h(cmd_);
@@ -52,7 +52,7 @@ public:
                 std::string dest((const char*)&h, sizeof(h));
                 dest += body;
     
-                socket_ptr_->asyncSend(dest);
+                pSocket->asyncSend(dest);
             }
             else
             {
@@ -60,20 +60,20 @@ public:
                 snprintf(msg, sizeof(msg), "cmd:%u\n", (uint32_t)cmd_);
                 std::string dest(msg);
                 dest += msg_.encode_data();
-                socket_ptr_->asyncSend(dest);
+                pSocket->asyncSend(dest);
             }
         }
     }
-    static void send(socket_ptr_t socket_ptr_, const std::string& str_)
+    static void send(SocketPtr pSocket, const std::string& str_)
     {
-        if (socket_ptr_)
+        if (pSocket)
         {
-            socket_ptr_->asyncSend(str_);
+            pSocket->asyncSend(str_);
         }
     }
-    static void send_to_client(socket_ptr_t socket_ptr_, codec_i& msg_)
+    static void sendToClient(SocketPtr pSocket, Codec& msg_)
     {
-        if (socket_ptr_)
+        if (pSocket)
         {
             std::string body = msg_.encode_data();
             MessageHead h(0);
@@ -81,7 +81,7 @@ public:
             h.hton();
             std::string dest((const char*)&h, sizeof(h));
             dest += body;
-            socket_ptr_->asyncSend(body);
+            pSocket->asyncSend(body);
         }
     }
 };

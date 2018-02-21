@@ -104,7 +104,7 @@ private:
     TaskQueue                m_task_queue;
     Thread                    m_thread;
     std::string                      m_path;
-    TimerService*            m_timer_service;
+    TimerService*            m_timerService;
 };
 
 }

@@ -41,13 +41,13 @@ Select::~Select()
     m_efd = -1;
 }
 
-int Select::eventLoop()
+int Select::runLoop()
 {
 	FD_ZERO(&m_fdread);
 	struct timeval tv = {0, 0};
 	tv.tv_sec  = 0;  
 	tv.tv_usec = 1000*200;  
-	socket_fd_t tmpsock = socket(AF_INET, SOCK_STREAM, 0);
+	SocketFd tmpsock = socket(AF_INET, SOCK_STREAM, 0);
 	while (m_running)
 	{     
 		// We only care read event 
@@ -66,7 +66,7 @@ int Select::eventLoop()
 		 	continue; 
 		}
 		else if (ret < 0){
-			fprintf(stderr, "Select::eventLoop: %d\n", WSAGetLastError());
+			fprintf(stderr, "Select::runLoop: %d\n", WSAGetLastError());
 			continue;
 		}
 		fd_del_callback();
@@ -74,7 +74,7 @@ int Select::eventLoop()
 		{
 			if (FD_ISSET(tmpset.fd_array[i], &tmpset))
 			{
-			   map<socket_fd_t, Fd*>::iterator it = m_fd2ptr.find(tmpset.fd_array[i]);
+			   map<SocketFd, Fd*>::iterator it = m_fd2ptr.find(tmpset.fd_array[i]);
 			   if (it!= m_fd2ptr.end()){
 			   		Fd* fd_ptr = it->second;
 					fd_ptr->handleEpollRead();

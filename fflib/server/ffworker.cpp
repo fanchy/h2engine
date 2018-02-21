@@ -93,7 +93,7 @@ int FFWorker::open(const string& brokercfg, int worker_index)
         LOGERROR((FFWORKER_LOG, "FFWorker::open failed check brokercfg %s", brokercfg));
         return -1;
     }
-    string host = m_ffrpc->get_host();
+    string host = m_ffrpc->getHostCfg();
     //!tcp://127.0.0.1:43210
     vector<string> args;
     StrTool::split(host, args, ":");
@@ -136,7 +136,7 @@ bool FFWorker::cleanupModule(){
     return true;
 }
 //! 转发client消息
-int FFWorker::processSessionReq(ffreq_t<RouteLogicMsg_t::in_t, RouteLogicMsg_t::out_t>& req_)
+int FFWorker::processSessionReq(RPCReq<RouteLogicMsg_t::in_t, RouteLogicMsg_t::out_t>& req_)
 {
     LOGTRACE((FFWORKER_LOG, "FFWorker::processSessionReq begin cmd[%u]", req_.msg.cmd));
     std::map<userid_t, WorkerClient>::iterator it = m_worker_client.find(req_.msg.session_id);
@@ -184,7 +184,7 @@ int FFWorker::onSessionReq(userid_t session_id_, uint16_t cmd_, const std::strin
 }
 
 //! 处理client 下线
-int FFWorker::processSessionOffline(ffreq_t<SessionOffline::in_t, SessionOffline::out_t>& req_)
+int FFWorker::processSessionOffline(RPCReq<SessionOffline::in_t, SessionOffline::out_t>& req_)
 {
     LOGTRACE((FFWORKER_LOG, "FFWorker::processSessionOffline begin"));
     
@@ -207,7 +207,7 @@ int FFWorker::onSessionOffline(userid_t session_id)
 }
 
 //! 处理client 跳转
-int FFWorker::processSessionEnter(ffreq_t<SessionEnterWorker::in_t, SessionEnterWorker::out_t>& req_)
+int FFWorker::processSessionEnter(RPCReq<SessionEnterWorker::in_t, SessionEnterWorker::out_t>& req_)
 {
     LOGTRACE((FFWORKER_LOG, "FFWorker::processSessionEnter begin gate[%s]", req_.msg.from_gate));
 
@@ -232,7 +232,7 @@ int FFWorker::FFWorker::onSessionEnter(userid_t session_id, const std::string& e
     return 0;
 }
 //! scene 之间的互调用
-int FFWorker::processWorkerCall(ffreq_t<WorkerCallMsgt::in_t, WorkerCallMsgt::out_t>& req_)
+int FFWorker::processWorkerCall(RPCReq<WorkerCallMsgt::in_t, WorkerCallMsgt::out_t>& req_)
 {
     LOGTRACE((FFWORKER_LOG, "FFWorker::processWorkerCall begin cmd[%u]", req_.msg.cmd));
     

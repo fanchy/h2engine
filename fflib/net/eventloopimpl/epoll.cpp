@@ -35,7 +35,7 @@ Epoll::~Epoll()
     m_efd = -1;
 }
 
-int Epoll::eventLoop()
+int Epoll::runLoop()
 {
     int i = 0, nfds = 0;
     struct epoll_event ev_set[EPOLL_EVENTS_SIZE];

@@ -10,17 +10,17 @@ using namespace ff;
 PerformanceDaemon_t::PerformanceDaemon_t():
 m_started(false),
 m_timeout_sec(3600),
-m_timer_service(NULL)
+m_timerService(NULL)
 {
 }
 
 PerformanceDaemon_t::~PerformanceDaemon_t()
 {
     stop();
-    if (m_timer_service)
+    if (m_timerService)
     {
-        delete m_timer_service;
-        m_timer_service = NULL;
+        delete m_timerService;
+        m_timerService = NULL;
     }
 }
 
@@ -44,7 +44,7 @@ int PerformanceDaemon_t::start(const string& path_, int seconds_)
     m_timeout_sec = seconds_;
     
     //! 启动定时器 1 times/seconds
-    m_timer_service = new TimerService(&m_task_queue, 1000);
+    m_timerService = new TimerService(&m_task_queue, 1000);
     
     m_started = true; //! timer will start
     
@@ -64,9 +64,9 @@ int PerformanceDaemon_t::stop()
 {
     if (false == m_started) return -1;
     
-    if (m_timer_service)
+    if (m_timerService)
     {
-    	m_timer_service->stop();
+    	m_timerService->stop();
     }
     
     m_started = false; //! timer will stop
@@ -92,8 +92,8 @@ void PerformanceDaemon_t::handle_timer()
 {
     flush();
     //m_perf_info.clear();
-    if (m_timer_service)
-	    m_timer_service->timerCallback(m_timeout_sec * 1000, Task(&timer_lambda_t::setup_timer, this));
+    if (m_timerService)
+	    m_timerService->timerCallback(m_timeout_sec * 1000, Task(&timer_lambda_t::setup_timer, this));
 }
 
 void PerformanceDaemon_t::flush()
@@ -150,7 +150,7 @@ void PerformanceDaemon_t::flush()
 
 void PerformanceDaemon_t::run()
 {
-    m_timer_service->timerCallback(m_timeout_sec * 1000, Task(&timer_lambda_t::setup_timer, this));
+    m_timerService->timerCallback(m_timeout_sec * 1000, Task(&timer_lambda_t::setup_timer, this));
     m_task_queue.run();
 }
 

@@ -7,18 +7,18 @@
 namespace ff {
 class TaskQueueI;
 
-class MsgHandlerI
+class MsgHandler
 {
 public:
-    virtual ~MsgHandlerI() {} ;
+    virtual ~MsgHandler() {} ;
 
-    virtual int handleBroken(socket_ptr_t sock_)  = 0;
-    virtual int handleMsg(const Message& msg_, socket_ptr_t sock_) = 0;
+    virtual int handleBroken(SocketPtr sock_)  = 0;
+    virtual int handleMsg(const Message& msg_, SocketPtr sock_) = 0;
 
     virtual TaskQueueI* getTaskQueue() = 0;
 };
 
-typedef MsgHandlerI* msg_handler_ptr_t;
+typedef MsgHandler* MsgHandlerPtr;
 }
 
 #endif

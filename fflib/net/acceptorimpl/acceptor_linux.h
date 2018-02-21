@@ -7,30 +7,30 @@ namespace ff {
 
 #define LISTEN_BACKLOG 5
 
-class EventLoopI;
+class EventLoop;
 class SocketI;
-class MsgHandlerI;
+class MsgHandler;
 class TaskQueuePool;
 
-class AcceptorLinux: public acceptor_i
+class AcceptorLinux: public Acceptor
 {
 public:
-    AcceptorLinux(EventLoopI*, MsgHandlerI*, TaskQueuePool* tq_);
+    AcceptorLinux(EventLoop*, MsgHandler*, TaskQueuePool* tq_);
     ~AcceptorLinux();
     int   open(const std::string& address_);
     void close();
 
-    socket_fd_t socket() {return m_listen_fd;}
+    SocketFd socket() {return m_listen_fd;}
     int handleEpollRead();
     int handleEpollDel() ;
     
 protected:
-    virtual SocketI* create_socket(socket_fd_t);
+    virtual SocketI* create_socket(SocketFd);
 
 protected:
     int                 m_listen_fd;
-    EventLoopI*       m_epoll;
-    MsgHandlerI*      m_msg_handler;
+    EventLoop*       m_epoll;
+    MsgHandler*      m_msg_handler;
     TaskQueuePool*  m_tq;
 };
 

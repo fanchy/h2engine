@@ -49,22 +49,22 @@ enum node_type_e
 #define RECONNECT_TO_BROKER_TIMEOUT       1000//! ms
 #define RECONNECT_TO_BROKER_BRIDGE_TIMEOUT       1000//! ms
     
-class ffslot_msg_arg: public FFSlot::CallBackArg
+class SlotMsgArg: public FFSlot::CallBackArg
 {
 public:
-    ffslot_msg_arg(const std::string& s_, socket_ptr_t sock_):
+    SlotMsgArg(const std::string& s_, SocketPtr sock_):
         body(s_),
         sock(sock_)
     {}
     virtual int type()
     {
-        return TYPEID(ffslot_msg_arg);
+        return TYPEID(SlotMsgArg);
     }
     std::string       body;
-    socket_ptr_t sock;
+    SocketPtr sock;
 };
 
-struct msg_tool_t
+struct MsgTool
 {
     static std::string encode(msg_i& msg_)
     {
@@ -86,18 +86,18 @@ struct msg_tool_t
 
 };
 
-class ffresponser_t
+class RPCResponser
 {
 public:
-    virtual ~ffresponser_t(){}
+    virtual ~RPCResponser(){}
     virtual void response(const std::string& dest_namespace_, const std::string& msg_name_,  uint64_t dest_node_id_,
                           int64_t callback_id_, const std::string& body_, std::string err = "") = 0;
 };
 
-class ffslot_req_arg: public FFSlot::CallBackArg
+class SlotReqArg: public FFSlot::CallBackArg
 {
 public:
-    ffslot_req_arg(const std::string& s_, uint64_t n_, int64_t cb_id_, const std::string& name_space_, std::string err_info_, ffresponser_t* p):
+    SlotReqArg(const std::string& s_, uint64_t n_, int64_t cb_id_, const std::string& name_space_, std::string err_info_, RPCResponser* p):
         body(s_),
         dest_node_id(n_),
         callback_id(cb_id_),
@@ -105,8 +105,8 @@ public:
         err_info(err_info_),
         responser(p)
     {}
-    ffslot_req_arg(){}
-    ffslot_req_arg(const ffslot_req_arg& src):
+    SlotReqArg(){}
+    SlotReqArg(const SlotReqArg& src):
         body(src.body),
         dest_node_id(src.dest_node_id),
         callback_id(src.callback_id),
@@ -114,7 +114,7 @@ public:
         err_info(src.err_info),
         responser(src.responser)
     {}
-    ffslot_req_arg& operator=(const ffslot_req_arg& src)
+    SlotReqArg& operator=(const SlotReqArg& src)
     {
         body = src.body,
         dest_node_id = src.dest_node_id;
@@ -126,14 +126,14 @@ public:
     }
     virtual int type()
     {
-        return TYPEID(ffslot_req_arg);
+        return TYPEID(SlotReqArg);
     }
     std::string          body;
-    uint64_t        dest_node_id;//! 请求来自于那个node id
-    int64_t         callback_id;//! 回调函数标识id
+    uint64_t             dest_node_id;//! 请求来自于那个node id
+    int64_t              callback_id;//! 回调函数标识id
     std::string          dest_namespace;
     std::string          err_info;
-    ffresponser_t*  responser;
+    RPCResponser*        responser;
 };
 
 
@@ -145,22 +145,16 @@ class null_type_t: public FFMsg<null_type_t>
 };
 
 template<typename IN_T, typename OUT_T = null_type_t>
-struct ffreq_t
+struct RPCReq
 {
-    ffreq_t():
+    RPCReq():
         dest_node_id(0),
         callback_id(0),
         responser(NULL)
     {}
     bool error() const { return err_info.empty() == false; }
     const std::string& errorMsg() const { return err_info; }
-    IN_T              msg;
-
-    std::string          dest_namespace;
-    uint64_t        dest_node_id;
-    int64_t        callback_id;
-    ffresponser_t*  responser;
-    std::string          err_info;
+    
     void response(OUT_T& out_)
     {
         if (0 != callback_id)
@@ -170,14 +164,20 @@ struct ffreq_t
 		}
             
     }
+    IN_T                 msg;
+    std::string          dest_namespace;
+    uint64_t             dest_node_id;
+    int64_t              callback_id;
+    RPCResponser*        responser;
+    std::string          err_info;
 };
 
 #ifdef FF_ENABLE_PROTOCOLBUF
 
 template<typename IN_T, typename OUT = null_type_t>
-struct ffreq_pb_t
+struct RPCReqPB
 {
-    ffreq_pb_t():
+    RPCReqPB():
         dest_node_id(0),
         callback_id(0),
         responser(NULL)
@@ -189,7 +189,7 @@ struct ffreq_pb_t
     std::string          dest_namespace;
     uint64_t        dest_node_id;
     int64_t        callback_id;
-    ffresponser_t*  responser;
+    RPCResponser*  responser;
     std::string          err_info;
     void response(OUT& out_)
     {
@@ -207,31 +207,31 @@ struct FFRpcOps
 {
     //! 接受broker 消息的回调函数
     template <typename R, typename T>
-    static FFSlot::FFCallBack* gen_callback(R (*)(T&, socket_ptr_t));
+    static FFSlot::FFCallBack* genCallBack(R (*)(T&, SocketPtr));
     template <typename R, typename CLASS_TYPE, typename T>
-    static FFSlot::FFCallBack* gen_callback(R (CLASS_TYPE::*)(T&, socket_ptr_t), CLASS_TYPE* obj_);
+    static FFSlot::FFCallBack* genCallBack(R (CLASS_TYPE::*)(T&, SocketPtr), CLASS_TYPE* obj_);
     
     //! broker client 注册接口
     template <typename R, typename IN_T, typename OUT_T>
-    static FFSlot::FFCallBack* gen_callback(R (*)(ffreq_t<IN_T, OUT_T>&));
+    static FFSlot::FFCallBack* genCallBack(R (*)(RPCReq<IN_T, OUT_T>&));
     template <typename R, typename CLASS_TYPE, typename IN_T, typename OUT_T>
-    static FFSlot::FFCallBack* gen_callback(R (CLASS_TYPE::*)(ffreq_t<IN_T, OUT_T>&), CLASS_TYPE* obj);
+    static FFSlot::FFCallBack* genCallBack(R (CLASS_TYPE::*)(RPCReq<IN_T, OUT_T>&), CLASS_TYPE* obj);
 
     //! ffrpc call接口的回调函数参数
     //! 如果绑定回调函数的时候，有时需要一些临时参数被保存直到回调函数被调用
     template <typename R, typename CLASS_TYPE, typename IN_T, typename OUT_T, typename FUNC_ARG1, typename ARG1>
-    static FFSlot::FFCallBack* gen_callback(R (CLASS_TYPE::*func_)(ffreq_t<IN_T, OUT_T>&, FUNC_ARG1), CLASS_TYPE* obj_, ARG1 arg1_);
+    static FFSlot::FFCallBack* genCallBack(R (CLASS_TYPE::*func_)(RPCReq<IN_T, OUT_T>&, FUNC_ARG1), CLASS_TYPE* obj_, ARG1 arg1_);
     template <typename R, typename CLASS_TYPE, typename IN_T, typename OUT_T, typename FUNC_ARG1, typename ARG1,
               typename FUNC_ARG2, typename ARG2>
-    static FFSlot::FFCallBack* gen_callback(R (CLASS_TYPE::*func_)(ffreq_t<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2),
+    static FFSlot::FFCallBack* genCallBack(R (CLASS_TYPE::*func_)(RPCReq<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2),
                                                 CLASS_TYPE* obj_, ARG1 arg1_, ARG2 arg2_);
     template <typename R, typename CLASS_TYPE, typename IN_T, typename OUT_T, typename FUNC_ARG1, typename ARG1,
               typename FUNC_ARG2, typename ARG2, typename FUNC_ARG3, typename ARG3>
-    static FFSlot::FFCallBack* gen_callback(R (CLASS_TYPE::*func_)(ffreq_t<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3),
+    static FFSlot::FFCallBack* genCallBack(R (CLASS_TYPE::*func_)(RPCReq<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3),
                                                 CLASS_TYPE* obj_, ARG1 arg1_, ARG2 arg2_, ARG3 arg3_);
     template <typename R, typename CLASS_TYPE, typename IN_T, typename OUT_T, typename FUNC_ARG1, typename ARG1,
               typename FUNC_ARG2, typename ARG2, typename FUNC_ARG3, typename ARG3, typename FUNC_ARG4, typename ARG4>
-    static FFSlot::FFCallBack* gen_callback(R (CLASS_TYPE::*func_)(ffreq_t<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3, FUNC_ARG4),
+    static FFSlot::FFCallBack* genCallBack(R (CLASS_TYPE::*func_)(RPCReq<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3, FUNC_ARG4),
                                                 CLASS_TYPE* obj_, ARG1 arg1_, ARG2 arg2_, ARG3 arg3_, ARG4 arg4_);
     
     //!******************************** pb 使用不同的callback函数 ******************************************
@@ -239,46 +239,46 @@ struct FFRpcOps
 #ifdef FF_ENABLE_PROTOCOLBUF
 
     template <typename R, typename IN_T, typename OUT_T>
-    static FFSlot::FFCallBack* gen_callback(R (*)(ffreq_pb_t<IN_T, OUT_T>&));
+    static FFSlot::FFCallBack* genCallBack(R (*)(RPCReqPB<IN_T, OUT_T>&));
     template <typename R, typename CLASS_TYPE, typename IN_T, typename OUT_T>
-    static FFSlot::FFCallBack* gen_callback(R (CLASS_TYPE::*)(ffreq_pb_t<IN_T, OUT_T>&), CLASS_TYPE* obj);
+    static FFSlot::FFCallBack* genCallBack(R (CLASS_TYPE::*)(RPCReqPB<IN_T, OUT_T>&), CLASS_TYPE* obj);
 
     //! ffrpc call接口的回调函数参数
     //! 如果绑定回调函数的时候，有时需要一些临时参数被保存直到回调函数被调用
     template <typename R, typename CLASS_TYPE, typename IN_T, typename OUT_T, typename FUNC_ARG1, typename ARG1>
-    static FFSlot::FFCallBack* gen_callback(R (CLASS_TYPE::*func_)(ffreq_pb_t<IN_T, OUT_T>&, FUNC_ARG1), CLASS_TYPE* obj_, ARG1 arg1_);
+    static FFSlot::FFCallBack* genCallBack(R (CLASS_TYPE::*func_)(RPCReqPB<IN_T, OUT_T>&, FUNC_ARG1), CLASS_TYPE* obj_, ARG1 arg1_);
     template <typename R, typename CLASS_TYPE, typename IN_T, typename OUT_T, typename FUNC_ARG1, typename ARG1,
               typename FUNC_ARG2, typename ARG2>
-    static FFSlot::FFCallBack* gen_callback(R (CLASS_TYPE::*func_)(ffreq_pb_t<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2),
+    static FFSlot::FFCallBack* genCallBack(R (CLASS_TYPE::*func_)(RPCReqPB<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2),
                                                 CLASS_TYPE* obj_, ARG1 arg1_, ARG2 arg2_);
     template <typename R, typename CLASS_TYPE, typename IN_T, typename OUT_T, typename FUNC_ARG1, typename ARG1,
               typename FUNC_ARG2, typename ARG2, typename FUNC_ARG3, typename ARG3>
-    static FFSlot::FFCallBack* gen_callback(R (CLASS_TYPE::*func_)(ffreq_pb_t<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3),
+    static FFSlot::FFCallBack* genCallBack(R (CLASS_TYPE::*func_)(RPCReqPB<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3),
                                                 CLASS_TYPE* obj_, ARG1 arg1_, ARG2 arg2_, ARG3 arg3_);
     template <typename R, typename CLASS_TYPE, typename IN_T, typename OUT_T, typename FUNC_ARG1, typename ARG1,
               typename FUNC_ARG2, typename ARG2, typename FUNC_ARG3, typename ARG3, typename FUNC_ARG4, typename ARG4>
-    static FFSlot::FFCallBack* gen_callback(R (CLASS_TYPE::*func_)(ffreq_pb_t<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3, FUNC_ARG4),
+    static FFSlot::FFCallBack* genCallBack(R (CLASS_TYPE::*func_)(RPCReqPB<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3, FUNC_ARG4),
                                                 CLASS_TYPE* obj_, ARG1 arg1_, ARG2 arg2_, ARG3 arg3_, ARG4 arg4_);
     
 #endif
 };
 
 template <typename R, typename T>
-FFSlot::FFCallBack* FFRpcOps::gen_callback(R (*func_)(T&, socket_ptr_t))
+FFSlot::FFCallBack* FFRpcOps::genCallBack(R (*func_)(T&, SocketPtr))
 {
     struct lambda_cb: public FFSlot::FFCallBack
     {
-        typedef R (*func_t)(T&, socket_ptr_t);
+        typedef R (*func_t)(T&, SocketPtr);
         lambda_cb(func_t func_):m_func(func_){}
         virtual void exe(FFSlot::CallBackArg* args_)
         {
-            if (args_->type() != TYPEID(ffslot_msg_arg))
+            if (args_->type() != TYPEID(SlotMsgArg))
             {
                 return;
             }
-            ffslot_msg_arg* msg_data = (ffslot_msg_arg*)args_;
+            SlotMsgArg* msg_data = (SlotMsgArg*)args_;
             T msg;
-            msg_tool_t::decode(msg, msg_data->body);
+            MsgTool::decode(msg, msg_data->body);
             m_func(msg, msg_data->sock);
         }
         virtual FFSlot::FFCallBack* fork() { return new lambda_cb(m_func); }
@@ -287,21 +287,21 @@ FFSlot::FFCallBack* FFRpcOps::gen_callback(R (*func_)(T&, socket_ptr_t))
     return new lambda_cb(func_);
 }
 template <typename R, typename CLASS_TYPE, typename T>
-FFSlot::FFCallBack* FFRpcOps::gen_callback(R (CLASS_TYPE::*func_)(T&, socket_ptr_t), CLASS_TYPE* obj_)
+FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(T&, SocketPtr), CLASS_TYPE* obj_)
 {
     struct lambda_cb: public FFSlot::FFCallBack
     {
-        typedef R (CLASS_TYPE::*func_t)(T&, socket_ptr_t);
+        typedef R (CLASS_TYPE::*func_t)(T&, SocketPtr);
         lambda_cb(func_t func_, CLASS_TYPE* obj_):m_func(func_), m_obj(obj_){}
         virtual void exe(FFSlot::CallBackArg* args_)
         {
-            if (args_->type() != TYPEID(ffslot_msg_arg))
+            if (args_->type() != TYPEID(SlotMsgArg))
             {
                 return;
             }
-            ffslot_msg_arg* msg_data = (ffslot_msg_arg*)args_;
+            SlotMsgArg* msg_data = (SlotMsgArg*)args_;
             T msg;
-            msg_tool_t::decode(msg, msg_data->body);
+            MsgTool::decode(msg, msg_data->body);
             (m_obj->*(m_func))(msg, msg_data->sock);
         }
         virtual FFSlot::FFCallBack* fork() { return new lambda_cb(m_func, m_obj); }
@@ -313,23 +313,23 @@ FFSlot::FFCallBack* FFRpcOps::gen_callback(R (CLASS_TYPE::*func_)(T&, socket_ptr
 
 //! 注册接口
 template <typename R, typename IN_T, typename OUT_T>
-FFSlot::FFCallBack* FFRpcOps::gen_callback(R (*func_)(ffreq_t<IN_T, OUT_T>&))
+FFSlot::FFCallBack* FFRpcOps::genCallBack(R (*func_)(RPCReq<IN_T, OUT_T>&))
 {
     struct lambda_cb: public FFSlot::FFCallBack
     {
-        typedef R (*func_t)(ffreq_t<IN_T, OUT_T>&);
+        typedef R (*func_t)(RPCReq<IN_T, OUT_T>&);
         lambda_cb(func_t func_):m_func(func_){}
         virtual void exe(FFSlot::CallBackArg* args_)
         {
-            if (args_->type() != TYPEID(ffslot_req_arg))
+            if (args_->type() != TYPEID(SlotReqArg))
             {
                 return;
             }
-            ffslot_req_arg* msg_data = (ffslot_req_arg*)args_;
-            ffreq_t<IN_T, OUT_T> req;
+            SlotReqArg* msg_data = (SlotReqArg*)args_;
+            RPCReq<IN_T, OUT_T> req;
             if (msg_data->err_info.empty())
             {
-                msg_tool_t::decode(req.msg, msg_data->body, &(req.err_info));
+                MsgTool::decode(req.msg, msg_data->body, &(req.err_info));
             }
             else
             {
@@ -347,23 +347,23 @@ FFSlot::FFCallBack* FFRpcOps::gen_callback(R (*func_)(ffreq_t<IN_T, OUT_T>&))
     return new lambda_cb(func_);
 }
 template <typename R, typename CLASS_TYPE, typename IN_T, typename OUT_T>
-FFSlot::FFCallBack* FFRpcOps::gen_callback(R (CLASS_TYPE::*func_)(ffreq_t<IN_T, OUT_T>&), CLASS_TYPE* obj_)
+FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReq<IN_T, OUT_T>&), CLASS_TYPE* obj_)
 {
     struct lambda_cb: public FFSlot::FFCallBack
     {
-        typedef R (CLASS_TYPE::*func_t)(ffreq_t<IN_T, OUT_T>&);
+        typedef R (CLASS_TYPE::*func_t)(RPCReq<IN_T, OUT_T>&);
         lambda_cb(func_t func_, CLASS_TYPE* obj_):m_func(func_), m_obj(obj_){}
         virtual void exe(FFSlot::CallBackArg* args_)
         {
-            if (args_->type() != TYPEID(ffslot_req_arg))
+            if (args_->type() != TYPEID(SlotReqArg))
             {
                 return;
             }
-            ffslot_req_arg* msg_data = (ffslot_req_arg*)args_;
-            ffreq_t<IN_T, OUT_T> req;
+            SlotReqArg* msg_data = (SlotReqArg*)args_;
+            RPCReq<IN_T, OUT_T> req;
             if (msg_data->err_info.empty())
             {
-                msg_tool_t::decode(req.msg, msg_data->body, &(req.err_info));
+                MsgTool::decode(req.msg, msg_data->body, &(req.err_info));
             }
             else
             {
@@ -384,24 +384,24 @@ FFSlot::FFCallBack* FFRpcOps::gen_callback(R (CLASS_TYPE::*func_)(ffreq_t<IN_T, 
 
 //! 如果绑定回调函数的时候，有时需要一些临时参数被保存直到回调函数被调用
 template <typename R, typename CLASS_TYPE, typename IN_T, typename OUT_T, typename FUNC_ARG1, typename ARG1>
-FFSlot::FFCallBack* FFRpcOps::gen_callback(R (CLASS_TYPE::*func_)(ffreq_t<IN_T, OUT_T>&, FUNC_ARG1), CLASS_TYPE* obj_, ARG1 arg1_)
+FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReq<IN_T, OUT_T>&, FUNC_ARG1), CLASS_TYPE* obj_, ARG1 arg1_)
 {
     struct lambda_cb: public FFSlot::FFCallBack
     {
-        typedef R (CLASS_TYPE::*func_t)(ffreq_t<IN_T, OUT_T>&, FUNC_ARG1);
+        typedef R (CLASS_TYPE::*func_t)(RPCReq<IN_T, OUT_T>&, FUNC_ARG1);
         lambda_cb(func_t func_, CLASS_TYPE* obj_, const ARG1& arg1_):
             m_func(func_), m_obj(obj_), m_arg1(arg1_){}
         virtual void exe(FFSlot::CallBackArg* args_)
         {
-            if (args_->type() != TYPEID(ffslot_req_arg))
+            if (args_->type() != TYPEID(SlotReqArg))
             {
                 return;
             }
-            ffslot_req_arg* msg_data = (ffslot_req_arg*)args_;
-            ffreq_t<IN_T, OUT_T> req;
+            SlotReqArg* msg_data = (SlotReqArg*)args_;
+            RPCReq<IN_T, OUT_T> req;
             if (msg_data->err_info.empty())
             {
-                msg_tool_t::decode(req.msg, msg_data->body, &(req.err_info));
+                MsgTool::decode(req.msg, msg_data->body, &(req.err_info));
             }
             else
             {
@@ -423,26 +423,26 @@ FFSlot::FFCallBack* FFRpcOps::gen_callback(R (CLASS_TYPE::*func_)(ffreq_t<IN_T, 
 
 //! 如果绑定回调函数的时候，有时需要一些临时参数被保存直到回调函数被调用
 template <typename R, typename CLASS_TYPE, typename IN_T, typename OUT_T, typename FUNC_ARG1, typename ARG1, typename FUNC_ARG2, typename ARG2>
-FFSlot::FFCallBack* FFRpcOps::gen_callback(R (CLASS_TYPE::*func_)(ffreq_t<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2),
+FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReq<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2),
                                                 CLASS_TYPE* obj_, ARG1 arg1_, ARG2 arg2_)
 {
     struct lambda_cb: public FFSlot::FFCallBack
     {
-        typedef R (CLASS_TYPE::*func_t)(ffreq_t<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2);
+        typedef R (CLASS_TYPE::*func_t)(RPCReq<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2);
         lambda_cb(func_t func_, CLASS_TYPE* obj_, const ARG1& arg1_, const ARG2& arg2_):
             m_func(func_), m_obj(obj_), m_arg1(arg1_), m_arg2(arg2_)
         {}
         virtual void exe(FFSlot::CallBackArg* args_)
         {
-            if (args_->type() != TYPEID(ffslot_req_arg))
+            if (args_->type() != TYPEID(SlotReqArg))
             {
                 return;
             }
-            ffslot_req_arg* msg_data = (ffslot_req_arg*)args_;
-            ffreq_t<IN_T, OUT_T> req;
+            SlotReqArg* msg_data = (SlotReqArg*)args_;
+            RPCReq<IN_T, OUT_T> req;
             if (msg_data->err_info.empty())
             {
-                msg_tool_t::decode(req.msg, msg_data->body, &(req.err_info));
+                MsgTool::decode(req.msg, msg_data->body, &(req.err_info));
             }
             else
             {
@@ -466,26 +466,26 @@ FFSlot::FFCallBack* FFRpcOps::gen_callback(R (CLASS_TYPE::*func_)(ffreq_t<IN_T, 
 //! 如果绑定回调函数的时候，有时需要一些临时参数被保存直到回调函数被调用
 template <typename R, typename CLASS_TYPE, typename IN_T, typename OUT_T, typename FUNC_ARG1, typename ARG1, typename FUNC_ARG2, typename ARG2,
           typename FUNC_ARG3, typename ARG3>
-FFSlot::FFCallBack* FFRpcOps::gen_callback(R (CLASS_TYPE::*func_)(ffreq_t<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3),
+FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReq<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3),
                                                 CLASS_TYPE* obj_, ARG1 arg1_, ARG2 arg2_, ARG3 arg3_)
 {
     struct lambda_cb: public FFSlot::FFCallBack
     {
-        typedef R (CLASS_TYPE::*func_t)(ffreq_t<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3);
+        typedef R (CLASS_TYPE::*func_t)(RPCReq<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3);
         lambda_cb(func_t func_, CLASS_TYPE* obj_, const ARG1& arg1_, const ARG2& arg2_, const ARG3& arg3_):
             m_func(func_), m_obj(obj_), m_arg1(arg1_), m_arg2(arg2_), m_arg3(arg3_)
         {}
         virtual void exe(FFSlot::CallBackArg* args_)
         {
-            if (args_->type() != TYPEID(ffslot_req_arg))
+            if (args_->type() != TYPEID(SlotReqArg))
             {
                 return;
             }
-            ffslot_req_arg* msg_data = (ffslot_req_arg*)args_;
-            ffreq_t<IN_T, OUT_T> req;
+            SlotReqArg* msg_data = (SlotReqArg*)args_;
+            RPCReq<IN_T, OUT_T> req;
             if (msg_data->err_info.empty())
             {
-                msg_tool_t::decode(req.msg, msg_data->body, &(req.err_info));
+                MsgTool::decode(req.msg, msg_data->body, &(req.err_info));
             }
             else
             {
@@ -510,26 +510,26 @@ FFSlot::FFCallBack* FFRpcOps::gen_callback(R (CLASS_TYPE::*func_)(ffreq_t<IN_T, 
 //! 如果绑定回调函数的时候，有时需要一些临时参数被保存直到回调函数被调用
 template <typename R, typename CLASS_TYPE, typename IN_T, typename OUT_T, typename FUNC_ARG1, typename ARG1, typename FUNC_ARG2, typename ARG2,
           typename FUNC_ARG3, typename ARG3, typename FUNC_ARG4, typename ARG4>
-FFSlot::FFCallBack* FFRpcOps::gen_callback(R (CLASS_TYPE::*func_)(ffreq_t<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3, FUNC_ARG4),
+FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReq<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3, FUNC_ARG4),
                                                 CLASS_TYPE* obj_, ARG1 arg1_, ARG2 arg2_, ARG3 arg3_, ARG4 arg4_)
 {
     struct lambda_cb: public FFSlot::FFCallBack
     {
-        typedef R (CLASS_TYPE::*func_t)(ffreq_t<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3, FUNC_ARG4);
+        typedef R (CLASS_TYPE::*func_t)(RPCReq<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3, FUNC_ARG4);
         lambda_cb(func_t func_, CLASS_TYPE* obj_, const ARG1& arg1_, const ARG2& arg2_, const ARG3& arg3_, const ARG4& arg4_):
             m_func(func_), m_obj(obj_), m_arg1(arg1_), m_arg2(arg2_), m_arg3(arg3_), m_arg4(arg4_)
         {}
         virtual void exe(FFSlot::CallBackArg* args_)
         {
-            if (args_->type() != TYPEID(ffslot_req_arg))
+            if (args_->type() != TYPEID(SlotReqArg))
             {
                 return;
             }
-            ffslot_req_arg* msg_data = (ffslot_req_arg*)args_;
-            ffreq_t<IN_T, OUT_T> req;
+            SlotReqArg* msg_data = (SlotReqArg*)args_;
+            RPCReq<IN_T, OUT_T> req;
             if (msg_data->err_info.empty())
             {
-                msg_tool_t::decode(req.msg, msg_data->body);
+                MsgTool::decode(req.msg, msg_data->body);
             }
             else
             {
@@ -557,20 +557,20 @@ FFSlot::FFCallBack* FFRpcOps::gen_callback(R (CLASS_TYPE::*func_)(ffreq_t<IN_T, 
 #ifdef FF_ENABLE_PROTOCOLBUF
 
 template <typename R, typename IN_T, typename OUT_T>
-FFSlot::FFCallBack* FFRpcOps::gen_callback(R (*func_)(ffreq_pb_t<IN_T, OUT_T>&))
+FFSlot::FFCallBack* FFRpcOps::genCallBack(R (*func_)(RPCReqPB<IN_T, OUT_T>&))
 {
     struct lambda_cb: public FFSlot::FFCallBack
     {
-        typedef R (*func_t)(ffreq_pb_t<IN_T, OUT_T>&);
+        typedef R (*func_t)(RPCReqPB<IN_T, OUT_T>&);
         lambda_cb(func_t func_):m_func(func_){}
         virtual void exe(FFSlot::CallBackArg* args_)
         {
-            if (args_->type() != TYPEID(ffslot_req_arg))
+            if (args_->type() != TYPEID(SlotReqArg))
             {
                 return;
             }
-            ffslot_req_arg* msg_data = (ffslot_req_arg*)args_;
-            ffreq_pb_t<IN_T, OUT_T> req;
+            SlotReqArg* msg_data = (SlotReqArg*)args_;
+            RPCReqPB<IN_T, OUT_T> req;
             if (msg_data->err_info.empty())
             {
                 req.msg.ParseFromString(msg_data->body);
@@ -591,20 +591,20 @@ FFSlot::FFCallBack* FFRpcOps::gen_callback(R (*func_)(ffreq_pb_t<IN_T, OUT_T>&))
     return new lambda_cb(func_);
 }
 template <typename R, typename CLASS_TYPE, typename IN_T, typename OUT_T>
-FFSlot::FFCallBack* FFRpcOps::gen_callback(R (CLASS_TYPE::*func_)(ffreq_pb_t<IN_T, OUT_T>&), CLASS_TYPE* obj_)
+FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReqPB<IN_T, OUT_T>&), CLASS_TYPE* obj_)
 {
     struct lambda_cb: public FFSlot::FFCallBack
     {
-        typedef R (CLASS_TYPE::*func_t)(ffreq_pb_t<IN_T, OUT_T>&);
+        typedef R (CLASS_TYPE::*func_t)(RPCReqPB<IN_T, OUT_T>&);
         lambda_cb(func_t func_, CLASS_TYPE* obj_):m_func(func_), m_obj(obj_){}
         virtual void exe(FFSlot::CallBackArg* args_)
         {
-            if (args_->type() != TYPEID(ffslot_req_arg))
+            if (args_->type() != TYPEID(SlotReqArg))
             {
                 return;
             }
-            ffslot_req_arg* msg_data = (ffslot_req_arg*)args_;
-            ffreq_pb_t<IN_T, OUT_T> req;
+            SlotReqArg* msg_data = (SlotReqArg*)args_;
+            RPCReqPB<IN_T, OUT_T> req;
             if (msg_data->err_info.empty())
             {
                 req.msg.ParseFromString(msg_data->body);
@@ -628,21 +628,21 @@ FFSlot::FFCallBack* FFRpcOps::gen_callback(R (CLASS_TYPE::*func_)(ffreq_pb_t<IN_
 
 //! 如果绑定回调函数的时候，有时需要一些临时参数被保存直到回调函数被调用
 template <typename R, typename CLASS_TYPE, typename IN_T, typename OUT_T, typename FUNC_ARG1, typename ARG1>
-FFSlot::FFCallBack* FFRpcOps::gen_callback(R (CLASS_TYPE::*func_)(ffreq_pb_t<IN_T, OUT_T>&, FUNC_ARG1), CLASS_TYPE* obj_, ARG1 arg1_)
+FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReqPB<IN_T, OUT_T>&, FUNC_ARG1), CLASS_TYPE* obj_, ARG1 arg1_)
 {
     struct lambda_cb: public FFSlot::FFCallBack
     {
-        typedef R (CLASS_TYPE::*func_t)(ffreq_pb_t<IN_T, OUT_T>&, FUNC_ARG1);
+        typedef R (CLASS_TYPE::*func_t)(RPCReqPB<IN_T, OUT_T>&, FUNC_ARG1);
         lambda_cb(func_t func_, CLASS_TYPE* obj_, const ARG1& arg1_):
             m_func(func_), m_obj(obj_), m_arg1(arg1_){}
         virtual void exe(FFSlot::CallBackArg* args_)
         {
-            if (args_->type() != TYPEID(ffslot_req_arg))
+            if (args_->type() != TYPEID(SlotReqArg))
             {
                 return;
             }
-            ffslot_req_arg* msg_data = (ffslot_req_arg*)args_;
-            ffreq_pb_t<IN_T, OUT_T> req;
+            SlotReqArg* msg_data = (SlotReqArg*)args_;
+            RPCReqPB<IN_T, OUT_T> req;
             if (msg_data->err_info.empty())
             {
                 req.msg.ParseFromString(msg_data->body);
@@ -667,23 +667,23 @@ FFSlot::FFCallBack* FFRpcOps::gen_callback(R (CLASS_TYPE::*func_)(ffreq_pb_t<IN_
 
 //! 如果绑定回调函数的时候，有时需要一些临时参数被保存直到回调函数被调用
 template <typename R, typename CLASS_TYPE, typename IN_T, typename OUT_T, typename FUNC_ARG1, typename ARG1, typename FUNC_ARG2, typename ARG2>
-FFSlot::FFCallBack* FFRpcOps::gen_callback(R (CLASS_TYPE::*func_)(ffreq_pb_t<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2),
+FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReqPB<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2),
                                                 CLASS_TYPE* obj_, ARG1 arg1_, ARG2 arg2_)
 {
     struct lambda_cb: public FFSlot::FFCallBack
     {
-        typedef R (CLASS_TYPE::*func_t)(ffreq_pb_t<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2);
+        typedef R (CLASS_TYPE::*func_t)(RPCReqPB<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2);
         lambda_cb(func_t func_, CLASS_TYPE* obj_, const ARG1& arg1_, const ARG2& arg2_):
             m_func(func_), m_obj(obj_), m_arg1(arg1_), m_arg2(arg2_)
         {}
         virtual void exe(FFSlot::CallBackArg* args_)
         {
-            if (args_->type() != TYPEID(ffslot_req_arg))
+            if (args_->type() != TYPEID(SlotReqArg))
             {
                 return;
             }
-            ffslot_req_arg* msg_data = (ffslot_req_arg*)args_;
-            ffreq_pb_t<IN_T, OUT_T> req;
+            SlotReqArg* msg_data = (SlotReqArg*)args_;
+            RPCReqPB<IN_T, OUT_T> req;
             if (msg_data->err_info.empty())
             {
                 req.msg.ParseFromString(msg_data->body);
@@ -710,23 +710,23 @@ FFSlot::FFCallBack* FFRpcOps::gen_callback(R (CLASS_TYPE::*func_)(ffreq_pb_t<IN_
 //! 如果绑定回调函数的时候，有时需要一些临时参数被保存直到回调函数被调用
 template <typename R, typename CLASS_TYPE, typename IN_T, typename OUT_T, typename FUNC_ARG1, typename ARG1, typename FUNC_ARG2, typename ARG2,
           typename FUNC_ARG3, typename ARG3>
-FFSlot::FFCallBack* FFRpcOps::gen_callback(R (CLASS_TYPE::*func_)(ffreq_pb_t<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3),
+FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReqPB<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3),
                                                 CLASS_TYPE* obj_, ARG1 arg1_, ARG2 arg2_, ARG3 arg3_)
 {
     struct lambda_cb: public FFSlot::FFCallBack
     {
-        typedef R (CLASS_TYPE::*func_t)(ffreq_pb_t<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3);
+        typedef R (CLASS_TYPE::*func_t)(RPCReqPB<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3);
         lambda_cb(func_t func_, CLASS_TYPE* obj_, const ARG1& arg1_, const ARG2& arg2_, const ARG3& arg3_):
             m_func(func_), m_obj(obj_), m_arg1(arg1_), m_arg2(arg2_), m_arg3(arg3_)
         {}
         virtual void exe(FFSlot::CallBackArg* args_)
         {
-            if (args_->type() != TYPEID(ffslot_req_arg))
+            if (args_->type() != TYPEID(SlotReqArg))
             {
                 return;
             }
-            ffslot_req_arg* msg_data = (ffslot_req_arg*)args_;
-            ffreq_pb_t<IN_T, OUT_T> req;
+            SlotReqArg* msg_data = (SlotReqArg*)args_;
+            RPCReqPB<IN_T, OUT_T> req;
             if (msg_data->err_info.empty())
             {
                 req.msg.ParseFromString(msg_data->body);
@@ -754,23 +754,23 @@ FFSlot::FFCallBack* FFRpcOps::gen_callback(R (CLASS_TYPE::*func_)(ffreq_pb_t<IN_
 //! 如果绑定回调函数的时候，有时需要一些临时参数被保存直到回调函数被调用
 template <typename R, typename CLASS_TYPE, typename IN_T, typename OUT_T, typename FUNC_ARG1, typename ARG1, typename FUNC_ARG2, typename ARG2,
           typename FUNC_ARG3, typename ARG3, typename FUNC_ARG4, typename ARG4>
-FFSlot::FFCallBack* FFRpcOps::gen_callback(R (CLASS_TYPE::*func_)(ffreq_pb_t<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3, FUNC_ARG4),
+FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReqPB<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3, FUNC_ARG4),
                                                 CLASS_TYPE* obj_, ARG1 arg1_, ARG2 arg2_, ARG3 arg3_, ARG4 arg4_)
 {
     struct lambda_cb: public FFSlot::FFCallBack
     {
-        typedef R (CLASS_TYPE::*func_t)(ffreq_pb_t<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3, FUNC_ARG4);
+        typedef R (CLASS_TYPE::*func_t)(RPCReqPB<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3, FUNC_ARG4);
         lambda_cb(func_t func_, CLASS_TYPE* obj_, const ARG1& arg1_, const ARG2& arg2_, const ARG3& arg3_, const ARG4& arg4_):
             m_func(func_), m_obj(obj_), m_arg1(arg1_), m_arg2(arg2_), m_arg3(arg3_), m_arg4(arg4_)
         {}
         virtual void exe(FFSlot::CallBackArg* args_)
         {
-            if (args_->type() != TYPEID(ffslot_req_arg))
+            if (args_->type() != TYPEID(SlotReqArg))
             {
                 return;
             }
-            ffslot_req_arg* msg_data = (ffslot_req_arg*)args_;
-            ffreq_pb_t<IN_T, OUT_T> req;
+            SlotReqArg* msg_data = (SlotReqArg*)args_;
+            RPCReqPB<IN_T, OUT_T> req;
             if (msg_data->err_info.empty())
             {
                 req.msg.ParseFromString(msg_data->body);
@@ -907,7 +907,7 @@ struct FFRpcMemoryRoute
     };
 
     typedef std::map<uint64_t/*node id*/, dest_node_info_t> node_info_map_t;
-    int add_node(uint64_t node_id_, FFRpc* ffrpc_)
+    int addNode(uint64_t node_id_, FFRpc* ffrpc_)
     {
         LockGuard lock(m_mutex);
         node_info_map_t tmp_data = m_node_info.get_data();
@@ -923,7 +923,7 @@ struct FFRpcMemoryRoute
         m_node_info.update_data(tmp_data);
         return 0;
     }
-    int add_node(uint64_t node_id_, FFBroker* ffbroker_)
+    int addNode(uint64_t node_id_, FFBroker* ffbroker_)
     {
         LockGuard lock(m_mutex);
         node_info_map_t tmp_data = m_node_info.get_data();
@@ -939,7 +939,7 @@ struct FFRpcMemoryRoute
         m_node_info.update_data(tmp_data);
         return 0;
     }
-    int del_node(uint64_t node_id_)
+    int delNode(uint64_t node_id_)
     {
         LockGuard lock(m_mutex);
         node_info_map_t tmp_data = m_node_info.get_data();
@@ -957,7 +957,7 @@ struct FFRpcMemoryRoute
         }
         return NULL;
     }
-    FFBroker* get_broker(uint64_t node_id_)
+    FFBroker* getBroker(uint64_t node_id_)
     {
         const node_info_map_t& tmp_data = m_node_info.get_data();
         node_info_map_t::const_iterator it = tmp_data.find(node_id_);
@@ -967,7 +967,7 @@ struct FFRpcMemoryRoute
         }
         return NULL;
     }
-    uint64_t get_broker_in_mem()
+    uint64_t getBrokerInMem()
     {
         const node_info_map_t& tmp_data = m_node_info.get_data();
         node_info_map_t::const_iterator it = tmp_data.begin();

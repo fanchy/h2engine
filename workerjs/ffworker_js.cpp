@@ -686,11 +686,11 @@ static BIND_FUNC_RET_TYPE js_workerRPC(const Arguments& args){
         lambda_cb(persistent_lambda_ptr_t f):funcptr(f){}
         virtual void exe(FFSlot::CallBackArg* args_)
         {
-            if (args_->type() != TYPEID(ffslot_req_arg))
+            if (args_->type() != TYPEID(SlotReqArg))
             {
                 return;
             }
-            ffslot_req_arg* msg_data = (ffslot_req_arg*)args_;
+            SlotReqArg* msg_data = (SlotReqArg*)args_;
             try
             {
                 WorkerCallMsgt::out_t retmsg;

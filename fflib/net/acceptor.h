@@ -8,10 +8,10 @@
 
 namespace ff {
 
-class acceptor_i: public Fd
+class Acceptor: public Fd
 {
 public:
-    virtual ~acceptor_i(){}
+    virtual ~Acceptor(){}
     virtual int   open(const std::string& address_) = 0;
 
     int handleEpollWrite(){ return -1; }

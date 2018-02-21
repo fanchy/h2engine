@@ -813,11 +813,11 @@ PHP_METHOD(h2ext, workerRPC)
         lambda_cb(int idxarg):idx(idxarg){}
         virtual void exe(FFSlot::CallBackArg* args_)
         {
-            if (args_->type() != TYPEID(ffslot_req_arg))
+            if (args_->type() != TYPEID(SlotReqArg))
             {
                 return;
             }
-            ffslot_req_arg* msg_data = (ffslot_req_arg*)args_;
+            SlotReqArg* msg_data = (SlotReqArg*)args_;
             WorkerCallMsgt::out_t retmsg;
             try{
                 FFThrift::DecodeFromString(retmsg, msg_data->body);

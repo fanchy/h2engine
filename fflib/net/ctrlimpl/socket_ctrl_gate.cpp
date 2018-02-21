@@ -18,7 +18,7 @@ using namespace std;
 using namespace ff;
 #define FFNET "FFNET"
 
-SocketCtrlGate::SocketCtrlGate(msg_handler_ptr_t msg_handler_, NetStat* ns_):
+SocketCtrlGate::SocketCtrlGate(MsgHandlerPtr msg_handler_, NetStat* ns_):
     SocketCtrlCommon(msg_handler_),
     m_state(WAIT_FIRSTPKG),
     m_type(0),
@@ -36,8 +36,8 @@ SocketCtrlGate::~SocketCtrlGate()
 
 int SocketCtrlGate::handleOpen(SocketI* s_)
 {
-    m_last_update_tm = m_net_stat->get_heartbeat().tick();
-    m_net_stat->get_heartbeat().add(s_);
+    m_last_update_tm = m_net_stat->getHeartBeat().tick();
+    m_net_stat->getHeartBeat().add(s_);
     LOGTRACE((FFNET, "SocketCtrlGate::handleOpen ok"));
     return 0;
 }
@@ -94,17 +94,17 @@ int SocketCtrlGate::handleRead(SocketI* s_, const char* buff, size_t len)
 
     //! 判断消息包是否超过限制
 
-    if (true == m_message.have_recv_head(m_have_recv_size) && m_message.size() > (size_t)m_net_stat->get_max_packet_size())
+    if (true == m_message.haveRecvHead(m_have_recv_size) && m_message.size() > (size_t)m_net_stat->getMaxPacketSize())
     {
-        LOGERROR((FFNET, "SocketCtrlGate::handleRead end msg size<%u>,%d", m_message.size(), m_net_stat->get_max_packet_size()));
+        LOGERROR((FFNET, "SocketCtrlGate::handleRead end msg size<%u>,%d", m_message.size(), m_net_stat->getMaxPacketSize()));
         s_->close();
     }
 
     //! 更新心跳
-    if (m_last_update_tm != m_net_stat->get_heartbeat().tick())
+    if (m_last_update_tm != m_net_stat->getHeartBeat().tick())
     {
-        m_last_update_tm = m_net_stat->get_heartbeat().tick();
-        m_net_stat->get_heartbeat().update(s_);
+        m_last_update_tm = m_net_stat->getHeartBeat().tick();
+        m_net_stat->getHeartBeat().update(s_);
     }
 
     LOGTRACE((FFNET, "SocketCtrlGate::handleRead end msg size<%u>", m_message.size()));
@@ -113,7 +113,7 @@ int SocketCtrlGate::handleRead(SocketI* s_, const char* buff, size_t len)
 
 int SocketCtrlGate::handleError(SocketI* s_)
 {
-    m_net_stat->get_heartbeat().del(s_);
+    m_net_stat->getHeartBeat().del(s_);
     SocketCtrlCommon::handleError(s_);
     return 0;
 }
@@ -324,8 +324,8 @@ int SocketCtrlGate::handleRead_websocket(SocketI* s_, const char* buff, size_t l
     LOGTRACE((FFNET, "SocketCtrlGate::handleRead_websocket begin len<%u>", len));
     if (WAIT_HANDSHAKE == m_state)
     {
-        m_message.append_to_body(buff, len);
-        const string& cur_head = m_message.get_body();
+        m_message.appendToBody(buff, len);
+        const string& cur_head = m_message.getBody();
         if (cur_head.find("\r\n\r\n") < 0)
         {
             return 0;
@@ -403,7 +403,7 @@ int SocketCtrlGate::handleRead_websocket(SocketI* s_, const char* buff, size_t l
         }
         else
         {
-            LOGTRACE((FFNET, "SocketCtrlGate::handleRead_websocket end msg content<%s,%s>", m_message.get_body(), param["Sec-WebSocket-Key"]));
+            LOGTRACE((FFNET, "SocketCtrlGate::handleRead_websocket end msg content<%s,%s>", m_message.getBody(), param["Sec-WebSocket-Key"]));
             string acceptKey = ComputeWebSocketHandshakeSecurityHash09(param["Sec-WebSocket-Key"]);
 
             handshake = "HTTP/1.1 101 Switching Protocols\r\n";
@@ -556,10 +556,10 @@ int SocketCtrlGate::handleRead_mask_msg(SocketI* s_, const char* buff, size_t le
         m_buff.erase(0, int(headsize + masksize + pkgsize));
     }
     //! 更新心跳
-    if (m_last_update_tm != m_net_stat->get_heartbeat().tick())
+    if (m_last_update_tm != m_net_stat->getHeartBeat().tick())
     {
-        m_last_update_tm = m_net_stat->get_heartbeat().tick();
-        m_net_stat->get_heartbeat().update(s_);
+        m_last_update_tm = m_net_stat->getHeartBeat().tick();
+        m_net_stat->getHeartBeat().update(s_);
     }
     
 	return 0;
@@ -584,25 +584,25 @@ int SocketCtrlGate::handle_parse_text_prot(SocketI* s_, const string& str_body_)
             {
                 if (vec_cmd_k_v[0] == "cmd")
                 {
-                    m_message.get_head().cmd = ::atoi(vec_cmd_k_v[1].c_str());
+                    m_message.getHead().cmd = ::atoi(vec_cmd_k_v[1].c_str());
                 }
                 else if (vec_cmd_k_v[0] == "res")
                 {
-                    m_message.get_head().flag = ::atoi(vec_cmd_k_v[1].c_str());
+                    m_message.getHead().flag = ::atoi(vec_cmd_k_v[1].c_str());
                 }
             }
         }
-        m_message.get_head().size = str_body_.size() - pos_end - 1;
-        m_message.append_to_body(str_body_.c_str() + pos_end + 1, m_message.get_head().size);
+        m_message.getHead().size = str_body_.size() - pos_end - 1;
+        m_message.appendToBody(str_body_.c_str() + pos_end + 1, m_message.getHead().size);
     }
     else{
-        m_message.get_head().size = str_body_.size();
-        m_message.append_to_body(str_body_.c_str() + pos_end + 1, m_message.get_head().size);
+        m_message.getHead().size = str_body_.size();
+        m_message.appendToBody(str_body_.c_str() + pos_end + 1, m_message.getHead().size);
     }
     //! 判断消息包是否超过限制
-    if (m_message.get_head().size > (size_t)m_net_stat->get_max_packet_size())
+    if (m_message.getHead().size > (size_t)m_net_stat->getMaxPacketSize())
     {
-        LOGERROR((FFNET, "SocketCtrlGate::handle_parse_text_prot exceed=%d:%d", m_message.get_head().size, m_net_stat->get_max_packet_size()));
+        LOGERROR((FFNET, "SocketCtrlGate::handle_parse_text_prot exceed=%d:%d", m_message.getHead().size, m_net_stat->getMaxPacketSize()));
         s_->close();
         return 0;
     }

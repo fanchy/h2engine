@@ -18,7 +18,7 @@
 
 using namespace ff;
 
-SocketWin::SocketWin(EventLoopI* e_, SocketCtrlI* seh_, socket_fd_t fd_, TaskQueueI* tq_):
+SocketWin::SocketWin(EventLoop* e_, SocketCtrlI* seh_, SocketFd fd_, TaskQueueI* tq_):
     m_epoll(e_),
     m_sc(seh_),
     m_fd(fd_),

@@ -6,7 +6,7 @@
 using namespace std;
 using namespace ff;
 
-AcceptorLinuxGate::AcceptorLinuxGate(EventLoopI* e_, MsgHandlerI* mh_, TaskQueuePool* tq_):
+AcceptorLinuxGate::AcceptorLinuxGate(EventLoop* e_, MsgHandler* mh_, TaskQueuePool* tq_):
     AcceptorLinux(e_, mh_, tq_)
 {
     
@@ -29,7 +29,7 @@ int AcceptorLinuxGate::open(ArgHelper& arg_helper)
 	m_net_stat.start(arg_helper);
     return AcceptorLinux::open(arg_helper.getOptionValue("-gate_listen"));
 }
-SocketI* AcceptorLinuxGate::create_socket(socket_fd_t new_fd_)
+SocketI* AcceptorLinuxGate::create_socket(SocketFd new_fd_)
 {
     #ifdef _WIN32
     return new SocketWin(m_epoll, new SocketCtrlGate(m_msg_handler, &m_net_stat), new_fd_, m_tq->alloc(new_fd_));

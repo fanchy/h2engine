@@ -20,15 +20,15 @@ FFBroker::~FFBroker()
 
 }
 //!ff 获取节点信息
-uint64_t FFBroker::alloc_node_id(socket_ptr_t sock_)
+uint64_t FFBroker::allocNodeId(SocketPtr sock_)
 {
     return ++m_for_allocID;
 }
 
-const string& FFBroker::get_host(){
+const string& FFBroker::getHostCfg(){
     return m_listen_host;
 }
-int FFBroker::get_port(){
+int FFBroker::getPortCfg(){
     vector<string> vt;
     StrTool::split(m_listen_host, vt, ":");//!tcp://127.0.0.1:43210
     if (vt.size() < 3){
@@ -69,10 +69,10 @@ int FFBroker::open(const string& listen, string bridge_broker, string master_bro
     //! 绑定cmd 对应的回调函数
     //!新版本
     //! 处理其他broker或者client注册到此server
-    m_ffslot.bind(REGISTER_TO_BROKER_REQ, FFRpcOps::gen_callback(&FFBroker::handle_regiter_to_broker, this))
-            .bind(BROKER_ROUTE_MSG, FFRpcOps::gen_callback(&FFBroker::handle_broker_route_msg, this))
-            .bind(REGISTER_TO_BROKER_RET, FFRpcOps::gen_callback(&FFBroker::handle_register_master_ret, this))
-            .bind(SYNC_CLIENT_REQ, FFRpcOps::gen_callback(&FFBroker::process_sync_client_req, this));//! 处理同步客户端的调用请求
+    m_ffslot.bind(REGISTER_TO_BROKER_REQ, FFRpcOps::genCallBack(&FFBroker::handleRegiterToBroker, this))
+            .bind(BROKER_ROUTE_MSG, FFRpcOps::genCallBack(&FFBroker::handleBrokerRouteMsg, this))
+            .bind(REGISTER_TO_BROKER_RET, FFRpcOps::genCallBack(&FFBroker::handleRegisterMasterRet, this))
+            .bind(SYNC_CLIENT_REQ, FFRpcOps::genCallBack(&FFBroker::processSyncClientReq, this));//! 处理同步客户端的调用请求
 
     //! 任务队列绑定线程
     m_thread.create_thread(TaskBinder::gen(&TaskQueue::run, &m_tq), 1);
@@ -88,7 +88,7 @@ int FFBroker::open(const string& listen, string bridge_broker, string master_bro
             m_bridge_broker_config[vt[i]] = NULL;
             LOGWARN((BROKER, "FFBroker::open bridge_broker<%s>", vt[i]));
         }
-        if (connect_to_bridge_broker())
+        if (connectToBridgeBroker())
         {
             return -1;
         }
@@ -96,7 +96,7 @@ int FFBroker::open(const string& listen, string bridge_broker, string master_bro
     else if (master_broker.empty() == false)
     {
         m_broker_host = master_broker;
-        if (connect_to_master_broker())
+        if (connectToMasterBroker())
         {
             return -1;
         }
@@ -114,7 +114,7 @@ int FFBroker::open(const string& listen, string bridge_broker, string master_bro
     }
     else//! 内存中注册此broker
     {
-        Singleton<FFRpcMemoryRoute>::instance().add_node(BROKER_MASTER_NODE_ID, this);
+        Singleton<FFRpcMemoryRoute>::instance().addNode(BROKER_MASTER_NODE_ID, this);
     }
     LOGINFO((BROKER, "FFBroker::open end ok m_node_id=%d", m_node_id));
     return 0;
@@ -125,9 +125,9 @@ TimerService& FFBroker::getTimer()
 {
     return m_timer;
 }
-void FFBroker::real_cleaanup()
+void FFBroker::docleaanup()
 {
-    map<uint64_t/* node id*/, socket_ptr_t>::iterator it = m_all_registered_info.node_sockets.begin();
+    map<uint64_t/* node id*/, SocketPtr>::iterator it = m_all_registered_info.node_sockets.begin();
     for (; it != m_all_registered_info.node_sockets.end(); ++it)
     {
         it->second->close();
@@ -140,7 +140,7 @@ int FFBroker::close()
         return 0;
     m_acceptor->close();
     m_acceptor = NULL;
-    m_tq.post(TaskBinder::gen(&FFBroker::real_cleaanup, this));
+    m_tq.post(TaskBinder::gen(&FFBroker::docleaanup, this));
     m_timer.stop();
     m_tq.close();
     m_thread.join();
@@ -152,21 +152,21 @@ TaskQueueI* FFBroker::getTaskQueue()
     return &m_tq;
 }
 /*
-int FFBroker::handleBroken(socket_ptr_t sock_)
+int FFBroker::handleBroken(SocketPtr sock_)
 {
     m_tq.post(TaskBinder::gen(&FFBroker::handleBroken_impl, this, sock_));
     return 0;
 }
-int FFBroker::handleMsg(const Message& msg_, socket_ptr_t sock_)
+int FFBroker::handleMsg(const Message& msg_, SocketPtr sock_)
 {
     m_tq.post(TaskBinder::gen(&FFBroker::handleMsg_impl, this, msg_, sock_));
     return 0;
 }*/
 //! 当有连接断开，则被回调
-int FFBroker::handleBroken(socket_ptr_t sock_)
+int FFBroker::handleBroken(SocketPtr sock_)
 {
     LOGTRACE((BROKER, "FFBroker::handleBroken_impl begin"));
-    session_data_t* psession = sock_->get_data<session_data_t>();
+    SessionData* psession = sock_->get_data<SessionData>();
     if (NULL == psession)
     {
         sock_->safeDelete();
@@ -183,10 +183,10 @@ int FFBroker::handleBroken(socket_ptr_t sock_)
         LOGTRACE((BROKER, "FFBroker::handleBroken_impl check master reconnect"));
         return 0;
     }
-    else if (BRIDGE_BROKER == psession->get_type())
+    else if (BRIDGE_BROKER == psession->getType())
     {
         //! 如果需要连接bridge broker，记录各个bridge broker的配置
-        for (map<string, socket_ptr_t>::iterator it = m_bridge_broker_config.begin(); it != m_bridge_broker_config.end(); ++it)
+        for (map<string, SocketPtr>::iterator it = m_bridge_broker_config.begin(); it != m_bridge_broker_config.end(); ++it)
         {
             if (it->second == sock_)
             {
@@ -194,7 +194,7 @@ int FFBroker::handleBroken(socket_ptr_t sock_)
             }
         }
         //! 记录所有的namespace 注册在那些bridge broker 上
-        for (map<string, set<socket_ptr_t> >::iterator it2 = m_namespace2bridge.begin(); it2 != m_namespace2bridge.end(); ++it2)
+        for (map<string, set<SocketPtr> >::iterator it2 = m_namespace2bridge.begin(); it2 != m_namespace2bridge.end(); ++it2)
         {
             it2->second.erase(sock_);
         }
@@ -212,15 +212,15 @@ int FFBroker::handleBroken(socket_ptr_t sock_)
     sock_->safeDelete();
     //!广播给所有的子节点
     RegisterToBroker::out_t ret_msg = m_all_registered_info.broker_data;
-    sync_node_info(ret_msg);
+    syncNodeInfo(ret_msg);
     LOGTRACE((BROKER, "FFBroker::handleBroken_impl end ok"));
     return 0;
 
 }
 //! 当有消息到来，被回调
-int FFBroker::handleMsg(const Message& msg_, socket_ptr_t sock_)
+int FFBroker::handleMsg(const Message& msg_, SocketPtr sock_)
 {
-    uint16_t cmd = msg_.get_cmd();
+    uint16_t cmd = msg_.getCmd();
     LOGTRACE((BROKER, "FFBroker::handleMsg_impl cmd<%u> begin", cmd));
 
     FFSlot::FFCallBack* cb = m_ffslot.get_callback(cmd);
@@ -228,7 +228,7 @@ int FFBroker::handleMsg(const Message& msg_, socket_ptr_t sock_)
     {
         try
         {
-            ffslot_msg_arg arg(msg_.get_body(), sock_);
+            SlotMsgArg arg(msg_.getBody(), sock_);
             cb->exe(&arg);
             LOGTRACE((BROKER, "FFBroker::handleMsg_impl cmd<%u> end ok", cmd));
             return 0;
@@ -249,11 +249,11 @@ int FFBroker::handleMsg(const Message& msg_, socket_ptr_t sock_)
 
 
 //! 处理其他broker或者client注册到此server
-int FFBroker::handle_regiter_to_broker(RegisterToBroker::in_t& msg_, socket_ptr_t sock_)
+int FFBroker::handleRegiterToBroker(RegisterToBroker::in_t& msg_, SocketPtr sock_)
 {
-    LOGINFO((BROKER, "FFBroker::handle_regiter_to_broker begin service_name=%s", msg_.service_name));
+    LOGINFO((BROKER, "FFBroker::handleRegiterToBroker begin service_name=%s", msg_.service_name));
 
-    session_data_t* psession = sock_->get_data<session_data_t>();
+    SessionData* psession = sock_->get_data<SessionData>();
     if (NULL != psession)
     {
         sock_->close();
@@ -263,25 +263,25 @@ int FFBroker::handle_regiter_to_broker(RegisterToBroker::in_t& msg_, socket_ptr_
     RegisterToBroker::out_t ret_msg;
     ret_msg.register_flag = -1;//! -1表示注册失败，0表示同步消息，1表示注册成功,
 
-    if (is_master_broker() == false)//!如果自己是slave broker，不做任何的处理
+    if (isMasterBroker() == false)//!如果自己是slave broker，不做任何的处理
     {
         m_all_registered_info.node_sockets[msg_.node_id] = sock_;
-        LOGINFO((BROKER, "FFBroker::handle_regiter_to_broker register slave broker service_name=%s, node_id=%d", msg_.service_name, msg_.node_id));
+        LOGINFO((BROKER, "FFBroker::handleRegiterToBroker register slave broker service_name=%s, node_id=%d", msg_.service_name, msg_.node_id));
         return 0;
     }
     
     //! 那么自己是master broker，处理来自slave 和 rpc node的注册消息
     if (SLAVE_BROKER == msg_.node_type)//! 分配slave broker 节点id，同步slave的监听信息到其他rpc node
     {
-        uint64_t node_id = alloc_node_id(sock_);
-        session_data_t* psession = new session_data_t(msg_.node_type, node_id);
+        uint64_t node_id = allocNodeId(sock_);
+        SessionData* psession = new SessionData(msg_.node_type, node_id);
         psession->node_id = node_id;
         sock_->set_data(psession);
 
         m_all_registered_info.node_sockets[node_id] = sock_;
         //!如果是slave broker，那么host参数会被赋值
         m_all_registered_info.broker_data.slave_broker_data[msg_.host] = node_id;
-        LOGTRACE((BROKER, "FFBroker::handle_regiter_to_broker slave register=%s", msg_.host));
+        LOGTRACE((BROKER, "FFBroker::handleRegiterToBroker slave register=%s", msg_.host));
 
         ret_msg = m_all_registered_info.broker_data;
         ret_msg.node_id = node_id;
@@ -290,20 +290,20 @@ int FFBroker::handle_regiter_to_broker(RegisterToBroker::in_t& msg_, socket_ptr_
     {
         if (m_all_registered_info.broker_data.service2node_id.find(msg_.service_name) != m_all_registered_info.broker_data.service2node_id.end())
         {
-            msg_sender_t::send(sock_, REGISTER_TO_BROKER_RET, FFThrift::EncodeAsString(ret_msg));
-            LOGERROR((BROKER, "FFBroker::handle_regiter_to_broker service<%s> exist", msg_.service_name));
+            MsgSender::send(sock_, REGISTER_TO_BROKER_RET, FFThrift::EncodeAsString(ret_msg));
+            LOGERROR((BROKER, "FFBroker::handleRegiterToBroker service<%s> exist", msg_.service_name));
             return 0;
         }
 
-        uint64_t node_id = alloc_node_id(sock_);
-        session_data_t* psession = new session_data_t(msg_.node_type, node_id);
+        uint64_t node_id = allocNodeId(sock_);
+        SessionData* psession = new SessionData(msg_.node_type, node_id);
         psession->node_id = node_id;
         sock_->set_data(psession);
 
         m_all_registered_info.node_sockets[node_id] = sock_;
         if  (0 != msg_.bind_broker_id)
         {
-            LOGINFO((BROKER, "FFBroker::handle_regiter_to_broker service<%s> bind_broker_id=%u exist",
+            LOGINFO((BROKER, "FFBroker::handleRegiterToBroker service<%s> bind_broker_id=%u exist",
                                 msg_.service_name, msg_.bind_broker_id));
             m_all_registered_info.broker_data.rpc_bind_broker_info[node_id] = msg_.bind_broker_id;
         }
@@ -317,8 +317,8 @@ int FFBroker::handle_regiter_to_broker(RegisterToBroker::in_t& msg_, socket_ptr_
     }
     else if (MASTER_BROKER == msg_.node_type)//!bridge broker接受master broker的注册
     {
-        uint64_t node_id = alloc_node_id(sock_);
-        session_data_t* psession = new session_data_t(msg_.node_type, node_id);
+        uint64_t node_id = allocNodeId(sock_);
+        SessionData* psession = new SessionData(msg_.node_type, node_id);
         psession->node_id = node_id;
         sock_->set_data(psession);
 
@@ -326,32 +326,32 @@ int FFBroker::handle_regiter_to_broker(RegisterToBroker::in_t& msg_, socket_ptr_
         m_namespace2master_nodeid[msg_.reg_namespace] = node_id;
         m_all_registered_info.broker_data.reg_namespace_list.push_back(msg_.reg_namespace);
         ret_msg = m_all_registered_info.broker_data;
-        LOGINFO((BROKER, "FFBroker::handle_regiter_to_broker reg_namespace=%s", msg_.reg_namespace));
+        LOGINFO((BROKER, "FFBroker::handleRegiterToBroker reg_namespace=%s", msg_.reg_namespace));
     }
     else
     {
-        msg_sender_t::send(sock_, REGISTER_TO_BROKER_RET, FFThrift::EncodeAsString(ret_msg));
-        LOGERROR((BROKER, "FFBroker::handle_regiter_to_broker type invalid<%d>", msg_.node_type));
+        MsgSender::send(sock_, REGISTER_TO_BROKER_RET, FFThrift::EncodeAsString(ret_msg));
+        LOGERROR((BROKER, "FFBroker::handleRegiterToBroker type invalid<%d>", msg_.node_type));
         return 0;
     }
     
     //!广播给所有的子节点
-    sync_node_info(ret_msg, sock_);
-    LOGTRACE((BROKER, "FFBroker::handle_regiter_to_broker end ok id=%d, type=%d", ret_msg.node_id, msg_.node_type));
+    syncNodeInfo(ret_msg, sock_);
+    LOGTRACE((BROKER, "FFBroker::handleRegiterToBroker end ok id=%d, type=%d", ret_msg.node_id, msg_.node_type));
     return 0;
 }
 //! 同步给所有的节点，当前的各个节点的信息
-int FFBroker::sync_node_info(RegisterToBroker::out_t& ret_msg, socket_ptr_t sock_)
+int FFBroker::syncNodeInfo(RegisterToBroker::out_t& ret_msg, SocketPtr sock_)
 {
     //!广播给所有的子节点
-    map<uint64_t/* node id*/, socket_ptr_t>::iterator it = m_all_registered_info.node_sockets.begin();
+    map<uint64_t/* node id*/, SocketPtr>::iterator it = m_all_registered_info.node_sockets.begin();
     for (; it != m_all_registered_info.node_sockets.end(); ++it)
     {
-        session_data_t* psession = it->second->get_data<session_data_t>();
-        if (RPC_NODE == psession->get_type())//!如果没有分配对应的slavebroker，那么分配一个
+        SessionData* psession = it->second->get_data<SessionData>();
+        if (RPC_NODE == psession->getType())//!如果没有分配对应的slavebroker，那么分配一个
         {
             map<int64_t, int64_t>::iterator it_id = m_all_registered_info.broker_data.rpc_bind_broker_info.find(
-                                                        psession->get_node_id());
+                                                        psession->getNodeId());
             if (it_id == m_all_registered_info.broker_data.rpc_bind_broker_info.end() ||
                 m_all_registered_info.node_sockets.find(it_id->first) == m_all_registered_info.node_sockets.end())
             {
@@ -363,12 +363,12 @@ int FFBroker::sync_node_info(RegisterToBroker::out_t& ret_msg, socket_ptr_t sock
                     {
                         ++it_broker;
                     }
-                    m_all_registered_info.broker_data.rpc_bind_broker_info[psession->get_node_id()] = it_broker->second;
+                    m_all_registered_info.broker_data.rpc_bind_broker_info[psession->getNodeId()] = it_broker->second;
                     ret_msg.rpc_bind_broker_info = m_all_registered_info.broker_data.rpc_bind_broker_info;
                 }
                 else
                 {
-                    m_all_registered_info.broker_data.rpc_bind_broker_info[psession->get_node_id()] = BROKER_MASTER_NODE_ID;//!broker master
+                    m_all_registered_info.broker_data.rpc_bind_broker_info[psession->getNodeId()] = BROKER_MASTER_NODE_ID;//!broker master
                     ret_msg.rpc_bind_broker_info = m_all_registered_info.broker_data.rpc_bind_broker_info;
                 }
             }
@@ -382,36 +382,36 @@ int FFBroker::sync_node_info(RegisterToBroker::out_t& ret_msg, socket_ptr_t sock
         {
             ret_msg.register_flag = 0;
         }
-        msg_sender_t::send(it->second, REGISTER_TO_BROKER_RET, FFThrift::EncodeAsString(ret_msg));
+        MsgSender::send(it->second, REGISTER_TO_BROKER_RET, FFThrift::EncodeAsString(ret_msg));
     }
     return 0;
 }
 
 //! 处理转发消息的操作
-int FFBroker::handle_broker_route_msg(BrokerRouteMsg::in_t& msg_, socket_ptr_t sock_)
+int FFBroker::handleBrokerRouteMsg(BrokerRouteMsg::in_t& msg_, SocketPtr sock_)
 {
-    LOGTRACE((BROKER, "FFBroker::handle_broker_route_msg begin"));
-    session_data_t* psession = sock_->get_data<session_data_t>();
+    LOGTRACE((BROKER, "FFBroker::handleBrokerRouteMsg begin"));
+    SessionData* psession = sock_->get_data<SessionData>();
     if (NULL == psession)
     {
         sock_->close();
         return 0;
     }
-    if (RPC_NODE == psession->get_type())
+    if (RPC_NODE == psession->getType())
     {
         //!如果找到对应的节点，那么发给对应的节点
-        send_to_rpc_node(msg_);
+        sendToRPcNode(msg_);
     }
-    else if (MASTER_BROKER == psession->get_type())//!需要转给其他的broker master
+    else if (MASTER_BROKER == psession->getType())//!需要转给其他的broker master
     {
-        LOGTRACE((BROKER, "FFBroker::handle_broker_route_msg from MASTER_BROKER dest_namespace=%s", msg_.dest_namespace));
+        LOGTRACE((BROKER, "FFBroker::handleBrokerRouteMsg from MASTER_BROKER dest_namespace=%s", msg_.dest_namespace));
         map<string, uint64_t>::iterator it = m_namespace2master_nodeid.find(msg_.dest_namespace);
         if (it != m_namespace2master_nodeid.end())
         {
-            map<uint64_t/* node id*/, socket_ptr_t>::iterator it2 = m_all_registered_info.node_sockets.find(it->second);
+            map<uint64_t/* node id*/, SocketPtr>::iterator it2 = m_all_registered_info.node_sockets.find(it->second);
             if (it2 != m_all_registered_info.node_sockets.end())
             {
-                msg_sender_t::send(it2->second, BROKER_ROUTE_MSG, FFThrift::EncodeAsString(msg_));
+                MsgSender::send(it2->second, BROKER_ROUTE_MSG, FFThrift::EncodeAsString(msg_));
                 return 0;
             }
         }
@@ -419,11 +419,11 @@ int FFBroker::handle_broker_route_msg(BrokerRouteMsg::in_t& msg_, socket_ptr_t s
         msg_.dest_service_name.clear();
         msg_.dest_node_id = msg_.from_node_id;
         msg_.err_info = "dest_namespace named " + msg_.dest_namespace + " not exist in broker";
-        msg_sender_t::send(sock_, BROKER_TO_CLIENT_MSG, FFThrift::EncodeAsString(msg_));
+        MsgSender::send(sock_, BROKER_TO_CLIENT_MSG, FFThrift::EncodeAsString(msg_));
     }
-    else if (BRIDGE_BROKER == psession->get_type())//!需要转给其rpc node
+    else if (BRIDGE_BROKER == psession->getType())//!需要转给其rpc node
     {
-        LOGTRACE((BROKER, "FFBroker::handle_broker_route_msg from BRIDGE_BROKER dest_namespace=%s", msg_.dest_namespace));
+        LOGTRACE((BROKER, "FFBroker::handleBrokerRouteMsg from BRIDGE_BROKER dest_namespace=%s", msg_.dest_namespace));
         if (msg_.dest_service_name.empty() == false)
         {
             map<string, int64_t>::iterator it = m_all_registered_info.broker_data.service2node_id.find(msg_.dest_service_name);
@@ -431,22 +431,22 @@ int FFBroker::handle_broker_route_msg(BrokerRouteMsg::in_t& msg_, socket_ptr_t s
             {
                 uint64_t dest_node_id = it->second;
                 msg_.dest_node_id = dest_node_id;
-                map<uint64_t/* node id*/, socket_ptr_t>::iterator it = m_all_registered_info.node_sockets.find(msg_.dest_node_id);
+                map<uint64_t/* node id*/, SocketPtr>::iterator it = m_all_registered_info.node_sockets.find(msg_.dest_node_id);
                 if (it != m_all_registered_info.node_sockets.end())
                 {
-                    msg_sender_t::send(it->second, BROKER_TO_CLIENT_MSG, FFThrift::EncodeAsString(msg_));
-                    LOGTRACE((BROKER, "FFBroker::handle_broker_route_msg from BRIDGE_BROKER dest_node_id=%s", msg_.dest_node_id));
+                    MsgSender::send(it->second, BROKER_TO_CLIENT_MSG, FFThrift::EncodeAsString(msg_));
+                    LOGTRACE((BROKER, "FFBroker::handleBrokerRouteMsg from BRIDGE_BROKER dest_node_id=%s", msg_.dest_node_id));
                     return 0;
                 }
             }
         }
         else
         {
-            map<uint64_t/* node id*/, socket_ptr_t>::iterator it = m_all_registered_info.node_sockets.find(msg_.dest_node_id);
+            map<uint64_t/* node id*/, SocketPtr>::iterator it = m_all_registered_info.node_sockets.find(msg_.dest_node_id);
             if (it != m_all_registered_info.node_sockets.end())
             {
-                msg_sender_t::send(it->second, BROKER_TO_CLIENT_MSG, FFThrift::EncodeAsString(msg_));
-                LOGTRACE((BROKER, "FFBroker::handle_broker_route_msg from BRIDGE_BROKER callback dest_node_id=%s", msg_.dest_node_id));
+                MsgSender::send(it->second, BROKER_TO_CLIENT_MSG, FFThrift::EncodeAsString(msg_));
+                LOGTRACE((BROKER, "FFBroker::handleBrokerRouteMsg from BRIDGE_BROKER callback dest_node_id=%s", msg_.dest_node_id));
                 return 0;
             }
         }
@@ -454,44 +454,44 @@ int FFBroker::handle_broker_route_msg(BrokerRouteMsg::in_t& msg_, socket_ptr_t s
         msg_.dest_service_name.clear();
         msg_.dest_node_id = msg_.from_node_id;
         msg_.err_info = "dest_namespace named " + msg_.dest_namespace + "::" + msg_.dest_service_name + " not exist in broker";
-        msg_sender_t::send(sock_, BROKER_ROUTE_MSG, FFThrift::EncodeAsString(msg_));
-        LOGTRACE((BROKER, "FFBroker::handle_broker_route_msg from BRIDGE_BROKER dest_service_name=%s not exist", msg_.dest_service_name));
+        MsgSender::send(sock_, BROKER_ROUTE_MSG, FFThrift::EncodeAsString(msg_));
+        LOGTRACE((BROKER, "FFBroker::handleBrokerRouteMsg from BRIDGE_BROKER dest_service_name=%s not exist", msg_.dest_service_name));
     }
-    LOGTRACE((BROKER, "FFBroker::handle_broker_route_msg end ok msg body_size=%d", msg_.body.size()));
+    LOGTRACE((BROKER, "FFBroker::handleBrokerRouteMsg end ok msg body_size=%d", msg_.body.size()));
     return 0;
 }
 
 //! 处理同步客户端的调用请求
-int FFBroker::process_sync_client_req(BrokerRouteMsg::in_t& msg_, socket_ptr_t sock_)
+int FFBroker::processSyncClientReq(BrokerRouteMsg::in_t& msg_, SocketPtr sock_)
 {
-    LOGTRACE((BROKER, "FFBroker::process_sync_client_req begin"));
-    session_data_t* psession = sock_->get_data<session_data_t>();
+    LOGTRACE((BROKER, "FFBroker::processSyncClientReq begin"));
+    SessionData* psession = sock_->get_data<SessionData>();
     if (NULL == psession)
     {
-        psession = new session_data_t(SYNC_CLIENT_NODE, alloc_node_id(sock_));
+        psession = new SessionData(SYNC_CLIENT_NODE, allocNodeId(sock_));
         sock_->set_data(psession);
-        m_all_registered_info.node_sockets[psession->get_node_id()] = sock_;
+        m_all_registered_info.node_sockets[psession->getNodeId()] = sock_;
     }
-    msg_.from_node_id = psession->get_node_id();
+    msg_.from_node_id = psession->getNodeId();
     map<string, int64_t>::iterator it = m_all_registered_info.broker_data.service2node_id.find(msg_.dest_service_name);
     if (it == m_all_registered_info.broker_data.service2node_id.end())
     {
-        LOGWARN((BROKER, "FFBroker::process_sync_client_req dest_service_name=%s none", msg_.dest_service_name));
+        LOGWARN((BROKER, "FFBroker::processSyncClientReq dest_service_name=%s none", msg_.dest_service_name));
         msg_.err_info = "dest_service_name named " + msg_.dest_service_name + " not exist in broker";
-        msg_sender_t::send(sock_, BROKER_ROUTE_MSG, FFThrift::EncodeAsString(msg_));
+        MsgSender::send(sock_, BROKER_ROUTE_MSG, FFThrift::EncodeAsString(msg_));
         return 0;
     }
 
     msg_.dest_node_id = it->second;
     msg_.callback_id  = msg_.from_node_id;
     //!如果找到对应的节点，那么发给对应的节点
-    send_to_rpc_node(msg_);
-    LOGTRACE((BROKER, "FFBroker::process_sync_client_req end ok service=%s from_node_id=%u",
+    sendToRPcNode(msg_);
+    LOGTRACE((BROKER, "FFBroker::processSyncClientReq end ok service=%s from_node_id=%u",
               msg_.dest_service_name, msg_.from_node_id));
     return 0;
 }
 
-int FFBroker::send_to_rpc_node(BrokerRouteMsg::in_t& msg_)
+int FFBroker::sendToRPcNode(BrokerRouteMsg::in_t& msg_)
 {
     //!如果找到对应的节点，那么发给对应的节点
     //!如果在内存中,那么内存间直接投递
@@ -499,23 +499,23 @@ int FFBroker::send_to_rpc_node(BrokerRouteMsg::in_t& msg_)
     if (msg_.dest_namespace.empty() == false)
     {
         msg_.from_namespace = m_namespace;
-        LOGTRACE((BROKER, "FFBroker::send_to_rpc_node post to bridge dest_namespace=%s bodylen=%d",
+        LOGTRACE((BROKER, "FFBroker::sendToRPcNode post to bridge dest_namespace=%s bodylen=%d",
                             msg_.dest_namespace, msg_.body.size()));
-        set<socket_ptr_t>& bridge_socket = m_namespace2bridge[msg_.dest_namespace];
+        set<SocketPtr>& bridge_socket = m_namespace2bridge[msg_.dest_namespace];
         if (bridge_socket.empty())
         {
-            map<uint64_t/* node id*/, socket_ptr_t>::iterator it = m_all_registered_info.node_sockets.find(msg_.from_node_id);
+            map<uint64_t/* node id*/, SocketPtr>::iterator it = m_all_registered_info.node_sockets.find(msg_.from_node_id);
             if (it != m_all_registered_info.node_sockets.end())
             {
                 msg_.err_info = "dest_namespace named " + msg_.dest_namespace + " not exist in broker";
                 msg_.dest_namespace.clear();
                 msg_.dest_service_name.clear();
-                msg_sender_t::send(it->second, BROKER_TO_CLIENT_MSG, FFThrift::EncodeAsString(msg_));
+                MsgSender::send(it->second, BROKER_TO_CLIENT_MSG, FFThrift::EncodeAsString(msg_));
             }
         }
         else
         {
-            msg_sender_t::send(*(bridge_socket.begin()), BROKER_ROUTE_MSG, FFThrift::EncodeAsString(msg_));
+            MsgSender::send(*(bridge_socket.begin()), BROKER_ROUTE_MSG, FFThrift::EncodeAsString(msg_));
         }
         return 0;
     }
@@ -523,15 +523,15 @@ int FFBroker::send_to_rpc_node(BrokerRouteMsg::in_t& msg_)
     FFRpc* pffrpc = Singleton<FFRpcMemoryRoute>::instance().getRpc(msg_.dest_node_id);
     if (pffrpc)
     {
-        LOGTRACE((BROKER, "FFBroker::send_to_rpc_node memory post"));
-        pffrpc->getTaskQueue()->post(TaskBinder::gen(&FFRpc::handle_rpc_call_msg, pffrpc, msg_, socket_ptr_t(NULL)));
+        LOGTRACE((BROKER, "FFBroker::sendToRPcNode memory post"));
+        pffrpc->getTaskQueue()->post(TaskBinder::gen(&FFRpc::handleRpcCallMsg, pffrpc, msg_, SocketPtr(NULL)));
         return 0;
     }
-    LOGINFO((BROKER, "FFBroker::send_to_rpc_node dest_node=%d bodylen=%d, by socket", msg_.dest_node_id, msg_.body.size()));
-    map<uint64_t/* node id*/, socket_ptr_t>::iterator it = m_all_registered_info.node_sockets.find(msg_.dest_node_id);
+    LOGINFO((BROKER, "FFBroker::sendToRPcNode dest_node=%d bodylen=%d, by socket", msg_.dest_node_id, msg_.body.size()));
+    map<uint64_t/* node id*/, SocketPtr>::iterator it = m_all_registered_info.node_sockets.find(msg_.dest_node_id);
     if (it != m_all_registered_info.node_sockets.end())
     {
-        msg_sender_t::send(it->second, BROKER_TO_CLIENT_MSG, FFThrift::EncodeAsString(msg_));
+        MsgSender::send(it->second, BROKER_TO_CLIENT_MSG, FFThrift::EncodeAsString(msg_));
     }
     else
     {
@@ -540,29 +540,29 @@ int FFBroker::send_to_rpc_node(BrokerRouteMsg::in_t& msg_)
         {
             msg_.err_info = "service named " + msg_.dest_service_name + " not exist in broker";
             msg_.dest_service_name.clear();
-            msg_sender_t::send(it->second, BROKER_TO_CLIENT_MSG, FFThrift::EncodeAsString(msg_));
+            MsgSender::send(it->second, BROKER_TO_CLIENT_MSG, FFThrift::EncodeAsString(msg_));
         }
-        LOGERROR((BROKER, "FFBroker::handle_broker_route_msg end failed node=%d none exist", msg_.dest_node_id));
+        LOGERROR((BROKER, "FFBroker::handleBrokerRouteMsg end failed node=%d none exist", msg_.dest_node_id));
         return 0;
     }
     return 0;
 }
 
 //! 连接到broker master
-int FFBroker::connect_to_master_broker()
+int FFBroker::connectToMasterBroker()
 {
     if (m_master_broker_sock || m_broker_host.empty() == true)
     {
         return 0;
     }
-    LOGINFO((BROKER, "FFBroker::connect_to_master_broker begin<%s>", m_broker_host.c_str()));
+    LOGINFO((BROKER, "FFBroker::connectToMasterBroker begin<%s>", m_broker_host.c_str()));
     m_master_broker_sock = NetFactory::connect(m_broker_host, this);
     if (NULL == m_master_broker_sock)
     {
         LOGERROR((BROKER, "FFBroker::register_to_broker_master failed, can't connect to master broker<%s>", m_broker_host.c_str()));
         return -1;
     }
-    session_data_t* psession = new session_data_t(MASTER_BROKER, BROKER_MASTER_NODE_ID);
+    SessionData* psession = new SessionData(MASTER_BROKER, BROKER_MASTER_NODE_ID);
     m_master_broker_sock->set_data(psession);
 
     //! 发送注册消息给master broker
@@ -571,24 +571,24 @@ int FFBroker::connect_to_master_broker()
     reg_msg.node_type = SLAVE_BROKER;
     reg_msg.host      = m_listen_host;
     reg_msg.node_id   = 0;
-    msg_sender_t::send(m_master_broker_sock, REGISTER_TO_BROKER_REQ, FFThrift::EncodeAsString(reg_msg));
+    MsgSender::send(m_master_broker_sock, REGISTER_TO_BROKER_REQ, FFThrift::EncodeAsString(reg_msg));
 
-    LOGINFO((BROKER, "FFBroker::connect_to_master_broker ok<%s>", m_broker_host.c_str()));
+    LOGINFO((BROKER, "FFBroker::connectToMasterBroker ok<%s>", m_broker_host.c_str()));
     return 0;
 }
 
 //! 连接到bridge broker
-int FFBroker::connect_to_bridge_broker()
+int FFBroker::connectToBridgeBroker()
 {
-    LOGINFO((BROKER, "FFBroker::connect_to_bridge_broker begin"));
+    LOGINFO((BROKER, "FFBroker::connectToBridgeBroker begin"));
     int ret = 0;
-    map<string, socket_ptr_t>::iterator it = m_bridge_broker_config.begin();
+    map<string, SocketPtr>::iterator it = m_bridge_broker_config.begin();
     for (; it != m_bridge_broker_config.end(); ++it)
     {
         if (it->second)
             continue;
         const string& tmp_host = it->first;
-        LOGINFO((BROKER, "FFBroker::connect_to_bridge_broker try connect <%s>", tmp_host));
+        LOGINFO((BROKER, "FFBroker::connectToBridgeBroker try connect <%s>", tmp_host));
         
         vector<string> vt;
         StrTool::split(tmp_host, vt, "@");
@@ -601,12 +601,12 @@ int FFBroker::connect_to_bridge_broker()
             
         if (NULL == it->second)
         {
-            LOGERROR((BROKER, "FFBroker::connect_to_bridge_broker can't connect to <%s>", vt[1]));
+            LOGERROR((BROKER, "FFBroker::connectToBridgeBroker can't connect to <%s>", vt[1]));
             ret = -1;
             continue;
         }
 
-        session_data_t* psession = new session_data_t(BRIDGE_BROKER);
+        SessionData* psession = new SessionData(BRIDGE_BROKER);
         it->second->set_data(psession);
 
         //! 发送注册消息给master broker
@@ -619,57 +619,57 @@ int FFBroker::connect_to_bridge_broker()
         {
             m_namespace = reg_msg.reg_namespace;
         }
-        msg_sender_t::send(it->second, REGISTER_TO_BROKER_REQ, FFThrift::EncodeAsString(reg_msg));
+        MsgSender::send(it->second, REGISTER_TO_BROKER_REQ, FFThrift::EncodeAsString(reg_msg));
     }
-    LOGINFO((BROKER, "FFBroker::connect_to_bridge_broker end ok"));
+    LOGINFO((BROKER, "FFBroker::connectToBridgeBroker end ok"));
     return ret;
 }
 
 //!处理注册到master broker的消息
-int FFBroker::handle_register_master_ret(RegisterToBroker::out_t& msg_, socket_ptr_t sock_)
+int FFBroker::handleRegisterMasterRet(RegisterToBroker::out_t& msg_, SocketPtr sock_)
 {
-    LOGTRACE((BROKER, "FFBroker::handle_register_master_ret begin"));
-    session_data_t* psession = sock_->get_data<session_data_t>();
+    LOGTRACE((BROKER, "FFBroker::handleRegisterMasterRet begin"));
+    SessionData* psession = sock_->get_data<SessionData>();
     if (NULL == psession)
     {
         sock_->close();
         return 0;
     }
 
-    if (psession->get_type() == MASTER_BROKER)//!注册到master broker的返回消息
+    if (psession->getType() == MASTER_BROKER)//!注册到master broker的返回消息
     {
         if (msg_.register_flag < 0)
         {
-            LOGERROR((BROKER, "FFBroker::handle_register_master_ret register failed, service exist"));
+            LOGERROR((BROKER, "FFBroker::handleRegisterMasterRet register failed, service exist"));
             return -1;
         }
         if (msg_.register_flag == 1)
         {
             m_node_id = msg_.node_id;//! -1表示注册失败，0表示同步消息，1表示注册成功
-            Singleton<FFRpcMemoryRoute>::instance().add_node(m_node_id, this);
+            Singleton<FFRpcMemoryRoute>::instance().addNode(m_node_id, this);
         }
         m_all_registered_info.broker_data = msg_;
     }
-    else if (psession->get_type() == BRIDGE_BROKER)//!注册到bridge broker的返回消息
+    else if (psession->getType() == BRIDGE_BROKER)//!注册到bridge broker的返回消息
     {
-        LOGINFO((BROKER, "FFBroker::handle_register_master_ret BRIDGE_BROKER size=%u", msg_.reg_namespace_list.size()));
+        LOGINFO((BROKER, "FFBroker::handleRegisterMasterRet BRIDGE_BROKER size=%u", msg_.reg_namespace_list.size()));
         for (size_t i = 0; i < msg_.reg_namespace_list.size(); ++i)
         {
             m_namespace2bridge[msg_.reg_namespace_list[i]].insert(sock_);
-            LOGINFO((BROKER, "FFBroker::handle_register_master_ret BRIDGE_BROKER reg_namespace=%s", msg_.reg_namespace_list[i]));
+            LOGINFO((BROKER, "FFBroker::handleRegisterMasterRet BRIDGE_BROKER reg_namespace=%s", msg_.reg_namespace_list[i]));
         }
     }
-    LOGINFO((BROKER, "FFBroker::handle_register_master_ret end ok m_node_id=%d", m_node_id));
+    LOGINFO((BROKER, "FFBroker::handleRegisterMasterRet end ok m_node_id=%d", m_node_id));
     return 0;
 }
 
 static void reconnect_loop(FFBroker* ffbroker_)
 {
-    if (ffbroker_->connect_to_master_broker())
+    if (ffbroker_->connectToMasterBroker())
     {
         ffbroker_->getTimer().onceTimer(RECONNECT_TO_BROKER_TIMEOUT, TaskBinder::gen(&route_call_reconnect, ffbroker_));
     }
-    if (ffbroker_->connect_to_bridge_broker())
+    if (ffbroker_->connectToBridgeBroker())
     {
         ffbroker_->getTimer().onceTimer(RECONNECT_TO_BROKER_TIMEOUT, TaskBinder::gen(&route_call_reconnect, ffbroker_));
     }

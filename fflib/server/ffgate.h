@@ -22,13 +22,13 @@
 namespace ff {
 #define DEFAULT_LOGIC_SERVICE "scene@0"
 
-class FFGate: public MsgHandlerI
+class FFGate: public MsgHandler
 {
     enum limite_e
     {
         MAX_MSG_QUEUE_SIZE = 1024
     };
-    struct session_data_t;
+    struct SessionData;
     struct client_info_t;
 public:
     FFGate();
@@ -38,33 +38,33 @@ public:
     int close();
     
     //! 处理连接断开
-    int handleBroken(socket_ptr_t sock_);
+    int handleBroken(SocketPtr sock_);
     //! 处理消息
-    int handleMsg(const Message& msg_, socket_ptr_t sock_);
+    int handleMsg(const Message& msg_, SocketPtr sock_);
     
     TaskQueueI* getTaskQueue();
 public:
     int close_impl();
     //! 逻辑处理,转发消息到logic service
-    int routeLogicMsg(const Message& msg_, socket_ptr_t sock_, bool first);
+    int routeLogicMsg(const Message& msg_, SocketPtr sock_, bool first);
     //! 逻辑处理,转发消息到logic service
-    int routeLogicMsgCallback(ffreq_t<RouteLogicMsg_t::out_t>& req_, const userid_t& session_id_);
+    int routeLogicMsgCallback(RPCReq<RouteLogicMsg_t::out_t>& req_, const userid_t& session_id_);
     //! enter scene 回调函数
-    int enterWorkerCallback(ffreq_t<SessionEnterWorker::out_t>& req_, const userid_t& session_id_);
+    int enterWorkerCallback(RPCReq<SessionEnterWorker::out_t>& req_, const userid_t& session_id_);
     
     //! 改变处理client 逻辑的对应的节点
-    int changeSessionLogic(ffreq_t<GateChangeLogicNode::in_t, GateChangeLogicNode::out_t>& req_);
+    int changeSessionLogic(RPCReq<GateChangeLogicNode::in_t, GateChangeLogicNode::out_t>& req_);
     //! 关闭某个session socket
-    int closeSession(ffreq_t<GateCloseSession::in_t, GateCloseSession::out_t>& req_);
+    int closeSession(RPCReq<GateCloseSession::in_t, GateCloseSession::out_t>& req_);
     //! 转发消息给client
-    int routeMmsgToSession(ffreq_t<GateRouteMsgToSession::in_t, GateRouteMsgToSession::out_t>& req_);
+    int routeMmsgToSession(RPCReq<GateRouteMsgToSession::in_t, GateRouteMsgToSession::out_t>& req_);
     //! 广播消息给所有的client
-    int broadcastMsgToSession(ffreq_t<GateBroadcastMsgToSession::in_t, GateBroadcastMsgToSession::out_t>& req_);
+    int broadcastMsgToSession(RPCReq<GateBroadcastMsgToSession::in_t, GateBroadcastMsgToSession::out_t>& req_);
     
     
     userid_t allocID();
 private:
-    void cleanup_session(client_info_t& client_info, socket_ptr_t sock_, bool closesend = true);
+    void cleanup_session(client_info_t& client_info, SocketPtr sock_, bool closesend = true);
 public:
     userid_t                                         m_allocID;
     int                                              m_gate_index;//!这是第几个gate，现在只有一个gate，如果以后想要有多个gate，这个要被正确的赋值
@@ -75,9 +75,9 @@ public:
 };
 
 
-struct FFGate::session_data_t
+struct FFGate::SessionData
 {
-    session_data_t(userid_t new_id_ = 0)
+    SessionData(userid_t new_id_ = 0)
     {
         ::time(&online_time);
         session_id = new_id_;
@@ -97,7 +97,7 @@ struct FFGate::client_info_t
         sock(NULL),
         alloc_worker(DEFAULT_LOGIC_SERVICE)
     {}
-    socket_ptr_t     sock;
+    SocketPtr     sock;
     std::string           alloc_worker;
     std::string           group_name;
     std::queue<RouteLogicMsg_t::in_t>    request_queue;//! 请求队列，客户端有可能发送多个请求，但是服务器需要一个一个处理

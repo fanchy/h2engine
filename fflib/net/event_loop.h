@@ -7,12 +7,12 @@ namespace ff {
 
 class Fd;
 //! 事件分发器
-class EventLoopI
+class EventLoop
 {
 public:
-    virtual ~EventLoopI(){}
+    virtual ~EventLoop(){}
 
-    virtual int eventLoop() 		    = 0;
+    virtual int runLoop() 		    = 0;
     virtual int close() 				= 0;
     virtual int register_fd(Fd*)      = 0;
     virtual int unregister_fd(Fd*)  	= 0;

@@ -30,7 +30,7 @@ using namespace std;
 
 using namespace ff;
 
-AcceptorLinux::AcceptorLinux(EventLoopI* e_, MsgHandlerI* msg_handler_, TaskQueuePool* tq_):
+AcceptorLinux::AcceptorLinux(EventLoop* e_, MsgHandler* msg_handler_, TaskQueuePool* tq_):
     m_listen_fd(-1),
     m_epoll(e_),
     m_msg_handler(msg_handler_),
@@ -80,7 +80,7 @@ int AcceptorLinux::open(const string& address_)
         return -1;
     }
 
-    socket_fd_t tmpfd = -1;
+    SocketFd tmpfd = -1;
     if ((tmpfd = ::socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1)
     {
         perror("AcceptorLinux::open when socket");
@@ -124,7 +124,7 @@ int AcceptorLinux::handleEpollRead()
     struct sockaddr_storage addr;
     socklen_t addrlen = sizeof(addr);
 
-    socket_fd_t new_fd = -1;
+    SocketFd new_fd = -1;
     do
     {
     	#ifdef _WIN32
@@ -168,7 +168,7 @@ int AcceptorLinux::handleEpollDel()
     return 0;
 }
 
-SocketI* AcceptorLinux::create_socket(socket_fd_t new_fd_)
+SocketI* AcceptorLinux::create_socket(SocketFd new_fd_)
 {
 	#ifdef _WIN32
     return new SocketWin(m_epoll, new SocketCtrlCommon(m_msg_handler), new_fd_, m_tq->alloc(new_fd_));

@@ -15,13 +15,13 @@ namespace ff {
 //! 100 ms
 #define EPOLL_WAIT_TIME    -1 
 
-class Epoll: public EventLoopI
+class Epoll: public EventLoop
 {
 public:
     Epoll();
     ~Epoll();
 
-    virtual int eventLoop();
+    virtual int runLoop();
     virtual int close();
     virtual int register_fd(Fd*);
     virtual int unregister_fd(Fd*);

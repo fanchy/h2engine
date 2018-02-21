@@ -159,7 +159,7 @@ public:
 			 	continue; 
 			}
 			else if (ret < 0){
-				fprintf(stderr, "timer::eventLoop: %d\n", WSAGetLastError());
+				fprintf(stderr, "timer::runLoop: %d\n", WSAGetLastError());
 				break;
 			}
 		}//while  

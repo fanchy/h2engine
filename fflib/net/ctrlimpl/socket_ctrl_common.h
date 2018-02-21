@@ -15,7 +15,7 @@ class SocketI;
 class SocketCtrlCommon: public SocketCtrlI
 {
 public:
-    SocketCtrlCommon(msg_handler_ptr_t msg_handler_);
+    SocketCtrlCommon(MsgHandlerPtr msg_handler_);
     ~SocketCtrlCommon();
     virtual int handleError(SocketI*);
     virtual int handleRead(SocketI*, const char* buff, size_t len);
@@ -25,7 +25,7 @@ public:
 
     virtual void post_msg(SocketI* sp_);
 protected:
-    msg_handler_ptr_t   m_msg_handler;
+    MsgHandlerPtr   m_msg_handler;
     size_t              m_have_recv_size;
     Message           m_message;
 };

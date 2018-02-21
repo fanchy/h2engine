@@ -12,7 +12,7 @@ using namespace std;
 
 using namespace ff;
 
-SocketCtrlCommon::SocketCtrlCommon(msg_handler_ptr_t msg_handler_):
+SocketCtrlCommon::SocketCtrlCommon(MsgHandlerPtr msg_handler_):
     m_msg_handler(msg_handler_),
     m_have_recv_size(0)
 {
@@ -29,7 +29,7 @@ SocketCtrlCommon::~SocketCtrlCommon()
 int SocketCtrlCommon::handleError(SocketI* sp_)
 {
     if (m_msg_handler->getTaskQueue()){
-        m_msg_handler->getTaskQueue()->post(TaskBinder::gen(&MsgHandlerI::handleBroken, m_msg_handler, sp_));
+        m_msg_handler->getTaskQueue()->post(TaskBinder::gen(&MsgHandler::handleBroken, m_msg_handler, sp_));
     }
     else{
         m_msg_handler->handleBroken(sp_);
@@ -44,21 +44,21 @@ int SocketCtrlCommon::handleRead(SocketI* sp_, const char* buff, size_t len)
     
     while (left_len > 0)
     {
-        if (false == m_message.have_recv_head(m_have_recv_size))
+        if (false == m_message.haveRecvHead(m_have_recv_size))
         {
-            tmp = m_message.append_head(m_have_recv_size, buff, left_len);
+            tmp = m_message.appendHead(m_have_recv_size, buff, left_len);
 
             m_have_recv_size += tmp;
             left_len         -= tmp;
             buff             += tmp;
         }
         
-        tmp = m_message.append_msg(buff, left_len);
+        tmp = m_message.appendMsg(buff, left_len);
         m_have_recv_size += tmp;
         left_len         -= tmp;
         buff             += tmp;
         
-        if (m_message.get_body().size() == m_message.size())
+        if (m_message.getBody().size() == m_message.size())
         {
             this->post_msg(sp_);
             m_have_recv_size = 0;
@@ -72,7 +72,7 @@ int SocketCtrlCommon::handleRead(SocketI* sp_, const char* buff, size_t len)
 void SocketCtrlCommon::post_msg(SocketI* sp_)
 {
     if (m_msg_handler->getTaskQueue()){
-        m_msg_handler->getTaskQueue()->post(TaskBinder::gen(&MsgHandlerI::handleMsg,
+        m_msg_handler->getTaskQueue()->post(TaskBinder::gen(&MsgHandler::handleMsg,
                                              m_msg_handler, m_message, sp_));
     }
     else{

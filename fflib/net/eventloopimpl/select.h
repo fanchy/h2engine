@@ -15,13 +15,13 @@ namespace ff {
 //! 100 ms
 #define EPOLL_WAIT_TIME    -1 
 
-class Select: public EventLoopI
+class Select: public EventLoop
 {
 public:
     Select();
     ~Select();
 
-    virtual int eventLoop();
+    virtual int runLoop();
     virtual int close();
     virtual int register_fd(Fd*);
     virtual int unregister_fd(Fd*);
@@ -42,7 +42,7 @@ private:
     
     //select
     fd_set         			 m_fdread;
-    std::map<socket_fd_t, Fd*>  m_fd2ptr;
+    std::map<SocketFd, Fd*>  m_fd2ptr;
 };
 
 }

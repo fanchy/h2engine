@@ -20,7 +20,7 @@ public:
         WAIT_WEBSOCKET_NOMASK_PKG = 5,//!等待无mask消息
     };
     
-    SocketCtrlGate(msg_handler_ptr_t msg_handler_, NetStat*);
+    SocketCtrlGate(MsgHandlerPtr msg_handler_, NetStat*);
     ~SocketCtrlGate();
 
     virtual int handleOpen(SocketI*);

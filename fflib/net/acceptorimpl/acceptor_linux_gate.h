@@ -11,14 +11,14 @@ namespace ff {
 class AcceptorLinuxGate: public AcceptorLinux
 {
 public:
-    AcceptorLinuxGate(EventLoopI*, MsgHandlerI*, TaskQueuePool* tq_);
+    AcceptorLinuxGate(EventLoop*, MsgHandler*, TaskQueuePool* tq_);
     ~AcceptorLinuxGate();
 
     int open(const std::string& address_, int max_packet_size = 1000*1000*10, int heartbeat_timeout = 3600*24);
     int open(ArgHelper& arg_helper);
 	void close();
 protected:
-    virtual SocketI* create_socket(socket_fd_t new_fd_);
+    virtual SocketI* create_socket(SocketFd new_fd_);
 
 private:
     //! data field

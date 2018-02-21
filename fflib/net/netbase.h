@@ -6,13 +6,13 @@
 namespace ff {
 
 //! 文件描述符相关接口
-typedef SOCKET_TYPE socket_fd_t;
+typedef SOCKET_TYPE SocketFd;
 class Fd
 {
 public:
     virtual ~Fd(){}
 
-    virtual socket_fd_t socket() 	 = 0;
+    virtual SocketFd socket() 	 = 0;
     virtual int handleEpollRead()  = 0;
     virtual int handleEpollWrite() = 0;
     virtual int handleEpollDel() 	 = 0;

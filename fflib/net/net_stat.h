@@ -23,17 +23,17 @@ public:
     int stop();
 
     //! 最大消息包大小
-    int get_max_packet_size() const { return m_max_packet_size; }
+    int getMaxPacketSize() const { return m_max_packet_size; }
 
     //! 获取心跳模块引用
-    BaseHeartBeat<socket_ptr_t>& get_heartbeat() { return m_heartbeat;}
+    BaseHeartBeat<SocketPtr>& getHeartBeat() { return m_heartbeat;}
 
     //! 处理timer 回调
-    void handle_timer_check();
+    void handleTimerCheck();
 private:
-    TimerService*                m_timer_service;
+    TimerService*                   m_timerService;
     int                             m_max_packet_size;
-    BaseHeartBeat<socket_ptr_t>  m_heartbeat;
+    BaseHeartBeat<SocketPtr>        m_heartbeat;
 };
 
 }

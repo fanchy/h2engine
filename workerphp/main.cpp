@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
         #endif
     }
     #ifdef _WIN32
-    Singleton<NetFactory::global_data_t>::instance().start();
+    Singleton<NetFactory::NetData>::instance().start();
     #endif
     
     //! 美丽的日志组件，shell输出是彩色滴！！

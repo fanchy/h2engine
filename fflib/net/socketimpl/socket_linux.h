@@ -10,7 +10,7 @@
 
 namespace ff {
 
-class EventLoopI;
+class EventLoop;
 class SocketCtrlI;
 class TaskQueueI;
 
@@ -34,10 +34,10 @@ public:
     typedef std::list<ff_str_buffer_t>    send_buffer_t;
 
 public:
-    SocketLinux(EventLoopI*, SocketCtrlI*, socket_fd_t fd, TaskQueueI* tq_);
+    SocketLinux(EventLoop*, SocketCtrlI*, SocketFd fd, TaskQueueI* tq_);
     ~SocketLinux();
 
-    virtual socket_fd_t socket() { return m_fd; }
+    virtual SocketFd socket() { return m_fd; }
     virtual void close();
     virtual void open();
 
@@ -64,9 +64,9 @@ private:
 
     int do_send(ff_str_buffer_t* buff_);
 private:
-    EventLoopI*                       m_epoll;
+    EventLoop*                       m_epoll;
     SocketCtrlI*                      m_sc;
-    socket_fd_t                         m_fd;
+    SocketFd                         m_fd;
     TaskQueueI*                       m_tq;
     send_buffer_t                       m_send_buffer;
 };

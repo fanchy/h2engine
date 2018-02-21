@@ -32,7 +32,7 @@ private:
     void*   m_data;
 };
 
-typedef SocketI*  socket_ptr_t;
+typedef SocketI*  SocketPtr;
 
 }
 

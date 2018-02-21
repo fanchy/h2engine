@@ -51,12 +51,12 @@ public:
     {
     }
 
-    uint16_t get_cmd() const               { return m_head.cmd; }
-    const std::string& get_body() const         { return m_body;}
+    uint16_t getCmd() const               { return m_head.cmd; }
+    const std::string& getBody() const         { return m_body;}
     size_t size() const                    { return m_head.size; }
-    uint16_t get_flag() const              { return m_head.flag; }
+    uint16_t getFlag() const              { return m_head.flag; }
 
-    size_t append_head(size_t index_, const char* buff, size_t len)
+    size_t appendHead(size_t index_, const char* buff, size_t len)
     {
         size_t will_append = sizeof(m_head) - index_;
         if (will_append > len)
@@ -71,7 +71,7 @@ public:
         }
         return will_append;
     }
-    size_t append_msg(const char* buff, size_t len)
+    size_t appendMsg(const char* buff, size_t len)
     {
         size_t will_append = m_head.size - m_body.size();
         if (will_append > len) will_append = len;
@@ -83,14 +83,14 @@ public:
         ::memset(&m_head, 0, sizeof(m_head));
         m_body.clear();
     }
-    void append_to_body(const char* buff, size_t len)
+    void appendToBody(const char* buff, size_t len)
     {
         m_body.append(buff, len);
     }
     //! for parse
-    bool have_recv_head(size_t have_recv_size_) { return have_recv_size_ >= sizeof(MessageHead);}
+    bool haveRecvHead(size_t have_recv_size_) { return have_recv_size_ >= sizeof(MessageHead);}
     
-    MessageHead& get_head() { return m_head; }
+    MessageHead& getHead() { return m_head; }
 private:
     MessageHead m_head;
     std::string         m_body;
