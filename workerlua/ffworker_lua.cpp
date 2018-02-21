@@ -2,7 +2,7 @@
 //脚本
 
 #include "./ffworker_lua.h"
-#include "base/performance_daemon.h"
+#include "base/perf_monitor.h"
 #include "server/http_mgr.h"
 #include "server/script.h"
 

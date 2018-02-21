@@ -9,7 +9,7 @@
 #include "base/log.h"
 #include "base/signal_helper.h"
 #include "base/daemon_tool.h"
-#include "base/performance_daemon.h"
+#include "base/perf_monitor.h"
 #include "base/event_bus.h"
 
 #include "rpc/ffrpc.h"

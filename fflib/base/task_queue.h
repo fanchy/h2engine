@@ -269,8 +269,9 @@ struct TaskBinder
     //! C function
     
     static Task gen(void (*func_)(void*), void* p_)
-    {
-        return Task(func_, p_);
+    {  
+        Task ret(func_, p_);
+        return ret;
     }
     template<typename RET>
     static Task gen(RET (*func_)(void))

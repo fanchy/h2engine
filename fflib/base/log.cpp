@@ -15,19 +15,19 @@ using namespace std;
 using namespace ff;
 
 
-str_format_t::str_format_t(const char* fmt_):
+StrFormat::StrFormat(const char* fmt_):
 	m_fmt(fmt_),
 	cur_format_index(0)
 {
 	m_fmt_len = ::strlen(fmt_);
 }
 
-str_format_t::~str_format_t()
+StrFormat::~StrFormat()
 {
 
 }
 
-bool str_format_t::move_to_next_wildcard()
+bool StrFormat::moveToNextWildcard()
 {
 	m_fmt_type.clear();
 	char tmp = '\0';
@@ -93,9 +93,9 @@ bool str_format_t::move_to_next_wildcard()
 	return false;
 }
 
-void str_format_t::append(const char* str_)
+void StrFormat::append(const char* str_)
 {
-	if (move_to_next_wildcard())
+	if (moveToNextWildcard())
 	{
 		unsigned int len = ::strlen(str_);
 		int width = m_fmt_type.min_len > len? m_fmt_type.min_len -len: 0;
@@ -107,9 +107,9 @@ void str_format_t::append(const char* str_)
 
 	m_result += str_;
 }
-void str_format_t::append(const string& str_)
+void StrFormat::append(const string& str_)
 {
-	if (move_to_next_wildcard())
+	if (moveToNextWildcard())
 	{
 		int width = m_fmt_type.min_len > str_.length()? m_fmt_type.min_len -str_.length(): 0;
 		for (; width > 0; -- width)
@@ -121,7 +121,7 @@ void str_format_t::append(const string& str_)
 	m_result += str_;
 }
 
-const string& str_format_t::gen_result()
+const string& StrFormat::genResult()
 {
 	if (cur_format_index < m_fmt_len)
 	{
@@ -168,7 +168,7 @@ Log::~Log()
 	m_class_set_history.clear();
 }
 
-void Log::mod_level(int level_, bool flag_)
+void Log::setLevel(int level_, bool flag_)
 {
 	if (flag_)
 	{
@@ -180,7 +180,7 @@ void Log::mod_level(int level_, bool flag_)
 	}
 }
 
-void Log::mod_class(const string& class_, bool flag_)
+void Log::setModule(const string& class_, bool flag_)
 {
 	str_set_t* pset = new str_set_t(m_enable_class_set->begin(), m_enable_class_set->end());
 	if (flag_)
@@ -201,11 +201,11 @@ bool Log::is_level_enabled(int level_)
 	return m_enabled_level & (1 << level_);
 }
 
-void Log::mod_print_file(bool flag_)
+void Log::setPrintFile(bool flag_)
 {
 	m_enable_file = flag_;
 }
-void Log::mod_print_screen(bool flag_)
+void Log::setPrintScreen(bool flag_)
 {
 	m_enable_screen = flag_;
 }
@@ -350,22 +350,22 @@ bool Log::check_and_create_dir(struct tm* tm_val_)
 	return true;
 }
 
-log_service_t::log_service_t():
+LogService::LogService():
 	m_log(NULL)
 {
 
 }
-log_service_t::~log_service_t()
+LogService::~LogService()
 {
 	stop();
 }
 
-int log_service_t::start(const string& opt_)
+int LogService::start(const string& opt_)
 {
 	ArgHelper arg(opt_);
     return start(arg);   
 } 
-int log_service_t::start(ArgHelper& arg)
+int LogService::start(ArgHelper& arg)
 {   
 	if (m_log) return 0;
 
@@ -394,7 +394,7 @@ int log_service_t::start(ArgHelper& arg)
 	return 0;
 }
 
-int log_service_t::stop()
+int LogService::stop()
 {
 	if (NULL == m_log) return 0;
 
@@ -405,20 +405,20 @@ int log_service_t::stop()
 	return 0;
 }
 
-void log_service_t::mod_level(int level_, bool flag_)
+void LogService::setLevel(int level_, bool flag_)
 {
-	m_task_queue.post(TaskBinder::gen(&Log::mod_level, m_log, level_, flag_));
+	m_task_queue.post(TaskBinder::gen(&Log::setLevel, m_log, level_, flag_));
 }
 
-void log_service_t::mod_class(const string& class_, bool flag_)
+void LogService::setModule(const string& class_, bool flag_)
 {
-	m_task_queue.post(TaskBinder::gen(&Log::mod_class, m_log, class_, flag_));
+	m_task_queue.post(TaskBinder::gen(&Log::setModule, m_log, class_, flag_));
 }
-void log_service_t::mod_print_file(bool flag_)
+void LogService::setPrintFile(bool flag_)
 {
-	m_task_queue.post(TaskBinder::gen(&Log::mod_print_file, m_log, flag_));
+	m_task_queue.post(TaskBinder::gen(&Log::setPrintFile, m_log, flag_));
 }
-void log_service_t::mod_print_screen(bool flag_)
+void LogService::setPrintScreen(bool flag_)
 {
-	m_task_queue.post(TaskBinder::gen(&Log::mod_print_screen, m_log, flag_));
+	m_task_queue.post(TaskBinder::gen(&Log::setPrintScreen, m_log, flag_));
 }

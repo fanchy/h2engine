@@ -3,7 +3,7 @@
 #endif
 
 #include "server/http_mgr.h"
-#include "base/performance_daemon.h"
+#include "base/perf_monitor.h"
 
 using namespace std;
 using namespace ff;

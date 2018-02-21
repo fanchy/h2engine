@@ -412,7 +412,7 @@ public:
     msg_i(const char* msg_name_):
         m_msg_name(msg_name_)
     {}
-    const char* get_type_name()  const
+    const char* getTypeName()  const
     {
         return m_msg_name;
     }

@@ -28,7 +28,7 @@ typedef int ssize_t;
 
 
 #define TYPEID(X)              Singleton<ff::TypeHelper<X> >::instance().id()
-#define TYPE_NAME(X)           Singleton<ff::TypeHelper<X> >::instance().get_type_name()
+#define TYPE_NAME(X)           Singleton<ff::TypeHelper<X> >::instance().getTypeName()
 #define TYPE_NAME_TO_ID(name_) Singleton<ff::TypeIdGenerator>::instance().getIdByName(name_)
 
 
@@ -111,7 +111,7 @@ struct TypeHelper
     {
         return m_type_id;
     }
-    const std::string& get_type_name() const
+    const std::string& getTypeName() const
     {
         return m_type_name;
     }
@@ -119,42 +119,6 @@ struct TypeHelper
     std::string  m_type_name;
 };
 
-class type_i
-{
-public:
-    virtual ~ type_i(){}
-    virtual int get_type_id() const { return -1; }
-    virtual const std::string& get_type_name() const {static std::string foo; return foo; }
-    
-    virtual void   decode(const std::string& data_) {}
-    virtual std::string encode()                    { return "";} 
-    
-    template<typename T>
-    T* cast()
-    {
-        if (get_type_id() == TYPEID(T))
-        {
-            return (T*)this;
-        }
-        return NULL;
-    }
-};
-
-
-template<typename SUPERT, typename T>
-class AutoType: public SUPERT
-{
-public:
-    virtual ~ AutoType(){}
-    virtual int get_type_id() const
-    {
-        return TYPEID(T);
-    }
-    virtual const std::string& get_type_name() const
-    {
-        return TYPE_NAME(T);
-    }
-};
 
 class ObjCounterSumI
 {
@@ -180,7 +144,7 @@ public:
         m_all_counter.push_back(p);
     }
 
-    std::map<std::string, long> get_all_obj_num()
+    std::map<std::string, long> getAllObjNum()
     {
         LockGuard lock(m_mutex);
         std::map<std::string, long> ret;
@@ -206,7 +170,7 @@ public:
             fwrite(tmp_buff, n, 1, fp);
         }
 
-        std::map<std::string, long> ret = get_all_obj_num();
+        std::map<std::string, long> ret = getAllObjNum();
         std::map<std::string, long>::iterator it = ret.begin();
 
         time_t timep   = ::time(NULL);

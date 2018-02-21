@@ -1,4 +1,4 @@
-#include "base/performance_daemon.h"
+#include "base/perf_monitor.h"
 #include "base/fftype.h"
 #include <string.h>
 #include <sys/stat.h>
@@ -7,14 +7,14 @@
 using namespace std;
 using namespace ff;
 
-PerformanceDaemon_t::PerformanceDaemon_t():
+PerfMonitor::PerfMonitor():
 m_started(false),
 m_timeout_sec(3600),
 m_timerService(NULL)
 {
 }
 
-PerformanceDaemon_t::~PerformanceDaemon_t()
+PerfMonitor::~PerfMonitor()
 {
     stop();
     if (m_timerService)
@@ -25,7 +25,7 @@ PerformanceDaemon_t::~PerformanceDaemon_t()
 }
 
 
-int PerformanceDaemon_t::start(const string& path_, int seconds_)
+int PerfMonitor::start(string path_, int seconds_)
 {
     if (true == m_started) return -1;
     
@@ -36,7 +36,7 @@ int PerformanceDaemon_t::start(const string& path_, int seconds_)
         rc = MKDIR(m_path.c_str());
         if (rc != 0)
         {
-            printf("PerformanceDaemon_t::start mkdir<%s>failed error<%s>\n", m_path.c_str(), ::strerror(errno));
+            printf("PerfMonitor::start mkdir<%s>failed error<%s>\n", m_path.c_str(), ::strerror(errno));
             return -1;
         }
     }
@@ -52,7 +52,7 @@ int PerformanceDaemon_t::start(const string& path_, int seconds_)
     {
         static void run(void* p_)
         {
-            ((PerformanceDaemon_t*)p_)->run();
+            ((PerfMonitor*)p_)->run();
         }
     };
 
@@ -60,7 +60,7 @@ int PerformanceDaemon_t::start(const string& path_, int seconds_)
     return 0;
 }
 
-int PerformanceDaemon_t::stop()
+int PerfMonitor::stop()
 {
     if (false == m_started) return -1;
     
@@ -76,11 +76,11 @@ int PerformanceDaemon_t::stop()
     return 0;
 }
 
-void PerformanceDaemon_t::post(const string& mod_, long arg_, long us_)
+void PerfMonitor::post(const string& mod_, long arg_, long us_)
 {
     if (m_started)
     {
-        m_task_queue.post(TaskBinder::gen(&PerformanceDaemon_t::add_perf_data, this, mod_, arg_, us_));
+        m_task_queue.post(TaskBinder::gen(&PerfMonitor::addPerfData, this, mod_, arg_, us_));
     }
     else
     {
@@ -88,17 +88,17 @@ void PerformanceDaemon_t::post(const string& mod_, long arg_, long us_)
     }
 }
 
-void PerformanceDaemon_t::handle_timer()
+void PerfMonitor::handleTimer()
 {
     flush();
     //m_perf_info.clear();
     if (m_timerService)
-	    m_timerService->timerCallback(m_timeout_sec * 1000, Task(&timer_lambda_t::setup_timer, this));
+	    m_timerService->timerCallback(m_timeout_sec * 1000, Task(&TimerLambda::setupTimer, this));
 }
 
-void PerformanceDaemon_t::flush()
+void PerfMonitor::flush()
 {
-    map<string, perf_info_t>::iterator it = m_perf_info.begin();
+    map<string, PerfInfo>::iterator it = m_perf_info.begin();
     
     time_t timep   = time(NULL);
     struct tm *tmp = localtime(&timep);
@@ -127,7 +127,7 @@ void PerformanceDaemon_t::flush()
             tmp->tm_hour, tmp->tm_min, tmp->tm_sec);
     for (; it != m_perf_info.end(); ++it)
     {
-        perf_info_t& pinfo = it->second;
+        PerfInfo& pinfo = it->second;
         long per = (pinfo.times == 0? 0: (pinfo.total / pinfo.times));
         long rps = (per == 0? 0: 1000000 / per);
         
@@ -148,15 +148,15 @@ void PerformanceDaemon_t::flush()
 
 
 
-void PerformanceDaemon_t::run()
+void PerfMonitor::run()
 {
-    m_timerService->timerCallback(m_timeout_sec * 1000, Task(&timer_lambda_t::setup_timer, this));
+    m_timerService->timerCallback(m_timeout_sec * 1000, Task(&TimerLambda::setupTimer, this));
     m_task_queue.run();
 }
 
-void PerformanceDaemon_t::add_perf_data(const string& mod_, long arg_, long us_)
+void PerfMonitor::addPerfData(const string& mod_, long arg_, long us_)
 {
-    perf_info_t* pinfo = NULL;
+    PerfInfo* pinfo = NULL;
     if (arg_ >= 0)
     {
         char msg[32];
