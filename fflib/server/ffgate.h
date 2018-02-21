@@ -42,7 +42,7 @@ public:
     //! 处理消息
     int handleMsg(const Message& msg_, SocketPtr sock_);
     
-    TaskQueueI* getTaskQueue();
+    TaskQueue* getTaskQueue();
 public:
     int close_impl();
     //! 逻辑处理,转发消息到logic service

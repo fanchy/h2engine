@@ -168,7 +168,7 @@ void FFRpc::timerReconnectBroker()
 }
 
 //! 获取任务队列对象
-TaskQueueI* FFRpc::getTaskQueue()
+TaskQueue* FFRpc::getTaskQueue()
 {
     return &m_tq;
 }

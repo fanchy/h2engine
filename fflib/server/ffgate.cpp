@@ -76,7 +76,7 @@ int FFGate::close_impl()
     return 0;
 }
 
-TaskQueueI* FFGate::getTaskQueue()
+TaskQueue* FFGate::getTaskQueue()
 {
     return m_ffrpc->getTaskQueue();
 }

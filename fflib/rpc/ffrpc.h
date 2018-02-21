@@ -36,7 +36,7 @@ public:
     int handleBroken(SocketPtr sock_);
     //! 处理消息
     int handleMsg(const Message& msg_, SocketPtr sock_);
-    TaskQueueI* getTaskQueue();
+    TaskQueue* getTaskQueue();
 
     //! 注册接口
     template <typename R, typename IN_T, typename OUT_T>

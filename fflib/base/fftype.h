@@ -29,7 +29,7 @@ typedef int ssize_t;
 
 #define TYPEID(X)              Singleton<ff::TypeHelper<X> >::instance().id()
 #define TYPE_NAME(X)           Singleton<ff::TypeHelper<X> >::instance().get_type_name()
-#define TYPE_NAME_TO_ID(name_) Singleton<ff::TypeIdGenerator>::instance().get_id_by_name(name_)
+#define TYPE_NAME_TO_ID(name_) Singleton<ff::TypeIdGenerator>::instance().getIdByName(name_)
 
 
 namespace ff
@@ -77,7 +77,7 @@ struct TypeIdGenerator
         m_name2id[name_] = id;
         return id;
     }
-    int get_id_by_name(const std::string& name_)
+    int getIdByName(const std::string& name_)
     {
         LockGuard lock(m_mutex);
         std::map<std::string, int>::const_iterator it = m_name2id.find(name_);
@@ -87,9 +87,9 @@ struct TypeIdGenerator
         }
         return 0;
     }
-    Mutex          m_mutex;
-    int              m_id;
-    std::map<std::string, int> m_name2id;
+    Mutex                       m_mutex;
+    int                         m_id;
+    std::map<std::string, int>  m_name2id;
 };
 
 template<typename T>
@@ -257,117 +257,39 @@ public:
         Singleton<ObjCounterSum<T> >::instance().dec(1);
     }
 };
-class FFattr
+
+template<typename ARG_TYPE>
+struct RefTypeTraits;
+
+template<typename ARG_TYPE>
+struct RefTypeTraits
 {
-public:
-    typedef uint64_t number_t;
-
-public:
-    virtual ~FFattr(){}
-
-    number_t get_num(number_t key_)
-    {
-        std::map<number_t, number_t>::iterator it = m_num2num.find(key_);
-        if (it != m_num2num.end())
-        {
-            return it->second;
-        }
-        return 0;
-    }
-    const std::string& get_string(number_t key_)
-    {
-        std::map<number_t, std::string>::iterator it = m_num2string.find(key_);
-        if (it != m_num2string.end())
-        {
-            return it->second;
-        }
-        static std::string dumy_str;
-        return dumy_str;
-    }
-    number_t get_num(const std::string& key_)
-    {
-        std::map<std::string, number_t>::iterator it = m_string2num.find(key_);
-        if (it != m_string2num.end())
-        {
-            return it->second;
-        }
-        return 0;
-    }
-    const std::string& get_string(const std::string& key_)
-    {
-        std::map<std::string, std::string>::iterator it = m_string2string.find(key_);
-        if (it != m_string2string.end())
-        {
-            return it->second;
-        }
-        static std::string dumy_str;
-        return dumy_str;
-    }
-
-    void set_num(number_t key_, number_t val_)
-    {
-        m_num2num[key_] = val_;
-    }
-    void set_string(number_t key_, const std::string& val_)
-    {
-        m_num2string[key_] = val_;
-    }
-    void set_num(const std::string& key_, number_t val_)
-    {
-        m_string2num[key_] = val_;
-    }
-    void set_string(const std::string& key_, const std::string& val_)
-    {
-        m_string2string[key_] = val_;
-    }
-    
-    bool isExist_num(number_t key_)
-    {
-        return m_num2num.find(key_) != m_num2num.end();
-    }
-    bool isExist_string(number_t key_)
-    {
-        return m_num2string.find(key_) != m_num2string.end();
-    }
-    bool isExist_num(const std::string& key_)
-    {
-        return m_string2num.find(key_) != m_string2num.end();
-    }
-    bool isExist_string(const std::string& key_)
-    {
-        return m_string2string.find(key_) != m_string2string.end();
-    }
-    
-    std::map<number_t, number_t>& get_num2num()       { return m_num2num;       }
-    std::map<number_t, std::string>&   get_num2string()    { return m_num2string;    }
-    std::map<std::string, number_t>&   get_string2num()    { return m_string2num;    }
-    std::map<std::string, std::string>&     get_string2string() { return m_string2string; }
-
-private:
-    std::map<number_t, number_t>    m_num2num;
-    std::map<number_t, std::string>      m_num2string;
-    std::map<std::string, number_t>      m_string2num;
-    std::map<std::string, std::string>        m_string2string;
+    typedef ARG_TYPE RealType;
+};
+template<typename ARG_TYPE>
+struct RefTypeTraits<ARG_TYPE&>
+{
+    typedef ARG_TYPE RealType;
+};
+template<typename ARG_TYPE>
+struct RefTypeTraits<const ARG_TYPE&>
+{
+    typedef ARG_TYPE RealType;
+};
+template<typename ARG_TYPE>
+struct RefTypeTraits<const ARG_TYPE*>
+{
+    typedef const ARG_TYPE* RealType;
 };
 
-
-template<typename T>
-struct FFTraits
+template<typename ARG_TYPE>
+struct TypeInitValUtil
 {
-    typedef T value_t;
+    static ARG_TYPE gInitVal;
+    static ARG_TYPE& initVal() { return gInitVal; }
 };
-
-template<typename T>
-struct FFTraits<const T&>
-{
-    typedef T value_t;
-};
-
-template<typename T>
-struct FFTraits<T&>
-{
-    typedef T value_t;
-};
+template<typename ARG_TYPE>
+ARG_TYPE TypeInitValUtil<ARG_TYPE>::gInitVal;
 
 }
 

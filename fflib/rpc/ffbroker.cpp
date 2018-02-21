@@ -147,7 +147,7 @@ int FFBroker::close()
     //usleep(100);
     return 0;
 }
-TaskQueueI* FFBroker::getTaskQueue()
+TaskQueue* FFBroker::getTaskQueue()
 {
     return &m_tq;
 }

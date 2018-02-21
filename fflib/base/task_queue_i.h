@@ -3,24 +3,27 @@
 
 #include <list>
 #include <vector>
+#include <stdexcept>
 
+#include "base/lock.h"
+#include "base/fftype.h"
 
 namespace ff {
 
-typedef void (*task_func_t)(void*);
+typedef void (*TaskStaticFunc)(void*);
 
 class TaskImplI
 {
 public:
     virtual ~TaskImplI(){}
     virtual void run()          = 0;
-    virtual TaskImplI* fork() = 0;
+    virtual TaskImplI* fork()   = 0;
 };
 
 class TaskImpl: public TaskImplI
 {
 public:
-    TaskImpl(task_func_t func_, void* arg_):
+    TaskImpl(TaskStaticFunc func_, void* arg_):
         m_func(func_),
         m_arg(arg_)
     {}
@@ -36,14 +39,14 @@ public:
     }
 
 protected:
-    task_func_t m_func;
+    TaskStaticFunc m_func;
     void*       m_arg;
 };
 
 struct Task
 {
     static void dumy(void*){}
-    Task(task_func_t f_, void* d_):
+    Task(TaskStaticFunc f_, void* d_):
         task_impl(new TaskImpl(f_, d_))
     {
     }
@@ -83,21 +86,184 @@ struct Task
     TaskImplI*    task_impl;
 };
 
-class TaskQueueI
+
+class TaskQueue
 {
 public:
-    typedef std::list<Task> task_list_t;
+    typedef std::list<Task> TaskList;
 public:
-    virtual ~TaskQueueI(){}
-    virtual void close() = 0;
-    virtual void post(const Task& task_) =0;
-    virtual void multi_post(const task_list_t& task_) =0;
-    virtual int  consume(Task& task_) = 0;
-    virtual int  consume_all(task_list_t&) = 0;
-    virtual int run() = 0;
-    virtual int batch_run() = 0;
+    TaskQueue():
+        m_flag(true),
+        m_cond(m_mutex)
+    {
+    }
+    ~TaskQueue()
+    {
+    }
+    void close()
+    {
+    	LockGuard lock(m_mutex);
+    	m_flag = false;
+    	m_cond.broadcast();
+    }
+
+    void post(const Task& task_)
+    {        
+        LockGuard lock(m_mutex);
+        bool need_sig = m_tasklist.empty();
+
+        m_tasklist.push_back(task_);
+        if (need_sig)
+		{
+			m_cond.signal();
+		}
+    }
+
+    int   consume(Task& task_)
+    {
+        LockGuard lock(m_mutex);
+        while (m_tasklist.empty())
+        {
+            if (false == m_flag)
+            {
+                return -1;
+            }
+            m_cond.wait();
+        }
+
+        task_ = m_tasklist.front();
+        m_tasklist.pop_front();
+
+        return 0;
+    }
+
+    int run()
+    {
+        Task t;
+        while (0 == consume(t))
+        {
+            t.run();
+        }
+        m_tasklist.clear();
+        return 0;
+    }
+
+    int consumeAll(TaskList& tasks_)
+    {
+        LockGuard lock(m_mutex);
+
+        while (m_tasklist.empty())
+        {
+            if (false == m_flag)
+            {
+                return -1;
+            }
+            m_cond.wait();
+        }
+
+        tasks_ = m_tasklist;
+        m_tasklist.clear();
+
+        return 0;
+    }
+
+    int batchRun()
+	{
+    	TaskList tasks;
+    	int ret = consumeAll(tasks);
+		while (0 == ret)
+		{
+			for (TaskList::iterator it = tasks.begin(); it != tasks.end(); ++it)
+			{
+				(*it).run();
+			}
+			tasks.clear();
+			ret = consumeAll(tasks);
+		}
+		return 0;
+	}
+private:
+    volatile bool                   m_flag;
+    TaskList                        m_tasklist;
+    Mutex                           m_mutex;
+    ConditionVar                    m_cond;
 };
 
+class TaskQueuePool
+{
+	typedef TaskQueue::TaskList TaskList;
+    typedef std::vector<TaskQueue*>    task_queue_vt_t;
+    static void task_func(void* pd_)
+    {
+        TaskQueuePool* t = (TaskQueuePool*)pd_;
+        t->run();
+    }
+public:
+    static Task gen_task(TaskQueuePool* p)
+    {
+        return Task(&task_func, p);
+    }
+public:
+    TaskQueuePool(int n):
+    	m_index(0)
+    {
+        for (int i = 0; i < n; ++i)
+        {
+        	TaskQueue* p = new TaskQueue();
+			m_tqs.push_back(p);
+        }
+    }
+
+    void run()
+    {
+    	TaskQueue* p = NULL;
+    	{
+			LockGuard lock(m_mutex);
+			if (m_index >= (int)m_tqs.size())
+			{
+				throw std::runtime_error("too more thread running!!");
+			}
+		    p = m_tqs[m_index++];
+    	}
+
+    	p->batchRun();
+    }
+
+    ~TaskQueuePool()
+    {
+        task_queue_vt_t::iterator it = m_tqs.begin();
+        for (; it != m_tqs.end(); ++it)
+        {
+            delete (*it);
+        }
+        m_tqs.clear();
+    }
+
+    void close()
+    {
+        task_queue_vt_t::iterator it = m_tqs.begin();
+        for (; it != m_tqs.end(); ++it)
+        {
+            (*it)->close();
+        }
+    }
+
+    size_t size() const { return m_tqs.size(); }
+    
+    TaskQueue* alloc(long id_)
+    {
+    	return m_tqs[id_ %  m_tqs.size()];
+    }
+    TaskQueue* rand_alloc()
+	{
+    	static unsigned long id_ = 0;
+		return m_tqs[++id_ %  m_tqs.size()];
+	}
+private:
+    Mutex               m_mutex;
+    task_queue_vt_t       m_tqs;
+    int					  m_index;
+};
 struct TaskBinder
 {
     //! C function
@@ -124,7 +290,7 @@ struct TaskBinder
         struct lambda_t: public TaskImplI
         {
             FUNCT dest_func;
-            ARG1  arg1;
+            typename RefTypeTraits<ARG1>::RealType arg1;
             lambda_t(FUNCT func_, const ARG1& arg1_):
                 dest_func(func_),
                 arg1(arg1_)
@@ -146,8 +312,8 @@ struct TaskBinder
         struct lambda_t: public TaskImplI
         {
             FUNCT dest_func;
-            ARG1 arg1;
-            ARG2 arg2;
+            typename RefTypeTraits<ARG1>::RealType arg1;
+            typename RefTypeTraits<ARG2>::RealType arg2;
             lambda_t(FUNCT func_, const ARG1& arg1_, const ARG2& arg2_):
                 dest_func(func_),
                 arg1(arg1_),
@@ -170,9 +336,9 @@ struct TaskBinder
         struct lambda_t:public TaskImplI
         {
             FUNCT dest_func;
-            ARG1 arg1;
-            ARG2 arg2;
-            ARG3 arg3;
+            typename RefTypeTraits<ARG1>::RealType arg1;
+            typename RefTypeTraits<ARG2>::RealType arg2;
+            typename RefTypeTraits<ARG3>::RealType arg3;
             lambda_t(FUNCT func_, const ARG1& arg1_, const ARG2& arg2_, const ARG3& arg3_):
                 dest_func(func_),
                 arg1(arg1_),
@@ -196,10 +362,10 @@ struct TaskBinder
         struct lambda_t: public TaskImplI
         {
             FUNCT dest_func;
-            ARG1 arg1;
-            ARG2 arg2;
-            ARG3 arg3;
-            ARG4 arg4;
+            typename RefTypeTraits<ARG1>::RealType arg1;
+            typename RefTypeTraits<ARG2>::RealType arg2;
+            typename RefTypeTraits<ARG3>::RealType arg3;
+            typename RefTypeTraits<ARG4>::RealType arg4;
             lambda_t(FUNCT func_, const ARG1& arg1_, const ARG2& arg2_, const ARG3& arg3_, const ARG4& arg4_):
                 dest_func(func_),
                 arg1(arg1_),
@@ -224,11 +390,11 @@ struct TaskBinder
         struct lambda_t: public TaskImplI
         {
             FUNCT dest_func;
-            ARG1 arg1;
-            ARG2 arg2;
-            ARG3 arg3;
-            ARG4 arg4;
-            ARG5 arg5;
+            typename RefTypeTraits<ARG1>::RealType arg1;
+            typename RefTypeTraits<ARG2>::RealType arg2;
+            typename RefTypeTraits<ARG3>::RealType arg3;
+            typename RefTypeTraits<ARG4>::RealType arg4;
+            typename RefTypeTraits<ARG5>::RealType arg5;
             lambda_t(FUNCT func_, const ARG1& arg1_, const ARG2& arg2_, const ARG3& arg3_, const ARG4& arg4_,
                      const ARG5& arg5_):
                 dest_func(func_),
@@ -257,12 +423,12 @@ struct TaskBinder
         struct lambda_t: public TaskImplI
         {
             FUNCT dest_func;
-            ARG1 arg1;
-            ARG2 arg2;
-            ARG3 arg3;
-            ARG4 arg4;
-            ARG5 arg5;
-            ARG6 arg6;
+            typename RefTypeTraits<ARG1>::RealType arg1;
+            typename RefTypeTraits<ARG2>::RealType arg2;
+            typename RefTypeTraits<ARG3>::RealType arg3;
+            typename RefTypeTraits<ARG4>::RealType arg4;
+            typename RefTypeTraits<ARG5>::RealType arg5;
+            typename RefTypeTraits<ARG6>::RealType arg6;
             lambda_t(FUNCT func_,
                      const ARG1& arg1_, const ARG2& arg2_, const ARG3& arg3_, const ARG4& arg4_,
                      const ARG5& arg5_, const ARG6& arg6_):
@@ -294,13 +460,13 @@ struct TaskBinder
         struct lambda_t: public TaskImplI
         {
             FUNCT dest_func;
-            ARG1 arg1;
-            ARG2 arg2;
-            ARG3 arg3;
-            ARG4 arg4;
-            ARG5 arg5;
-            ARG6 arg6;
-            ARG7 arg7;
+            typename RefTypeTraits<ARG1>::RealType arg1;
+            typename RefTypeTraits<ARG2>::RealType arg2;
+            typename RefTypeTraits<ARG3>::RealType arg3;
+            typename RefTypeTraits<ARG4>::RealType arg4;
+            typename RefTypeTraits<ARG5>::RealType arg5;
+            typename RefTypeTraits<ARG6>::RealType arg6;
+            typename RefTypeTraits<ARG7>::RealType arg7;
             lambda_t(FUNCT func_, const ARG1& arg1_, const ARG2& arg2_, const ARG3& arg3_, const ARG4& arg4_,
                      const ARG5& arg5_, const ARG6& arg6_, const ARG7& arg7_):
                 dest_func(func_),
@@ -332,14 +498,14 @@ struct TaskBinder
         struct lambda_t: public TaskImplI
         {
             FUNCT dest_func;
-            ARG1 arg1;
-            ARG2 arg2;
-            ARG3 arg3;
-            ARG4 arg4;
-            ARG5 arg5;
-            ARG6 arg6;
-            ARG7 arg7;
-            ARG8 arg8;
+            typename RefTypeTraits<ARG1>::RealType arg1;
+            typename RefTypeTraits<ARG2>::RealType arg2;
+            typename RefTypeTraits<ARG3>::RealType arg3;
+            typename RefTypeTraits<ARG4>::RealType arg4;
+            typename RefTypeTraits<ARG5>::RealType arg5;
+            typename RefTypeTraits<ARG6>::RealType arg6;
+            typename RefTypeTraits<ARG7>::RealType arg7;
+            typename RefTypeTraits<ARG8>::RealType arg8;
             lambda_t(FUNCT func_,
                      const ARG1& arg1_, const ARG2& arg2_, const ARG3& arg3_, const ARG4& arg4_,
                      const ARG5& arg5_, const ARG6& arg6_, const ARG7& arg7_, const ARG8& arg8_):
@@ -373,15 +539,15 @@ struct TaskBinder
         struct lambda_t: public TaskImplI
         {
             FUNCT dest_func;
-            ARG1 arg1;
-            ARG2 arg2;
-            ARG3 arg3;
-            ARG4 arg4;
-            ARG5 arg5;
-            ARG6 arg6;
-            ARG7 arg7;
-            ARG8 arg8;
-            ARG9 arg9;
+            typename RefTypeTraits<ARG1>::RealType arg1;
+            typename RefTypeTraits<ARG2>::RealType arg2;
+            typename RefTypeTraits<ARG3>::RealType arg3;
+            typename RefTypeTraits<ARG4>::RealType arg4;
+            typename RefTypeTraits<ARG5>::RealType arg5;
+            typename RefTypeTraits<ARG6>::RealType arg6;
+            typename RefTypeTraits<ARG7>::RealType arg7;
+            typename RefTypeTraits<ARG8>::RealType arg8;
+            typename RefTypeTraits<ARG9>::RealType arg9;
             lambda_t(FUNCT func_,
                      const ARG1& arg1_, const ARG2& arg2_, const ARG3& arg3_, const ARG4& arg4_,
                      const ARG5& arg5_, const ARG6& arg6_, const ARG7& arg7_, const ARG8& arg8_, const ARG9& arg9_):
@@ -437,7 +603,7 @@ struct TaskBinder
         {
             RET (T::*dest_func)(FARG1);
             T* obj;
-            ARG1 arg1;
+            typename RefTypeTraits<ARG1>::RealType arg1;
             lambda_t(RET (T::*func_)(FARG1), T* obj_, const ARG1& arg1_):
                 dest_func(func_),
                 obj(obj_),
@@ -461,8 +627,8 @@ struct TaskBinder
         {
             RET (T::*dest_func)(FARG1, FARG2);
             T* obj;
-            ARG1 arg1;
-            ARG2 arg2;
+            typename RefTypeTraits<ARG1>::RealType arg1;
+            typename RefTypeTraits<ARG2>::RealType arg2;
             lambda_t(RET (T::*func_)(FARG1, FARG2), T* obj_, const ARG1& arg1_, const ARG2& arg2_):
                 dest_func(func_),
                 obj(obj_),
@@ -488,9 +654,9 @@ struct TaskBinder
         {
             RET (T::*dest_func)(FARG1, FARG2, FARG3);
             T* obj;
-            ARG1 arg1;
-            ARG2 arg2;
-            ARG3 arg3;
+            typename RefTypeTraits<ARG1>::RealType arg1;
+            typename RefTypeTraits<ARG2>::RealType arg2;
+            typename RefTypeTraits<ARG3>::RealType arg3;
             lambda_t(RET (T::*func_)(FARG1, FARG2, FARG3), T* obj_, const ARG1& arg1_, const ARG2& arg2_, const ARG3& arg3_):
                 dest_func(func_),
                 obj(obj_),
@@ -517,10 +683,10 @@ struct TaskBinder
         {
             RET (T::*dest_func)(FARG1, FARG2, FARG3, FARG4);
             T* obj;
-            ARG1 arg1;
-            ARG2 arg2;
-            ARG3 arg3;
-            ARG4 arg4;
+            typename RefTypeTraits<ARG1>::RealType arg1;
+            typename RefTypeTraits<ARG2>::RealType arg2;
+            typename RefTypeTraits<ARG3>::RealType arg3;
+            typename RefTypeTraits<ARG4>::RealType arg4;
             lambda_t(RET (T::*func_)(FARG1, FARG2, FARG3, FARG4), T* obj_, const ARG1& arg1_, const ARG2& arg2_,
                      const ARG3& arg3_, const ARG4& arg4_):
                 dest_func(func_),
@@ -549,11 +715,11 @@ struct TaskBinder
         {
             RET (T::*dest_func)(FARG1, FARG2, FARG3, FARG4, FARG5);
             T* obj;
-            ARG1 arg1;
-            ARG2 arg2;
-            ARG3 arg3;
-            ARG4 arg4;
-            ARG5 arg5;
+            typename RefTypeTraits<ARG1>::RealType arg1;
+            typename RefTypeTraits<ARG2>::RealType arg2;
+            typename RefTypeTraits<ARG3>::RealType arg3;
+            typename RefTypeTraits<ARG4>::RealType arg4;
+            typename RefTypeTraits<ARG5>::RealType arg5;
             lambda_t(RET (T::*func_)(FARG1, FARG2, FARG3, FARG4, FARG5), T* obj_, const ARG1& arg1_, const ARG2& arg2_, const ARG3& arg3_, const ARG4& arg4_,
                      const ARG5& arg5_):
                 dest_func(func_),
@@ -584,12 +750,12 @@ struct TaskBinder
         {
             RET (T::*dest_func)(FARG1, FARG2, FARG3, FARG4, FARG5, FARG6);
             T* obj;
-            ARG1 arg1;
-            ARG2 arg2;
-            ARG3 arg3;
-            ARG4 arg4;
-            ARG5 arg5;
-            ARG6 arg6;
+            typename RefTypeTraits<ARG1>::RealType arg1;
+            typename RefTypeTraits<ARG2>::RealType arg2;
+            typename RefTypeTraits<ARG3>::RealType arg3;
+            typename RefTypeTraits<ARG4>::RealType arg4;
+            typename RefTypeTraits<ARG5>::RealType arg5;
+            typename RefTypeTraits<ARG6>::RealType arg6;
             lambda_t(RET (T::*func_)(FARG1, FARG2, FARG3, FARG4, FARG5, FARG6), T* obj_, const ARG1& arg1_, const ARG2& arg2_,
                      const ARG3& arg3_, const ARG4& arg4_, const ARG5& arg5_, const ARG6& arg6_):
                 dest_func(func_),
@@ -622,13 +788,13 @@ struct TaskBinder
         {
             RET (T::*dest_func)(FARG1, FARG2, FARG3, FARG4, FARG5, FARG6, FARG7);
             T* obj;
-            ARG1 arg1;
-            ARG2 arg2;
-            ARG3 arg3;
-            ARG4 arg4;
-            ARG5 arg5;
-            ARG6 arg6;
-            ARG7 arg7;
+            typename RefTypeTraits<ARG1>::RealType arg1;
+            typename RefTypeTraits<ARG2>::RealType arg2;
+            typename RefTypeTraits<ARG3>::RealType arg3;
+            typename RefTypeTraits<ARG4>::RealType arg4;
+            typename RefTypeTraits<ARG5>::RealType arg5;
+            typename RefTypeTraits<ARG6>::RealType arg6;
+            typename RefTypeTraits<ARG7>::RealType arg7;
             lambda_t(RET (T::*func_)(FARG1, FARG2, FARG3, FARG4, FARG5, FARG6, FARG7), T* obj_, const ARG1& arg1_, const ARG2& arg2_,
                      const ARG3& arg3_, const ARG4& arg4_, const ARG5& arg5_, const ARG6& arg6_, const ARG7& arg7_):
                 dest_func(func_),
@@ -662,14 +828,14 @@ struct TaskBinder
         {
             RET (T::*dest_func)(FARG1, FARG2, FARG3, FARG4, FARG5, FARG6, FARG7, FARG8);
             T* obj;
-            ARG1 arg1;
-            ARG2 arg2;
-            ARG3 arg3;
-            ARG4 arg4;
-            ARG5 arg5;
-            ARG6 arg6;
-            ARG7 arg7;
-            ARG8 arg8;
+            typename RefTypeTraits<ARG1>::RealType arg1;
+            typename RefTypeTraits<ARG2>::RealType arg2;
+            typename RefTypeTraits<ARG3>::RealType arg3;
+            typename RefTypeTraits<ARG4>::RealType arg4;
+            typename RefTypeTraits<ARG5>::RealType arg5;
+            typename RefTypeTraits<ARG6>::RealType arg6;
+            typename RefTypeTraits<ARG7>::RealType arg7;
+            typename RefTypeTraits<ARG8>::RealType arg8;
             lambda_t(RET (T::*func_)(FARG1, FARG2, FARG3, FARG4, FARG5, FARG6, FARG7, FARG8), T* obj_, const ARG1& arg1_, const ARG2& arg2_,
                      const ARG3& arg3_, const ARG4& arg4_, const ARG5& arg5_, const ARG6& arg6_, const ARG7& arg7_, const ARG8& arg8_):
                 dest_func(func_),
@@ -705,15 +871,15 @@ struct TaskBinder
         {
             RET (T::*dest_func)(FARG1, FARG2, FARG3, FARG4, FARG5, FARG6, FARG7, FARG8, FARG9);
             T* obj;
-            ARG1 arg1;
-            ARG2 arg2;
-            ARG3 arg3;
-            ARG4 arg4;
-            ARG5 arg5;
-            ARG6 arg6;
-            ARG7 arg7;
-            ARG8 arg8;
-            ARG9 arg9;
+            typename RefTypeTraits<ARG1>::RealType arg1;
+            typename RefTypeTraits<ARG2>::RealType arg2;
+            typename RefTypeTraits<ARG3>::RealType arg3;
+            typename RefTypeTraits<ARG4>::RealType arg4;
+            typename RefTypeTraits<ARG5>::RealType arg5;
+            typename RefTypeTraits<ARG6>::RealType arg6;
+            typename RefTypeTraits<ARG7>::RealType arg7;
+            typename RefTypeTraits<ARG8>::RealType arg8;
+            typename RefTypeTraits<ARG9>::RealType arg9;
             lambda_t(RET (T::*func_)(FARG1, FARG2, FARG3, FARG4, FARG5, FARG6, FARG7, FARG8, FARG9), T* obj_,
                      const ARG1& arg1_, const ARG2& arg2_,
                      const ARG3& arg3_, const ARG4& arg4_, const ARG5& arg5_, const ARG6& arg6_, const ARG7& arg7_,

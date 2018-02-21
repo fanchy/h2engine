@@ -12,7 +12,7 @@ namespace ff {
 
 class EventLoop;
 class SocketCtrlI;
-class TaskQueueI;
+class TaskQueue;
 
 #define  RECV_BUFFER_SIZE 8096
 
@@ -34,7 +34,7 @@ public:
     typedef std::list<ff_str_buffer_t>    send_buffer_t;
 
 public:
-    SocketLinux(EventLoop*, SocketCtrlI*, SocketFd fd, TaskQueueI* tq_);
+    SocketLinux(EventLoop*, SocketCtrlI*, SocketFd fd, TaskQueue* tq_);
     ~SocketLinux();
 
     virtual SocketFd socket() { return m_fd; }
@@ -67,7 +67,7 @@ private:
     EventLoop*                       m_epoll;
     SocketCtrlI*                      m_sc;
     SocketFd                         m_fd;
-    TaskQueueI*                       m_tq;
+    TaskQueue*                       m_tq;
     send_buffer_t                       m_send_buffer;
 };
 

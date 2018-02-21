@@ -416,7 +416,7 @@ FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReq<IN_T, OU
         virtual FFSlot::FFCallBack* fork() { return new lambda_cb(m_func, m_obj, m_arg1); }
         func_t      m_func;
         CLASS_TYPE* m_obj;
-        typename FFTraits<ARG1>::value_t m_arg1;
+        typename RefTypeTraits<ARG1>::RealType m_arg1;
     };
     return new lambda_cb(func_, obj_, arg1_);
 }
@@ -457,8 +457,8 @@ FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReq<IN_T, OU
         virtual FFSlot::FFCallBack* fork() { return new lambda_cb(m_func, m_obj, m_arg1, m_arg2); }
         func_t      m_func;
         CLASS_TYPE* m_obj;
-        typename FFTraits<ARG1>::value_t m_arg1;
-        typename FFTraits<ARG2>::value_t m_arg2;
+        typename RefTypeTraits<ARG1>::RealType m_arg1;
+        typename RefTypeTraits<ARG2>::RealType m_arg2;
     };
     return new lambda_cb(func_, obj_, arg1_, arg2_);
 }
@@ -500,9 +500,9 @@ FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReq<IN_T, OU
         virtual FFSlot::FFCallBack* fork() { return new lambda_cb(m_func, m_obj, m_arg1, m_arg2, m_arg3); }
         func_t      m_func;
         CLASS_TYPE* m_obj;
-        typename FFTraits<ARG1>::value_t m_arg1;
-        typename FFTraits<ARG2>::value_t m_arg2;
-        typename FFTraits<ARG3>::value_t m_arg3;
+        typename RefTypeTraits<ARG1>::RealType m_arg1;
+        typename RefTypeTraits<ARG2>::RealType m_arg2;
+        typename RefTypeTraits<ARG3>::RealType m_arg3;
     };
     return new lambda_cb(func_, obj_, arg1_, arg2_, arg3_);
 }
@@ -544,10 +544,10 @@ FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReq<IN_T, OU
         virtual FFSlot::FFCallBack* fork() { return new lambda_cb(m_func, m_obj, m_arg1, m_arg2, m_arg3, m_arg4); }
         func_t      m_func;
         CLASS_TYPE* m_obj;
-        typename FFTraits<ARG1>::value_t m_arg1;
-        typename FFTraits<ARG2>::value_t m_arg2;
-        typename FFTraits<ARG3>::value_t m_arg3;
-        typename FFTraits<ARG4>::value_t m_arg4;
+        typename RefTypeTraits<ARG1>::RealType m_arg1;
+        typename RefTypeTraits<ARG2>::RealType m_arg2;
+        typename RefTypeTraits<ARG3>::RealType m_arg3;
+        typename RefTypeTraits<ARG4>::RealType m_arg4;
     };
     return new lambda_cb(func_, obj_, arg1_, arg2_, arg3_, arg4_);
 }
@@ -660,7 +660,7 @@ FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReqPB<IN_T, 
         virtual FFSlot::FFCallBack* fork() { return new lambda_cb(m_func, m_obj, m_arg1); }
         func_t      m_func;
         CLASS_TYPE* m_obj;
-        typename FFTraits<ARG1>::value_t m_arg1;
+        typename RefTypeTraits<ARG1>::RealType m_arg1;
     };
     return new lambda_cb(func_, obj_, arg1_);
 }
@@ -701,8 +701,8 @@ FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReqPB<IN_T, 
         virtual FFSlot::FFCallBack* fork() { return new lambda_cb(m_func, m_obj, m_arg1, m_arg2); }
         func_t      m_func;
         CLASS_TYPE* m_obj;
-        typename FFTraits<ARG1>::value_t m_arg1;
-        typename FFTraits<ARG2>::value_t m_arg2;
+        typename RefTypeTraits<ARG1>::RealType m_arg1;
+        typename RefTypeTraits<ARG2>::RealType m_arg2;
     };
     return new lambda_cb(func_, obj_, arg1_, arg2_);
 }
@@ -744,9 +744,9 @@ FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReqPB<IN_T, 
         virtual FFSlot::FFCallBack* fork() { return new lambda_cb(m_func, m_obj, m_arg1, m_arg2, m_arg3); }
         func_t      m_func;
         CLASS_TYPE* m_obj;
-        typename FFTraits<ARG1>::value_t m_arg1;
-        typename FFTraits<ARG2>::value_t m_arg2;
-        typename FFTraits<ARG3>::value_t m_arg3;
+        typename RefTypeTraits<ARG1>::RealType m_arg1;
+        typename RefTypeTraits<ARG2>::RealType m_arg2;
+        typename RefTypeTraits<ARG3>::RealType m_arg3;
     };
     return new lambda_cb(func_, obj_, arg1_, arg2_, arg3_);
 }
@@ -788,10 +788,10 @@ FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReqPB<IN_T, 
         virtual FFSlot::FFCallBack* fork() { return new lambda_cb(m_func, m_obj, m_arg1, m_arg2, m_arg3, m_arg4); }
         func_t      m_func;
         CLASS_TYPE* m_obj;
-        typename FFTraits<ARG1>::value_t m_arg1;
-        typename FFTraits<ARG2>::value_t m_arg2;
-        typename FFTraits<ARG3>::value_t m_arg3;
-        typename FFTraits<ARG4>::value_t m_arg4;
+        typename RefTypeTraits<ARG1>::RealType m_arg1;
+        typename RefTypeTraits<ARG2>::RealType m_arg2;
+        typename RefTypeTraits<ARG3>::RealType m_arg3;
+        typename RefTypeTraits<ARG4>::RealType m_arg4;
     };
     return new lambda_cb(func_, obj_, arg1_, arg2_, arg3_, arg4_);
 }

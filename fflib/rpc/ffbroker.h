@@ -43,7 +43,7 @@ public:
     int handleBroken(SocketPtr sock_);
     //! 当有消息到来，被回调
     int handleMsg(const Message& msg_, SocketPtr sock_);
-    TaskQueueI* getTaskQueue();
+    TaskQueue* getTaskQueue();
 
     //! 处理其他broker或者client注册到此server
     int handleRegiterToBroker(RegisterToBroker::in_t& msg_, SocketPtr sock_);

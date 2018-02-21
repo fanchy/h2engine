@@ -15,7 +15,7 @@
 using namespace std;
 using namespace ff;
 
-SocketLinux::SocketLinux(EventLoop* e_, SocketCtrlI* seh_, int fd_, TaskQueueI* tq_):
+SocketLinux::SocketLinux(EventLoop* e_, SocketCtrlI* seh_, int fd_, TaskQueue* tq_):
     m_epoll(e_),
     m_sc(seh_),
     m_fd(fd_),

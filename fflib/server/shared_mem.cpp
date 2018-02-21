@@ -73,7 +73,7 @@ int SharedSyncmemMgr::init_master(int shared_key)
     return 0;
 }
 
-int SharedSyncmemMgr::init_worker(int shared_key, int work_index_, TaskQueueI* tq ){
+int SharedSyncmemMgr::init_worker(int shared_key, int work_index_, TaskQueue* tq ){
     m_worker_shmid = shmget((key_t)shared_key, sizeof(MasterSharedData) + sizeof(struct wroker_shared_data_t)*m_worker_num, 0666);  
     if(m_worker_shmid == -1)
     {
@@ -118,7 +118,7 @@ int SharedSyncmemMgr::processCmdQueue()
     return 0;
 }
 
-int SharedSyncmemMgr::workerRun(TaskQueueI* tq){
+int SharedSyncmemMgr::workerRun(TaskQueue* tq){
     wroker_shared_data_t* pshared_mem = get_self_sharedmem();
 
     while (m_running && pshared_mem)

@@ -10,6 +10,7 @@
 
 #include "base/singleton.h"
 #include "base/smart_ptr.h"
+#include "base/fftype.h"
 
 namespace ff
 {
@@ -293,12 +294,7 @@ struct CppScriptValutil{
         a = ((ArgDataCacheCommon<T>*)gTmpCacheArg.cacheData[strAddr])->data;
     }
 };
-template<typename ARG_TYPE>
-struct TypeInitValUtil
-{
-    static ARG_TYPE gInitVal;
-    static ARG_TYPE& initVal() { return gInitVal; }
-};
+
 typedef bool (*CallScriptFunctor)(const std::string&, ScriptArgs&);
 class ScriptUtil{
 public:
@@ -485,36 +481,6 @@ struct ScriptFunctorUtil<void (*)(ScriptArgs&)>{
         DestFunc destFunc;
     };
 };
-template<typename ARG_TYPE>
-struct RefTypeTraits;
-
-template<typename ARG_TYPE>
-struct RefTypeTraits
-{
-    typedef ARG_TYPE RealType;
-    static RealType gInitVal;
-    static RealType& initVal() { return gInitVal; }
-};
-template<typename ARG_TYPE>
-struct RefTypeTraits<ARG_TYPE&>
-{
-    typedef ARG_TYPE RealType;
-};
-template<typename ARG_TYPE>
-struct RefTypeTraits<const ARG_TYPE&>
-{
-    typedef ARG_TYPE RealType;
-};
-template<typename ARG_TYPE>
-struct RefTypeTraits<const ARG_TYPE*>
-{
-    typedef ARG_TYPE* RealType;
-};
-
-template<typename ARG_TYPE>
-ARG_TYPE TypeInitValUtil<ARG_TYPE>::gInitVal;
-
-
 template<>
 struct CppScriptValutil<int8_t>{
     static void toScriptVal(ScriptArgObjPtr retVal, int8_t a){

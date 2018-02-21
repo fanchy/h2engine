@@ -25,7 +25,7 @@ namespace ff {
 class Connector
 {
 public:
-    static SocketPtr connect(const std::string& host_, EventLoop* e_, MsgHandler* msg_handler_, TaskQueueI* tq_)
+    static SocketPtr connect(const std::string& host_, EventLoop* e_, MsgHandler* msg_handler_, TaskQueue* tq_)
     {
         SocketPtr ret = NULL;
         //! example tcp://192.168.1.1:1024

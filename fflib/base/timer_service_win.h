@@ -67,7 +67,7 @@ class TimerService
     typedef std::list<registered_info_t>             registered_info_list_t;
     typedef multistd::map<long, registered_info_t>   registered_info_map_t;
 public:
-    TimerService(TaskQueueI* tq_ = NULL, long tick = 100):
+    TimerService(TaskQueue* tq_ = NULL, long tick = 100):
         m_tq(tq_),
         m_runing(true),
         m_efd(-1),
@@ -251,7 +251,7 @@ private:
     }
 
 private:
-    TaskQueueI*            m_tq;
+    TaskQueue*            m_tq;
     volatile bool            m_runing;
     int                      m_efd;
     volatile long            m_min_timeout;

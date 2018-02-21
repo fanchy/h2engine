@@ -325,8 +325,8 @@ public:
 	void mod_print_screen(bool flag_);
 private:
 	Log*			m_log;
-	Thread        m_thread;
-	TaskQueue    m_task_queue;
+	Thread          m_thread;
+	TaskQueue       m_task_queue;
 };
 
 #define BROKER  "BROKER"

@@ -5,7 +5,7 @@
 #include "net/message.h"
 
 namespace ff {
-class TaskQueueI;
+class TaskQueue;
 
 class MsgHandler
 {
@@ -15,7 +15,7 @@ public:
     virtual int handleBroken(SocketPtr sock_)  = 0;
     virtual int handleMsg(const Message& msg_, SocketPtr sock_) = 0;
 
-    virtual TaskQueueI* getTaskQueue() = 0;
+    virtual TaskQueue* getTaskQueue() = 0;
 };
 
 typedef MsgHandler* MsgHandlerPtr;
