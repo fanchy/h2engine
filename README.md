@@ -46,3 +46,6 @@ h2engine是核心，需要首先启动，woker进程根据你需要的语言，�
 - [GitHub](https://github.com/fanchy/h2engine)
 - QQ:693654841
 - [zxfown@gmail.com](mailto:zxfown@gmail.com)
+## QQ群
+群名称：h2engine
+群  号：599634962
