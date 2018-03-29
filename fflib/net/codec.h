@@ -12,6 +12,8 @@
 #include <iostream>
 #include <map>
 #include <set>
+#include <endian.h>
+#include <byteswap.h>
 
 
 #include "net/message.h"
@@ -31,59 +33,15 @@ namespace apache
     }
 }
 namespace ff {
- 
 
-#define swap64_ops(ll) (((ll) >> 56) | \
-                    (((ll) & 0x00ff000000000000) >> 40) | \
-                    (((ll) & 0x0000ff0000000000) >> 24) | \
-                    (((ll) & 0x000000ff00000000) >> 8)    | \
-                    (((ll) & 0x00000000ff000000) << 8)    | \
-                    (((ll) & 0x0000000000ff0000) << 24) |   \
-                    (((ll) & 0x000000000000ff00) << 40) | \
-                    (((ll) << 56)))  
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+    #define hton64(ll) (__bswap_64(ll))
+    #define ntoh64(ll) (__bswap_64(ll))
+#else
+    #define hton64(ll) (ll)
+    #define ntoh64(ll) (ll)
+#endif
 
-struct endian_tool_t
-{
-    static bool is_bigendian()  
-    {
-        const int16_t n = 1;  
-        if(*(char *)&n)  
-        {  
-            return false;  
-        }  
-        return true;  
-    }
-    static uint64_t ntoh_64(uint64_t v)
-    {
-        int n        = 1;
-        uint64_t ret = 0;
-        uint8_t* ptmp = (uint8_t*)(&v);
-        for (int i = 7; i >= 0; i--)
-        {
-            ret += (int)ptmp[i] * n;
-            n *= 256;
-        }
-        return ret;
-    }
-    static uint64_t hton_64(uint64_t v)
-    {
-        uint64_t ret = 0;
-        uint8_t* ptmp = (uint8_t*)(&ret);
-        int left = v;
-        int unit = 256;
-
-        for (int i = 7; i >= 0; i--)
-        {
-            ptmp[i] = (char)(left % unit);
-            left = left / unit;
-
-        }
-        return ret;
-    }
-};
-#define hton64(ll) (endian_tool_t::is_bigendian() ? ll : (endian_tool_t::hton_64(ll)) )
-#define ntoh64(ll) (endian_tool_t::is_bigendian() ? ll:  (endian_tool_t::ntoh_64(ll)))
-    
 struct Codec
 {
     virtual ~Codec(){}
