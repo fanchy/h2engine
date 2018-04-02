@@ -67,7 +67,8 @@ struct OSTool
 
         ::fclose(file);
         ret.append(chars, size);
-
+        delete [] chars;
+        chars = NULL;
         return true;
     }
 };
