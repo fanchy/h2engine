@@ -224,14 +224,15 @@ int FFGate::changeSessionLogic(RPCReq<GateChangeLogicNode::in_t, GateChangeLogic
         return 0;
     }
     
+    GateChangeLogicNode::out_t out;
+    req_.response(out);
+    
     SessionEnterWorker::in_t enter_msg;
     it->second.group_name = req_.msg.dest_group_name;
     //enter_msg.from_group = req_.msg.cur_group_name;
     enter_msg.from_worker = it->second.alloc_worker;
     
     it->second.alloc_worker = req_.msg.alloc_worker;
-    GateChangeLogicNode::out_t out;
-    req_.response(out);
     
     enter_msg.session_id = req_.msg.session_id;
     enter_msg.from_gate = m_gate_name;
