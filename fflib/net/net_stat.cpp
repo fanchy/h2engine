@@ -59,7 +59,7 @@ void NetStat::handleTimerCheck()
     m_heartbeat.timer_check();
     if (m_timerService)
     {
-        m_timerService->timerCallback(m_heartbeat.timeout(), Task(&timer_check, (void*)this));
+        m_timerService->timerCallback(m_heartbeat.timeout()*1000, Task(&timer_check, (void*)this));
     }
 }
 
