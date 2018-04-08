@@ -284,7 +284,7 @@ int FFWorker::gateBroadcastMsg(uint16_t cmd_, const string& data_)
     vector<string> gates = m_ffrpc->getServicesLike("gate#");
     for (size_t i = 0; i < gates.size(); ++i)
     {
-        gateBroadcastMsg(gates[0], cmd_, data_);
+        gateBroadcastMsg(gates[i], cmd_, data_);
     }
     return 0;
 }
