@@ -122,7 +122,7 @@ void DbMgr::queryDBImpl(DBConnectionInfo* varDbConnection_, const string& sql_, 
     {
         callback_->exe(&(varDbConnection_->ret));
     }
-    LOGINFO((DB_MGR_LOG, "DbMgr::queryDBImpl sql=%s end callback_:%d", sql_, long(callback_)));
+    LOGINFO((DB_MGR_LOG, "DbMgr::queryDBImpl sql=%s end callback_:%d", sql_, long(callback_.get())));
 }
 
 int  DbMgr::queryByName(const std::string& strName, const std::string& sql_, 

@@ -20,7 +20,6 @@
 #include "base/arg_helper.h"
 
 namespace ff {
-#define DEFAULT_LOGIC_SERVICE "scene@0"
 
 class FFGate: public MsgHandler
 {
@@ -94,8 +93,7 @@ struct FFGate::SessionData
 struct FFGate::client_info_t
 {
     client_info_t():
-        sock(NULL),
-        alloc_worker(DEFAULT_LOGIC_SERVICE)
+        sock(NULL)
     {}
     SocketPtr     sock;
     std::string           alloc_worker;
