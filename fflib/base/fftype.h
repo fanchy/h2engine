@@ -101,7 +101,7 @@ struct TypeHelper
         std::string tmp  = __PRETTY_FUNCTION__;
         std::string keystr = "TypeHelper() [with T = ";
         int pos     = tmp.find(keystr);
-        int pos2     = tmp.find("T", pos+1);
+        int pos2     = tmp.find("]", pos+1);
         m_type_name = tmp.substr(pos + keystr.size(), pos2 - pos - keystr.size());
         m_type_id   = Singleton<TypeIdGenerator>::instance().allocID(m_type_name);
         
