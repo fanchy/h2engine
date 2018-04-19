@@ -102,9 +102,9 @@ public:
     }
     void close()
     {
-    	LockGuard lock(m_mutex);
-    	m_flag = false;
-    	m_cond.broadcast();
+        LockGuard lock(m_mutex);
+        m_flag = false;
+        m_cond.broadcast();
     }
 
     void post(const Task& task_)
@@ -114,9 +114,9 @@ public:
 
         m_tasklist.push_back(task_);
         if (need_sig)
-		{
-			m_cond.signal();
-		}
+        {
+            m_cond.signal();
+        }
     }
 
     int   consume(Task& task_)
@@ -168,20 +168,20 @@ public:
     }
 
     int batchRun()
-	{
-    	TaskList tasks;
-    	int ret = consumeAll(tasks);
-		while (0 == ret)
-		{
-			for (TaskList::iterator it = tasks.begin(); it != tasks.end(); ++it)
-			{
-				(*it).run();
-			}
-			tasks.clear();
-			ret = consumeAll(tasks);
-		}
-		return 0;
-	}
+    {
+        TaskList tasks;
+        int ret = consumeAll(tasks);
+        while (0 == ret)
+        {
+            for (TaskList::iterator it = tasks.begin(); it != tasks.end(); ++it)
+            {
+                (*it).run();
+            }
+            tasks.clear();
+            ret = consumeAll(tasks);
+        }
+        return 0;
+    }
 private:
     volatile bool                   m_flag;
     TaskList                        m_tasklist;
@@ -191,7 +191,7 @@ private:
 
 class TaskQueuePool
 {
-	typedef TaskQueue::TaskList TaskList;
+    typedef TaskQueue::TaskList TaskList;
     typedef std::vector<TaskQueue*>    task_queue_vt_t;
     static void task_func(void* pd_)
     {
@@ -205,28 +205,28 @@ public:
     }
 public:
     TaskQueuePool(int n):
-    	m_index(0)
+        m_index(0)
     {
         for (int i = 0; i < n; ++i)
         {
-        	TaskQueue* p = new TaskQueue();
-			m_tqs.push_back(p);
+            TaskQueue* p = new TaskQueue();
+            m_tqs.push_back(p);
         }
     }
 
     void run()
     {
-    	TaskQueue* p = NULL;
-    	{
-			LockGuard lock(m_mutex);
-			if (m_index >= (int)m_tqs.size())
-			{
-				throw std::runtime_error("too more thread running!!");
-			}
-		    p = m_tqs[m_index++];
-    	}
+        TaskQueue* p = NULL;
+        {
+            LockGuard lock(m_mutex);
+            if (m_index >= (int)m_tqs.size())
+            {
+                throw std::runtime_error("too more thread running!!");
+            }
+            p = m_tqs[m_index++];
+        }
 
-    	p->batchRun();
+        p->batchRun();
     }
 
     ~TaskQueuePool()
@@ -252,17 +252,17 @@ public:
     
     TaskQueue* alloc(long id_)
     {
-    	return m_tqs[id_ %  m_tqs.size()];
+        return m_tqs[id_ %  m_tqs.size()];
     }
     TaskQueue* rand_alloc()
-	{
-    	static unsigned long id_ = 0;
-		return m_tqs[++id_ %  m_tqs.size()];
-	}
+    {
+        static unsigned long id_ = 0;
+        return m_tqs[++id_ %  m_tqs.size()];
+    }
 private:
     Mutex               m_mutex;
     task_queue_vt_t       m_tqs;
-    int					  m_index;
+    int                      m_index;
 };
 struct TaskBinder
 {
