@@ -88,8 +88,8 @@ public:
     SocketPtr getBrokerSocket();
     //! 新版 调用消息对应的回调函数
     int handleRpcCallMsg(BrokerRouteMsg::in_t& msg_, SocketPtr sock_);
-	//! 注册接口【支持动态的增加接口】
-	void reg(const std::string& name_, FFSlot::FFCallBack* func_);
+    //! 注册接口【支持动态的增加接口】
+    void reg(const std::string& name_, FFSlot::FFCallBack* func_);
     
     const std::string& getHostCfg(){ return m_host; }
     //!获取某一类型的service
@@ -120,9 +120,8 @@ private:
     FFSlot                                          m_ffslot;//! 注册broker 消息的回调函数
     FFSlot                                          m_ffslot_interface;//! 通过reg 注册的接口会暂时的存放在这里
     FFSlot                                          m_ffslot_callback;//! 
-    SocketPtr                                    m_master_broker_sock;
+    SocketPtr                                       m_master_broker_sock;
 
-    std::map<uint32_t, slave_broker_info_t>         m_slave_broker_sockets;//! node id -> info
     std::map<std::string, uint32_t>                 m_msg2id;
     std::map<uint32_t, broker_client_info_t>        m_broker_client_info;//! node id -> service
     std::map<std::string, uint32_t>                 m_broker_client_name2nodeid;//! service name -> service node id
@@ -130,7 +129,7 @@ private:
     //!ff绑定的broker id
     uint64_t                                        m_bind_broker_id;
     //!所有的broker socket
-    std::map<uint64_t, SocketPtr>                m_broker_sockets;
+    std::map<uint64_t, SocketPtr>                   m_broker_sockets;
     //!ff new impl
     RegisterToBroker::out_t                         m_broker_data;
 };

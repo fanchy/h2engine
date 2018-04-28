@@ -402,11 +402,13 @@ void FFRpc::sendToDestNode(const string& dest_namespace_, const string& service_
 //! 判断某个service是否存在
 bool FFRpc::isExist(const string& service_name_)
 {
-    map<string, uint32_t>::iterator it = m_broker_client_name2nodeid.find(service_name_);
-    if (it == m_broker_client_name2nodeid.end())
-    {
-        return false;
+    map<string, int64_t>::iterator it = m_broker_data.service2node_id.begin();
+    for (; it != m_broker_data.service2node_id.end(); ++it){
+        if (it->first == service_name_){
+            return true;
+        }
     }
+    
     return true;
 }
 //! 通过bridge broker调用远程的service TODO
