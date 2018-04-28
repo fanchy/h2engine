@@ -122,10 +122,6 @@ private:
     FFSlot                                          m_ffslot_callback;//! 
     SocketPtr                                       m_master_broker_sock;
 
-    std::map<std::string, uint32_t>                 m_msg2id;
-    std::map<uint32_t, broker_client_info_t>        m_broker_client_info;//! node id -> service
-    std::map<std::string, uint32_t>                 m_broker_client_name2nodeid;//! service name -> service node id
-    
     //!ff绑定的broker id
     uint64_t                                        m_bind_broker_id;
     //!所有的broker socket
