@@ -22,8 +22,6 @@ namespace ff {
 class FFRpc: public MsgHandler, RPCResponser
 {
     struct SessionData;
-    struct slave_broker_info_t;
-    struct broker_client_info_t;
 public:
     FFRpc(std::string service_name_ = "");
     virtual ~FFRpc();
@@ -151,24 +149,6 @@ struct FFRpc::SessionData
     {}
     uint32_t getNodeId() { return node_id; }
     uint32_t node_id;
-};
-struct FFRpc::slave_broker_info_t
-{
-    slave_broker_info_t():
-        sock(NULL)
-    {}
-    std::string          host;
-    SocketPtr    sock;
-};
-struct FFRpc::broker_client_info_t
-{
-    broker_client_info_t():
-        bind_broker_id(0),
-        service_id(0)
-    {}
-    uint32_t bind_broker_id;
-    std::string   service_name;
-    uint16_t service_id;
 };
 
 //! 调用远程的接口
