@@ -352,7 +352,7 @@ struct TaskScriptFunctor{
         return true;
     }
 };  
-static bool initEnvir(){
+bool TaskModule::init(){
     EVENT_BUS_LISTEN(&handleEntityDataLoadBegin);
     EVENT_BUS_LISTEN(&handleEntityDataLoadEnd);
 
@@ -375,5 +375,5 @@ static bool initEnvir(){
     
     return true;
 }
-WORKER_AT_SETUP(initEnvir);
+
 

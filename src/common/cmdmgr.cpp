@@ -14,13 +14,12 @@ static void handleSessionCmd(SessionReqEvent& e){
         }
     }
 }
-static bool initEnvir(){
+bool CmdModule::init(){
     
     EVENT_BUS_LISTEN(&handleSessionCmd);
     return true;
 }
 
-WORKER_AT_SETUP(initEnvir);
 /*
 
 

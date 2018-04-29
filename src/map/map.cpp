@@ -475,7 +475,7 @@ struct MapScriptFunctor{
         return ret;
     }
 };
-static bool initEnvir(){
+bool MapModule::init(){
     //!注册操作任务的脚本接口
     if (false == MAP_MGR.init()){
         return false;
@@ -493,4 +493,3 @@ static bool initEnvir(){
     SCRIPT_UTIL.reg("Map.rangeGetEntities",   MapScriptFunctor::rangeGetEntities);
     return true;
 }
-WORKER_AT_SETUP(initEnvir);

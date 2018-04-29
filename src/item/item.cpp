@@ -2,6 +2,7 @@
 
 #include "item/item.h"
 #include "server/db_mgr.h"
+#include "common/common_def.h"
 #include "common/game_event.h"
 #include "base/os_tool.h"
 

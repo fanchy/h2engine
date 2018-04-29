@@ -123,5 +123,9 @@ public:
     std::map<uint16_t, CmdHandlerPtr>   m_regCmdHandler;
 };
 #define CMD_MGR Singleton<CmdMgr>::instance()
+
+struct CmdModule{
+    static bool init();
+};
 }
 #endif

@@ -87,6 +87,9 @@ public:
     std::map<int, TaskObjPtr>      m_allTasks;
 };
 
+struct TaskModule{
+    static bool init();
+};
 }
 
 #endif

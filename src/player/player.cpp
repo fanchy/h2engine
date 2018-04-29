@@ -5,7 +5,7 @@
 using namespace ff;
 using namespace std;
 
-static bool initEnvir(){
+bool PlayerModule::init(){
     PROP_MGR.regGetterSetter(PROP_ATTACK     , &PlayerProp::Attack      );      
     PROP_MGR.regGetterSetter(PROP_ATTACKMAGIC, &PlayerProp::AttackMagic );      
     PROP_MGR.regGetterSetter(PROP_DEFEND     , &PlayerProp::Defend      );      
@@ -20,4 +20,3 @@ static bool initEnvir(){
     return true;
 }
 
-WORKER_AT_SETUP(initEnvir);

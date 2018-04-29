@@ -27,15 +27,6 @@ struct FieldIndexUtil_t{
 };
 
 
-enum EntityTypeDef{
-    ENTITY_MIN_TYPE        = 0,
-    ENTITY_PLAYER          = 0,
-    ENTITY_MONSETER        = 1,
-    ENTITY_NPC             = 2,
-    ENTITY_ITEM            = 3,
-    ENTITY_MAX_TYPE
-};
-
 class Entity
 {
 private:
@@ -188,6 +179,10 @@ struct CppScriptValutil<EntityPtr>{
         long ptr = (long)(argVal->getInt());
         a = TO_ENTITY(ptr);
     }
+};
+
+struct EntityModule{
+    static bool init();
 };
 
 }

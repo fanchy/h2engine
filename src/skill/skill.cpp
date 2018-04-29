@@ -6,6 +6,7 @@
 #include "common/game_event.h"
 #include "base/str_tool.h"
 #include "server/script.h"
+#include "common/common_def.h"
 #include "common/game_event.h"
 #include "base/os_tool.h"
 

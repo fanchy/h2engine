@@ -131,5 +131,9 @@ public:
     int             y;
 };
 
+struct MapModule{
+    static bool init();
+};
+
 }
 #endif

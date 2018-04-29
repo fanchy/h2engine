@@ -97,8 +97,8 @@ static userid_t Entity_getUid(EntityPtr p){
 static size_t Entity_totalNum(){
     return Entity::EntityPtr2Ref.size();
 }
-int64_t gInt = 0;
-static bool initEntityEnvir(){
+
+bool EntityModule::init(){
     //!这里演示的是如何注册脚本接口
     SCRIPT_UTIL.reg("Entity.getUid", Entity_getUid);
     SCRIPT_UTIL.reg("Entity.totalNum", Entity_totalNum);
@@ -119,17 +119,6 @@ static bool initEntityEnvir(){
     */
     return true;
 }
-static bool cleanupEntityEnvir(){
-    /*example code
-    printf("cleanupEntityEnvir....\n");
-    
-    SCRIPT_UTIL.callScript<void>("testScriptCall");
-    */
-    return true;
-    
-}
 
-WORKER_AT_SETUP(initEntityEnvir);
-WORKER_AT_EXIT(cleanupEntityEnvir);
 
 

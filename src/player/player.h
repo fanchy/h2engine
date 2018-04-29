@@ -40,5 +40,8 @@ public:
     int AvoidMagic;
 };
 
+struct PlayerModule{
+    static bool init();
+};
 }
 #endif
