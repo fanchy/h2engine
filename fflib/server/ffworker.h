@@ -72,12 +72,6 @@ struct WorkerInitFileInfo{
 #define WORKER_AT_SETUP_PRIORITY(f, p) static int gSetup_##f = FFWorker::regSetupFunc(f, __FILE__, __LINE__, p)
 #define WORKER_AT_EXIT(f)  static int gExit_##f = FFWorker::regExitFunc(f)
 
-class SessionMsgFunctor{
-public:
-    virtual ~SessionMsgFunctor(){}
-    
-    virtual void onMsg(userid_t id, const std::string& data) = 0;
-};
 template<typename T>
 struct SessionMsgFunctorUtil;
 
@@ -133,18 +127,7 @@ public:
     const std::string& getSessionGate(const userid_t& session_id_);
     const std::string& getSessionIp(const userid_t& session_id_);
     
-    template<typename F>
-    FFWorker& regSessionReq(int cmd, F f){
-        typedef typename SessionMsgFunctorUtil<F>::ScriptFunctorImpl FunctorImpl;
-        m_functors[cmd] = new FunctorImpl(f);
-        return *this;
-    }
-    template<typename F, typename O>
-    FFWorker& regSessionReq(int cmd, F f, O obj){
-        typedef typename SessionMsgFunctorUtil<F>::ScriptFunctorImpl FunctorImpl;
-        m_functors[cmd] = new FunctorImpl(f, obj);
-        return *this;
-    }
+    
     //*********************************************************操作client 内部高级接口***********************************************************************
     callback_info_t& callback_info();
     
@@ -206,7 +189,6 @@ protected:
     
     std::map<userid_t, WorkerClient>            m_worker_client;
     SharedSyncmemMgr                            m_shared_mem_mgr;
-    std::map<int, SessionMsgFunctor*>           m_functors;
 };
 
 class FFWorkerMgr
@@ -326,35 +308,6 @@ public:
     std::string&         err;
     std::string&         msg_type;
     std::string&         ret;
-};
-template<>
-struct SessionMsgFunctorUtil<void (*)(userid_t, const std::string&)>{
-    typedef void (*DestFunc)(userid_t, const std::string&);
-    class ScriptFunctorImpl: public SessionMsgFunctor{
-    public:
-        ScriptFunctorImpl(DestFunc f):destFunc(f){}
-        virtual void onMsg(userid_t id, const std::string& data){
-            if (destFunc){
-                (*destFunc)(id, data);
-            }
-        }
-        DestFunc destFunc;
-    };
-};
-template<typename FUNC_CLASS_TYPE>
-struct SessionMsgFunctorUtil<void (FUNC_CLASS_TYPE::*)(userid_t, const std::string&)>{
-    typedef void (FUNC_CLASS_TYPE::*DestFunc)(userid_t, const std::string&);
-    class ScriptFunctorImpl: public SessionMsgFunctor{
-    public:
-        ScriptFunctorImpl(DestFunc f, FUNC_CLASS_TYPE* p):destFunc(f), obj(p){}
-        virtual void onMsg(userid_t id, const std::string& data){
-            if (destFunc){
-                (obj->*destFunc)(id, data);
-            }
-        }
-        DestFunc destFunc;
-        FUNC_CLASS_TYPE* obj;
-    };
 };
 
 }

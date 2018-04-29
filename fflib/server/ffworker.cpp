@@ -62,11 +62,12 @@ FFWorker::FFWorker():m_nWorkerIndex(0), m_allocID(0),m_ffrpc(NULL)
 }
 FFWorker::~FFWorker()
 {
-    std::map<int, SessionMsgFunctor*>::iterator  it = m_functors.begin();
+    /*std::map<int, SessionMsgFunctor*>::iterator  it = m_functors.begin();
     for (; it != m_functors.end(); ++it){
         delete it->second;
     }
     m_functors.clear();
+    */
     m_shared_mem_mgr.cleanup();
 }
 FFWorker* FFWorker::gSingletonWorker = NULL;
@@ -151,17 +152,10 @@ int FFWorker::processSessionReq(RPCReq<RouteLogicMsg_t::in_t, RouteLogicMsg_t::o
         }
     }
     
-    std::map<int, SessionMsgFunctor*>::iterator itFunc = this->m_functors.find(req_.msg.cmd);
-
-    if (itFunc != this->m_functors.end()){
-        //(itFunc->second)->onMsg(req_.msg.session_id, req_.msg.body);
-    }
-    else{
-        SessionReqEvent eMsg(req_.msg.session_id, req_.msg.cmd, req_.msg.body);
-        EVENT_BUS_FIRE(eMsg);
-        if (eMsg.isDone == false){
-            onSessionReq(req_.msg.session_id, req_.msg.cmd, req_.msg.body);
-        }
+    SessionReqEvent eMsg(req_.msg.session_id, req_.msg.cmd, req_.msg.body);
+    EVENT_BUS_FIRE(eMsg);
+    if (eMsg.isDone == false){
+        onSessionReq(req_.msg.session_id, req_.msg.cmd, req_.msg.body);
     }
     
     if (req_.callback_id != 0)
