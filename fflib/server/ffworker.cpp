@@ -153,7 +153,9 @@ int FFWorker::processSessionReq(RPCReq<RouteLogicMsg_t::in_t, RouteLogicMsg_t::o
     }
     
     SessionReqEvent eMsg(req_.msg.session_id, req_.msg.cmd, req_.msg.body);
-    EVENT_BUS_FIRE(eMsg);
+    if (SessionReqEvent::LOGOUT_CMd != req_.msg.cmd){//!如果有客户端发了错误包，忽略0xFFFF是保留协议
+        EVENT_BUS_FIRE(eMsg);
+    }
     if (eMsg.isDone == false){
         onSessionReq(req_.msg.session_id, req_.msg.cmd, req_.msg.body);
     }
@@ -181,7 +183,8 @@ int FFWorker::onSessionReq(userid_t session_id_, uint16_t cmd_, const std::strin
 int FFWorker::processSessionOffline(RPCReq<SessionOffline::in_t, SessionOffline::out_t>& req_)
 {
     LOGTRACE((FFWORKER_LOG, "FFWorker::processSessionOffline begin"));
-    
+    SessionReqEvent eMsg(req_.msg.session_id, SessionReqEvent::LOGOUT_CMd, "", 1);
+    EVENT_BUS_FIRE(eMsg);
     onSessionOffline(req_.msg.session_id);
     
     SessionOffline::out_t out;

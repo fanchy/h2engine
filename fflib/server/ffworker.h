@@ -19,13 +19,17 @@ namespace ff
 class SessionReqEvent:public Event<SessionReqEvent>
 {
 public:
-    SessionReqEvent(userid_t session_id_, uint16_t cmd_, const std::string& data_)
-        :session_id(session_id_), cmd(cmd_), data(data_), isDone(false){}
-    
-    userid_t session_id;
-    uint16_t cmd;
-    const std::string& data;
-    bool isDone;
+    enum LogoutDef{
+        LOGOUT_CMd = 0xFFFF
+    };
+    SessionReqEvent(userid_t session_id_, uint16_t cmd_, const std::string& data_, bool argLogout = false)
+        :session_id(session_id_), cmd(cmd_), data(data_), isDone(false), bLogout(argLogout){}
+    bool isLogout() const { return bLogout;}
+    userid_t            session_id;
+    uint16_t            cmd;
+    const std::string&  data;
+    bool                isDone;
+    bool                bLogout;
 };
 
 class ClientData{
