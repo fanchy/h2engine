@@ -12,6 +12,10 @@ static void handleSessionCmd(SessionReqEvent& e){
         if (entity){
             cmdHandler->handleCmd(entity, e.cmd, e.data);
         }
+        else if (){//!如果是login 包那么entity可以没有值
+            int nFlag = CMD_MGR.getCmdFlag(e.cmd);
+            if()
+        }
     }
 }
 bool CmdModule::init(){
