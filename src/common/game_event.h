@@ -2,7 +2,7 @@
 #define _FF_GAME_EVENT_H_
 
 #include "base/event_bus.h"
-#include "common/entity.h"
+#include "server/entity.h"
 
 namespace ff{
 //!entity 数据载入开始，正常情况下entity的数据载入是异步的，所以entity载入分两步，LoadBegin和LoadEnd 

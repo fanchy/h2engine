@@ -1,15 +1,5 @@
-#ifndef _FF_ENTITY_H_
-#define _FF_ENTITY_H_
-
-#include <string>
-#include <vector>
-#include <list>
-#include <map>
-
-#include "base/fftype.h"
-#include "base/smart_ptr.h"
-#include "server/script.h"
-#include "common/prop.h"
+#ifndef _FF_CHAT_H_
+#define _FF_CHAT_H_
 
 namespace ff
 {

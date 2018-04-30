@@ -1,7 +1,7 @@
 
 #include "server/ffworker.h"
-#include "common/entity.h"
-#include "common/cmdmgr.h"
+#include "server/entity.h"
+#include "server/cmdmgr.h"
 #include "player/player.h"
 #include "map/map.h"
 #include "task/task.h"

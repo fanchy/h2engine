@@ -7,7 +7,7 @@
 #include <map>
 #include <set>
 
-#include "common/entity.h"
+#include "server/entity.h"
 #include "base/smart_ptr.h"
 
 namespace ff
