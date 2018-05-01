@@ -108,7 +108,10 @@ int SharedSyncmemMgr::processCmdQueue()
     {
         SyncCmdData& cmddata = tmplist[i];
         //printf("process queue update %lu, %lu, %s\n", cmddata.proptype, cmddata.propkey, cmddata.body.c_str());
-        if (m_notify_func)
+        OnSyncSharedData eMsg(cmddata.cmd, cmddata.body);
+        EVENT_BUS_FIRE(eMsg);
+        
+        if (eMsg.isDone == false && m_notify_func)
         {
             m_notify_func(cmddata.cmd, cmddata.body);
         }

@@ -19,7 +19,10 @@ file(GLOB_RECURSE GAME_IMPL_SRC "src/*.cpp")
 foreach(filename ${GAME_IMPL_SRC})  
 message(${filename})
 endforeach()
-
+file(GLOB_RECURSE WORKER_CPP_SRC "workercpp/*.cpp") 
+foreach(filename ${WORKER_CPP_SRC})  
+message(${filename})
+endforeach()
 file(GLOB_RECURSE WORKER_PY_SRC "workerpy/*.cpp") 
 foreach(filename ${WORKER_PY_SRC})  
 message(${filename})
@@ -41,6 +44,9 @@ endforeach()
 set(ENGINE_SRC_LIST 
     ${ENGINE_LIB_SRC}
     ${PROJECT_SOURCE_DIR}/engine/main.cpp
+)
+set(WORKER_CPP_SRC_LIST 
+    ${ENGINE_LIB_SRC} ${GAME_IMPL_SRC} ${WORKER_CPP_SRC}
 )
 set(WORKER_PY_SRC_LIST 
     ${ENGINE_LIB_SRC} ${GAME_IMPL_SRC} ${WORKER_PY_SRC}
@@ -75,6 +81,9 @@ else()
     message("user default php version:php5")
     set(PHPVER "php5") 
 endif()
+
+add_executable(h2workercpp ${WORKER_CPP_SRC_LIST})
+target_link_libraries(h2workercpp pthread dl mysqlclient crypto ssl z curl ${PYVER})
 
 add_executable(h2workerpy ${WORKER_PY_SRC_LIST})
 target_link_libraries(h2workerpy pthread dl mysqlclient crypto ssl z curl ${PYVER})

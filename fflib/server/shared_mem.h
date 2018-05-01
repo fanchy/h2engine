@@ -25,6 +25,7 @@
 #include "rapidjson/filestream.h"   // wrapper of C stream for prettywriter as output
 #include "rapidjson/stringbuffer.h"   // wrapper of C stream for prettywriter as output
 #include "base/lock.h"
+#include "base/event_bus.h"
 
 
 #include <semaphore.h>
@@ -125,6 +126,15 @@ public:
     notify_func_t                               m_notify_func;
     
     writelock_gurard_ptr_t                      m_lock_guard;
+};
+class OnSyncSharedData:public Event<OnSyncSharedData>
+{
+public:
+    OnSyncSharedData(uint16_t c, const std::string& b)
+        :cmd(c), body(b), isDone(false){}
+    uint16_t            cmd;
+    const std::string&  body;
+    bool                isDone;
 };
 
 }

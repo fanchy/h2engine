@@ -7,7 +7,7 @@ using namespace std;
 
 
 DbMgr::DbMgr():
-    m_db_index(0), m_defaultDbNum(0)
+    m_db_index(0), m_defaultDbNum(0), m_tqWorkerDefault(NULL)
 {
 }
 DbMgr::~DbMgr()

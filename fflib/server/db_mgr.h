@@ -107,7 +107,10 @@ public:
     long connectDB(const std::string& host_, const std::string& name);
 
     template<typename T>
-    void asyncQueryModId(long mod, const std::string& sql_, T& func, TaskQueue* tq){
+    void asyncQueryModId(long mod, const std::string& sql_, T& func, TaskQueue* tq = NULL){
+        if (!tq){
+            tq = m_tqWorkerDefault;
+        }
         char buff[256] = {0};
         int nMod = (m_defaultDbNum != 0)? m_defaultDbNum: 1;
         ::snprintf(buff, sizeof(buff), "%s#%ld", DB_DEFAULT_NAME, mod % nMod + 1);
@@ -149,6 +152,7 @@ public:
                      std::vector<std::vector<std::string> >* ret_data_ = NULL,
                      std::string* errinfo = NULL, int* affectedRows_ = NULL, std::vector<std::string>* col_ = NULL);
     uint64_t allocId(int nType);
+    void setDefaultTaskQueue(TaskQueue* tq){ m_tqWorkerDefault = tq; }
 private:
     void queryDBImpl(DBConnectionInfo* db_connection_info_, const std::string& sql_, FFSlotCallBackPtr callback_);
     void syncQueryDBImpl(DBConnectionInfo* db_connection_info_, const std::string& sql_, QueryDBResult* result);
@@ -175,6 +179,7 @@ private:
     std::map<long/*dbid*/, DBConnectionInfo>            m_db_connection;
     Thread                                              m_thread;
     std::map<std::string, DBConnectionInfo*>            m_name2connection;
+    TaskQueue*                                          m_tqWorkerDefault;
 };
 #define DB_MGR Singleton<DbMgr>::instance()
 

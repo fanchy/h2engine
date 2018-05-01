@@ -798,6 +798,9 @@ int FFWorkerPython::scriptInit(const string& py_root)
             }
         }
     }
+    else{
+        LOGERROR((FFWORKER_PYTHON, "FFWorkerPython::no db config"));
+    }
     
     int ret = -2;
     

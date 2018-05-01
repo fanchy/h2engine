@@ -12,26 +12,13 @@
 #include "base/arg_helper.h"
 #include "server/shared_mem.h"
 #include "base/event_bus.h"
+#include "server/entity.h"
+#include "server/prop.h"
+#include "server/cmd_util.h"
 
 namespace ff
 {
 #define EXT_NAME "h2ext"
-class SessionReqEvent:public Event<SessionReqEvent>
-{
-public:
-    enum LogoutDef{
-        LOGOUT_CMd = 0xFFFF
-    };
-    SessionReqEvent(userid_t session_id_, uint16_t cmd_, const std::string& data_, bool argLogout = false)
-        :session_id(session_id_), cmd(cmd_), data(data_), isDone(false), bLogout(argLogout){}
-    bool isLogout() const { return bLogout;}
-    userid_t            session_id;
-    uint16_t            cmd;
-    const std::string&  data;
-    bool                isDone;
-    bool                bLogout;
-};
-
 class ClientData{
 public:
     virtual ~ClientData(){}
@@ -58,10 +45,11 @@ public:
         client_data = sp;
     }
 public:
-    userid_t                        session_id;
+    userid_t                             session_id;
     std::string                          session_ip;
     std::string                          from_gate;
-    SharedPtr<ClientData>     client_data;
+    SharedPtr<ClientData>                client_data;
+    EntityPtr                            entity;
 };
 
 typedef bool (*WorkerFunc)();
@@ -163,13 +151,13 @@ public:
     bool cleanupModule();
 public:
     //! 转发client消息
-    virtual int onSessionReq(userid_t session_id_, uint16_t cmd_, const std::string& data_);
+    virtual int onSessionReq(userid_t session_id_, uint16_t cmd_, const std::string& data_) {return 0;}
     //! 处理client 下线
-    virtual int onSessionOffline(userid_t session_id);
+    virtual int onSessionOffline(userid_t session_id){return 0;}
     //! 处理client 跳转
-    virtual int onSessionEnter(userid_t session_id, const std::string& extra_data);
+    virtual int onSessionEnter(userid_t session_id, const std::string& extra_data){ return 0;}
     //! scene 之间的互调用
-    virtual std::string onWorkerCall(uint16_t cmd, const std::string& body);
+    virtual std::string onWorkerCall(uint16_t cmd, const std::string& body) { return "!invalid";}
    
     userid_t allocUid() { return ++m_allocID; }
     int      getWorkerIndex() const { return m_nWorkerIndex; }
@@ -189,8 +177,6 @@ protected:
     userid_t                                    m_allocID;
     std::string                                 m_logic_name;
     SharedPtr<FFRpc>                            m_ffrpc;
-    callback_info_t                             m_callback_info;
-    
     std::map<userid_t, WorkerClient>            m_worker_client;
     SharedSyncmemMgr                            m_shared_mem_mgr;
 };
@@ -312,6 +298,38 @@ public:
     std::string&         err;
     std::string&         msg_type;
     std::string&         ret;
+};
+
+class SessionReqEvent:public Event<SessionReqEvent>
+{
+public:
+    SessionReqEvent(EntityPtr e, uint16_t cmd_, const std::string& data_, bool argLogout = false)
+        :entity(e), cmd(cmd_), data(data_), isDone(false), bLogout(argLogout){}
+    bool isLogout() const { return bLogout;}
+    EntityPtr           entity;
+    uint16_t            cmd;
+    const std::string&  data;
+    bool                isDone;
+    bool                bLogout;
+};
+class OnSessionEnterEvent:public Event<OnSessionEnterEvent>
+{
+public:
+    OnSessionEnterEvent(userid_t id, const std::string& data)
+        :session_id(id), extra_data(data), isDone(false){}
+    userid_t            session_id;
+    const std::string&  extra_data;
+    bool                isDone;
+};
+class OnWorkerCallEvent:public Event<OnWorkerCallEvent>
+{
+public:
+    OnWorkerCallEvent(uint16_t c, const std::string& b)
+        :cmd(c), body(b), isDone(false){}
+    uint16_t            cmd;
+    const std::string&  body;
+    bool                isDone;
+    std::string         response;
 };
 
 }

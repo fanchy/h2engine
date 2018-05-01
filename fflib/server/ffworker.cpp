@@ -2,6 +2,7 @@
 #include "base/log.h"
 #include "server/http_mgr.h"
 #include "server/script_cache.h"
+#include "server/db_mgr.h"
 
 using namespace ff;
 using namespace std;
@@ -62,16 +63,9 @@ FFWorker::FFWorker():m_nWorkerIndex(0), m_allocID(0),m_ffrpc(NULL)
 }
 FFWorker::~FFWorker()
 {
-    /*std::map<int, SessionMsgFunctor*>::iterator  it = m_functors.begin();
-    for (; it != m_functors.end(); ++it){
-        delete it->second;
-    }
-    m_functors.clear();
-    */
     m_shared_mem_mgr.cleanup();
 }
 FFWorker* FFWorker::gSingletonWorker = NULL;
-//int FFWorker::open(ArgHelper& arg_helper, string worker_name)
 int FFWorker::open(const string& brokercfg, int worker_index)
 {
     LOGTRACE((FFWORKER_LOG, "FFWorker::open begin"));
@@ -106,6 +100,9 @@ int FFWorker::open(const string& brokercfg, int worker_index)
     LOGTRACE((FFWORKER_LOG, "FFWorker::open end ok"));
     
     SCRIPT_CACHE.init();
+    DB_MGR.setDefaultTaskQueue(this->getRpc().getTaskQueue());
+    EntityModule::init();
+    CmdModule::init();
     return 0;
 }
 int FFWorker::close()
@@ -141,6 +138,7 @@ int FFWorker::processSessionReq(RPCReq<RouteLogicMsg_t::in_t, RouteLogicMsg_t::o
 {
     LOGTRACE((FFWORKER_LOG, "FFWorker::processSessionReq begin cmd[%u]", req_.msg.cmd));
     std::map<userid_t, WorkerClient>::iterator it = m_worker_client.find(req_.msg.session_id);
+    WorkerClient* pWorkerClient = NULL;
     if (it == m_worker_client.end()){
         WorkerClient& worker_client = m_worker_client[req_.msg.session_id];
         
@@ -150,10 +148,15 @@ int FFWorker::processSessionReq(RPCReq<RouteLogicMsg_t::in_t, RouteLogicMsg_t::o
         {
             worker_client.from_gate = "gate0";
         }
+        worker_client.entity = ALLOC_ENTITY(0, 0, req_.msg.session_id);
+        pWorkerClient = &worker_client;
+    }
+    else{
+        pWorkerClient = &(it->second);
     }
     
-    SessionReqEvent eMsg(req_.msg.session_id, req_.msg.cmd, req_.msg.body);
-    if (SessionReqEvent::LOGOUT_CMd != req_.msg.cmd){//!如果有客户端发了错误包，忽略0xFFFF是保留协议
+    SessionReqEvent eMsg(pWorkerClient->entity, req_.msg.cmd, req_.msg.body);
+    if (LOGOUT_CMD != req_.msg.cmd){//!如果有客户端发了错误包，忽略0xFFFF是保留协议
         EVENT_BUS_FIRE(eMsg);
     }
     if (eMsg.isDone == false){
@@ -169,37 +172,26 @@ int FFWorker::processSessionReq(RPCReq<RouteLogicMsg_t::in_t, RouteLogicMsg_t::o
     LOGTRACE((FFWORKER_LOG, "FFWorker::processSessionReq end ok"));
     return 0;
 }
-int FFWorker::onSessionReq(userid_t session_id_, uint16_t cmd_, const std::string& data_)
-{
-    if (m_callback_info.logic_callback)
-    {
-        m_callback_info.logic_callback(session_id_, cmd_, data_);
-    }
-    //sessionSendMsg(req_.msg.session_id, 11111, req_.msg.body);
-    return 0;
-}
 
 //! 处理client 下线
 int FFWorker::processSessionOffline(RPCReq<SessionOffline::in_t, SessionOffline::out_t>& req_)
 {
     LOGTRACE((FFWORKER_LOG, "FFWorker::processSessionOffline begin"));
-    SessionReqEvent eMsg(req_.msg.session_id, SessionReqEvent::LOGOUT_CMd, "", 1);
+    EntityPtr entity = m_worker_client[req_.msg.session_id].entity;
+    if (entity){
+        entity->setSession(0);
+    }
+    SessionReqEvent eMsg(entity, LOGOUT_CMD, "", 1);
     EVENT_BUS_FIRE(eMsg);
-    onSessionOffline(req_.msg.session_id);
+    if (eMsg.isDone == false){
+        onSessionOffline(req_.msg.session_id);
+    }
     
     SessionOffline::out_t out;
     req_.response(out);
     m_worker_client.erase(req_.msg.session_id);
     getSharedMem().writeLockEnd();
     LOGTRACE((FFWORKER_LOG, "FFWorker::processSessionOffline end ok"));
-    return 0;
-}
-int FFWorker::onSessionOffline(userid_t session_id)
-{
-    if (m_callback_info.offline_callback)
-    {
-        m_callback_info.offline_callback(session_id);
-    }
     return 0;
 }
 
@@ -213,45 +205,40 @@ int FFWorker::processSessionEnter(RPCReq<SessionEnterWorker::in_t, SessionEnterW
     
     SessionEnterWorker::out_t out;
     req_.response(out);
-    onSessionEnter(req_.msg.session_id, req_.msg.extra_data);
+    
+    
+    OnSessionEnterEvent eMsg(req_.msg.session_id, req_.msg.extra_data);
+    EVENT_BUS_FIRE(eMsg);
+    if (eMsg.isDone == false){
+        onSessionEnter(req_.msg.session_id, req_.msg.extra_data);
+    }
     
     getSharedMem().writeLockEnd();
     LOGTRACE((FFWORKER_LOG, "FFWorker::processSessionEnter end ok"));
 
     return 0;
 }
-int FFWorker::FFWorker::onSessionEnter(userid_t session_id, const std::string& extra_data)
-{
-    if (m_callback_info.enter_callback)
-    {
-        m_callback_info.enter_callback(session_id, extra_data);
-    }
-    return 0;
-}
+
 //! scene 之间的互调用
 int FFWorker::processWorkerCall(RPCReq<WorkerCallMsgt::in_t, WorkerCallMsgt::out_t>& req_)
 {
     LOGTRACE((FFWORKER_LOG, "FFWorker::processWorkerCall begin cmd[%u]", req_.msg.cmd));
     
     WorkerCallMsgt::out_t out;
-    out.body = onWorkerCall(req_.msg.cmd, req_.msg.body);
+    
+    OnWorkerCallEvent eMsg(req_.msg.cmd, req_.msg.body);
+    EVENT_BUS_FIRE(eMsg);
+    if (eMsg.isDone){
+        out.body = eMsg.response;
+    }
+    else{
+        out.body = onWorkerCall(req_.msg.cmd, req_.msg.body);
+    }
     req_.response(out);
 
     getSharedMem().writeLockEnd();
     LOGTRACE((FFWORKER_LOG, "FFWorker::processWorkerCall end ok"));
     return 0;
-}
-std::string FFWorker::onWorkerCall(uint16_t cmd, const string& body)
-{
-    if (m_callback_info.worker_call_callback)
-    {
-        return m_callback_info.worker_call_callback(cmd, body);
-    }
-    return "!invalid";
-}
-FFWorker::callback_info_t& FFWorker::callback_info()
-{
-    return m_callback_info;
 }
 
 const string& FFWorker::getSessionGate(const userid_t& session_id_)
