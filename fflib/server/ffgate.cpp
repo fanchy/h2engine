@@ -159,13 +159,6 @@ int FFGate::routeLogicMsg(const Message& msg_, SocketPtr sock_, bool first)
     LOGTRACE((FFGATE, "FFGate::routeLogicMsg session_id[%ld]", session_data->id()));
     
     client_info_t& client_info   = m_client_set[session_data->id()];
-    if (client_info.request_queue.size() == MAX_MSG_QUEUE_SIZE)
-    {
-        //!  消息队列超限，关闭sock
-        sock_->close();
-        cleanup_session(client_info, sock_);
-        return 0;
-    }
     
     RouteLogicMsg_t::in_t msg;
     msg.session_id = session_data->id();
@@ -177,40 +170,8 @@ int FFGate::routeLogicMsg(const Message& msg_, SocketPtr sock_, bool first)
         LOGTRACE((FFGATE, "FFGate::handleMsg new session_id[%ld] ip[%s] alloc[%s]", 
                     session_data->id(), msg.session_ip, client_info.alloc_worker));
     }
-    if (client_info.request_queue.empty())
-    {
-        m_ffrpc->call(client_info.group_name, client_info.alloc_worker, msg,
-                      FFRpcOps::genCallBack(&FFGate::routeLogicMsgCallback, this, session_data->id()));
-    }
-    else
-    {
-        client_info.request_queue.push(msg);
-    }
-    LOGTRACE((FFGATE, "FFGate::routeLogicMsg end ok alloc_worker[%s] size=%d body=%s", client_info.alloc_worker, client_info.request_queue.size(), msg.body));
-    return 0;
-}
-
-//! 逻辑处理,转发消息到logic service
-int FFGate::routeLogicMsgCallback(RPCReq<RouteLogicMsg_t::out_t>& req_, const userid_t& session_id_)
-{
-    LOGTRACE((FFGATE, "FFGate::routeLogicMsgCallback session_id[%ld]", session_id_));
-    map<userid_t/*sessionid*/, client_info_t>::iterator it = m_client_set.find(session_id_);
-    if (it == m_client_set.end())
-    {
-        return 0;
-    }
-    client_info_t& client_info = it->second;
-    if (client_info.request_queue.empty())
-    {
-        return 0;
-    }
-    
-    m_ffrpc->call(client_info.group_name, client_info.alloc_worker, client_info.request_queue.front(),
-                  FFRpcOps::genCallBack(&FFGate::routeLogicMsgCallback, this, session_id_));
-    
-    client_info.request_queue.pop();
-    LOGTRACE((FFGATE, "FFGate::routeLogicMsgCallback end ok queue_size[%d],alloc_worker[%s]",
-                client_info.request_queue.size(), client_info.alloc_worker));
+    m_ffrpc->call(client_info.group_name, client_info.alloc_worker, msg);
+    LOGTRACE((FFGATE, "FFGate::routeLogicMsg end ok alloc_worker[%s] body=%s", client_info.alloc_worker, msg.body));
     return 0;
 }
 

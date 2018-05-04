@@ -46,8 +46,6 @@ public:
     int close_impl();
     //! 逻辑处理,转发消息到logic service
     int routeLogicMsg(const Message& msg_, SocketPtr sock_, bool first);
-    //! 逻辑处理,转发消息到logic service
-    int routeLogicMsgCallback(RPCReq<RouteLogicMsg_t::out_t>& req_, const userid_t& session_id_);
     //! enter scene 回调函数
     int enterWorkerCallback(RPCReq<SessionEnterWorker::out_t>& req_, const userid_t& session_id_);
     
@@ -98,7 +96,6 @@ struct FFGate::client_info_t
     SocketPtr     sock;
     std::string           alloc_worker;
     std::string           group_name;
-    std::queue<RouteLogicMsg_t::in_t>    request_queue;//! 请求队列，客户端有可能发送多个请求，但是服务器需要一个一个处理
 };
 
 }
