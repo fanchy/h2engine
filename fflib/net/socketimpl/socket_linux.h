@@ -14,7 +14,7 @@ class EventLoop;
 class SocketCtrlI;
 class TaskQueue;
 
-#define  RECV_BUFFER_SIZE 8096
+#define  RECV_BUFFER_SIZE 8192
 
 
 class SocketLinux: public SocketI
