@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(h2engine)
-add_definitions(-g -Wall)
+add_definitions(-g -O2 -Wall)
 include_directories(${PROJECT_SOURCE_DIR}/fflib ${PROJECT_SOURCE_DIR}/lib3party ${PROJECT_SOURCE_DIR}/src  
             ${PROJECT_SOURCE_DIR}/lib3party/php ${PROJECT_SOURCE_DIR}/lib3party/php/embed 
             ${PROJECT_SOURCE_DIR}/lib3party/php/main ${PROJECT_SOURCE_DIR}/lib3party/php/Zend
@@ -83,7 +83,7 @@ else()
 endif()
 
 add_executable(h2workercpp ${WORKER_CPP_SRC_LIST})
-target_link_libraries(h2workercpp pthread dl mysqlclient crypto ssl z curl ${PYVER})
+target_link_libraries(h2workercpp pthread dl mysqlclient crypto ssl z curl)
 
 add_executable(h2workerpy ${WORKER_PY_SRC_LIST})
 target_link_libraries(h2workerpy pthread dl mysqlclient crypto ssl z curl ${PYVER})
