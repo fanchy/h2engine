@@ -180,7 +180,7 @@ static string buildpkg(const string& data, int opcode = 0x01)
     {
         ret[1] = 126;
         uint16_t extsize = data.length();
-        extsize = ::htons(extsize);
+        extsize = htons(extsize);
         ret.append((const char*)(&extsize), sizeof(extsize));
         ret += data;
         LOGTRACE((FFNET, "buildpkg..........1"));
@@ -469,7 +469,7 @@ int SocketCtrlGate::handleRead_mask_msg(SocketI* s_, const char* buff, size_t le
                 return 0;
             }
             uint16_t tmp_val = *((uint16_t*)(m_buff.c_str() + 2));
-            pkgsize          = ::ntohs(tmp_val);
+            pkgsize          = ntohs(tmp_val);
             if (m_buff.size() < headsize + masksize + pkgsize)
             {
                 return 0;

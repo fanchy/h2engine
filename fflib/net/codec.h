@@ -184,13 +184,13 @@ struct CodecTool<X>                                              \
 {                                                                   \
     static void encode(BinEncoder& en_, const X& src_val_)       \
     {                                                               \
-        X val_ = (X)::htons(src_val_);                                 \
+        X val_ = (X)htons(src_val_);                                 \
         en_.copy_value((const char*)(&val_), sizeof(val_));         \
     }                                                               \
     static void decode(BinDecoder& de_, X& val_)                 \
     {                                                               \
         de_.copy_value((void*)(&val_), sizeof(val_));               \
-        val_ = (X)::ntohs(val_);                                       \
+        val_ = (X)ntohs(val_);                                       \
     }                                                               \
 };
 #define GEN_CODE_ENCODE_DECODE_LONG(X)                                          \
@@ -199,13 +199,13 @@ struct CodecTool<X>                                              \
 {                                                                   \
     static void encode(BinEncoder& en_, const X& src_val_)       \
     {                                                               \
-        X val_ = (X)::htonl(src_val_);                                 \
+        X val_ = (X)htonl(src_val_);                                 \
         en_.copy_value((const char*)(&val_), sizeof(val_));         \
     }                                                               \
     static void decode(BinDecoder& de_, X& val_)                 \
     {                                                               \
         de_.copy_value((void*)(&val_), sizeof(val_));               \
-        val_ = (X)::ntohl(val_);                                       \
+        val_ = (X)ntohl(val_);                                       \
     }                                                               \
 };
 #define GEN_CODE_ENCODE_DECODE_64(X)                                \

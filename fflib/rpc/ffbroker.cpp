@@ -151,17 +151,7 @@ TaskQueue* FFBroker::getTaskQueue()
 {
     return &m_tq;
 }
-/*
-int FFBroker::handleBroken(SocketPtr sock_)
-{
-    m_tq.post(TaskBinder::gen(&FFBroker::handleBroken_impl, this, sock_));
-    return 0;
-}
-int FFBroker::handleMsg(const Message& msg_, SocketPtr sock_)
-{
-    m_tq.post(TaskBinder::gen(&FFBroker::handleMsg_impl, this, msg_, sock_));
-    return 0;
-}*/
+
 //! 当有连接断开，则被回调
 int FFBroker::handleBroken(SocketPtr sock_)
 {

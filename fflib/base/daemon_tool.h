@@ -38,7 +38,7 @@ public:
         }
 
         char buffer[1024];
-        getcwd(buffer, sizeof(buffer));
+        if (getcwd(buffer, sizeof(buffer))){}
 
         if(chdir(buffer) == -1)
         {
@@ -76,8 +76,8 @@ public:
         }
 
         int fd_dev = open("/dev/null", O_RDWR);
-        (void)dup(fd_dev);
-        (void)dup(fd_dev);
+        if (dup(fd_dev)){}
+        if (dup(fd_dev)){}
     }
 
     static int get_uid(const char* uname_)

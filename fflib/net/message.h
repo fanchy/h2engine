@@ -29,15 +29,15 @@ struct MessageHead
     {}
     void hton()
     {
-        size = ::htonl(size);
-        cmd  = ::htons(cmd);
-        flag = ::htons(flag);
+        size = htonl(size);
+        cmd  = htons(cmd);
+        flag = htons(flag);
     }
     void ntoh()
     {
-        size = ::ntohl(size);
-        cmd  = ::ntohs(cmd);
-        flag = ::ntohs(flag);
+        size = ntohl(size);
+        cmd  = ntohs(cmd);
+        flag = ntohs(flag);
     }
     uint32_t size;
     uint16_t cmd;

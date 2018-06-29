@@ -48,7 +48,7 @@ struct ffjson_tool_t{
     }
     bool decode(const std::string& src)
     {
-        if (false == this->jval->Parse<0>(src.c_str()).HasParseError())
+        if (this->jval->Parse<0>(src.c_str()).HasParseError())
         {
             return false;
         }

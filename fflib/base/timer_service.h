@@ -31,7 +31,9 @@ class TimerService
         interupt_info_t()
         {
             assert(0 == ::socketpair(AF_LOCAL, SOCK_STREAM, 0, pair_fds));
-            ::write(pair_fds[1], "0", 1);
+            if (write(pair_fds[1], "0", 1)){
+                //!just for warning
+            }
         }
         ~interupt_info_t()
         {

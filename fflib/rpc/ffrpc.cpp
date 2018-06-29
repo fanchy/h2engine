@@ -172,18 +172,7 @@ TaskQueue* FFRpc::getTaskQueue()
 {
     return &m_tq;
 }
-/*
-int FFRpc::handleBroken(SocketPtr sock_)
-{
-    m_tq.post(TaskBinder::gen(&FFRpc::handleBroken_impl, this, sock_));
-    return 0;
-}
-int FFRpc::handleMsg(const Message& msg_, SocketPtr sock_)
-{
-    m_tq.post(TaskBinder::gen(&FFRpc::handleMsg_impl, this, msg_, sock_));
-    return 0;
-}
-*/
+
 int FFRpc::handleBroken(SocketPtr sock_)
 {
     //! 设置定时器重练
@@ -247,7 +236,8 @@ int FFRpc::handleRpcCallMsg(BrokerRouteMsg::in_t& msg_, SocketPtr sock_)
     if (false == msg_.err_info.empty())
     {
         LOGERROR((FFRPC, "FFRpc::handleRpcCallMsg error=%s", msg_.err_info));
-        return 0;
+        if (msg_.callback_id == 0)
+            return 0;
     }
     if (msg_.dest_service_name.empty() == false)
     {
@@ -283,7 +273,7 @@ int FFRpc::handleRpcCallMsg(BrokerRouteMsg::in_t& msg_, SocketPtr sock_)
             msg_.err_info = "interface named " + msg_.dest_msg_name + " not found in rpc";
             msg_.dest_node_id = msg_.from_node_id;
             msg_.dest_service_name.clear();
-            this->response(msg_.from_namespace, "", msg_.from_node_id, 0, FFThrift::EncodeAsString(msg_), msg_.err_info);
+            this->response(msg_.from_namespace, "", msg_.from_node_id, msg_.callback_id, FFThrift::EncodeAsString(msg_), msg_.err_info);
         }
     }
     else

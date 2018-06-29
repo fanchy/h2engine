@@ -54,7 +54,7 @@ public:
     //! 关闭某个session socket
     int closeSession(RPCReq<GateCloseSession::in_t, GateCloseSession::out_t>& req_);
     //! 转发消息给client
-    int routeMmsgToSession(RPCReq<GateRouteMsgToSession::in_t, GateRouteMsgToSession::out_t>& req_);
+    int routeMsgToSession(RPCReq<GateRouteMsgToSession::in_t, GateRouteMsgToSession::out_t>& req_);
     //! 广播消息给所有的client
     int broadcastMsgToSession(RPCReq<GateBroadcastMsgToSession::in_t, GateBroadcastMsgToSession::out_t>& req_);
     

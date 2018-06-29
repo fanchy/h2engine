@@ -38,7 +38,7 @@ int FFGate::open(const string& broker_addr, const string& gate_listen, int gate_
     
     m_ffrpc->reg(&FFGate::changeSessionLogic, this);
     m_ffrpc->reg(&FFGate::closeSession, this);
-    m_ffrpc->reg(&FFGate::routeMmsgToSession, this);
+    m_ffrpc->reg(&FFGate::routeMsgToSession, this);
     m_ffrpc->reg(&FFGate::broadcastMsgToSession, this);
     
     if (m_ffrpc->open(broker_addr))
@@ -214,6 +214,8 @@ int FFGate::closeSession(RPCReq<GateCloseSession::in_t, GateCloseSession::out_t>
 {
     LOGTRACE((FFGATE, "FFGate::closeSession session_id[%ld]", req_.msg.session_id));
     
+    GateCloseSession::out_t out;
+    req_.response(out);
     map<userid_t/*sessionid*/, client_info_t>::iterator it = m_client_set.find(req_.msg.session_id);
     if (it == m_client_set.end())
     {
@@ -222,21 +224,19 @@ int FFGate::closeSession(RPCReq<GateCloseSession::in_t, GateCloseSession::out_t>
     it->second.sock->close();
     cleanup_session(it->second, it->second.sock, false);
     
-    GateCloseSession::out_t out;
-    req_.response(out);
     LOGTRACE((FFGATE, "FFGate::GateCloseSession end ok"));
     return 0;
 }
 
 //! 转发消息给client
-int FFGate::routeMmsgToSession(RPCReq<GateRouteMsgToSession::in_t, GateRouteMsgToSession::out_t>& req_)
+int FFGate::routeMsgToSession(RPCReq<GateRouteMsgToSession::in_t, GateRouteMsgToSession::out_t>& req_)
 {
-    LOGTRACE((FFGATE, "FFGate::routeMmsgToSession begin num[%d]", req_.msg.session_id.size()));
+    LOGTRACE((FFGATE, "FFGate::routeMsgToSession begin num[%d]", req_.msg.session_id.size()));
     
     for (size_t i = 0; i < req_.msg.session_id.size(); ++i)
     {
         userid_t& session_id = req_.msg.session_id[i];
-        LOGTRACE((FFGATE, "FFGate::routeMmsgToSession session_id[%ld]", session_id));
+        LOGTRACE((FFGATE, "FFGate::routeMsgToSession session_id[%ld]", session_id));
 
         map<userid_t/*sessionid*/, client_info_t>::iterator it = m_client_set.find(session_id);
         if (it == m_client_set.end())
@@ -248,7 +248,7 @@ int FFGate::routeMmsgToSession(RPCReq<GateRouteMsgToSession::in_t, GateRouteMsgT
     }
     GateRouteMsgToSession::out_t out;
     req_.response(out);
-    LOGTRACE((FFGATE, "FFGate::routeMmsgToSession end ok"));
+    LOGTRACE((FFGATE, "FFGate::routeMsgToSession end ok"));
     return 0;
 }
 
