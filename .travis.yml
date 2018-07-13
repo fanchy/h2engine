@@ -3,6 +3,7 @@ compiler: gcc
 install:
   - sudo apt install -y libmysqlclient-dev 
   - sudo apt install -y libssl-dev 
+  - sudo apt install -y liblua5.1-dev 
   - sudo apt install -y liblua5.2-dev 
   - sudo apt install -y libcurl4-openssl-dev
   - sudo apt install -y libpython-dev
@@ -11,6 +12,7 @@ install:
 script: 
   - cmake CMakeCache.txt 
   - make h2engine
+  - make h2workercpp
   - make h2workerpy
   - make h2workerlua
 
