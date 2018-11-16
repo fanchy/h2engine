@@ -1,14 +1,40 @@
 cmake_minimum_required(VERSION 2.8)
 project(h2engine)
-add_definitions(-g -O2 -Wall)
+add_definitions(-g -O2 -Wall -static)
+
+IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+	MESSAGE(STATUS "current platform: Linux ")
+    set(EXT_LIBS 
+        dl mysqlclient
+    )
+ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Windows")
+	MESSAGE(STATUS "current platform: Windows")
+    set(EXT_LIBS 
+        ws2_32 mysql
+    )
+    set(LUAVER "lua")
+    set(PYVER "python24")
+    set(EXT_INCLUDE
+        ${PROJECT_SOURCE_DIR}/windependency/include
+        C:/Python27/include
+    )
+    set(EXT_LINK
+        ${PROJECT_SOURCE_DIR}/windependency/lib
+        C:/Python27/libs
+    )
+ELSE ()
+	MESSAGE(STATUS "other platform: ${CMAKE_SYSTEM_NAME}")
+ENDIF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+
 include_directories(${PROJECT_SOURCE_DIR}/fflib ${PROJECT_SOURCE_DIR}/lib3party ${PROJECT_SOURCE_DIR}/src  
             ${PROJECT_SOURCE_DIR}/lib3party/php ${PROJECT_SOURCE_DIR}/lib3party/php/embed 
             ${PROJECT_SOURCE_DIR}/lib3party/php/main ${PROJECT_SOURCE_DIR}/lib3party/php/Zend
             ${PROJECT_SOURCE_DIR}/lib3party/php/TSRM
             /usr/include/mysql/ /usr/include/python2.7/ /usr/include/python2.6/ 
-            /usr/include/lua5.2/ /usr/include/lua5.1/
+            /usr/include/lua5.2/ /usr/include/lua5.1/ 
+            ${EXT_INCLUDE}
 )
-link_directories(/usr/local/lib /usr/lib64/mysql ${PROJECT_SOURCE_DIR})
+link_directories(/usr/local/lib /usr/lib64/mysql ${PROJECT_SOURCE_DIR} ${EXT_LINK})
 
 file(GLOB_RECURSE ENGINE_LIB_SRC "fflib/*.c*") 
 foreach(filename ${ENGINE_LIB_SRC})  
@@ -61,7 +87,9 @@ set(WORKER_PHP_SRC_LIST
     ${ENGINE_LIB_SRC} ${GAME_IMPL_SRC} ${WORKER_PHP_SRC}
 )
 add_executable(h2engine ${ENGINE_SRC_LIST})
-target_link_libraries(h2engine pthread dl mysqlclient crypto ssl z curl)
+
+
+target_link_libraries(h2engine pthread ${EXT_LIBS} crypto ssl z curl)
 
 if(PYVER)
     message("user python version:" ${PYVER})
@@ -83,17 +111,17 @@ else()
 endif()
 
 add_executable(h2workercpp ${WORKER_CPP_SRC_LIST})
-target_link_libraries(h2workercpp pthread dl mysqlclient crypto ssl z curl)
+target_link_libraries(h2workercpp pthread ${EXT_LIBS} crypto ssl z curl)
 
 add_executable(h2workerpy ${WORKER_PY_SRC_LIST})
-target_link_libraries(h2workerpy pthread dl mysqlclient crypto ssl z curl ${PYVER})
+target_link_libraries(h2workerpy pthread ${EXT_LIBS} crypto ssl z curl ${PYVER})
 
 add_executable(h2workerlua ${WORKER_LUA_SRC_LIST})
-target_link_libraries(h2workerlua pthread dl mysqlclient crypto ssl z curl ${LUAVER})
+target_link_libraries(h2workerlua pthread ${EXT_LIBS} crypto ssl z curl ${LUAVER})
 
 add_executable(h2workerjs ${WORKER_JS_SRC_LIST})
-target_link_libraries(h2workerjs pthread dl mysqlclient crypto ssl z curl v8)
+target_link_libraries(h2workerjs pthread ${EXT_LIBS} crypto ssl z curl v8)
 
 add_executable(h2workerphp ${WORKER_PHP_SRC_LIST})
-target_link_libraries(h2workerphp pthread dl mysqlclient crypto ssl z curl ${PHPVER})
+target_link_libraries(h2workerphp pthread ${EXT_LIBS} crypto ssl z curl ${PHPVER})
 
