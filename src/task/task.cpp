@@ -125,7 +125,7 @@ TaskObjPtr TaskCtrl::genTask(int cfgid, int status){
     
     char sql[512] = {0};
     snprintf(sql, sizeof(sql), "insert into task (`uid`, `cfgid`, `status`, `value`, `tmUpdate`) values (%lu, %d, %d, %d, '%s')",
-                                this->getOwner()->getUid(), task->taskCfg->cfgid, task->status, task->value, TimeTool::formattm(task->tmUpdate).c_str());
+                                (unsigned long)(this->getOwner()->getUid()), task->taskCfg->cfgid, task->status, task->value, TimeTool::formattm(task->tmUpdate).c_str());
     
     DB_MGR.asyncQueryModId(this->getOwner()->getUid(), sql);
 
@@ -140,7 +140,7 @@ bool TaskCtrl::delTask(int cfgid){
         m_allTasks.erase(it);
         char sql[512] = {0};
         snprintf(sql, sizeof(sql), "delete from task where `uid` = '%lu' and `cfgid` = '%d' ",
-                                    this->getOwner()->getUid(), cfgid);
+                                    (unsigned long)(this->getOwner()->getUid()), cfgid);
         
         DB_MGR.asyncQueryModId(this->getOwner()->getUid(), sql);
         return true;
@@ -155,7 +155,7 @@ bool TaskCtrl::changeTaskStatus(TaskObjPtr task, int status){
     task->tmUpdate= ::time(NULL);
     char sql[512] = {0};
     snprintf(sql, sizeof(sql), "update task set status = %d, tmUpdate = '%s' where `uid` = '%lu' and `cfgid` = '%d' ",
-                                status, TimeTool::formattm(task->tmUpdate).c_str(), this->getOwner()->getUid(), task->taskCfg->cfgid);
+                                status, TimeTool::formattm(task->tmUpdate).c_str(), (unsigned long)(this->getOwner()->getUid()), task->taskCfg->cfgid);
     
     DB_MGR.asyncQueryModId(this->getOwner()->getUid(), sql);
     TaskStatusChange eTask(this->getOwner(), task->taskCfg->cfgid, task->status);
@@ -243,7 +243,7 @@ int TaskCtrl::triggerEvent(const std::string& triggerType, const std::string& tr
 }
 static void handleEntityDataLoadBegin(EntityDataLoadBegin& e){
     char sql[512] = {0};
-    snprintf(sql, sizeof(sql), "select cfgid,status,value,updatetime from task where uid = '%lu'", e.entity->getUid());
+    snprintf(sql, sizeof(sql), "select cfgid,status,value,updatetime from task where uid = '%lu'", (unsigned long)(e.entity->getUid()));
     e.moduleLoadSql[e.entity->get<TaskCtrl>()->getFieldName()].push_back(sql);
 }
 static void handleEntityDataLoadEnd(EntityDataLoadEnd& e){

@@ -1,3 +1,4 @@
+#ifndef _WIN32
 #include <sys/epoll.h>
 #include <errno.h>
 #include <unistd.h>
@@ -154,3 +155,6 @@ int Epoll::interupt_loop()//! 中断事件循环
 
 	return ::epoll_ctl(m_efd, EPOLL_CTL_MOD, m_interupt_sockets[0], &ee);
 }
+
+#endif
+

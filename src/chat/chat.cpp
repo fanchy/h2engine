@@ -30,7 +30,7 @@ struct ChatLoginDbFunctor{
         }
         char buff[256] = {0};
         if (result.dataResult.empty()){//! 数据库里没有数据，创建一条数据
-            snprintf(buff, sizeof(buff), "insert into chattest (UID, CHAT_TIMES) values ('%lu', '0')", uid);
+            snprintf(buff, sizeof(buff), "insert into chattest (UID, CHAT_TIMES) values ('%lu', '0')", (unsigned long)uid);
             DB_MGR.asyncQueryModId(uid, buff);
         }
         else{
@@ -46,7 +46,7 @@ struct ChatLoginDbFunctor{
         ENTITY_MGR.add(entity);
         
         
-        snprintf(buff, sizeof(buff), "user[%lu]进入了聊天室！", entity->getUid());
+        snprintf(buff, sizeof(buff), "user[%lu]进入了聊天室！", (unsigned long)(entity->getUid()));
         FFWORKER.gateBroadcastMsg(CHAT_S_BROADCAST, buff);//!这个是gate广播也就是全服广播
     }
     userid_t    uid;
@@ -59,7 +59,7 @@ static void handleLogin(EntityPtr entity, const string& msg){//!处理登录，�
         return;
     }
     char sql[256] = {0};
-    snprintf(sql, sizeof(sql), "select CHAT_TIMES from chattest where UID = '%lu'", uid);
+    snprintf(sql, sizeof(sql), "select CHAT_TIMES from chattest where UID = '%lu'", (unsigned long)uid);
     ChatLoginDbFunctor dbFunc;
     dbFunc.uid = uid;
     dbFunc.entity = entity;
@@ -73,10 +73,10 @@ static void handleLogout(EntityPtr entity, const string& msg){
     }
     char buff[256] = {0};
     snprintf(buff, sizeof(buff), "update chattest set CHAT_TIMES = '%d' where UID = '%lu'", 
-                                 entity->get<ChatCtrl>()->nChatTimes, entity->getUid());
+                                 entity->get<ChatCtrl>()->nChatTimes, (unsigned long)(entity->getUid()));
     DB_MGR.asyncQueryModId(entity->getUid(), buff);
     
-    snprintf(buff, sizeof(buff), "user[%lu]离开了聊天室！", entity->getUid());
+    snprintf(buff, sizeof(buff), "user[%lu]离开了聊天室！", (unsigned long)(entity->getUid()));
     FFWORKER.gateBroadcastMsg(CHAT_S_BROADCAST, buff);//!这个是gate广播也就是全服广播
     ENTITY_MGR.del(ENTITY_PLAYER, entity->getUid());
 }
@@ -91,7 +91,7 @@ static void handleChat(EntityPtr entity, const string& msg){
     //!简单示例，广播给所有人
     char buff[256] = {0};
     entity->get<ChatCtrl>()->nChatTimes += 1;
-    snprintf(buff, sizeof(buff), "user[%lu]说:%s 发言总次数[%d]", entity->getUid(), msg.c_str(), entity->get<ChatCtrl>()->nChatTimes);
+    snprintf(buff, sizeof(buff), "user[%lu]说:%s 发言总次数[%d]", (unsigned long)(entity->getUid()), msg.c_str(), entity->get<ChatCtrl>()->nChatTimes);
     ChatFunctor func;
     func.destData = buff;
     ENTITY_MGR.foreach(ENTITY_PLAYER, func);//!这里遍历每一个entity，也就是本worker上的所有用户,这个是示例，不如gateBroadcastMsg效率高

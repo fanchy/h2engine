@@ -21,7 +21,7 @@
 #include <winsock2.h>
 #include <Windows.h>
 #include <Windows.h>
-#pragma comment(lib, "Ws2_32.lib")
+//#pragma comment(lib, "Ws2_32.lib")
 #include <stdint.h>
 /*
 typedef __int64  int64_t;

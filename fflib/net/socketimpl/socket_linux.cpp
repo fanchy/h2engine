@@ -1,3 +1,5 @@
+#ifndef _WIN32
+
 #include <errno.h>
 #include <assert.h>
 #include <sys/types.h>
@@ -243,3 +245,5 @@ void SocketLinux::safeDelete()
     };
     m_tq->post(Task(&lambda_t::exe, this));
 }
+
+#endif

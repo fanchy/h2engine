@@ -81,7 +81,11 @@ int AcceptorLinux::open(const string& address_)
     }
 
     SocketFd tmpfd = -1;
-    if ((tmpfd = ::socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1)
+    SocketFd nInvalid = -1;
+    #ifdef _WIN32
+        nInvalid = INVALID_SOCKET;
+    #endif
+    if ((tmpfd = ::socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == nInvalid)
     {
         perror("AcceptorLinux::open when socket");
         return -1;
@@ -121,8 +125,6 @@ void AcceptorLinux::close()
 
 int AcceptorLinux::handleEpollRead()
 {
-    struct sockaddr_storage addr;
-    socklen_t addrlen = sizeof(addr);
 
     SocketFd new_fd = -1;
     do
@@ -138,6 +140,8 @@ int AcceptorLinux::handleEpollRead()
         socket->open();
         return 0;
     	#else
+        struct sockaddr_storage addr;
+        socklen_t addrlen = sizeof(addr);
         if ((new_fd = ::accept(m_listen_fd, (struct sockaddr *)&addr, &addrlen)) == -1)
         {
             if (errno == EWOULDBLOCK)

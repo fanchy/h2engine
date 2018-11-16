@@ -17,6 +17,7 @@
 #include "base/log.h"
 
 using namespace ff;
+using namespace std;
 
 SocketWin::SocketWin(EventLoop* e_, SocketCtrlI* seh_, SocketFd fd_, TaskQueue* tq_):
     m_epoll(e_),

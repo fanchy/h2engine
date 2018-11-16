@@ -70,11 +70,11 @@ int Select::runLoop()
 			continue;
 		}
 		fd_del_callback();
-		for (int i = 0; i < tmpset.fd_count; i++ )
+		for (size_t i = 0; i < tmpset.fd_count; i++ )
 		{
 			if (FD_ISSET(tmpset.fd_array[i], &tmpset))
 			{
-			   map<SocketFd, Fd*>::iterator it = m_fd2ptr.find(tmpset.fd_array[i]);
+			   std::map<SocketFd, Fd*>::iterator it = m_fd2ptr.find(tmpset.fd_array[i]);
 			   if (it!= m_fd2ptr.end()){
 			   		Fd* fd_ptr = it->second;
 					fd_ptr->handleEpollRead();
@@ -174,7 +174,7 @@ int Select::mod_fd(Fd* fd_ptr_)
 void Select::fd_del_callback()
 {
     LockGuard lock(m_mutex);
-    list<Fd*>::iterator it = m_error_fd_set.begin();
+    std::list<Fd*>::iterator it = m_error_fd_set.begin();
     for (; it != m_error_fd_set.end(); ++it)
     {
         (*it)->handleEpollDel();

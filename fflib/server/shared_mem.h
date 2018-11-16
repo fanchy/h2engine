@@ -29,8 +29,10 @@
 
 
 #include <semaphore.h>
+#ifndef _WIN32
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#endif
 namespace ff
 {
 #define SHARED_MEM_RESERVED_ID 0

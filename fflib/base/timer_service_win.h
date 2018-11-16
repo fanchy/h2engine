@@ -65,7 +65,7 @@ class TimerService
         struct timeval tv;
     };
     typedef std::list<registered_info_t>             registered_info_list_t;
-    typedef multistd::map<long, registered_info_t>   registered_info_map_t;
+    typedef std::multimap<long, registered_info_t>   registered_info_map_t;
 public:
     TimerService(TaskQueue* tq_ = NULL, long tick = 100):
         m_tq(tq_),
@@ -90,7 +90,7 @@ public:
     {
         stop();
     }
-    void stop()
+    void stop(bool f = true)
     {
         if (m_runing)
         {
@@ -123,7 +123,7 @@ public:
         LockGuard lock(m_mutex);
         m_tmp_register_list.push_back(registered_info_t(ms_, dest_ms, func, false, tv));
         
-        time_t nowTm = ::time(NULL);
+        //time_t nowTm = ::time(NULL);
         //printf("onceTimer .....nowTm=%ld,tv_sec=%ld,dest_ms=%ld\n", nowTm, tv.tv_sec, dest_ms);
     }
     void timerCallback(uint64_t ms_, Task func)
@@ -146,12 +146,12 @@ public:
 			FD_SET(tmpsock, &tmpset);
 			int ret = ::select(0, &tmpset, NULL, NULL, &tv);
 			gettimeofday(&tvtmp, NULL);
-            uint64_t cur_ms = tvtmp.tv_sec*1000 + tvtmp.tv_usec / 1000;
+            //int64_t cur_ms = tvtmp.tv_sec*1000 + tvtmp.tv_usec / 1000;
             
             add_new_timer();
             process_timerCallback(tvtmp);
             //printf("timer .....select\n");
-            time_t nowTm = ::time(NULL);
+            //time_t nowTm = ::time(NULL);
 	        //printf("onceTimer .....nowTm=%ld,tv_sec=%ld,dest_ms=%ld\n", nowTm, tvtmp.tv_sec, cur_ms);
 			if (ret == 0) 
 			{

@@ -128,7 +128,7 @@ static bool  lua_writeLockGuard(){
     return true;
 }
 //!数据库相关操作
-static long lua_connectDB(const string& host_, const string& group_)
+static int64_t lua_connectDB(const string& host_, const string& group_)
 {
     return DB_MGR.connectDB(host_, group_);
 }
@@ -208,8 +208,8 @@ struct AsyncQueryCB
 static int64_t db_idx = 0;
 static int lua_asyncQuery(lua_State* ls_)
 {
-    long db_id_ = 0;
-    luacpp_op_t<long>::lua2cpp(ls_, ADDR_ARG_POS(1), db_id_);
+    int64_t db_id_ = 0;
+    luacpp_op_t<int64_t>::lua2cpp(ls_, ADDR_ARG_POS(1), db_id_);
     
     string sql_;
     luacpp_op_t<string>::lua2cpp(ls_, ADDR_ARG_POS(2), sql_);

@@ -1,3 +1,5 @@
+#ifndef _WIN32
+
 #include "server/shared_mem.h"
 using namespace ff;
 using namespace std;
@@ -382,3 +384,4 @@ writelock_gurard_t::~writelock_gurard_t(){
     mgr2.cleanup();
     return 0;
     */
+#endif
