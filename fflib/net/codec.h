@@ -94,7 +94,7 @@ public:
     }
     inline BinEncoder& copy_value(const std::string& str_)
     {
-        uint32_t str_size =::htonl( str_.size());
+        uint32_t str_size =htonl( str_.size());
         copy_value((const char*)(&str_size), sizeof(str_size));
         copy_value(str_.data(), str_.size());
         return *this;
@@ -141,7 +141,7 @@ public:
     {
         uint32_t str_len = 0;
         copy_value(&str_len, sizeof(str_len));
-        str_len = ::ntohl(str_len);
+        str_len = ntohl(str_len);
 
         if (m_remaindered < str_len)
         {

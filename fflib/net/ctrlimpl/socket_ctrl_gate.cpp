@@ -230,7 +230,7 @@ static uint32_t computeWebsokcetKeyVal(const string& val)
     {
         ret = uint32_t(::atoi(str_num.c_str()) / kongge);
     }
-    ret = ::htonl(ret);
+    ret = htonl(ret);
     
     return ret;
 }
