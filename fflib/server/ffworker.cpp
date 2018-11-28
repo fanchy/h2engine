@@ -183,15 +183,12 @@ int FFWorker::processSessionOffline(RPCReq<SessionOffline::in_t, SessionOffline:
     }
     SessionReqEvent eMsg(entity, LOGOUT_CMD, "", 1);
     EVENT_BUS_FIRE(eMsg);
-    if (eMsg.isDone == false){
-        onSessionOffline(req_.msg.session_id);
-    }
+    onSessionOffline(req_.msg.session_id);
     
     SessionOffline::out_t out;
     req_.response(out);
     m_worker_client.erase(req_.msg.session_id);
     getSharedMem().writeLockEnd();
-    LOGTRACE((FFWORKER_LOG, "FFWorker::processSessionOffline end ok"));
     return 0;
 }
 

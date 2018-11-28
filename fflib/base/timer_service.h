@@ -73,7 +73,7 @@ class TimerService
     typedef std::list<registered_info_t>             registered_info_list_t;
     typedef std::multimap<long, registered_info_t>   registered_info_map_t;
 public:
-    TimerService(TaskQueue* tq_ = NULL, long tick = 100):
+    TimerService(TaskQueue* tq_ = NULL, long tick = 50):
         m_tq(tq_),
         m_runing(true),
         m_efd(-1),

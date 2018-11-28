@@ -597,7 +597,7 @@ int SocketCtrlGate::handle_parse_text_prot(SocketI* s_, const string& str_body_)
     }
     else{
         m_message.getHead().size = str_body_.size();
-        m_message.appendToBody(str_body_.c_str() + pos_end + 1, m_message.getHead().size);
+        m_message.appendToBody(str_body_.c_str(), m_message.getHead().size);
     }
     //! 判断消息包是否超过限制
     if (m_message.getHead().size > (size_t)m_net_stat->getMaxPacketSize())
