@@ -30,7 +30,42 @@ using namespace std;
 #define  SAFE_SPRINTF   snprintf
 #endif
 
+template <typename T>
+struct init_value_traits_t;
 
+template <typename T>
+struct init_value_traits_t
+{
+    inline static T value(){ return T(); }
+};
+
+template <typename T>
+struct init_value_traits_t<const T*>
+{
+    inline static T* value(){ return NULL; }
+};
+template <>
+struct init_value_traits_t<PyObject*>
+{
+    inline static PyObject* value(){ return NULL; }
+};
+template <typename T>
+struct init_value_traits_t<const T&>
+{
+    inline static T value(){ return T(); }
+};
+
+template <>
+struct init_value_traits_t<std::string>
+{
+    inline static const char* value(){ return ""; }
+};
+
+template <>
+struct init_value_traits_t<const std::string&>
+{
+    inline static const char* value(){ return ""; }
+};
 //! 获取python异常信息
 struct pyops_t
 {
@@ -1271,7 +1306,7 @@ private:
 
             if (PyType_Ready(&m_all_pyclass[i].pytype_def) < 0)
                 return -1;
-            Py_INCREF(&m_all_pyclass[i].pytype_def);
+            Py_INCREF((PyObject*)(&(m_all_pyclass[i].pytype_def)));
             PyModule_AddObject(m, m_all_pyclass[i].class_real_name.c_str(), (PyObject *)&m_all_pyclass[i].pytype_def);
 
             stringstream str_def_args;
@@ -2588,7 +2623,7 @@ struct pyext_func_traits_t<RET (*)(ARG1, ARG2, ARG3)>
         }
         type_ref_traits_t<ARG1> a1;
         type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).is_err())
         {
             return NULL;
@@ -2623,7 +2658,7 @@ struct pyext_func_traits_t<RET (*)(ARG1, ARG2, ARG3, ARG4)>
         type_ref_traits_t<ARG1> a1;
         type_ref_traits_t<ARG2> a2;
         type_ref_traits_t<ARG3> a3;
-        type_ref_traits_t<ARG4> a4;
+        type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value).is_err())
         {
             return NULL;
