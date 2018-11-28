@@ -2555,7 +2555,7 @@ struct pyext_func_traits_t<RET (*)(ARG1)>
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
         if (pyext_tool.parse_arg(a1.value).is_err())
         {
             return NULL;
@@ -2587,8 +2587,8 @@ struct pyext_func_traits_t<RET (*)(ARG1, ARG2)>
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).is_err())
         {
             return NULL;
@@ -2621,8 +2621,8 @@ struct pyext_func_traits_t<RET (*)(ARG1, ARG2, ARG3)>
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
         type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).is_err())
         {
@@ -2655,9 +2655,9 @@ struct pyext_func_traits_t<RET (*)(ARG1, ARG2, ARG3, ARG4)>
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
         type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value).is_err())
         {
@@ -2692,11 +2692,11 @@ struct pyext_func_traits_t<RET (*)(ARG1, ARG2, ARG3, ARG4, ARG5)>
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
-        type_ref_traits_t<ARG4> a4;
-        type_ref_traits_t<ARG5> a5;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
+        type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
+        type_ref_traits_t<ARG5> a5 = init_value_traits_t<type_ref_traits_t<ARG5> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value)
             .parse_arg(a5.value).is_err())
         {
@@ -2732,12 +2732,12 @@ struct pyext_func_traits_t<RET (*)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)>
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
-        type_ref_traits_t<ARG4> a4;
-        type_ref_traits_t<ARG5> a5;
-        type_ref_traits_t<ARG6> a6;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
+        type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
+        type_ref_traits_t<ARG5> a5 = init_value_traits_t<type_ref_traits_t<ARG5> >::value();
+        type_ref_traits_t<ARG6> a6 = init_value_traits_t<type_ref_traits_t<ARG6> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value)
             .parse_arg(a5.value).parse_arg(a6.value).is_err())
         {
@@ -2775,13 +2775,13 @@ struct pyext_func_traits_t<RET (*)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)>
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
-        type_ref_traits_t<ARG4> a4;
-        type_ref_traits_t<ARG5> a5;
-        type_ref_traits_t<ARG6> a6;
-        type_ref_traits_t<ARG7> a7;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
+        type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
+        type_ref_traits_t<ARG5> a5 = init_value_traits_t<type_ref_traits_t<ARG5> >::value();
+        type_ref_traits_t<ARG6> a6 = init_value_traits_t<type_ref_traits_t<ARG6> >::value();
+        type_ref_traits_t<ARG7> a7 = init_value_traits_t<type_ref_traits_t<ARG7> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value)
             .parse_arg(a5.value).parse_arg(a6.value).parse_arg(a7.value).is_err())
         {
@@ -2820,14 +2820,14 @@ struct pyext_func_traits_t<RET (*)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
-        type_ref_traits_t<ARG4> a4;
-        type_ref_traits_t<ARG5> a5;
-        type_ref_traits_t<ARG6> a6;
-        type_ref_traits_t<ARG7> a7;
-        type_ref_traits_t<ARG8> a8;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
+        type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
+        type_ref_traits_t<ARG5> a5 = init_value_traits_t<type_ref_traits_t<ARG5> >::value();
+        type_ref_traits_t<ARG6> a6 = init_value_traits_t<type_ref_traits_t<ARG6> >::value();
+        type_ref_traits_t<ARG7> a7 = init_value_traits_t<type_ref_traits_t<ARG7> >::value();
+        type_ref_traits_t<ARG8> a8 = init_value_traits_t<type_ref_traits_t<ARG8> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value)
             .parse_arg(a5.value).parse_arg(a6.value).parse_arg(a7.value).parse_arg(a8.value).is_err())
         {
@@ -2867,15 +2867,15 @@ struct pyext_func_traits_t<RET (*)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
-        type_ref_traits_t<ARG4> a4;
-        type_ref_traits_t<ARG5> a5;
-        type_ref_traits_t<ARG6> a6;
-        type_ref_traits_t<ARG7> a7;
-        type_ref_traits_t<ARG8> a8;
-        type_ref_traits_t<ARG9> a9;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
+        type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
+        type_ref_traits_t<ARG5> a5 = init_value_traits_t<type_ref_traits_t<ARG5> >::value();
+        type_ref_traits_t<ARG6> a6 = init_value_traits_t<type_ref_traits_t<ARG6> >::value();
+        type_ref_traits_t<ARG7> a7 = init_value_traits_t<type_ref_traits_t<ARG7> >::value();
+        type_ref_traits_t<ARG8> a8 = init_value_traits_t<type_ref_traits_t<ARG8> >::value();
+        type_ref_traits_t<ARG9> a9 = init_value_traits_t<type_ref_traits_t<ARG9> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value)
             .parse_arg(a5.value).parse_arg(a6.value).parse_arg(a7.value).parse_arg(a8.value).parse_arg(a9.value).is_err())
         {
@@ -2911,7 +2911,7 @@ struct pyclass_ctor_tool_t<CLASS_TYPE, int(*)(ARG1)>
         {
             return -1;
         }
-        type_ref_traits_t<ARG1> a1;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
         if (pyext_tool.parse_arg(a1.value).is_err())
         {
             return -1;
@@ -2933,8 +2933,8 @@ struct pyclass_ctor_tool_t<CLASS_TYPE, int(*)(ARG1,ARG2)>
         {
             return -1;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).is_err())
         {
             return -1;
@@ -2956,9 +2956,9 @@ struct pyclass_ctor_tool_t<CLASS_TYPE, int(*)(ARG1,ARG2,ARG3)>
         {
             return -1;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).is_err())
         {
             return -1;
@@ -2980,10 +2980,10 @@ struct pyclass_ctor_tool_t<CLASS_TYPE, int(*)(ARG1,ARG2,ARG3,ARG4)>
         {
             return -1;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
-        type_ref_traits_t<ARG4> a4;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
+        type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value).is_err())
         {
             return -1;
@@ -3005,11 +3005,11 @@ struct pyclass_ctor_tool_t<CLASS_TYPE, int(*)(ARG1,ARG2,ARG3,ARG4,ARG5)>
         {
             return -1;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
-        type_ref_traits_t<ARG4> a4;
-        type_ref_traits_t<ARG5> a5;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
+        type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
+        type_ref_traits_t<ARG5> a5 = init_value_traits_t<type_ref_traits_t<ARG5> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value)
             .parse_arg(a5.value).is_err())
         {
@@ -3032,12 +3032,12 @@ struct pyclass_ctor_tool_t<CLASS_TYPE, int(*)(ARG1,ARG2,ARG3,ARG4,ARG5,ARG6)>
         {
             return -1;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
-        type_ref_traits_t<ARG4> a4;
-        type_ref_traits_t<ARG5> a5;
-        type_ref_traits_t<ARG6> a6;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
+        type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
+        type_ref_traits_t<ARG5> a5 = init_value_traits_t<type_ref_traits_t<ARG5> >::value();
+        type_ref_traits_t<ARG6> a6 = init_value_traits_t<type_ref_traits_t<ARG6> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value)
             .parse_arg(a5.value).parse_arg(a6.value).is_err())
         {
@@ -3061,13 +3061,13 @@ struct pyclass_ctor_tool_t<CLASS_TYPE, int(*)(ARG1,ARG2,ARG3,ARG4,ARG5,ARG6,ARG7
         {
             return -1;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
-        type_ref_traits_t<ARG4> a4;
-        type_ref_traits_t<ARG5> a5;
-        type_ref_traits_t<ARG6> a6;
-        type_ref_traits_t<ARG7> a7;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
+        type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
+        type_ref_traits_t<ARG5> a5 = init_value_traits_t<type_ref_traits_t<ARG5> >::value();
+        type_ref_traits_t<ARG6> a6 = init_value_traits_t<type_ref_traits_t<ARG6> >::value();
+        type_ref_traits_t<ARG7> a7 = init_value_traits_t<type_ref_traits_t<ARG7> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value)
             .parse_arg(a5.value).parse_arg(a6.value).parse_arg(a7.value).is_err())
         {
@@ -3091,14 +3091,14 @@ struct pyclass_ctor_tool_t<CLASS_TYPE, int(*)(ARG1,ARG2,ARG3,ARG4,ARG5,ARG6,ARG7
         {
             return -1;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
-        type_ref_traits_t<ARG4> a4;
-        type_ref_traits_t<ARG5> a5;
-        type_ref_traits_t<ARG6> a6;
-        type_ref_traits_t<ARG7> a7;
-        type_ref_traits_t<ARG8> a8;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
+        type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
+        type_ref_traits_t<ARG5> a5 = init_value_traits_t<type_ref_traits_t<ARG5> >::value();
+        type_ref_traits_t<ARG6> a6 = init_value_traits_t<type_ref_traits_t<ARG6> >::value();
+        type_ref_traits_t<ARG7> a7 = init_value_traits_t<type_ref_traits_t<ARG7> >::value();
+        type_ref_traits_t<ARG8> a8 = init_value_traits_t<type_ref_traits_t<ARG8> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value)
             .parse_arg(a5.value).parse_arg(a6.value).parse_arg(a7.value).parse_arg(a8.value).is_err())
         {
@@ -3122,15 +3122,15 @@ struct pyclass_ctor_tool_t<CLASS_TYPE, int(*)(ARG1,ARG2,ARG3,ARG4,ARG5,ARG6,ARG7
         {
             return -1;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
-        type_ref_traits_t<ARG4> a4;
-        type_ref_traits_t<ARG5> a5;
-        type_ref_traits_t<ARG6> a6;
-        type_ref_traits_t<ARG7> a7;
-        type_ref_traits_t<ARG8> a8;
-        type_ref_traits_t<ARG9> a9;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
+        type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
+        type_ref_traits_t<ARG5> a5 = init_value_traits_t<type_ref_traits_t<ARG5> >::value();
+        type_ref_traits_t<ARG6> a6 = init_value_traits_t<type_ref_traits_t<ARG6> >::value();
+        type_ref_traits_t<ARG7> a7 = init_value_traits_t<type_ref_traits_t<ARG7> >::value();
+        type_ref_traits_t<ARG8> a8 = init_value_traits_t<type_ref_traits_t<ARG8> >::value();
+        type_ref_traits_t<ARG9> a9 = init_value_traits_t<type_ref_traits_t<ARG9> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value)
             .parse_arg(a5.value).parse_arg(a6.value).parse_arg(a7.value).parse_arg(a8.value).parse_arg(a9.value).is_err())
         {
@@ -3184,7 +3184,7 @@ struct pyclass_method_gen_t<RET (CLASS_TYPE::*)(ARG1)>
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
         if (pyext_tool.parse_arg(a1.value).is_err())
         {
             return NULL;
@@ -3216,8 +3216,8 @@ struct pyclass_method_gen_t<RET (CLASS_TYPE::*)(ARG1, ARG2)>
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).is_err())
         {
             return NULL;
@@ -3251,9 +3251,9 @@ struct pyclass_method_gen_t<RET (CLASS_TYPE::*)(ARG1, ARG2, ARG3)>
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).is_err())
         {
             return NULL;
@@ -3287,10 +3287,10 @@ struct pyclass_method_gen_t<RET (CLASS_TYPE::*)(ARG1, ARG2, ARG3, ARG4)>
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
-        type_ref_traits_t<ARG4> a4;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
+        type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value).is_err())
         {
             return NULL;
@@ -3325,11 +3325,11 @@ struct pyclass_method_gen_t<RET (CLASS_TYPE::*)(ARG1, ARG2, ARG3, ARG4, ARG5)>
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
-        type_ref_traits_t<ARG4> a4;
-        type_ref_traits_t<ARG5> a5;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
+        type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
+        type_ref_traits_t<ARG5> a5 = init_value_traits_t<type_ref_traits_t<ARG5> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value)
             .parse_arg(a5.value).is_err())
         {
@@ -3367,12 +3367,12 @@ struct pyclass_method_gen_t<RET (CLASS_TYPE::*)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
-        type_ref_traits_t<ARG4> a4;
-        type_ref_traits_t<ARG5> a5;
-        type_ref_traits_t<ARG6> a6;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
+        type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
+        type_ref_traits_t<ARG5> a5 = init_value_traits_t<type_ref_traits_t<ARG5> >::value();
+        type_ref_traits_t<ARG6> a6 = init_value_traits_t<type_ref_traits_t<ARG6> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value)
             .parse_arg(a5.value).parse_arg(a6.value).is_err())
         {
@@ -3411,13 +3411,13 @@ struct pyclass_method_gen_t<RET (CLASS_TYPE::*)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
-        type_ref_traits_t<ARG4> a4;
-        type_ref_traits_t<ARG5> a5;
-        type_ref_traits_t<ARG6> a6;
-        type_ref_traits_t<ARG7> a7;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
+        type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
+        type_ref_traits_t<ARG5> a5 = init_value_traits_t<type_ref_traits_t<ARG5> >::value();
+        type_ref_traits_t<ARG6> a6 = init_value_traits_t<type_ref_traits_t<ARG6> >::value();
+        type_ref_traits_t<ARG7> a7 = init_value_traits_t<type_ref_traits_t<ARG7> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value)
             .parse_arg(a5.value).parse_arg(a6.value).parse_arg(a7.value).is_err())
         {
@@ -3457,14 +3457,14 @@ struct pyclass_method_gen_t<RET (CLASS_TYPE::*)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
-        type_ref_traits_t<ARG4> a4;
-        type_ref_traits_t<ARG5> a5;
-        type_ref_traits_t<ARG6> a6;
-        type_ref_traits_t<ARG7> a7;
-        type_ref_traits_t<ARG8> a8;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
+        type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
+        type_ref_traits_t<ARG5> a5 = init_value_traits_t<type_ref_traits_t<ARG5> >::value();
+        type_ref_traits_t<ARG6> a6 = init_value_traits_t<type_ref_traits_t<ARG6> >::value();
+        type_ref_traits_t<ARG7> a7 = init_value_traits_t<type_ref_traits_t<ARG7> >::value();
+        type_ref_traits_t<ARG8> a8 = init_value_traits_t<type_ref_traits_t<ARG8> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value)
             .parse_arg(a5.value).parse_arg(a6.value).parse_arg(a7.value).parse_arg(a8.value).is_err())
         {
@@ -3506,15 +3506,15 @@ struct pyclass_method_gen_t<RET (CLASS_TYPE::*)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
-        type_ref_traits_t<ARG4> a4;
-        type_ref_traits_t<ARG5> a5;
-        type_ref_traits_t<ARG6> a6;
-        type_ref_traits_t<ARG7> a7;
-        type_ref_traits_t<ARG8> a8;
-        type_ref_traits_t<ARG9> a9;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
+        type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
+        type_ref_traits_t<ARG5> a5 = init_value_traits_t<type_ref_traits_t<ARG5> >::value();
+        type_ref_traits_t<ARG6> a6 = init_value_traits_t<type_ref_traits_t<ARG6> >::value();
+        type_ref_traits_t<ARG7> a7 = init_value_traits_t<type_ref_traits_t<ARG7> >::value();
+        type_ref_traits_t<ARG8> a8 = init_value_traits_t<type_ref_traits_t<ARG8> >::value();
+        type_ref_traits_t<ARG9> a9 = init_value_traits_t<type_ref_traits_t<ARG9> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value)
             .parse_arg(a5.value).parse_arg(a6.value).parse_arg(a7.value).parse_arg(a8.value).parse_arg(a9.value).is_err())
         {
@@ -3569,7 +3569,7 @@ struct pyclass_method_gen_t<RET (CLASS_TYPE::*)(ARG1) const>
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
         if (pyext_tool.parse_arg(a1.value).is_err())
         {
             return NULL;
@@ -3601,8 +3601,8 @@ struct pyclass_method_gen_t<RET (CLASS_TYPE::*)(ARG1, ARG2) const>
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).is_err())
         {
             return NULL;
@@ -3636,9 +3636,9 @@ struct pyclass_method_gen_t<RET (CLASS_TYPE::*)(ARG1, ARG2, ARG3) const>
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).is_err())
         {
             return NULL;
@@ -3672,10 +3672,10 @@ struct pyclass_method_gen_t<RET (CLASS_TYPE::*)(ARG1, ARG2, ARG3, ARG4) const>
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
-        type_ref_traits_t<ARG4> a4;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
+        type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value).is_err())
         {
             return NULL;
@@ -3710,11 +3710,11 @@ struct pyclass_method_gen_t<RET (CLASS_TYPE::*)(ARG1, ARG2, ARG3, ARG4, ARG5) co
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
-        type_ref_traits_t<ARG4> a4;
-        type_ref_traits_t<ARG5> a5;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
+        type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
+        type_ref_traits_t<ARG5> a5 = init_value_traits_t<type_ref_traits_t<ARG5> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value)
             .parse_arg(a5.value).is_err())
         {
@@ -3752,12 +3752,12 @@ struct pyclass_method_gen_t<RET (CLASS_TYPE::*)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
-        type_ref_traits_t<ARG4> a4;
-        type_ref_traits_t<ARG5> a5;
-        type_ref_traits_t<ARG6> a6;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
+        type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
+        type_ref_traits_t<ARG5> a5 = init_value_traits_t<type_ref_traits_t<ARG5> >::value();
+        type_ref_traits_t<ARG6> a6 = init_value_traits_t<type_ref_traits_t<ARG6> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value)
             .parse_arg(a5.value).parse_arg(a6.value).is_err())
         {
@@ -3796,13 +3796,13 @@ struct pyclass_method_gen_t<RET (CLASS_TYPE::*)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
-        type_ref_traits_t<ARG4> a4;
-        type_ref_traits_t<ARG5> a5;
-        type_ref_traits_t<ARG6> a6;
-        type_ref_traits_t<ARG7> a7;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
+        type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
+        type_ref_traits_t<ARG5> a5 = init_value_traits_t<type_ref_traits_t<ARG5> >::value();
+        type_ref_traits_t<ARG6> a6 = init_value_traits_t<type_ref_traits_t<ARG6> >::value();
+        type_ref_traits_t<ARG7> a7 = init_value_traits_t<type_ref_traits_t<ARG7> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value)
             .parse_arg(a5.value).parse_arg(a6.value).parse_arg(a7.value).is_err())
         {
@@ -3842,14 +3842,14 @@ struct pyclass_method_gen_t<RET (CLASS_TYPE::*)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
-        type_ref_traits_t<ARG4> a4;
-        type_ref_traits_t<ARG5> a5;
-        type_ref_traits_t<ARG6> a6;
-        type_ref_traits_t<ARG7> a7;
-        type_ref_traits_t<ARG8> a8;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
+        type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
+        type_ref_traits_t<ARG5> a5 = init_value_traits_t<type_ref_traits_t<ARG5> >::value();
+        type_ref_traits_t<ARG6> a6 = init_value_traits_t<type_ref_traits_t<ARG6> >::value();
+        type_ref_traits_t<ARG7> a7 = init_value_traits_t<type_ref_traits_t<ARG7> >::value();
+        type_ref_traits_t<ARG8> a8 = init_value_traits_t<type_ref_traits_t<ARG8> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value)
             .parse_arg(a5.value).parse_arg(a6.value).parse_arg(a7.value).parse_arg(a8.value).is_err())
         {
@@ -3891,15 +3891,15 @@ struct pyclass_method_gen_t<RET (CLASS_TYPE::*)(ARG1, ARG2, ARG3, ARG4, ARG5, AR
             PyErr_SetString(PyExc_TypeError, "func address must provided");
             return NULL;
         }
-        type_ref_traits_t<ARG1> a1;
-        type_ref_traits_t<ARG2> a2;
-        type_ref_traits_t<ARG3> a3;
-        type_ref_traits_t<ARG4> a4;
-        type_ref_traits_t<ARG5> a5;
-        type_ref_traits_t<ARG6> a6;
-        type_ref_traits_t<ARG7> a7;
-        type_ref_traits_t<ARG8> a8;
-        type_ref_traits_t<ARG9> a9;
+        type_ref_traits_t<ARG1> a1 = init_value_traits_t<type_ref_traits_t<ARG1> >::value();
+        type_ref_traits_t<ARG2> a2 = init_value_traits_t<type_ref_traits_t<ARG2> >::value();
+        type_ref_traits_t<ARG3> a3 = init_value_traits_t<type_ref_traits_t<ARG3> >::value();
+        type_ref_traits_t<ARG4> a4 = init_value_traits_t<type_ref_traits_t<ARG4> >::value();
+        type_ref_traits_t<ARG5> a5 = init_value_traits_t<type_ref_traits_t<ARG5> >::value();
+        type_ref_traits_t<ARG6> a6 = init_value_traits_t<type_ref_traits_t<ARG6> >::value();
+        type_ref_traits_t<ARG7> a7 = init_value_traits_t<type_ref_traits_t<ARG7> >::value();
+        type_ref_traits_t<ARG8> a8 = init_value_traits_t<type_ref_traits_t<ARG8> >::value();
+        type_ref_traits_t<ARG9> a9 = init_value_traits_t<type_ref_traits_t<ARG9> >::value();
         if (pyext_tool.parse_arg(a1.value).parse_arg(a2.value).parse_arg(a3.value).parse_arg(a4.value)
             .parse_arg(a5.value).parse_arg(a6.value).parse_arg(a7.value).parse_arg(a8.value).parse_arg(a9.value).is_err())
         {
