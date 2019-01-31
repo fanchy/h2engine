@@ -6,7 +6,6 @@ install:
   - sudo apt install -y libssl-dev 
   - sudo apt install -y liblua5.1-dev 
   - sudo apt install -y libcurl4-openssl-dev
-  - sudo apt install -y libcurl-openssl-dev
   - sudo apt install -y libpython-dev
   - sudo apt install -y libv8-dev
 
