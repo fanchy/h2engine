@@ -20,7 +20,7 @@ public:
     {
         if (pSocket)
         {
-            if (0 == pSocket->get_sc()->get_type())
+            if (0 == pSocket->getSocketCtrl()->get_type())
             {
                 MessageHead h(cmd_);
                 h.size = str_.size();
@@ -48,7 +48,7 @@ public:
     {
         if (pSocket)
         {
-            if (0 == pSocket->get_sc()->get_type())
+            if (0 == pSocket->getSocketCtrl()->get_type())
             {
                 std::string body = msg_.encode_data();
                 MessageHead h(cmd_);
@@ -56,7 +56,7 @@ public:
                 h.hton();
                 std::string dest((const char*)&h, sizeof(h));
                 dest += body;
-    
+
                 pSocket->asyncSend(dest);
             }
             else

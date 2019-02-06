@@ -105,7 +105,7 @@ int SocketLinux::handleEpollRead_impl()
 
 int SocketLinux::handleEpollDel()
 {
-    m_tq->post(TaskBinder::gen(&SocketCtrlI::handleError, this->get_sc(), this));
+    m_tq->post(TaskBinder::gen(&SocketCtrlI::handleError, this->getSocketCtrl(), this));
     return 0;
 }
 
@@ -168,7 +168,7 @@ void SocketLinux::send_impl(const string& buff_src, int flag)
     {
         return;
     }
-    
+
     ff_str_buffer_t new_buff;
     new_buff.buff = buff_;
     new_buff.flag = flag;
@@ -178,7 +178,7 @@ void SocketLinux::send_impl(const string& buff_src, int flag)
         m_send_buffer.push_back(new_buff);
         return;
     }
-    
+
     int ret = do_send(&new_buff);
 
     if (ret < 0)

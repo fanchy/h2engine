@@ -20,13 +20,13 @@ public:
     virtual void open() = 0;
     virtual void asyncSend(const std::string& buff_) = 0;
     virtual void asyncRecv() = 0;
-    virtual void safeDelete() { delete this; }
+    virtual void safeDelete()= 0;
     virtual void set_data(void* p) { m_data = p; }
     template<typename T>
     T* get_data() const { return (T*)m_data; }
-    
-    virtual SocketCtrlI* get_sc() = 0;
-    
+
+    virtual SocketCtrlI* getSocketCtrl() = 0;
+
     virtual void sendRaw(const std::string& buff_) = 0;
 private:
     void*   m_data;

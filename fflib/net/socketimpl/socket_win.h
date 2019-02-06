@@ -26,7 +26,7 @@ public:
         int    has_send_size;
         int    flag;
         std::string buff;
-        
+
         int         left_size() const { return buff.size() - has_send_size;  }
         const char* cur_data()  const { return buff.c_str() + has_send_size; }
         void        consume(int n)    { has_send_size += n;                  }
@@ -48,7 +48,7 @@ public:
     virtual void asyncSend(const std::string& buff_);
     virtual void asyncRecv();
     virtual void safeDelete();
-    
+
     int handleEpollRead_impl();
     int handleEpollWrite_impl();
     int handle_epoll_error_impl();
@@ -57,9 +57,9 @@ public:
     void send_str_impl(const std::string& buff_);
     void send_impl(const std::string& buff_, int flag = 0);
     void close_impl();
-    
-    SocketCtrlI* get_sc() { return m_sc; }
-    
+
+    SocketCtrlI* getSocketCtrl() { return m_sc; }
+
     void post_recv_msg(const std::string& data);
 private:
     bool is_open() { return m_fd > 0; }
@@ -77,4 +77,3 @@ private:
 
 #endif
 #endif
-
