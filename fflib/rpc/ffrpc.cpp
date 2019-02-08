@@ -105,7 +105,7 @@ SocketObjPtr FFRpc::connectToBroker(const string& host_, uint32_t node_id_)
     SocketObjPtr sock = NetFactory::connect(host_, this);
     if (!sock)
     {
-        LOGERROR((FFRPC, "FFRpc::register_to_broker_master failed, can't connect to remote broker<%s>", host_.c_str()));
+        LOGERROR((FFRPC, "FFRpc::registerfd_to_broker_master failed, can't connect to remote broker<%s>", host_.c_str()));
         return sock;
     }
     SessionData* psession = sock->getData<SessionData>();
@@ -378,14 +378,14 @@ void FFRpc::response(const string& msg_name_,  uint64_t dest_node_id_, int64_t c
 int FFRpc::handleBrokerRegResponse(RegisterToBroker::out_t& msg_, SocketObjPtr sock_)
 {
     LOGTRACE((FFRPC, "FFBroker::handleBrokerRegResponse begin node_id=%d", msg_.node_id));
-    if (msg_.register_flag < 0)
+    if (msg_.registerfd_flag < 0)
     {
-        LOGERROR((FFRPC, "FFBroker::handleBrokerRegResponse register failed, service exist"));
+        LOGERROR((FFRPC, "FFBroker::handleBrokerRegResponse registerfd failed, service exist"));
         m_master_broker_sock->close();
         m_master_broker_sock = NULL;
         return -1;
     }
-    if (msg_.register_flag == 1)
+    if (msg_.registerfd_flag == 1)
     {
         m_node_id = msg_.node_id;//! -1表示注册失败，0表示同步消息，1表示注册成功
         Singleton<FFRpcMemoryRoute>::instance().addNode(m_node_id, this);

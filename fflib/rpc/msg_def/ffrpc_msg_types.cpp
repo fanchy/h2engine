@@ -835,10 +835,10 @@ void swap(broker_route_msg_in_t &a, broker_route_msg_in_t &b) {
   swap(a.__isset, b.__isset);
 }
 
-const char* register_to_broker_in_t::ascii_fingerprint = "3F5FC93B338687BC7235B1AB103F47B3";
-const uint8_t register_to_broker_in_t::binary_fingerprint[16] = {0x3F,0x5F,0xC9,0x3B,0x33,0x86,0x87,0xBC,0x72,0x35,0xB1,0xAB,0x10,0x3F,0x47,0xB3};
+const char* registerfd_to_broker_in_t::ascii_fingerprint = "3F5FC93B338687BC7235B1AB103F47B3";
+const uint8_t registerfd_to_broker_in_t::binary_fingerprint[16] = {0x3F,0x5F,0xC9,0x3B,0x33,0x86,0x87,0xBC,0x72,0x35,0xB1,0xAB,0x10,0x3F,0x47,0xB3};
 
-uint32_t register_to_broker_in_t::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t registerfd_to_broker_in_t::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   uint32_t xfer = 0;
   std::string fname;
@@ -886,9 +886,9 @@ uint32_t register_to_broker_in_t::read(::apache::thrift::protocol::TProtocol* ip
   return xfer;
 }
 
-uint32_t register_to_broker_in_t::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t registerfd_to_broker_in_t::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
-  xfer += oprot->writeStructBegin("register_to_broker_in_t");
+  xfer += oprot->writeStructBegin("registerfd_to_broker_in_t");
 
   xfer += oprot->writeFieldBegin("node_type", ::apache::thrift::protocol::T_I32, 1);
   xfer += oprot->writeI32(this->node_type);
@@ -903,17 +903,17 @@ uint32_t register_to_broker_in_t::write(::apache::thrift::protocol::TProtocol* o
   return xfer;
 }
 
-void swap(register_to_broker_in_t &a, register_to_broker_in_t &b) {
+void swap(registerfd_to_broker_in_t &a, registerfd_to_broker_in_t &b) {
   using ::std::swap;
   swap(a.node_type, b.node_type);
   swap(a.service_name, b.service_name);
   swap(a.__isset, b.__isset);
 }
 
-const char* register_to_broker_out_t::ascii_fingerprint = "1F41639F8135007E546B5DA3F7363917";
-const uint8_t register_to_broker_out_t::binary_fingerprint[16] = {0x1F,0x41,0x63,0x9F,0x81,0x35,0x00,0x7E,0x54,0x6B,0x5D,0xA3,0xF7,0x36,0x39,0x17};
+const char* registerfd_to_broker_out_t::ascii_fingerprint = "1F41639F8135007E546B5DA3F7363917";
+const uint8_t registerfd_to_broker_out_t::binary_fingerprint[16] = {0x1F,0x41,0x63,0x9F,0x81,0x35,0x00,0x7E,0x54,0x6B,0x5D,0xA3,0xF7,0x36,0x39,0x17};
 
-uint32_t register_to_broker_out_t::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t registerfd_to_broker_out_t::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   uint32_t xfer = 0;
   std::string fname;
@@ -935,8 +935,8 @@ uint32_t register_to_broker_out_t::read(::apache::thrift::protocol::TProtocol* i
     {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_I16) {
-          xfer += iprot->readI16(this->register_flag);
-          this->__isset.register_flag = true;
+          xfer += iprot->readI16(this->registerfd_flag);
+          this->__isset.registerfd_flag = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -984,12 +984,12 @@ uint32_t register_to_broker_out_t::read(::apache::thrift::protocol::TProtocol* i
   return xfer;
 }
 
-uint32_t register_to_broker_out_t::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t registerfd_to_broker_out_t::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
-  xfer += oprot->writeStructBegin("register_to_broker_out_t");
+  xfer += oprot->writeStructBegin("registerfd_to_broker_out_t");
 
-  xfer += oprot->writeFieldBegin("register_flag", ::apache::thrift::protocol::T_I16, 1);
-  xfer += oprot->writeI16(this->register_flag);
+  xfer += oprot->writeFieldBegin("registerfd_flag", ::apache::thrift::protocol::T_I16, 1);
+  xfer += oprot->writeI16(this->registerfd_flag);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("node_id", ::apache::thrift::protocol::T_I64, 2);
@@ -1014,9 +1014,9 @@ uint32_t register_to_broker_out_t::write(::apache::thrift::protocol::TProtocol* 
   return xfer;
 }
 
-void swap(register_to_broker_out_t &a, register_to_broker_out_t &b) {
+void swap(registerfd_to_broker_out_t &a, registerfd_to_broker_out_t &b) {
   using ::std::swap;
-  swap(a.register_flag, b.register_flag);
+  swap(a.registerfd_flag, b.registerfd_flag);
   swap(a.node_id, b.node_id);
   swap(a.service2node_id, b.service2node_id);
   swap(a.__isset, b.__isset);

@@ -14,9 +14,9 @@ public:
 
     virtual int runLoop() 		    = 0;
     virtual int close() 				= 0;
-    virtual int register_fd(Fd*)      = 0;
-    virtual int unregister_fd(Fd*)  	= 0;
-    virtual int mod_fd(Fd*)           = 0;
+    virtual int registerfd(Fd*)      = 0;
+    virtual int unregisterfd(Fd*)  	= 0;
+    virtual int modfd(Fd*)           = 0;
 };
 
 //typedef Fd epoll_Fd;

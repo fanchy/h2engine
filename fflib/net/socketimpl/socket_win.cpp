@@ -49,7 +49,7 @@ void SocketWin::close_impl()
 {
     if (m_fd > 0)
     {
-        m_epoll->unregister_fd(this);
+        m_epoll->unregisterfd(this);
         SocketOp::close(m_fd);
         m_fd = 0;
     }
@@ -272,7 +272,7 @@ int SocketWin::do_send(ff_str_buffer_t* buff_)
 
 void SocketWin::asyncRecv()
 {
-    m_epoll->register_fd(this);
+    m_epoll->registerfd(this);
 }
 
 #endif

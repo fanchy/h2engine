@@ -38,9 +38,9 @@ class TimerService
         int read_fd() { return pair_fds[0]; }
         int write_fd() { return pair_fds[1]; }
     };
-    struct registered_info_t
+    struct registerfded_info_t
     {
-        registered_info_t(uint64_t ms_, uint64_t dest_ms_, const Task& t_, bool is_loop_, struct timeval& curTv):
+        registerfded_info_t(uint64_t ms_, uint64_t dest_ms_, const Task& t_, bool is_loop_, struct timeval& curTv):
             timeout(ms_),
             dest_tm(dest_ms_),
             callback(t_),
@@ -64,8 +64,8 @@ class TimerService
         bool        is_loop;
         struct timeval tv;
     };
-    typedef std::list<registered_info_t>             registered_info_list_t;
-    typedef std::multimap<long, registered_info_t>   registered_info_map_t;
+    typedef std::list<registerfded_info_t>             registerfded_info_list_t;
+    typedef std::multimap<long, registerfded_info_t>   registerfded_info_map_t;
 public:
     TimerService(TaskQueue* tq_ = NULL, long tick = 100):
         m_tq(tq_),
@@ -110,7 +110,7 @@ public:
         uint64_t   dest_ms = uint64_t(tv.tv_sec)*1000 + tv.tv_usec / 1000 + ms_;
 
         LockGuard lock(m_mutex);
-        m_tmp_register_list.push_back(registered_info_t(ms_, dest_ms, func, true, tv));
+        m_tmp_registerfd_list.push_back(registerfded_info_t(ms_, dest_ms, func, true, tv));
     }
     void onceTimer(uint64_t ms_, Task func)
     {
@@ -121,7 +121,7 @@ public:
         uint64_t   dest_ms = uint64_t(tv.tv_sec)*1000 + tv.tv_usec / 1000 ;//+ ms_;
         
         LockGuard lock(m_mutex);
-        m_tmp_register_list.push_back(registered_info_t(ms_, dest_ms, func, false, tv));
+        m_tmp_registerfd_list.push_back(registerfded_info_t(ms_, dest_ms, func, false, tv));
         
         //time_t nowTm = ::time(NULL);
         //printf("onceTimer .....nowTm=%ld,tv_sec=%ld,dest_ms=%ld\n", nowTm, tv.tv_sec, dest_ms);
@@ -197,12 +197,12 @@ private:
     void add_new_timer()
     {
         LockGuard lock(m_mutex);
-        registered_info_list_t::iterator it = m_tmp_register_list.begin();
-        for (; it != m_tmp_register_list.end(); ++it)
+        registerfded_info_list_t::iterator it = m_tmp_registerfd_list.begin();
+        for (; it != m_tmp_registerfd_list.end(); ++it)
         {
-            m_registered_store.insert(std::make_pair(it->dest_tm, *it));
+            m_registerfded_store.insert(std::make_pair(it->dest_tm, *it));
         }
-        m_tmp_register_list.clear();
+        m_tmp_registerfd_list.clear();
     }
 
     void interupt()
@@ -215,13 +215,13 @@ private:
     }
     void process_timerCallback(const struct timeval& now_)
     {
-        registered_info_map_t::iterator it_begin = m_registered_store.begin();
-        registered_info_map_t::iterator it       = it_begin;
+        registerfded_info_map_t::iterator it_begin = m_registerfded_store.begin();
+        registerfded_info_map_t::iterator it       = it_begin;
 
-        std::vector<registered_info_map_t::iterator> toDel;
-        for (; it != m_registered_store.end(); ++it)
+        std::vector<registerfded_info_map_t::iterator> toDel;
+        for (; it != m_registerfded_store.end(); ++it)
         {
-            registered_info_t& last = it->second;
+            registerfded_info_t& last = it->second;
             if (false == last.is_timeout(now_))
             {
                 continue;
@@ -241,12 +241,12 @@ private:
         }
         
         for (size_t i = 0; i < toDel.size(); ++i){
-            m_registered_store.erase(toDel[i]);
+            m_registerfded_store.erase(toDel[i]);
         }
         /*
         if (it != it_begin)//! some timeout 
         {
-            m_registered_store.erase(it_begin, it);
+            m_registerfded_store.erase(it_begin, it);
         }*/
     }
 
@@ -257,8 +257,8 @@ private:
     volatile long            m_min_timeout;
     int                      m_cache_list;
     int                      m_checking_list;
-    registered_info_list_t   m_tmp_register_list;
-    registered_info_map_t    m_registered_store;
+    registerfded_info_list_t   m_tmp_registerfd_list;
+    registerfded_info_map_t    m_registerfded_store;
     interupt_info_t          m_interupt_info;
     Thread                 m_thread;
     Mutex                  m_mutex;

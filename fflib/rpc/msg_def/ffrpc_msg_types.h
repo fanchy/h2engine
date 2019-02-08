@@ -557,27 +557,27 @@ class broker_route_msg_in_t {
 
 void swap(broker_route_msg_in_t &a, broker_route_msg_in_t &b);
 
-typedef struct _register_to_broker_in_t__isset {
-  _register_to_broker_in_t__isset() : node_type(false), service_name(false) {}
+typedef struct _registerfd_to_broker_in_t__isset {
+  _registerfd_to_broker_in_t__isset() : node_type(false), service_name(false) {}
   bool node_type;
   bool service_name;
-} _register_to_broker_in_t__isset;
+} _registerfd_to_broker_in_t__isset;
 
-class register_to_broker_in_t {
+class registerfd_to_broker_in_t {
  public:
 
   static const char* ascii_fingerprint; // = "3F5FC93B338687BC7235B1AB103F47B3";
   static const uint8_t binary_fingerprint[16]; // = {0x3F,0x5F,0xC9,0x3B,0x33,0x86,0x87,0xBC,0x72,0x35,0xB1,0xAB,0x10,0x3F,0x47,0xB3};
 
-  register_to_broker_in_t() : node_type(0), service_name() {
+  registerfd_to_broker_in_t() : node_type(0), service_name() {
   }
 
-  virtual ~register_to_broker_in_t() throw() {}
+  virtual ~registerfd_to_broker_in_t() throw() {}
 
   int32_t node_type;
   std::string service_name;
 
-  _register_to_broker_in_t__isset __isset;
+  _registerfd_to_broker_in_t__isset __isset;
 
   void __set_node_type(const int32_t val) {
     node_type = val;
@@ -587,7 +587,7 @@ class register_to_broker_in_t {
     service_name = val;
   }
 
-  bool operator == (const register_to_broker_in_t & rhs) const
+  bool operator == (const registerfd_to_broker_in_t & rhs) const
   {
     if (!(node_type == rhs.node_type))
       return false;
@@ -595,45 +595,45 @@ class register_to_broker_in_t {
       return false;
     return true;
   }
-  bool operator != (const register_to_broker_in_t &rhs) const {
+  bool operator != (const registerfd_to_broker_in_t &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const register_to_broker_in_t & ) const;
+  bool operator < (const registerfd_to_broker_in_t & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-void swap(register_to_broker_in_t &a, register_to_broker_in_t &b);
+void swap(registerfd_to_broker_in_t &a, registerfd_to_broker_in_t &b);
 
-typedef struct _register_to_broker_out_t__isset {
-  _register_to_broker_out_t__isset() : register_flag(false), node_id(false), service2node_id(false) {}
-  bool register_flag;
+typedef struct _registerfd_to_broker_out_t__isset {
+  _registerfd_to_broker_out_t__isset() : registerfd_flag(false), node_id(false), service2node_id(false) {}
+  bool registerfd_flag;
   bool node_id;
   bool service2node_id;
-} _register_to_broker_out_t__isset;
+} _registerfd_to_broker_out_t__isset;
 
-class register_to_broker_out_t {
+class registerfd_to_broker_out_t {
  public:
 
   static const char* ascii_fingerprint; // = "1F41639F8135007E546B5DA3F7363917";
   static const uint8_t binary_fingerprint[16]; // = {0x1F,0x41,0x63,0x9F,0x81,0x35,0x00,0x7E,0x54,0x6B,0x5D,0xA3,0xF7,0x36,0x39,0x17};
 
-  register_to_broker_out_t() : register_flag(0), node_id(0) {
+  registerfd_to_broker_out_t() : registerfd_flag(0), node_id(0) {
   }
 
-  virtual ~register_to_broker_out_t() throw() {}
+  virtual ~registerfd_to_broker_out_t() throw() {}
 
-  int16_t register_flag;
+  int16_t registerfd_flag;
   int64_t node_id;
   std::map<std::string, int64_t>  service2node_id;
 
-  _register_to_broker_out_t__isset __isset;
+  _registerfd_to_broker_out_t__isset __isset;
 
-  void __set_register_flag(const int16_t val) {
-    register_flag = val;
+  void __set_registerfd_flag(const int16_t val) {
+    registerfd_flag = val;
   }
 
   void __set_node_id(const int64_t val) {
@@ -644,9 +644,9 @@ class register_to_broker_out_t {
     service2node_id = val;
   }
 
-  bool operator == (const register_to_broker_out_t & rhs) const
+  bool operator == (const registerfd_to_broker_out_t & rhs) const
   {
-    if (!(register_flag == rhs.register_flag))
+    if (!(registerfd_flag == rhs.registerfd_flag))
       return false;
     if (!(node_id == rhs.node_id))
       return false;
@@ -654,18 +654,18 @@ class register_to_broker_out_t {
       return false;
     return true;
   }
-  bool operator != (const register_to_broker_out_t &rhs) const {
+  bool operator != (const registerfd_to_broker_out_t &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const register_to_broker_out_t & ) const;
+  bool operator < (const registerfd_to_broker_out_t & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-void swap(register_to_broker_out_t &a, register_to_broker_out_t &b);
+void swap(registerfd_to_broker_out_t &a, registerfd_to_broker_out_t &b);
 
 
 class empty_ret_msg {

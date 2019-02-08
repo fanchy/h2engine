@@ -78,7 +78,7 @@ private:
 	//! 用于分配node id
     uint64_t 								                m_for_allocID;
     //!所有的注册到此broker的节点信息
-    RegisteredNodeInfo                                      m_all_registered_info;
+    RegisteredNodeInfo                                      m_all_registerfded_info;
 
     //!工具类
     TaskQueue                                               m_tq;

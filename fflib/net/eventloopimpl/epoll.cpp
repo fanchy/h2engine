@@ -96,7 +96,7 @@ int Epoll::close()
     return 0;
 }
 
-int Epoll::register_fd(Fd* fd_ptr_)
+int Epoll::registerfd(Fd* fd_ptr_)
 {
     struct epoll_event ee = { 0, { 0 } };
 
@@ -106,7 +106,7 @@ int Epoll::register_fd(Fd* fd_ptr_)
     return ::epoll_ctl(m_efd, EPOLL_CTL_ADD, fd_ptr_->socket(), &ee);
 }
 
-int Epoll::unregister_fd(Fd* fd_ptr_)
+int Epoll::unregisterfd(Fd* fd_ptr_)
 {
 	int ret = 0;
 	if (fd_ptr_->socket() > 0)
@@ -125,7 +125,7 @@ int Epoll::unregister_fd(Fd* fd_ptr_)
     return ret;
 }
 
-int Epoll::mod_fd(Fd* fd_ptr_)
+int Epoll::modfd(Fd* fd_ptr_)
 {
     struct epoll_event ee = { 0, { 0 } };
 

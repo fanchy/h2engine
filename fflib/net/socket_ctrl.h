@@ -20,7 +20,7 @@ public:
     virtual int handleRead(SocketI*, const char* buff, size_t len)       = 0;
     virtual int handleWriteCompleted(SocketI*)                         {return 0;}
 
-    virtual int get_type() const { return 0; }//!协议类型
+    virtual int get_type() const { return 0; }
 };
 
 }

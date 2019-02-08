@@ -70,18 +70,18 @@ public:
 
 class task_processor_mgr_t{
 public:
-    void add(const std::string& name, task_processor_i* d){ m_task_register[name] = d; }
-    void del(const std::string& name) { m_task_register.erase(name); }
+    void add(const std::string& name, task_processor_i* d){ m_task_registerfd[name] = d; }
+    void del(const std::string& name) { m_task_registerfd.erase(name); }
     task_processor_i* get(const std::string& name)
     {
-        std::map<std::string, task_processor_i*>::iterator it = m_task_register.find(name);
-        if (it != m_task_register.end())
+        std::map<std::string, task_processor_i*>::iterator it = m_task_registerfd.find(name);
+        if (it != m_task_registerfd.end())
         {
             return it->second;
         }
         return NULL;
     }
-    std::map<std::string, task_processor_i*>  m_task_register;
+    std::map<std::string, task_processor_i*>  m_task_registerfd;
 };
 
 

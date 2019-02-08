@@ -970,8 +970,8 @@ struct FFRpcMemoryRoute
 //! 处理其他broker或者client注册到此server
 struct RegisterToBroker
 {
-    typedef register_to_broker_in_t  in_t;
-    typedef register_to_broker_out_t out_t;
+    typedef registerfd_to_broker_in_t  in_t;
+    typedef registerfd_to_broker_out_t out_t;
 };
 //! 处理转发消息的操作
 struct BrokerRouteMsg

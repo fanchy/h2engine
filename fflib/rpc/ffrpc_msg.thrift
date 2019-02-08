@@ -52,12 +52,12 @@ struct broker_route_msg_in_t{
     8:string body;
     9:string err_info;
 }
-struct register_to_broker_in_t{
+struct registerfd_to_broker_in_t{
     1:i32 node_type;
     2:string service_name;
 }
-struct register_to_broker_out_t{
-    1:i16 register_flag;
+struct registerfd_to_broker_out_t{
+    1:i16 registerfd_flag;
     2:i64 node_id;
     3:map<string, i64>  service2node_id;
 }

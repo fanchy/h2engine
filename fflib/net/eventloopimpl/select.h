@@ -23,9 +23,9 @@ public:
 
     virtual int runLoop();
     virtual int close();
-    virtual int register_fd(Fd*);
-    virtual int unregister_fd(Fd*);
-    virtual int mod_fd(Fd*);
+    virtual int registerfd(Fd*);
+    virtual int unregisterfd(Fd*);
+    virtual int modfd(Fd*);
 
     int interupt_loop();//! 中断事件循环
 protected:

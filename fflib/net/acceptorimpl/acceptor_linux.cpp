@@ -111,14 +111,14 @@ int AcceptorLinux::open(const string& address_)
     }
     ::freeaddrinfo(res);
     m_listen_fd = tmpfd;
-    return m_epoll->register_fd(this);
+    return m_epoll->registerfd(this);
 }
 
 void AcceptorLinux::close()
 {
     if (m_listen_fd > 0)
     {
-        m_epoll->unregister_fd(this);
+        m_epoll->unregisterfd(this);
         SocketOp::close(m_listen_fd);
         m_listen_fd = -1;
     }
@@ -154,7 +154,7 @@ int AcceptorLinux::handleEpollRead()
                             errno == EPERM || errno == ENOBUFS || errno == ENOMEM)
                 {
                     perror("accept");//! if too many open files occur, need to restart epoll event
-                    m_epoll->mod_fd(this);
+                    m_epoll->modfd(this);
                     return 0;
                 }
                 perror("accept other error");

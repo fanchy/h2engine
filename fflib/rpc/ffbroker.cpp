@@ -84,12 +84,12 @@ TimerService& FFBroker::getTimer()
 }
 void FFBroker::docleaanup()
 {
-    map<uint64_t/* node id*/, SocketObjPtr>::iterator it = m_all_registered_info.node_sockets.begin();
-    for (; it != m_all_registered_info.node_sockets.end(); ++it)
+    map<uint64_t/* node id*/, SocketObjPtr>::iterator it = m_all_registerfded_info.node_sockets.begin();
+    for (; it != m_all_registerfded_info.node_sockets.end(); ++it)
     {
         it->second->close();
     }
-    m_all_registered_info.node_sockets.clear();
+    m_all_registerfded_info.node_sockets.clear();
 }
 int FFBroker::close()
 {
@@ -121,13 +121,13 @@ int FFBroker::handleBroken(SocketObjPtr sock_)
     }
 
     {
-        m_all_registered_info.node_sockets.erase(psession->node_id);
-        LOGTRACE((BROKER, "FFBroker::handleBroken_impl node_id<%u> close %u", psession->node_id, m_all_registered_info.node_sockets.size()));
-        m_all_registered_info.broker_data.service2node_id.erase(psession->service_name);
+        m_all_registerfded_info.node_sockets.erase(psession->node_id);
+        LOGTRACE((BROKER, "FFBroker::handleBroken_impl node_id<%u> close %u", psession->node_id, m_all_registerfded_info.node_sockets.size()));
+        m_all_registerfded_info.broker_data.service2node_id.erase(psession->service_name);
     }
 
     //!广播给所有的子节点
-    RegisterToBroker::out_t ret_msg = m_all_registered_info.broker_data;
+    RegisterToBroker::out_t ret_msg = m_all_registerfded_info.broker_data;
     syncNodeInfo(ret_msg);
     LOGTRACE((BROKER, "FFBroker::handleBroken_impl end ok"));
     return 0;
@@ -177,11 +177,11 @@ int FFBroker::handleRegisterToBroker(RegisterToBroker::in_t& msg_, SocketObjPtr 
     }
 
     RegisterToBroker::out_t ret_msg;
-    ret_msg.register_flag = -1;//! -1表示注册失败，0表示同步消息，1表示注册成功,
+    ret_msg.registerfd_flag = -1;//! -1表示注册失败，0表示同步消息，1表示注册成功,
 
     if (RPC_NODE == msg_.node_type)
     {
-        if (m_all_registered_info.broker_data.service2node_id.find(msg_.service_name) != m_all_registered_info.broker_data.service2node_id.end())
+        if (m_all_registerfded_info.broker_data.service2node_id.find(msg_.service_name) != m_all_registerfded_info.broker_data.service2node_id.end())
         {
             MsgSender::send(sock_, REGISTER_TO_BROKER_RET, FFThrift::EncodeAsString(ret_msg));
             LOGERROR((BROKER, "FFBroker::handleRegisterToBroker service<%s> exist", msg_.service_name));
@@ -195,14 +195,14 @@ int FFBroker::handleRegisterToBroker(RegisterToBroker::in_t& msg_, SocketObjPtr 
         psession->node_id = node_id;
         //sock_->set_data(psession);
 
-        m_all_registered_info.node_sockets[node_id] = sock_;
+        m_all_registerfded_info.node_sockets[node_id] = sock_;
 
         if (msg_.service_name.empty() == false)
         {
             psession->service_name = msg_.service_name;
-            m_all_registered_info.broker_data.service2node_id[msg_.service_name] = node_id;
+            m_all_registerfded_info.broker_data.service2node_id[msg_.service_name] = node_id;
         }
-        ret_msg = m_all_registered_info.broker_data;
+        ret_msg = m_all_registerfded_info.broker_data;
         ret_msg.node_id = node_id;
     }
     else
@@ -221,16 +221,16 @@ int FFBroker::handleRegisterToBroker(RegisterToBroker::in_t& msg_, SocketObjPtr 
 int FFBroker::syncNodeInfo(RegisterToBroker::out_t& ret_msg, SocketObjPtr sock_)
 {
     //!广播给所有的子节点
-    map<uint64_t/* node id*/, SocketObjPtr>::iterator it = m_all_registered_info.node_sockets.begin();
-    for (; it != m_all_registered_info.node_sockets.end(); ++it)
+    map<uint64_t/* node id*/, SocketObjPtr>::iterator it = m_all_registerfded_info.node_sockets.begin();
+    for (; it != m_all_registerfded_info.node_sockets.end(); ++it)
     {
         if (sock_ == it->second)
         {
-            ret_msg.register_flag  = 1;
+            ret_msg.registerfd_flag  = 1;
         }
         else
         {
-            ret_msg.register_flag = 0;
+            ret_msg.registerfd_flag = 0;
         }
         MsgSender::send(it->second, REGISTER_TO_BROKER_RET, FFThrift::EncodeAsString(ret_msg));
     }
@@ -263,11 +263,11 @@ int FFBroker::processSyncClientReq(BrokerRouteMsg::in_t& msg_, SocketObjPtr sock
         psession->node_type = SYNC_CLIENT_NODE;
         psession->node_id   = allocNodeId(sock_);
         //sock_->set_data(psession);
-        m_all_registered_info.node_sockets[psession->getNodeId()] = sock_;
+        m_all_registerfded_info.node_sockets[psession->getNodeId()] = sock_;
     }
     msg_.from_node_id = psession->getNodeId();
-    map<string, int64_t>::iterator it = m_all_registered_info.broker_data.service2node_id.find(msg_.dest_service_name);
-    if (it == m_all_registered_info.broker_data.service2node_id.end())
+    map<string, int64_t>::iterator it = m_all_registerfded_info.broker_data.service2node_id.find(msg_.dest_service_name);
+    if (it == m_all_registerfded_info.broker_data.service2node_id.end())
     {
         LOGWARN((BROKER, "FFBroker::processSyncClientReq dest_service_name=%s none", msg_.dest_service_name));
         msg_.err_info = "dest_service_name named " + msg_.dest_service_name + " not exist in broker";
@@ -294,15 +294,15 @@ int FFBroker::sendToRPcNode(BrokerRouteMsg::in_t& msg_)
         return 0;
     }
     LOGINFO((BROKER, "FFBroker::sendToRPcNode dest_node=%d bodylen=%d, by socket", msg_.dest_node_id, msg_.body.size()));
-    map<uint64_t/* node id*/, SocketObjPtr>::iterator it = m_all_registered_info.node_sockets.find(msg_.dest_node_id);
-    if (it != m_all_registered_info.node_sockets.end())
+    map<uint64_t/* node id*/, SocketObjPtr>::iterator it = m_all_registerfded_info.node_sockets.find(msg_.dest_node_id);
+    if (it != m_all_registerfded_info.node_sockets.end())
     {
         MsgSender::send(it->second, BROKER_TO_CLIENT_MSG, FFThrift::EncodeAsString(msg_));
     }
     else
     {
-        it = m_all_registered_info.node_sockets.find(msg_.from_node_id);
-        if (it != m_all_registered_info.node_sockets.end())
+        it = m_all_registerfded_info.node_sockets.find(msg_.from_node_id);
+        if (it != m_all_registerfded_info.node_sockets.end())
         {
             msg_.err_info = "service named " + msg_.dest_service_name + " not exist in broker";
             msg_.dest_service_name.clear();

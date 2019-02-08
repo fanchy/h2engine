@@ -49,7 +49,7 @@ void SocketLinux::closeImpl()
 {
     if (m_fd > 0)
     {
-        m_epoll->unregister_fd(this);
+        m_epoll->unregisterfd(this);
         ::close(m_fd);
         m_fd = -1;
     }
@@ -248,7 +248,7 @@ int SocketLinux::doSend(ff_str_buffer_t* buff_)
 
 void SocketLinux::asyncRecv()
 {
-    m_epoll->register_fd(this);
+    m_epoll->registerfd(this);
 }
 
 SharedPtr<SocketI> SocketLinux::toSharedPtr(){
