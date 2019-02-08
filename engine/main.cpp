@@ -22,28 +22,28 @@ using namespace std;
 
 #ifdef _WIN32
 static bool g_flagwait = true;
-BOOL CtrlHandler( DWORD fdwCtrlType ) 
-{ 
-  switch( fdwCtrlType ) 
-  { 
-    // Handle the CTRL-C signal. 
+BOOL CtrlHandler( DWORD fdwCtrlType )
+{
+  switch( fdwCtrlType )
+  {
+    // Handle the CTRL-C signal.
     case CTRL_C_EVENT:
 	case SIGTERM:
-	case 2: 
+	case 2:
       printf( "Ctrl-C event\n\n" );
       g_flagwait = false;
       return( TRUE );
-    default: 
+    default:
       printf( "recv=%d please use Ctrl-C \n\n", (int)fdwCtrlType );
-      return FALSE; 
-  } 
-} 
+      return FALSE;
+  }
+}
 static bool flagok = false;
 #endif
 
 int main(int argc, char* argv[])
 {
-   
+
 	ArgHelper arg_helper(argc, argv);
     if (arg_helper.isEnableOption("-f"))
     {
@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
     #ifdef _WIN32
     Singleton<NetFactory::NetData>::instance().start();
     #endif
-    
+
     //! 美丽的日志组件，shell输出是彩色滴！！
     if (arg_helper.isEnableOption("-log_path"))
     {
@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        LOG.start("-log_path ./log -log_filename log -log_class DB_MGR,XX,BROKER,FFRPC,FFGATE,FFWORKER,FFWORKER_PYTHON,FFWORKER_LUA,FFWORKER_JS,FFNET,HHTP_MGR -log_print_screen true -log_print_file true -log_level 4");
+        LOG.start("-log_path ./log -log_filename log -log_class DB_MGR,FFNET,BROKER,FFRPC,FFGATE,FFWORKER,FFWORKER_PYTHON,FFWORKER_LUA,FFWORKER_JS,FFNET,HHTP_MGR -log_print_screen true -log_print_file true -log_level 4");
     }
     std::string perf_path = "./perf";
     long perf_timeout = 10*60;//! second
@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
     {
         return -1;
     }
-    
+
     FFBroker              ffbroker;
     FFGate ffgate;
     try
@@ -101,12 +101,11 @@ int main(int argc, char* argv[])
             goto err_proc;
         }
         int port = ffbroker.getPortCfg();
-        printf("broker open ok\n");
         if (Singleton<SharedSyncmemMgr>::instance().init_master(port)){
             printf("shared mem open failed\n");
             goto err_proc;
         }
-        
+
         if (ffgate.open(brokercfg, gate_listen))
         {
             printf("gate open error!\n");
@@ -123,20 +122,20 @@ int main(int argc, char* argv[])
 #ifndef _WIN32
     SignalHelper::wait();
 #else
-    if (SetConsoleCtrlHandler((PHANDLER_ROUTINE)CtrlHandler, TRUE)) 
-	  { 
-	    printf( "\nserver is running.\n" ); 
-	    printf( "--  Ctrl+C exit\n" ); 
+    if (SetConsoleCtrlHandler((PHANDLER_ROUTINE)CtrlHandler, TRUE))
+	  {
+	    printf( "\nserver is running.\n" );
+	    printf( "--  Ctrl+C exit\n" );
 		while(g_flagwait){
 			usleep(1000*100);
 		}
 	  }
-	  else 
+	  else
 	  {
-	    printf( "\nERROR: Could not set control handler"); 
+	    printf( "\nERROR: Could not set control handler");
 	    return 1;
 	  }
-	flagok = true;  
+	flagok = true;
 #endif
 err_proc:
     ffgate.close();
@@ -144,7 +143,7 @@ err_proc:
     usleep(100);
     NetFactory::stop();
     usleep(200);
-    
+
     Singleton<SharedSyncmemMgr>::instance().cleanup();
 
 #ifdef _WIN32
@@ -156,4 +155,3 @@ err_proc:
 
     return 0;
 }
-

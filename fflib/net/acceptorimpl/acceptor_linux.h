@@ -23,18 +23,17 @@ public:
     SocketFd socket() {return m_listen_fd;}
     int handleEpollRead();
     int handleEpollDel() ;
-    
+
 protected:
     virtual SocketI* create_socket(SocketFd);
 
 protected:
     int                 m_listen_fd;
-    EventLoop*       m_epoll;
-    MsgHandler*      m_msg_handler;
-    TaskQueuePool*  m_tq;
+    EventLoop*          m_epoll;
+    MsgHandler*         m_msg_handler;
+    TaskQueuePool*      m_tq;
 };
 
 }
 
 #endif
-

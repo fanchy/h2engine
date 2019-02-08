@@ -12,8 +12,8 @@ SharedSyncmemMgr::~SharedSyncmemMgr()
     {
         pshared_mem->pid = 0;
     }
-    
-    if (m_master_shm != 0){       
+
+    if (m_master_shm != 0){
         ::shmdt(m_master_shm);
         m_worker_shmid = -1;
         m_master_shm = NULL;
@@ -23,26 +23,26 @@ SharedSyncmemMgr::~SharedSyncmemMgr()
 
 int SharedSyncmemMgr::init_master(int shared_key)
 {
-    printf("sharedmem m_worker_num=%d\n", m_worker_num);
-    m_worker_shmid = ::shmget((key_t)shared_key, sizeof(MasterSharedData) + sizeof(struct wroker_shared_data_t)*m_worker_num, 0666);  
+    LOGINFO(("BROKER", "sharedmem m_worker_num=%d", m_worker_num));
+    m_worker_shmid = ::shmget((key_t)shared_key, sizeof(MasterSharedData) + sizeof(struct wroker_shared_data_t)*m_worker_num, 0666);
     bool clean_oldlock = false;
     if (m_worker_shmid != -1)//!存在
     {
-        printf("sharedmem exist reuse\n");
+        LOGINFO(("BROKER", "sharedmem exist reuse\n"));
         clean_oldlock = true;
     }
     else
     {
-        m_worker_shmid = ::shmget((key_t)shared_key, sizeof(MasterSharedData) + sizeof(struct wroker_shared_data_t)*m_worker_num, 0666|IPC_CREAT);  
+        m_worker_shmid = ::shmget((key_t)shared_key, sizeof(MasterSharedData) + sizeof(struct wroker_shared_data_t)*m_worker_num, 0666|IPC_CREAT);
         if(m_worker_shmid == -1)
         {
             if (EINVAL == errno)//!size 变大了,需要先删除老的
             {
                 printf("sharedmem realloc\n");
-                int oldid = ::shmget((key_t)shared_key,  1, 0666); 
+                int oldid = ::shmget((key_t)shared_key,  1, 0666);
                 if (oldid != - 1){
                     ::shmctl(oldid, IPC_RMID, NULL);
-                    m_worker_shmid = ::shmget((key_t)shared_key, sizeof(MasterSharedData) + sizeof(struct wroker_shared_data_t)*m_worker_num, 0666|IPC_CREAT);  
+                    m_worker_shmid = ::shmget((key_t)shared_key, sizeof(MasterSharedData) + sizeof(struct wroker_shared_data_t)*m_worker_num, 0666|IPC_CREAT);
                 }
             }
             if(m_worker_shmid == -1)
@@ -66,7 +66,7 @@ int SharedSyncmemMgr::init_master(int shared_key)
     for (int i = 0; i < m_worker_num; ++i)
     {
         wroker_shared_data_t* p = m_worker_shm+i;
-        
+
         if (clean_oldlock){//!销毁老的锁
             p->cleanup();
         }
@@ -76,7 +76,7 @@ int SharedSyncmemMgr::init_master(int shared_key)
 }
 
 int SharedSyncmemMgr::init_worker(int shared_key, int work_index_, TaskQueue* tq ){
-    m_worker_shmid = shmget((key_t)shared_key, sizeof(MasterSharedData) + sizeof(struct wroker_shared_data_t)*m_worker_num, 0666);  
+    m_worker_shmid = shmget((key_t)shared_key, sizeof(MasterSharedData) + sizeof(struct wroker_shared_data_t)*m_worker_num, 0666);
     if(m_worker_shmid == -1)
     {
         printf("shmget failed!\n");
@@ -86,12 +86,12 @@ int SharedSyncmemMgr::init_worker(int shared_key, int work_index_, TaskQueue* tq
     void* p = shmat(m_worker_shmid, 0, 0);
     m_master_shm   = (MasterSharedData*)p;
     m_worker_shm   = (wroker_shared_data_t*)((const char*)p + sizeof(MasterSharedData));
-    
+
     m_worker_index = work_index_;
-    
+
     wroker_shared_data_t* workdata = get_self_sharedmem();
     workdata->pid = ::getpid();
-    
+
     m_thread.create_thread(TaskBinder::gen(&SharedSyncmemMgr::workerRun, this, tq), 1);
     return 0;
 }
@@ -105,21 +105,21 @@ int SharedSyncmemMgr::processCmdQueue()
     }
     tmplist = m_sync_cmd_queue;
     m_sync_cmd_queue.clear();
-    
+
     for (unsigned int i = 0; i < tmplist.size(); ++i)
     {
         SyncCmdData& cmddata = tmplist[i];
         //printf("process queue update %lu, %lu, %s\n", cmddata.proptype, cmddata.propkey, cmddata.body.c_str());
         OnSyncSharedData eMsg(cmddata.cmd, cmddata.body);
         EVENT_BUS_FIRE(eMsg);
-        
+
         if (eMsg.isDone == false && m_notify_func)
         {
             m_notify_func(cmddata.cmd, cmddata.body);
         }
     }
-    
-    
+
+
     return 0;
 }
 
@@ -172,7 +172,7 @@ bool SharedSyncmemMgr::syncSharedData(int32_t cmd, const std::string& data){
                 workdata->cmd      = cmd;
                 workdata->len      = data.size();
                 ::memcpy(workdata->body, data.c_str(), ::min(sizeof(workdata->body), data.size()));
-                
+
                 workdata->locksignal();//!发信号通知
                 //printf("sync data to worker[%d]%s end ok\n", i, data.c_str());
             }
@@ -263,9 +263,9 @@ bool MasterSharedData::init()
     ::pthread_mutexattr_t mutexAttr;
     pthread_mutexattr_init(&mutexAttr);
     ::pthread_mutexattr_setpshared(&mutexAttr, PTHREAD_PROCESS_SHARED);
-    
+
     ::pthread_mutex_init(&(master_lock), &mutexAttr);
-    
+
     this->pidusing = 0;
     return true;
 }
@@ -309,7 +309,7 @@ bool wroker_shared_data_t::init()
     ::pthread_mutexattr_t mutexAttr;
     ::pthread_mutexattr_init(&mutexAttr);
     ::pthread_mutexattr_setpshared(&mutexAttr, PTHREAD_PROCESS_SHARED);
-    
+
     ::pthread_condattr_t condattr;
     ::pthread_condattr_init(&condattr);
     ::pthread_condattr_setpshared(&condattr, PTHREAD_PROCESS_SHARED);
@@ -344,14 +344,14 @@ writelock_gurard_t::~writelock_gurard_t(){
  /*
     SharedSyncmemMgr mgr;
     mgr.init_master(43210, 11);
-    
+
     printf("init_master end\n");
     SharedSyncmemMgr mgr2;
     mgr2.init_worker(43210, 0);
-    
+
     SharedSyncmemMgr mgr3;
     mgr3.init_worker(43210, 1);
-    
+
     sleep(1);
     mgr3.allProp[1].allData[2].nData = 2;
     {
@@ -359,12 +359,12 @@ writelock_gurard_t::~writelock_gurard_t(){
         mgr3.sync_data(1, 2);
     }
     sleep(1);
-    
+
     mgr3.allProp[1].allData[3].fData = 2.2;
     mgr3.allProp[1].allData[4].strData = "abc";
     prop_data_t::prop_data_ptr_t p = new prop_data_t();
     mgr3.allProp[1].allData[5].listData.push_back(p);
-    
+
     prop_data_t::prop_data_ptr_t p2 = new prop_data_t();
     mgr3.allProp[2].allData[5].mapData[2222] = p2;
     mgr3.allProp[1].allData.erase(3);
@@ -373,14 +373,14 @@ writelock_gurard_t::~writelock_gurard_t(){
         mgr3.sync_data(1, 3).sync_data(1, 4).sync_data(1, 5).sync_data(2, 5);
     }
     sleep(1);
-    
+
     mgr2.processCmdQueue();
-    
+
     mgr2.dump();
     mgr3.dump();
-    
+
     printf("ok\n");
-    
+
     mgr2.cleanup();
     return 0;
     */

@@ -16,7 +16,7 @@ namespace ff {
 class MsgSender
 {
 public:
-    static void send(SocketPtr pSocket, uint16_t cmd_, const std::string& str_)
+    static void send(SocketObjPtr& pSocket, uint16_t cmd_, const std::string& str_)
     {
         if (pSocket)
         {
@@ -44,7 +44,7 @@ public:
             }
         }
     }
-    static void send(SocketPtr pSocket, uint16_t cmd_, Codec& msg_)
+    static void send(SocketObjPtr& pSocket, uint16_t cmd_, Codec& msg_)
     {
         if (pSocket)
         {
@@ -69,14 +69,14 @@ public:
             }
         }
     }
-    static void send(SocketPtr pSocket, const std::string& str_)
+    static void send(SocketObjPtr& pSocket, const std::string& str_)
     {
         if (pSocket)
         {
             pSocket->asyncSend(str_);
         }
     }
-    static void sendToClient(SocketPtr pSocket, Codec& msg_)
+    static void sendToClient(SocketObjPtr& pSocket, Codec& msg_)
     {
         if (pSocket)
         {

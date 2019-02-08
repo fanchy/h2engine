@@ -37,9 +37,8 @@ namespace ff
 //! 各个节点的类型
 enum node_type_e
 {
-    BRIDGE_BROKER, //! 连接各个区服的代理服务器
+    UNKNOWN_NODE = 0,
     MASTER_BROKER, //! 每个区服的主服务器
-    SLAVE_BROKER,  //! 从服务器
     RPC_NODE,      //! rpc节点
     SYNC_CLIENT_NODE, //! 同步调用client
 };
@@ -48,11 +47,11 @@ enum node_type_e
 #define GEN_SERVICE_NAME(M, X, Y) snprintf(M, sizeof(M), "%s@%u", X, Y)
 #define RECONNECT_TO_BROKER_TIMEOUT       1000//! ms
 #define RECONNECT_TO_BROKER_BRIDGE_TIMEOUT       1000//! ms
-    
+
 class SlotMsgArg: public FFSlot::CallBackArg
 {
 public:
-    SlotMsgArg(const std::string& s_, SocketPtr sock_):
+    SlotMsgArg(const std::string& s_, SocketObjPtr sock_):
         body(s_),
         sock(sock_)
     {}
@@ -61,7 +60,7 @@ public:
         return TYPEID(SlotMsgArg);
     }
     std::string       body;
-    SocketPtr sock;
+    SocketObjPtr sock;
 };
 
 struct MsgTool
@@ -90,18 +89,17 @@ class RPCResponser
 {
 public:
     virtual ~RPCResponser(){}
-    virtual void response(const std::string& dest_namespace_, const std::string& msg_name_,  uint64_t dest_node_id_,
+    virtual void response(const std::string& msg_name_,  uint64_t dest_node_id_,
                           int64_t callback_id_, const std::string& body_, std::string err = "") = 0;
 };
 
 class SlotReqArg: public FFSlot::CallBackArg
 {
 public:
-    SlotReqArg(const std::string& s_, uint64_t n_, int64_t cb_id_, const std::string& name_space_, std::string err_info_, RPCResponser* p):
+    SlotReqArg(const std::string& s_, uint64_t n_, int64_t cb_id_, std::string err_info_, RPCResponser* p):
         body(s_),
         dest_node_id(n_),
         callback_id(cb_id_),
-        dest_namespace(name_space_),
         err_info(err_info_),
         responser(p)
     {}
@@ -110,7 +108,6 @@ public:
         body(src.body),
         dest_node_id(src.dest_node_id),
         callback_id(src.callback_id),
-        dest_namespace(src.dest_namespace),
         err_info(src.err_info),
         responser(src.responser)
     {}
@@ -119,7 +116,6 @@ public:
         body = src.body,
         dest_node_id = src.dest_node_id;
         callback_id = src.callback_id;
-        dest_namespace = src.dest_namespace;
         err_info = src.err_info;
         responser = src.responser;
         return *this;
@@ -131,7 +127,6 @@ public:
     std::string          body;
     uint64_t             dest_node_id;//! 请求来自于那个node id
     int64_t              callback_id;//! 回调函数标识id
-    std::string          dest_namespace;
     std::string          err_info;
     RPCResponser*        responser;
 };
@@ -154,18 +149,17 @@ struct RPCReq
     {}
     bool error() const { return err_info.empty() == false; }
     const std::string& errorMsg() const { return err_info; }
-    
+
     void response(OUT_T& out_)
     {
         if (0 != callback_id)
         {
-        	responser->response(dest_namespace, TYPE_NAME(OUT_T), dest_node_id, callback_id, FFThrift::EncodeAsString(out_));
+        	responser->response(TYPE_NAME(OUT_T), dest_node_id, callback_id, FFThrift::EncodeAsString(out_));
             callback_id = 0;
 		}
-            
+
     }
     IN_T                 msg;
-    std::string          dest_namespace;
     uint64_t             dest_node_id;
     int64_t              callback_id;
     RPCResponser*        responser;
@@ -186,7 +180,6 @@ struct RPCReqPB
     const std::string& errorMsg() const { return err_info; }
     IN              msg;
 
-    std::string          dest_namespace;
     uint64_t        dest_node_id;
     int64_t        callback_id;
     RPCResponser*  responser;
@@ -196,7 +189,7 @@ struct RPCReqPB
         if (0 != callback_id){
             std::string ret;
             out_.SerializeToString(&ret);
-            responser->response(dest_namespace, TYPE_NAME(OUT), dest_node_id, callback_id, ret);
+            responser->response(TYPE_NAME(OUT), dest_node_id, callback_id, ret);
         }
     }
 };
@@ -207,10 +200,10 @@ struct FFRpcOps
 {
     //! 接受broker 消息的回调函数
     template <typename R, typename T>
-    static FFSlot::FFCallBack* genCallBack(R (*)(T&, SocketPtr));
+    static FFSlot::FFCallBack* genCallBack(R (*)(T&, SocketObjPtr));
     template <typename R, typename CLASS_TYPE, typename T>
-    static FFSlot::FFCallBack* genCallBack(R (CLASS_TYPE::*)(T&, SocketPtr), CLASS_TYPE* obj_);
-    
+    static FFSlot::FFCallBack* genCallBack(R (CLASS_TYPE::*)(T&, SocketObjPtr), CLASS_TYPE* obj_);
+
     //! broker client 注册接口
     template <typename R, typename IN_T, typename OUT_T>
     static FFSlot::FFCallBack* genCallBack(R (*)(RPCReq<IN_T, OUT_T>&));
@@ -233,7 +226,7 @@ struct FFRpcOps
               typename FUNC_ARG2, typename ARG2, typename FUNC_ARG3, typename ARG3, typename FUNC_ARG4, typename ARG4>
     static FFSlot::FFCallBack* genCallBack(R (CLASS_TYPE::*func_)(RPCReq<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3, FUNC_ARG4),
                                                 CLASS_TYPE* obj_, ARG1 arg1_, ARG2 arg2_, ARG3 arg3_, ARG4 arg4_);
-    
+
     //!******************************** pb 使用不同的callback函数 ******************************************
 
 #ifdef FF_ENABLE_PROTOCOLBUF
@@ -259,16 +252,16 @@ struct FFRpcOps
               typename FUNC_ARG2, typename ARG2, typename FUNC_ARG3, typename ARG3, typename FUNC_ARG4, typename ARG4>
     static FFSlot::FFCallBack* genCallBack(R (CLASS_TYPE::*func_)(RPCReqPB<IN_T, OUT_T>&, FUNC_ARG1, FUNC_ARG2, FUNC_ARG3, FUNC_ARG4),
                                                 CLASS_TYPE* obj_, ARG1 arg1_, ARG2 arg2_, ARG3 arg3_, ARG4 arg4_);
-    
+
 #endif
 };
 
 template <typename R, typename T>
-FFSlot::FFCallBack* FFRpcOps::genCallBack(R (*func_)(T&, SocketPtr))
+FFSlot::FFCallBack* FFRpcOps::genCallBack(R (*func_)(T&, SocketObjPtr))
 {
     struct lambda_cb: public FFSlot::FFCallBack
     {
-        typedef R (*func_t)(T&, SocketPtr);
+        typedef R (*func_t)(T&, SocketObjPtr);
         lambda_cb(func_t func_):m_func(func_){}
         virtual void exe(FFSlot::CallBackArg* args_)
         {
@@ -287,11 +280,11 @@ FFSlot::FFCallBack* FFRpcOps::genCallBack(R (*func_)(T&, SocketPtr))
     return new lambda_cb(func_);
 }
 template <typename R, typename CLASS_TYPE, typename T>
-FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(T&, SocketPtr), CLASS_TYPE* obj_)
+FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(T&, SocketObjPtr), CLASS_TYPE* obj_)
 {
     struct lambda_cb: public FFSlot::FFCallBack
     {
-        typedef R (CLASS_TYPE::*func_t)(T&, SocketPtr);
+        typedef R (CLASS_TYPE::*func_t)(T&, SocketObjPtr);
         lambda_cb(func_t func_, CLASS_TYPE* obj_):m_func(func_), m_obj(obj_){}
         virtual void exe(FFSlot::CallBackArg* args_)
         {
@@ -337,7 +330,6 @@ FFSlot::FFCallBack* FFRpcOps::genCallBack(R (*func_)(RPCReq<IN_T, OUT_T>&))
             }
             req.dest_node_id = msg_data->dest_node_id;
             req.callback_id = msg_data->callback_id;
-            req.dest_namespace = msg_data->dest_namespace;
             req.responser = msg_data->responser;
             m_func(req);
         }
@@ -371,7 +363,6 @@ FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReq<IN_T, OU
             }
             req.dest_node_id = msg_data->dest_node_id;
             req.callback_id = msg_data->callback_id;
-            req.dest_namespace = msg_data->dest_namespace;
             req.responser = msg_data->responser;
             (m_obj->*(m_func))(req);
         }
@@ -409,7 +400,6 @@ FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReq<IN_T, OU
             }
             req.dest_node_id = msg_data->dest_node_id;
             req.callback_id = msg_data->callback_id;
-            req.dest_namespace = msg_data->dest_namespace;
             req.responser = msg_data->responser;
             (m_obj->*(m_func))(req, m_arg1);
         }
@@ -450,7 +440,6 @@ FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReq<IN_T, OU
             }
             req.dest_node_id = msg_data->dest_node_id;
             req.callback_id = msg_data->callback_id;
-            req.dest_namespace = msg_data->dest_namespace;
             req.responser = msg_data->responser;
             (m_obj->*(m_func))(req, m_arg1, m_arg2);
         }
@@ -493,7 +482,6 @@ FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReq<IN_T, OU
             }
             req.dest_node_id = msg_data->dest_node_id;
             req.callback_id = msg_data->callback_id;
-            req.dest_namespace = msg_data->dest_namespace;
             req.responser = msg_data->responser;
             (m_obj->*(m_func))(req, m_arg1, m_arg2, m_arg3);
         }
@@ -537,7 +525,6 @@ FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReq<IN_T, OU
             }
             req.dest_node_id = msg_data->dest_node_id;
             req.callback_id = msg_data->callback_id;
-            req.dest_namespace = msg_data->dest_namespace;
             req.responser = msg_data->responser;
             (m_obj->*(m_func))(req, m_arg1, m_arg2, m_arg3, m_arg4);
         }
@@ -581,7 +568,6 @@ FFSlot::FFCallBack* FFRpcOps::genCallBack(R (*func_)(RPCReqPB<IN_T, OUT_T>&))
             }
             req.dest_node_id = msg_data->dest_node_id;
             req.callback_id = msg_data->callback_id;
-            req.dest_namespace = msg_data->dest_namespace;
             req.responser = msg_data->responser;
             m_func(req);
         }
@@ -615,7 +601,6 @@ FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReqPB<IN_T, 
             }
             req.dest_node_id = msg_data->dest_node_id;
             req.callback_id = msg_data->callback_id;
-            req.dest_namespace = msg_data->dest_namespace;
             req.responser = msg_data->responser;
             (m_obj->*(m_func))(req);
         }
@@ -653,7 +638,6 @@ FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReqPB<IN_T, 
             }
             req.dest_node_id = msg_data->dest_node_id;
             req.callback_id = msg_data->callback_id;
-            req.dest_namespace = msg_data->dest_namespace;
             req.responser = msg_data->responser;
             (m_obj->*(m_func))(req, m_arg1);
         }
@@ -694,7 +678,6 @@ FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReqPB<IN_T, 
             }
             req.dest_node_id = msg_data->dest_node_id;
             req.callback_id = msg_data->callback_id;
-            req.dest_namespace = msg_data->dest_namespace;
             req.responser = msg_data->responser;
             (m_obj->*(m_func))(req, m_arg1, m_arg2);
         }
@@ -737,7 +720,6 @@ FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReqPB<IN_T, 
             }
             req.dest_node_id = msg_data->dest_node_id;
             req.callback_id = msg_data->callback_id;
-            req.dest_namespace = msg_data->dest_namespace;
             req.responser = msg_data->responser;
             (m_obj->*(m_func))(req, m_arg1, m_arg2, m_arg3);
         }
@@ -781,7 +763,6 @@ FFSlot::FFCallBack* FFRpcOps::genCallBack(R (CLASS_TYPE::*func_)(RPCReqPB<IN_T, 
             }
             req.dest_node_id = msg_data->dest_node_id;
             req.callback_id = msg_data->callback_id;
-            req.dest_namespace = msg_data->dest_namespace;
             req.responser = msg_data->responser;
             (m_obj->*(m_func))(req, m_arg1, m_arg2, m_arg3, m_arg4);
         }
@@ -825,50 +806,50 @@ enum ffrpc_cmd_def_e
 struct SessionEnterWorker
 {
     typedef session_enter_worker_in_t  in_t;
-    typedef session_enter_worker_out_t out_t;
-    
+    typedef empty_ret_msg out_t;
+
 };
 //! gate session 下线
 struct SessionOffline
 {
     typedef session_offline_in_t  in_t;
-    typedef session_offline_out_t out_t;
-    
+    typedef empty_ret_msg out_t;
+
 };
 
 //! gate 转发client的消息
 struct RouteLogicMsg_t
 {
     typedef routeLogicMsg_in_t  in_t;
-    typedef routeLogicMsg_out_t out_t;
+    typedef empty_ret_msg out_t;
 };
 //! 改变gate 中client 对应的logic节点
 struct GateChangeLogicNode
 {
     typedef gate_change_logic_node_in_t  in_t;
-    typedef gate_change_logic_node_out_t out_t;
-    
+    typedef empty_ret_msg out_t;
+
 };
 
 //! 关闭gate中的某个session
 struct GateCloseSession
 {
     typedef gate_closeSession_in_t  in_t;
-    typedef gate_closeSession_out_t out_t;
-    
+    typedef empty_ret_msg out_t;
+
 };
 //! 转发消息给client
 struct GateRouteMsgToSession
 {
     typedef gate_routeMmsgToSession_in_t  in_t;
-    typedef gate_routeMmsgToSession_out_t out_t;
-    
+    typedef empty_ret_msg out_t;
+
 };
 //! 转发消息给所有client
 struct GateBroadcastMsgToSession
 {
     typedef gate_broadcastMsgToSession_in_t  in_t;
-    typedef gate_broadcastMsgToSession_out_t out_t;
+    typedef empty_ret_msg out_t;
 };
 //! login 日志
 // struct user_login_event_t

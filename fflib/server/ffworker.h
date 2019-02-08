@@ -33,12 +33,12 @@ public:
         session_ip(src.session_ip),
         from_gate(src.from_gate),
         client_data(src.client_data)
-    { 
+    {
     }
     virtual ~WorkerClient(){}
     template<typename R>
     R* getdata(){
-        return (R*)(client_data.get());
+        return (R*)(SMART_PTR_RAW(client_data));
     }
     void setdata(ClientData* p){
         SharedPtr<ClientData> sp = p;
@@ -92,12 +92,12 @@ public:
         logic_FFCallBack           logic_callback;
         worker_call_FFCallBack     worker_call_callback;
     };
-    
+
     class session_enter_arg;
     class session_offline_arg;
     class logic_msg_arg;
     class worker_call_msg_arg;
-    
+
     //! 记录session的信息
     struct session_info_t
     {
@@ -118,11 +118,11 @@ public:
     int sessionChangeWorker(const userid_t& session_id_, int to_worker_index_, std::string extra_data = "");
     const std::string& getSessionGate(const userid_t& session_id_);
     const std::string& getSessionIp(const userid_t& session_id_);
-    
-    
+
+
     //*********************************************************操作client 内部高级接口***********************************************************************
     callback_info_t& callback_info();
-    
+
     //! 发送消息给特定的client
     int sessionSendMsg(const std::string& gate_name, const userid_t& session_id_, uint16_t cmd_, const std::string& data_);
     int sessionKFSendMsg(const std::string& group_name, const std::string& gate_name, const userid_t& session_id_,
@@ -137,16 +137,16 @@ public:
     int sessionChangeWorker(const std::string& gate_name_, const userid_t& session_id_, const std::string& to_worker_, const std::string& extra_data);
 
     FFRpc& getRpc() { return *m_ffrpc; }
-    
+
     const std::string& getWorkerName() const { return m_logic_name;}
-    
+
     SharedSyncmemMgr& getSharedMem(){ return m_shared_mem_mgr; }
     void regTimer(uint64_t mstimeout_, Task func);
-    
+
     void workerRPC(int workerindex, uint16_t cmd, const std::string& data, FFSlot::FFCallBack* cb);
     void asyncHttp(const std::string& url_, int timeoutsec, FFSlot::FFCallBack* cb);
     std::string syncHttp(const std::string& url_, int timeoutsec);
-    
+
     bool initModule();
     bool cleanupModule();
 public:
@@ -158,10 +158,10 @@ public:
     virtual int onSessionEnter(userid_t session_id, const std::string& extra_data){ return 0;}
     //! scene 之间的互调用
     virtual std::string onWorkerCall(uint16_t cmd, const std::string& body) { return "!invalid";}
-   
+
     userid_t allocUid() { return ++m_allocID; }
     int      getWorkerIndex() const { return m_nWorkerIndex; }
-    
+
 protected:
     //! 处理client 进入场景
     int processSessionEnter(RPCReq<SessionEnterWorker::in_t, SessionEnterWorker::out_t>& req_);
@@ -171,7 +171,7 @@ protected:
     int processSessionReq(RPCReq<RouteLogicMsg_t::in_t, RouteLogicMsg_t::out_t>& req_);
     //! scene 之间的互调用
     int processWorkerCall(RPCReq<WorkerCallMsgt::in_t, WorkerCallMsgt::out_t>& req_);
-    
+
 protected:
     int                                         m_nWorkerIndex;//! worker index num
     userid_t                                    m_allocID;
@@ -220,7 +220,7 @@ public:
     {
         m_all_worker.erase(name_);
     }
-    
+
 private:
     std::map<std::string, FFWorker*>     m_all_worker;
 };
@@ -294,7 +294,7 @@ public:
     }
     uint16_t             cmd;
     const std::string&   body;
-    
+
     std::string&         err;
     std::string&         msg_type;
     std::string&         ret;

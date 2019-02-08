@@ -275,15 +275,4 @@ void SocketWin::asyncRecv()
     m_epoll->register_fd(this);
 }
 
-void SocketWin::safeDelete()
-{
-    struct lambda_t
-    {
-        static void exe(void* p_)
-        {
-            delete ((SocketWin*)p_);
-        }
-    };
-    m_tq->post(Task(&lambda_t::exe, this));
-}
 #endif

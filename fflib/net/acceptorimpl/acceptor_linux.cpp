@@ -27,6 +27,7 @@ using namespace std;
 #include "net/socket_op.h"
 #include "net/msg_handler.h"
 #include "base/task_queue.h"
+#include "base/log.h"
 
 using namespace ff;
 
@@ -74,7 +75,7 @@ int AcceptorLinux::open(const string& address_)
     	host = "127.0.0.1";
     #endif
 
-    if ((ret = getaddrinfo(host, vt2[1].c_str(), &hints, &res)) != 0) 
+    if ((ret = getaddrinfo(host, vt2[1].c_str(), &hints, &res)) != 0)
     {
         fprintf(stderr, "AcceptorLinux::open getaddrinfo: %s, address_=<%s>\n", gai_strerror(ret), address_.c_str());
         return -1;
@@ -130,38 +131,41 @@ int AcceptorLinux::handleEpollRead()
     do
     {
     	#ifdef _WIN32
-    	new_fd = accept(m_listen_fd, NULL, NULL);
-	    if (new_fd == INVALID_SOCKET) {
-	        wprintf(L"accept failed with error: %ld\n", WSAGetLastError());
-	        return 1;
-	    }
-	    SocketOp::set_no_delay(new_fd);
-        SocketI* socket = create_socket(new_fd);
-        socket->open();
-        return 0;
+        	new_fd = accept(m_listen_fd, NULL, NULL);
+    	    if (new_fd == INVALID_SOCKET) {
+    	        wprintf(L"accept failed with error: %ld\n", WSAGetLastError());
+    	        return 1;
+    	    }
+    	    SocketOp::set_no_delay(new_fd);
+            SocketObjPtr socket = create_socket(new_fd);
+            socket->refSelf(socket);
+            socket->open();
+            return 0;
     	#else
-        struct sockaddr_storage addr;
-        socklen_t addrlen = sizeof(addr);
-        if ((new_fd = ::accept(m_listen_fd, (struct sockaddr *)&addr, &addrlen)) == -1)
-        {
-            if (errno == EWOULDBLOCK)
+            struct sockaddr_storage addr;
+            socklen_t addrlen = sizeof(addr);
+            if ((new_fd = ::accept(m_listen_fd, (struct sockaddr *)&addr, &addrlen)) == -1)
             {
-                return 0;
+                if (errno == EWOULDBLOCK)
+                {
+                    return 0;
+                }
+                else if (errno == EINTR || errno == EMFILE || errno == ECONNABORTED || errno == ENFILE ||
+                            errno == EPERM || errno == ENOBUFS || errno == ENOMEM)
+                {
+                    perror("accept");//! if too many open files occur, need to restart epoll event
+                    m_epoll->mod_fd(this);
+                    return 0;
+                }
+                perror("accept other error");
+                return -1;
             }
-            else if (errno == EINTR || errno == EMFILE || errno == ECONNABORTED || errno == ENFILE ||
-                        errno == EPERM || errno == ENOBUFS || errno == ENOMEM)
-            {
-                perror("accept");//! if too many open files occur, need to restart epoll event
-                m_epoll->mod_fd(this);
-                return 0;
-            }
-            perror("accept other error");
-            return -1;
-        }
-        
-        SocketOp::set_no_delay(new_fd);
-        SocketI* socket = create_socket(new_fd);
-        socket->open();
+
+            SocketOp::set_no_delay(new_fd);
+            SocketObjPtr socket = create_socket(new_fd);
+            socket->refSelf(socket);
+            LOGINFO(("FFNET", "SocketLinux::SocketLinux  %x", (long)(SMART_PTR_RAW(socket))));
+            socket->open();
         #endif
     } while (true);
     return 0;
@@ -180,4 +184,3 @@ SocketI* AcceptorLinux::create_socket(SocketFd new_fd_)
     return new SocketLinux(m_epoll, new SocketCtrlCommon(m_msg_handler), new_fd_, m_tq->alloc(new_fd_));
 	#endif
 }
-

@@ -21,7 +21,9 @@ SocketCtrlCommon::SocketCtrlCommon(MsgHandlerPtr msg_handler_):
 SocketCtrlCommon::~SocketCtrlCommon()
 {
 }
-
+int SocketCtrlCommon::handleOpen(SocketI* sock){
+    return 0;
+}
 //! when socket broken(whenever), this function will be called
 //! this func just callback logic layer to process this event
 //! each socket broken event only can happen once
@@ -29,10 +31,10 @@ SocketCtrlCommon::~SocketCtrlCommon()
 int SocketCtrlCommon::handleError(SocketI* sp_)
 {
     if (m_msg_handler->getTaskQueue()){
-        m_msg_handler->getTaskQueue()->post(TaskBinder::gen(&MsgHandler::handleBroken, m_msg_handler, sp_));
+        m_msg_handler->getTaskQueue()->post(TaskBinder::gen(&MsgHandler::handleBroken, m_msg_handler, sp_->toSharedPtr()));
     }
     else{
-        m_msg_handler->handleBroken(sp_);
+        m_msg_handler->handleBroken(sp_->toSharedPtr());
     }
     return 0;
 }
@@ -41,7 +43,7 @@ int SocketCtrlCommon::handleRead(SocketI* sp_, const char* buff, size_t len)
 {
     size_t left_len = len;
     size_t tmp      = 0;
-    
+
     while (left_len > 0)
     {
         if (false == m_message.haveRecvHead(m_have_recv_size))
@@ -52,12 +54,12 @@ int SocketCtrlCommon::handleRead(SocketI* sp_, const char* buff, size_t len)
             left_len         -= tmp;
             buff             += tmp;
         }
-        
+
         tmp = m_message.appendMsg(buff, left_len);
         m_have_recv_size += tmp;
         left_len         -= tmp;
         buff             += tmp;
-        
+
         if (m_message.getBody().size() == m_message.size())
         {
             this->post_msg(sp_);
@@ -73,10 +75,10 @@ void SocketCtrlCommon::post_msg(SocketI* sp_)
 {
     if (m_msg_handler->getTaskQueue()){
         m_msg_handler->getTaskQueue()->post(TaskBinder::gen(&MsgHandler::handleMsg,
-                                             m_msg_handler, m_message, sp_));
+                                             m_msg_handler, m_message, sp_->toSharedPtr()));
     }
     else{
-        m_msg_handler->handleMsg(m_message, sp_);
+        m_msg_handler->handleMsg(m_message, sp_->toSharedPtr());
     }
     m_message.clear();
 }

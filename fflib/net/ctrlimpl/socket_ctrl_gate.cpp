@@ -8,10 +8,10 @@
 #include <openssl/evp.h>
 #include <openssl/sha.h>
 #include <openssl/des.h>
-#include <openssl/evp.h>  
-#include <openssl/bio.h>  
-#include <openssl/buffer.h>  
-#include <openssl/md5.h>  
+#include <openssl/evp.h>
+#include <openssl/bio.h>
+#include <openssl/buffer.h>
+#include <openssl/md5.h>
 
 #include <stdio.h>
 using namespace std;
@@ -26,12 +26,12 @@ SocketCtrlGate::SocketCtrlGate(MsgHandlerPtr msg_handler_, NetStat* ns_):
     m_last_update_tm(0),
     m_recv_pkg_num(0)
 {
-    
+
 }
 
 SocketCtrlGate::~SocketCtrlGate()
 {
-    
+
 }
 
 int SocketCtrlGate::handleOpen(SocketI* s_)
@@ -80,12 +80,12 @@ int SocketCtrlGate::handleRead(SocketI* s_, const char* buff, size_t len)
         }
         m_state = WAIT_BINMSG_PKG;
     }
-    
+
     if (WAIT_WEBSOCKET_PKG == m_state || WAIT_HANDSHAKE == m_state || WAIT_WEBSOCKET_NOMASK_PKG == m_state)
     {
         return handleRead_websocket(s_, buff, len);
     }
-    
+
     if (WAIT_BINMSG_PKG != m_state)
     {
         return 0;
@@ -137,31 +137,31 @@ string sha1_encode(const char *src)
     return ret;
 }
 
-static string base64_encode(const char * input, int length, bool with_new_line)  
-{  
-    BIO * bmem = NULL;  
-    BIO * b64 = NULL;  
-    BUF_MEM * bptr = NULL;  
-  
-    b64 = BIO_new(BIO_f_base64());  
-    if(!with_new_line) {  
-        BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL);  
-    }  
-    bmem = BIO_new(BIO_s_mem());  
-    b64 = BIO_push(b64, bmem);  
-    BIO_write(b64, input, length);  
-    (void)BIO_flush(b64);  
-    BIO_get_mem_ptr(b64, &bptr);  
-  
-    char * buff = (char *)::malloc(bptr->length + 1);  
-    memcpy(buff, bptr->data, bptr->length);  
-    buff[bptr->length] = 0;  
-  
-    BIO_free_all(b64);  
+static string base64_encode(const char * input, int length, bool with_new_line)
+{
+    BIO * bmem = NULL;
+    BIO * b64 = NULL;
+    BUF_MEM * bptr = NULL;
+
+    b64 = BIO_new(BIO_f_base64());
+    if(!with_new_line) {
+        BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL);
+    }
+    bmem = BIO_new(BIO_s_mem());
+    b64 = BIO_push(b64, bmem);
+    BIO_write(b64, input, length);
+    (void)BIO_flush(b64);
+    BIO_get_mem_ptr(b64, &bptr);
+
+    char * buff = (char *)::malloc(bptr->length + 1);
+    memcpy(buff, bptr->data, bptr->length);
+    buff[bptr->length] = 0;
+
+    BIO_free_all(b64);
     string ret = buff;
     ::free(buff);
-    return ret;  
-}  
+    return ret;
+}
 
 static string buildpkg(const string& data, int opcode = 0x01)
 {
@@ -213,7 +213,7 @@ static uint32_t computeWebsokcetKeyVal(const string& val)
     uint32_t ret    = 0;
     uint32_t kongge = 0;
     string str_num;
-    
+
     for (size_t i = 0; i < val.length(); ++i)
     {
         if (val[i] == ' ')
@@ -231,16 +231,16 @@ static uint32_t computeWebsokcetKeyVal(const string& val)
         ret = uint32_t(::atoi(str_num.c_str()) / kongge);
     }
     ret = htonl(ret);
-    
+
     return ret;
 }
 
 static string compute_md5(const char* s, int n)
 {
     MD5_CTX c;
-    unsigned char md5[17]={0};  
+    unsigned char md5[17]={0};
 
-    MD5_Init(&c);  
+    MD5_Init(&c);
     MD5_Update(&c, s, n);
     MD5_Final(md5,&c);
     string ret;
@@ -251,7 +251,7 @@ static string compute_md5(const char* s, int n)
 int SocketCtrlGate::handleRead_nomask_msg(SocketI* s_, const char* buff, size_t len)
 {
     LOGTRACE((FFNET, "SocketCtrlGate::handleRead_nomask_msg begin len<%u>", len));
-    
+
     uint32_t begin = 0;
     uint32_t m     = 0;
     for (m = 0; m < len; ++m)
@@ -260,7 +260,7 @@ int SocketCtrlGate::handleRead_nomask_msg(SocketI* s_, const char* buff, size_t 
         {
             m_buff.append(buff + begin, m - begin);
             LOGTRACE((FFNET, "SocketCtrlGate::handleRead_nomask_msg buff=%s", m_buff));
-            
+
             handle_parse_text_prot(s_, m_buff);
             ++m_recv_pkg_num;
             this->post_msg(s_);
@@ -289,7 +289,7 @@ int SocketCtrlGate::checkPreSend(SocketI* sp_, string& buff, int flag)
     {
         return -1;
     }
-    
+
     if (WAIT_WEBSOCKET_PKG == m_state)
     {
         if (m_recv_pkg_num > 0)//!如果是handshake，不需要包装头
@@ -350,23 +350,23 @@ int SocketCtrlGate::handleRead_websocket(SocketI* s_, const char* buff, size_t l
         }
 
         string argSec_WebSocket_Key = param["Sec-WebSocket-Key"];
-        
+
         string handshake;
         if (argSec_WebSocket_Key.empty())
         {
             LOGTRACE((FFNET, "SocketCtrlGate::handleRead_websocket end msg content<%s,%s>", param["Sec-WebSocket-Key1"], param["Sec-WebSocket-Key2"]));
-            
+
             handshake = "HTTP/1.1 101 Web Socket Protocol Handshake\r\n";
             handshake += "Upgrade: WebSocket\r\n";
             handshake += "Connection: Upgrade\r\n";
-            
+
             string str_origin = param["Origin"];
             if (str_origin.empty())
             {
                 str_origin = "null";
             }
             handshake += string("Sec-WebSocket-Origin: ") + str_origin +"\r\n";
-            
+
             string str_host = param["Host"];
             if (false == str_host.empty())
             {
@@ -377,13 +377,13 @@ int SocketCtrlGate::handleRead_websocket(SocketI* s_, const char* buff, size_t l
                 {
                     tmp_path = tmp_path_arg[1];
                 }
-                
+
                 handshake += string("Sec-WebSocket-Location: ws://") + param["Host"] + tmp_path + "\r\n\r\n";
             }
 
             uint32_t key1 = computeWebsokcetKeyVal(param["Sec-WebSocket-Key1"]);
             uint32_t key2 = computeWebsokcetKeyVal(param["Sec-WebSocket-Key2"]);
-            
+
             string& key_ext   = tmp_by_line[tmp_by_line.size() - 1];
             if (key_ext.size() < 8)
             {
@@ -392,11 +392,11 @@ int SocketCtrlGate::handleRead_websocket(SocketI* s_, const char* buff, size_t l
             }
 
             char tmp_buff[16] = {0};
-            
+
             memcpy(tmp_buff, (const char*)(&key1), sizeof(key1));
             memcpy(tmp_buff + sizeof(key1), (const char*)(&key2), sizeof(key2));
             memcpy(tmp_buff + sizeof(key1) + sizeof(key2), key_ext.c_str(), 8);
-            
+
             handshake += compute_md5(tmp_buff, sizeof(tmp_buff));
             m_state = WAIT_WEBSOCKET_NOMASK_PKG;
             LOGTRACE((FFNET, "SocketCtrlGate::handleRead_websocket end handshake size=%s", handshake.size()));
@@ -415,7 +415,7 @@ int SocketCtrlGate::handleRead_websocket(SocketI* s_, const char* buff, size_t l
             LOGTRACE((FFNET, "SocketCtrlGate::handleRead_websocket end handshake=%s", handshake));
         }
         s_->asyncSend(handshake);
-                
+
         m_message.clear();
         return 0;
     }
@@ -427,7 +427,7 @@ int SocketCtrlGate::handleRead_websocket(SocketI* s_, const char* buff, size_t l
     {
         return handleRead_mask_msg(s_, buff, len);;
     }
-    
+
     LOGTRACE((FFNET, "SocketCtrlGate::handleRead_websocket end msg"));
     return 0;
 }
@@ -454,13 +454,13 @@ int SocketCtrlGate::handleRead_mask_msg(SocketI* s_, const char* buff, size_t le
         uint64_t pkgsize = (uint64_t)(m_buff[1] & 0x7F);
         uint8_t headsize = 2;
         uint8_t masksize = 0;
-        
+
         LOGTRACE((FFNET, "SocketCtrlGate::handleRead_mask_msg dump iseof=%d,opcode=%d,mask=%d,pkgsize=%d..", iseof, opcode, mask, pkgsize));
         if (mask)
         {
             masksize = 4;
         }
-        
+
         if (pkgsize == 126)
         {
             headsize = 4;
@@ -484,7 +484,7 @@ int SocketCtrlGate::handleRead_mask_msg(SocketI* s_, const char* buff, size_t le
             }
             pkgsize = *((uint64_t*)(m_buff.c_str() + 2));
             LOGTRACE((FFNET, "SocketCtrlGate::handleRead_websocket dump pkgsize=%d,headsize=%d,masksize=%d ..", (uint64_t)pkgsize, (int)headsize, (int)masksize));
-            
+
             pkgsize =  ntoh64(pkgsize);
             long len = 0;
             int n = 1;
@@ -494,9 +494,9 @@ int SocketCtrlGate::handleRead_mask_msg(SocketI* s_, const char* buff, size_t le
                 n *= 256;
             }
             //pkgsize = len;
-            
+
             LOGTRACE((FFNET, "SocketCtrlGate::handleRead_websocket dump pkgsize=%d,headsize=%d,masksize=%d ..", (uint64_t)pkgsize, (int)headsize, (int)masksize));
-            
+
             if (m_buff.size() < headsize + masksize + pkgsize)
             {
                 return 0;
@@ -508,9 +508,9 @@ int SocketCtrlGate::handleRead_mask_msg(SocketI* s_, const char* buff, size_t le
             {
                 return 0;
             }
-            
+
         }
-        
+
         //如果存在掩码的情况下获取4位掩码值:
         if (mask)
         {
@@ -523,7 +523,7 @@ int SocketCtrlGate::handleRead_mask_msg(SocketI* s_, const char* buff, size_t le
         }
 
         LOGTRACE((FFNET, "SocketCtrlGate::handleRead_websocket dump %d,%d,%d,m_buff=%u ..", (int)pkgsize, (int)headsize, (int)masksize, m_buff.size()));
-        
+
         ++m_recv_pkg_num;
         if (2 == opcode)//!bin msg
         {
@@ -561,7 +561,7 @@ int SocketCtrlGate::handleRead_mask_msg(SocketI* s_, const char* buff, size_t le
         m_last_update_tm = m_net_stat->getHeartBeat().tick();
         m_net_stat->getHeartBeat().update(s_);
     }
-    
+
 	return 0;
 }
 int SocketCtrlGate::handle_parse_text_prot(SocketI* s_, const string& str_body_)
@@ -572,10 +572,10 @@ int SocketCtrlGate::handle_parse_text_prot(SocketI* s_, const string& str_body_)
     if (pos_end != string::npos)
     {
         string tmp_opt = str_body_.substr(0, pos_end);
-        
+
         vector<string> vec_cmd_opt;
         StrTool::split(tmp_opt, vec_cmd_opt, ",");
-        
+
         for (size_t j = 0; j < vec_cmd_opt.size(); ++j)
         {
             vector<string> vec_cmd_k_v;
@@ -618,4 +618,3 @@ int SocketCtrlGate::get_type() const
     }
     return 0;
 }
-

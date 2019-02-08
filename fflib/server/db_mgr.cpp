@@ -19,7 +19,7 @@ int DbMgr::start()
     for (size_t i = 0; i < DB_THREAD_NUM; ++i)
     {
         m_tq.push_back(new TaskQueue());
-        m_thread.create_thread(TaskBinder::gen(&TaskQueue::run, (m_tq[i]).get()), 1);
+        m_thread.create_thread(TaskBinder::gen(&TaskQueue::run, SMART_PTR_RAW(m_tq[i])), 1);
     }
     return 0;
 }
@@ -44,18 +44,18 @@ long DbMgr::connectDB(const string& host_, const std::string& name)
         LOGERROR((DB_MGR_LOG, "DbMgr::connectDB failed<%s>", db->errorMsg()));
         return 0;
     }
-    
+
     long db_id = 0;
     {
         LockGuard lock(m_mutex);
         static long autoid = 0;
         db_id = ++autoid;
-        
+
         DBConnectionInfo& varDbConnection = m_db_connection[db_id];
         varDbConnection.db = db;
         varDbConnection.tq = m_tq[m_db_index++ % m_tq.size()];
         varDbConnection.host_cfg = host_;
-        
+
         if (name == DB_DEFAULT_NAME){
             ++m_defaultDbNum;
             char buff[256] = {0};
@@ -122,10 +122,10 @@ void DbMgr::queryDBImpl(DBConnectionInfo* varDbConnection_, const string& sql_, 
     {
         callback_->exe(&(varDbConnection_->ret));
     }
-    LOGINFO((DB_MGR_LOG, "DbMgr::queryDBImpl sql=%s end callback_:%d", sql_, long(callback_.get())));
+    LOGINFO((DB_MGR_LOG, "DbMgr::queryDBImpl sql=%s end", sql_));
 }
 
-int  DbMgr::queryByName(const std::string& strName, const std::string& sql_, 
+int  DbMgr::queryByName(const std::string& strName, const std::string& sql_,
                      std::vector<std::vector<std::string> >* ret_data_,
                      std::string* errinfo, int* affectedRows_, std::vector<std::string>* col_)
 {
@@ -187,7 +187,7 @@ int DbMgr::DBConnectionInfo::wait()
     {
         return 0;
     }
-    
+
     cond.wait();
     result_flag = 0;
     return 0;

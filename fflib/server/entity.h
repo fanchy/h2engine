@@ -37,7 +37,7 @@ public:
     static SharedPtr<Entity> newEntity(int ntype, userid_t id, userid_t sid = 0);
     static SharedPtr<Entity> toEntity(long p);
     virtual ~Entity();
-    
+
     template<typename T>
     T* get(){
         int index = FieldIndexUtil_t<T>::getFieldIndex();
@@ -48,7 +48,7 @@ public:
                 m_fields.push_back(NULL);
             }
         }
-        
+
         EntityField* ret = m_fields[index];
         if (ret == NULL){
             ret = new T();
@@ -59,24 +59,24 @@ public:
     }
     EntityField* getFieldByName(const std::string& name);
     void clearField();
-    
+
     void setUid(userid_t id){ m_uid = id;  };
     userid_t getUid() const { return m_uid;}
-    
+
     void setName(const std::string& s) {  m_name = s;  }
     const std::string& getName() const { return m_name;}
-    
+
     int getType() const { return m_type;}
     void setType(int t) { m_type = t;   }
-    
+
     void setSession(userid_t id){ m_sessionID = id;  };
     userid_t getSession() const { return m_sessionID;}
     bool sendMsg(uint16_t cmd, const std::string& msg);
     bool sessionClose();// 断开连接
 
     SharedPtr<Entity> toPtr();
-    
-    
+
+
 private:
     void initField(EntityField* ret, const std::string& name);
 public:
@@ -104,7 +104,7 @@ public:
     virtual ~EntityField(){}
     const std::string& getFieldName(){ return m_strFieldName; }
     void setFiledName(const std::string& s){ m_strFieldName = s; }
-    
+
     EntityPtr getOwner(){ return m_owner.lock(); }
     void setOwner(EntityPtr ref) { m_owner = ref;}
 
@@ -115,7 +115,7 @@ public:
 class EntityFieldReg{
 public:
     EntityFieldReg():m_index(0){
-        
+
     }
     template<typename T>
     EntityFieldReg& reg(){
@@ -123,7 +123,7 @@ public:
         if (index == -1){
             index = m_index++;
         }
-        
+
         return *this;
     }
 public:
@@ -143,12 +143,12 @@ class EntityMgr{
 public:
     EntityMgr(){}
     virtual ~EntityMgr(){}
-    
+
     void add(EntityPtr p);
     bool del(int ntype, userid_t id);
     EntityPtr get(int ntype, userid_t id);
     size_t size(int ntype) { return m_allEntity[ntype].size(); }
-    
+
     template <typename T>
     void foreach(int ntype, T f){
         std::map<userid_t, EntityPtr>& allEntity = m_allEntity[ntype];
@@ -177,7 +177,7 @@ protected:
 template<>
 struct CppScriptValutil<EntityPtr>{
     static void toScriptVal(ScriptArgObjPtr retVal, EntityPtr a){
-        retVal->toInt((long)(a.get()));
+        retVal->toInt((long)(SMART_PTR_RAW(a)));
     }
     static void toCppVal(ScriptArgObjPtr argVal, EntityPtr &a){
         long ptr = (long)(argVal->getInt());

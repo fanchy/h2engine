@@ -9,7 +9,7 @@ using namespace std;
 map<long, WeakPtr<Entity> > Entity::EntityPtr2Ref;
 SharedPtr<Entity> Entity::newEntity(int ntype, userid_t id, userid_t sid){
     SharedPtr<Entity> ret = new Entity(ntype, id, sid);
-    Entity::EntityPtr2Ref[long(ret.get())] = ret;
+    Entity::EntityPtr2Ref[long(SMART_PTR_RAW(ret))] = ret;
     return ret;
 }
 SharedPtr<Entity> Entity::genEntity(int ntype, userid_t id, userid_t sid){
@@ -116,10 +116,10 @@ bool EntityModule::init(){
 
     /*example code
     printf("initEntityEnvir....\n");
-    
+
     ScriptArgObjPtr ret = SCRIPT_UTIL.callScript<ScriptArgObjPtr>("testScriptCall");
     ret->dump();
-    
+
     int arg1 = 0;
     string arg2 = "sss";
     double arg3  = 3.14;
@@ -130,6 +130,3 @@ bool EntityModule::init(){
     */
     return true;
 }
-
-
-

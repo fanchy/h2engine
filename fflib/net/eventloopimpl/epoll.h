@@ -13,7 +13,7 @@ namespace ff {
 #define CREATE_EPOLL_SIZE  4096
 #define EPOLL_EVENTS_SIZE  128
 //! 100 ms
-#define EPOLL_WAIT_TIME    -1 
+#define EPOLL_WAIT_TIME    -1
 
 class Epoll: public EventLoop
 {
@@ -34,11 +34,11 @@ protected:
 private:
     volatile bool            m_running;
     int                      m_efd;
-    TaskQueue*            m_task_queue;
+    TaskQueue*               m_task_queue;
     int                      m_interupt_sockets[2];
     //! 待销毁的error socket
-    std::list<Fd*>   		     m_error_fd_set;
-    Mutex                  m_mutex;
+    std::list<Fd*>           m_error_fd_set;
+    Mutex                    m_mutex;
 };
 
 }

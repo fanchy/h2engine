@@ -13,8 +13,7 @@ FFRpc::FFRpc(string service_name_):
     m_service_name(service_name_),
     m_node_id(0),
     m_timer(&m_tq),
-    m_master_broker_sock(NULL),
-    m_bind_broker_id(0)
+    m_master_broker_sock(NULL)
 {
 }
 
@@ -37,14 +36,14 @@ int FFRpc::open(const string& broker_addr)
     m_host = broker_addr;
 
     m_thread.create_thread(TaskBinder::gen(&TaskQueue::run, &m_tq), 1);
-            
+
     //!新版本
     m_ffslot.bind(REGISTER_TO_BROKER_RET, FFRpcOps::genCallBack(&FFRpc::handleBrokerRegResponse, this))
             .bind(BROKER_TO_CLIENT_MSG, FFRpcOps::genCallBack(&FFRpc::handleRpcCallMsg, this));
 
     m_master_broker_sock = connectToBroker(m_host, BROKER_MASTER_NODE_ID);
 
-    if (NULL == m_master_broker_sock)
+    if (!m_master_broker_sock)
     {
         LOGERROR((FFRPC, "FFRpc::open failed, can't connect to remote broker<%s>", m_host.c_str()));
         return -1;
@@ -53,18 +52,23 @@ int FFRpc::open(const string& broker_addr)
     int tryTimes = 0;
     while(m_node_id == 0)
     {
-        usleep(1);
-        if (m_master_broker_sock == NULL)
+        usleep(100);
+        if (!m_master_broker_sock)
         {
             LOGERROR((FFRPC, "FFRpc::open failed"));
             return -1;
         }
         ++tryTimes;
         if (tryTimes > 10000){
+            if (m_master_broker_sock){
+                m_master_broker_sock->close();
+                m_master_broker_sock = NULL;
+            }
             LOGERROR((FFRPC, "FFRpc::open failed timeout"));
+            usleep(100);
             return -1;
         }
-    }
+    };
     m_runing = true;
     LOGTRACE((FFRPC, "FFRpc::open end ok m_node_id[%u]", m_node_id));
     return 0;
@@ -75,45 +79,45 @@ int FFRpc::close()
     {
         return 0;
     }
-    m_runing = false;
     m_timer.stop(true);
     if (m_master_broker_sock)
     {
         m_master_broker_sock->close();
     }
-    map<uint64_t, SocketPtr>::iterator it = m_broker_sockets.begin();
-    for (; it != m_broker_sockets.end(); ++it)
-    {
-        it->second->close();
+    for (int i = 0; i < 1000; ++i){
+        if (!m_master_broker_sock)
+            break;
+        usleep(1000);
     }
+    m_master_broker_sock = NULL;
     m_tq.close();
     m_thread.join();
+    m_runing = false;
+    LOGINFO((FFRPC, "FFRpc::close end ok"));
     //usleep(100);
     return 0;
 }
 
 //! 连接到broker master
-SocketPtr FFRpc::connectToBroker(const string& host_, uint32_t node_id_)
+SocketObjPtr FFRpc::connectToBroker(const string& host_, uint32_t node_id_)
 {
     LOGINFO((FFRPC, "FFRpc::connectToBroker begin...host_<%s>,node_id_[%u]", host_.c_str(), node_id_));
-    SocketPtr sock = NetFactory::connect(host_, this);
-    if (NULL == sock)
+    SocketObjPtr sock = NetFactory::connect(host_, this);
+    if (!sock)
     {
         LOGERROR((FFRPC, "FFRpc::register_to_broker_master failed, can't connect to remote broker<%s>", host_.c_str()));
         return sock;
     }
-    SessionData* psession = new SessionData(node_id_);
-    sock->set_data(psession);
+    SessionData* psession = sock->getData<SessionData>();
+    psession->node_id = node_id_;
 
     //!新版发送注册消息
     RegisterToBroker::in_t reg_msg;
     reg_msg.node_type = RPC_NODE;
     reg_msg.service_name = m_service_name;
-    reg_msg.node_id = m_node_id;
-    reg_msg.bind_broker_id = Singleton<FFRpcMemoryRoute>::instance().getBrokerInMem();
     MsgSender::send(sock, REGISTER_TO_BROKER_REQ, FFThrift::EncodeAsString(reg_msg));
-    
-    LOGINFO((FFRPC, "FFRpc::connectToBroker end bind_broker_id=%d", reg_msg.bind_broker_id));
+
+    LOGINFO((FFRPC, "FFRpc::connectToBroker end"));
     return sock;
 }
 //! 投递到ffrpc 特定的线程
@@ -130,10 +134,10 @@ void FFRpc::timerReconnectBroker()
     if (m_runing == false)
         return;
 
-    if (NULL == m_master_broker_sock)
+    if (!m_master_broker_sock)
     {
         m_master_broker_sock = connectToBroker(m_host, BROKER_MASTER_NODE_ID);
-        if (NULL == m_master_broker_sock)
+        if (!m_master_broker_sock)
         {
             LOGERROR((FFRPC, "FFRpc::timerReconnectBroker failed, can't connect to remote broker<%s>", m_host.c_str()));
             //! 设置定时器重连
@@ -144,26 +148,7 @@ void FFRpc::timerReconnectBroker()
             LOGWARN((FFRPC, "FFRpc::timerReconnectBroker failed, connect to master remote broker<%s> ok", m_host.c_str()));
         }
     }
-    //!检测是否需要连接slave broker
-    map<string/*host*/, int64_t>::iterator it = m_broker_data.slave_broker_data.begin();
-    for (; it != m_broker_data.slave_broker_data.end(); ++it)
-    {
-        uint64_t node_id = it->second;
-        string host = it->first;
-        if (m_broker_sockets.find(node_id) == m_broker_sockets.end())//!重连
-        {
-            SocketPtr sock = connectToBroker(host, node_id);
-            if (sock == NULL)
-            {
-                LOGERROR((FFRPC, "FFRpc::timerReconnectBroker failed, can't connect to remote broker<%s>", host.c_str()));
-            }
-            else
-            {
-                m_broker_sockets[node_id] = sock;
-                LOGWARN((FFRPC, "FFRpc::timerReconnectBroker failed, connect to slave remote broker<%s> ok", host.c_str()));
-            }
-        }
-    }
+
     LOGINFO((FFRPC, "FFRpc::timerReconnectBroker  end ok"));
 }
 
@@ -173,26 +158,14 @@ TaskQueue* FFRpc::getTaskQueue()
     return &m_tq;
 }
 
-int FFRpc::handleBroken(SocketPtr sock_)
+int FFRpc::handleBroken(SocketObjPtr sock_)
 {
+    LOGTRACE((FFRPC, "FFRpc::handleBroken"));
     //! 设置定时器重练
     if (m_master_broker_sock == sock_)
     {
         m_master_broker_sock = NULL;
     }
-    else
-    {
-        map<uint64_t, SocketPtr>::iterator it = m_broker_sockets.begin();
-        for (; it != m_broker_sockets.end(); ++it)
-        {
-            if (it->second == sock_)
-            {
-                m_broker_sockets.erase(it);
-                break;
-            }
-        }
-    }
-    sock_->safeDelete();
 
     if (true == m_runing)
     {
@@ -201,7 +174,7 @@ int FFRpc::handleBroken(SocketPtr sock_)
     return 0;
 }
 
-int FFRpc::handleMsg(const Message& msg_, SocketPtr sock_)
+int FFRpc::handleMsg(const Message& msg_, SocketObjPtr sock_)
 {
     uint16_t cmd = msg_.getCmd();
     LOGTRACE((FFRPC, "FFRpc::handleMsg_impl cmd[%u] begin", cmd));
@@ -223,16 +196,17 @@ int FFRpc::handleMsg(const Message& msg_, SocketPtr sock_)
         }
     }
     LOGWARN((FFRPC, "FFRpc::handleMsg_impl cmd[%u] end ok", cmd));
+
     return -1;
 }
 
 
 //! 新版 调用消息对应的回调函数
-int FFRpc::handleRpcCallMsg(BrokerRouteMsg::in_t& msg_, SocketPtr sock_)
+int FFRpc::handleRpcCallMsg(BrokerRouteMsg::in_t& msg_, SocketObjPtr sock_)
 {
     LOGTRACE((FFRPC, "FFRpc::handleRpcCallMsg msg begin service_name=%s dest_msg_name=%s callback_id=%u, body_size=%d",
                      msg_.dest_service_name, msg_.dest_msg_name, msg_.callback_id, msg_.body.size()));
-    
+
     if (false == msg_.err_info.empty())
     {
         LOGERROR((FFRPC, "FFRpc::handleRpcCallMsg error=%s", msg_.err_info));
@@ -263,7 +237,7 @@ int FFRpc::handleRpcCallMsg(BrokerRouteMsg::in_t& msg_, SocketPtr sock_)
         }
         if (cb)
         {
-            SlotReqArg arg(msg_.body, msg_.from_node_id, msg_.callback_id, msg_.from_namespace, msg_.err_info, this);
+            SlotReqArg arg(msg_.body, msg_.from_node_id, msg_.callback_id, msg_.err_info, this);
             cb->exe(&arg);
             return 0;
         }
@@ -273,7 +247,7 @@ int FFRpc::handleRpcCallMsg(BrokerRouteMsg::in_t& msg_, SocketPtr sock_)
             msg_.err_info = "interface named " + msg_.dest_msg_name + " not found in rpc";
             msg_.dest_node_id = msg_.from_node_id;
             msg_.dest_service_name.clear();
-            this->response(msg_.from_namespace, "", msg_.from_node_id, msg_.callback_id, FFThrift::EncodeAsString(msg_), msg_.err_info);
+            this->response("", msg_.from_node_id, msg_.callback_id, FFThrift::EncodeAsString(msg_), msg_.err_info);
         }
     }
     else
@@ -281,7 +255,7 @@ int FFRpc::handleRpcCallMsg(BrokerRouteMsg::in_t& msg_, SocketPtr sock_)
         FFSlot::FFCallBack* cb = m_ffslot_callback.get_callback(msg_.callback_id);
         if (cb)
         {
-            SlotReqArg arg(msg_.body, msg_.from_node_id, 0, msg_.from_namespace, msg_.err_info, this);
+            SlotReqArg arg(msg_.body, msg_.from_node_id, 0, msg_.err_info, this);
             cb->exe(&arg);
             m_ffslot_callback.del(msg_.callback_id);
             return 0;
@@ -320,14 +294,14 @@ int FFRpc::docall(const string& service_name_, const string& msg_name_, const st
 {
     //!调用远程消息
     LOGTRACE((FFRPC, "FFRpc::docall begin service_name_<%s>, msg_name_<%s> body_size=%u", service_name_.c_str(), msg_name_.c_str(), body_.size()));
-    
+
     map<string, int64_t>::iterator it = m_broker_data.service2node_id.find(service_name_);
     if (it == m_broker_data.service2node_id.end())
     {
         LOGWARN((FFRPC, "FFRpc::docall end service not exist=%s", service_name_));
         if (callback_){
             try{
-                SlotReqArg arg("", 0, 0, "", "service " + service_name_ + " not exist in ffrpc", this);
+                SlotReqArg arg("", 0, 0, "service " + service_name_ + " not exist in ffrpc", this);
                 callback_->exe(&arg);
             }
             catch(exception& e_)
@@ -342,22 +316,20 @@ int FFRpc::docall(const string& service_name_, const string& msg_name_, const st
     {
         m_ffslot_callback.bind(callback_id, callback_);
     }
-    
+
     LOGTRACE((FFRPC, "FFRpc::docall end dest_id=%u callback_id=%u", it->second, callback_id));
 
-    static string null_str;
-    sendToDestNode(null_str, service_name_, msg_name_, it->second, callback_id, body_);
+    sendToDestNode(service_name_, msg_name_, it->second, callback_id, body_);
 
     return 0;
 }
 
 //! 通过node id 发送消息给broker
-void FFRpc::sendToDestNode(const string& dest_namespace_, const string& service_name_, const string& msg_name_,
+void FFRpc::sendToDestNode(const string& service_name_, const string& msg_name_,
                                 uint64_t dest_node_id_, int64_t callback_id_, const string& body_, string error_info)
 {
     LOGTRACE((FFRPC, "FFRpc::send_to_broker_by_nodeid begin dest_node_id[%u]", dest_node_id_));
     BrokerRouteMsg::in_t dest_msg;
-    dest_msg.dest_namespace = dest_namespace_;
     dest_msg.dest_service_name = service_name_;
     dest_msg.dest_msg_name = msg_name_;
     dest_msg.dest_node_id = dest_node_id_;
@@ -366,13 +338,9 @@ void FFRpc::sendToDestNode(const string& dest_namespace_, const string& service_
     dest_msg.err_info = error_info;
 
     dest_msg.from_node_id = m_node_id;
-    
-    uint64_t dest_broker_id = m_bind_broker_id;
-    //!如果赋值了namespace, 那么需要转发给master BROKER
-    if (false == dest_namespace_.empty())
-    {
-        dest_broker_id = BROKER_MASTER_NODE_ID;
-    }
+
+    uint64_t dest_broker_id = BROKER_MASTER_NODE_ID;
+
     FFBroker* pbroker = Singleton<FFRpcMemoryRoute>::instance().getBroker(dest_broker_id);
     if (pbroker)//!如果broker和本身都在同一个进程中,那么直接内存间投递即可
     {
@@ -382,10 +350,6 @@ void FFRpc::sendToDestNode(const string& dest_namespace_, const string& service_
     else if (dest_broker_id == 0)
     {
         MsgSender::send(m_master_broker_sock, BROKER_ROUTE_MSG, FFThrift::EncodeAsString(dest_msg));
-    }
-    else
-    {
-        MsgSender::send(m_broker_sockets[m_bind_broker_id], BROKER_ROUTE_MSG, FFThrift::EncodeAsString(dest_msg));
     }
     return;
 }
@@ -398,30 +362,20 @@ bool FFRpc::isExist(const string& service_name_)
             return true;
         }
     }
-    
+
     return true;
-}
-//! 通过bridge broker调用远程的service TODO
-int FFRpc::bridgeDocall(const string& broker_group_, const string& service_name_, const string& msg_name_,
-                              const string& body_, FFSlot::FFCallBack* callback_)
-{
-    int64_t callback_id  = int64_t(callback_);
-    m_ffslot_callback.bind(callback_id, callback_);
-    sendToDestNode(broker_group_, service_name_, msg_name_, 0, callback_id, body_);
-    LOGINFO((FFRPC, "FFRpc::bridgeDocall group<%s> service[%s] end ok", broker_group_, service_name_));
-    return 0;
 }
 
 
 //! 调用接口后，需要回调消息给请求者
-void FFRpc::response(const string& dest_namespace_, const string& msg_name_,  uint64_t dest_node_id_, int64_t callback_id_, const string& body_, string err_info)
+void FFRpc::response(const string& msg_name_,  uint64_t dest_node_id_, int64_t callback_id_, const string& body_, string err_info)
 {
     static string null_str;
-    m_tq.post(TaskBinder::gen(&FFRpc::sendToDestNode, this, dest_namespace_, null_str, msg_name_, dest_node_id_, callback_id_, body_, err_info));
+    m_tq.post(TaskBinder::gen(&FFRpc::sendToDestNode, this, null_str, msg_name_, dest_node_id_, callback_id_, body_, err_info));
 }
 
-//! 处理注册, 
-int FFRpc::handleBrokerRegResponse(RegisterToBroker::out_t& msg_, SocketPtr sock_)
+//! 处理注册,
+int FFRpc::handleBrokerRegResponse(RegisterToBroker::out_t& msg_, SocketObjPtr sock_)
 {
     LOGTRACE((FFRPC, "FFBroker::handleBrokerRegResponse begin node_id=%d", msg_.node_id));
     if (msg_.register_flag < 0)
@@ -437,23 +391,18 @@ int FFRpc::handleBrokerRegResponse(RegisterToBroker::out_t& msg_, SocketPtr sock
         Singleton<FFRpcMemoryRoute>::instance().addNode(m_node_id, this);
         LOGWARN((FFRPC, "FFBroker::handleBrokerRegResponse alloc node_id=%d", m_node_id));
     }
-    m_bind_broker_id = msg_.rpc_bind_broker_info[m_node_id];
     m_broker_data = msg_;
 
     if (m_master_broker_sock)
         timerReconnectBroker();
-    LOGTRACE((FFRPC, "FFBroker::handleBrokerRegResponse end service num=%d, m_bind_broker_id=%d", m_broker_data.service2node_id.size(), m_bind_broker_id));
+    LOGTRACE((FFRPC, "FFBroker::handleBrokerRegResponse end service num=%d, ", m_broker_data.service2node_id.size()));
     return 0;
 }
 
 //!获取broker socket
-SocketPtr FFRpc::getBrokerSocket()
+SocketObjPtr FFRpc::getBrokerSocket()
 {
-    if (m_bind_broker_id == 0)
-    {
-        return m_master_broker_sock;
-    }
-    return m_broker_sockets[m_bind_broker_id];     
+    return m_master_broker_sock;
 }
 
 //! 注册接口【支持动态的增加接口】

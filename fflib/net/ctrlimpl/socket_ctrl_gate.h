@@ -19,7 +19,7 @@ public:
         WAIT_WEBSOCKET_PKG  = 4, //!等待消息
         WAIT_WEBSOCKET_NOMASK_PKG = 5,//!等待无mask消息
     };
-    
+
     SocketCtrlGate(MsgHandlerPtr msg_handler_, NetStat*);
     ~SocketCtrlGate();
 
@@ -31,17 +31,17 @@ public:
     int handleRead_websocket(SocketI*, const char* buff, size_t len);
     int handleRead_nomask_msg(SocketI*, const char* buff, size_t len);
     int handleRead_mask_msg(SocketI*, const char* buff, size_t len);
-    
+
     int handle_parse_text_prot(SocketI*, const std::string& str_body_);
     virtual int checkPreSend(SocketI*, std::string& buff, int flag);
-    
+
     virtual int get_type() const;
 private:
     unsigned char   m_state;
     unsigned char   m_type;// 0 bin 1 text websocket
-    NetStat*     m_net_stat;
+    NetStat*        m_net_stat;
     time_t          m_last_update_tm;
-    std::string          m_buff;
+    std::string     m_buff;
     uint32_t        m_recv_pkg_num;
 };
 

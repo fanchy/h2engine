@@ -9,6 +9,7 @@
 
 namespace ff {
 #define FF_ASSERT(X) if (!(X)) throw std::runtime_error("SharedPtr NULL DATA")
+#define SMART_PTR_RAW(X) (X).get()
 
 struct RefData
 {
@@ -60,7 +61,7 @@ public:
     bool         operator==(const self_type_t& p);
     bool         operator==(const object_t* p);
     self_type_t& operator=(const self_type_t& src_);
-    
+
     operator bool() const
     {
         return NULL != m_dest_ptr;
@@ -243,7 +244,7 @@ public:
         }
         m_dest_ptr = NULL;
     }
-    
+
     template<typename R>
     self_type_t& operator=(const SharedPtr<R>& p)
     {

@@ -47,7 +47,6 @@ public:
 
     virtual void asyncSend(const std::string& buff_);
     virtual void asyncRecv();
-    virtual void safeDelete();
 
     int handleEpollRead_impl();
     int handleEpollWrite_impl();

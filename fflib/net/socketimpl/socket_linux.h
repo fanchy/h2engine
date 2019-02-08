@@ -47,28 +47,30 @@ public:
 
     virtual void asyncSend(const std::string& buff_);
     virtual void asyncRecv();
-    virtual void safeDelete();
 
     int handleEpollRead_impl();
     int handleEpollWrite_impl();
-    int handle_epoll_error_impl();
+    int handleEpollErrorImpl();
 
     virtual void sendRaw(const std::string& buff_);
-    void send_str_impl(const std::string& buff_);
-    void send_impl(const std::string& buff_, int flag = 0);
-    void close_impl();
+    void sendStrImpl(const std::string& buff_);
+    void sendImpl(const std::string& buff_, int flag = 0);
+    void closeImpl();
 
     SocketCtrlI* getSocketCtrl() { return m_sc; }
+    virtual SharedPtr<SocketI> toSharedPtr();
+    void refSelf(SharedPtr<SocketI> p);
 private:
-    bool is_open() { return m_fd > 0; }
+    bool isOpen() { return m_fd > 0; }
 
-    int do_send(ff_str_buffer_t* buff_);
+    int doSend(ff_str_buffer_t* buff_);
 private:
     EventLoop*                       m_epoll;
-    SocketCtrlI*                      m_sc;
+    SocketCtrlI*                     m_sc;
     SocketFd                         m_fd;
     TaskQueue*                       m_tq;
-    send_buffer_t                       m_send_buffer;
+    send_buffer_t                    m_sendBuffer;
+    SocketObjPtr                     m_refSocket;//control socket life
 };
 
 }

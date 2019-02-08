@@ -35,13 +35,13 @@ struct ScriptArgObj{
     ScriptArgObj(bool v):nType(ARG_INT), nVal(0), fVal(0.0){if (v) nVal = 1;}
     ScriptArgObj(double v):nType(ARG_FLOAT), nVal(0), fVal(v){}
     ScriptArgObj(const std::string& v):nType(ARG_STRING), nVal(0), fVal(0.0), sVal(v){}
-    
+
     template<typename T>
     ScriptArgObj(T* v):nType(ARG_INT), nVal((int64_t)v), fVal(0.0){}
     template<typename T>
     ScriptArgObj(const T* v):nType(ARG_INT), nVal((int64_t)v), fVal(0.0){}
     template<typename T>
-    ScriptArgObj(SharedPtr<T> v):nType(ARG_INT), nVal((int64_t)v.get()), fVal(0.0){}
+    ScriptArgObj(SharedPtr<T> v):nType(ARG_INT), nVal((int64_t)(SMART_PTR_RAW(v))), fVal(0.0){}
 
     void toNull(){
         nType = ARG_NULL;
@@ -116,7 +116,7 @@ struct ScriptArgObj{
     bool isString() const       { return nType == ARG_STRING; }
     bool isList() const         { return nType == ARG_LIST; }
     bool isDict() const         { return nType == ARG_DICT; }
-    
+
     int64_t             getInt()           {
         if (isString()){
             return ::atol(sVal.c_str());
@@ -127,7 +127,7 @@ struct ScriptArgObj{
         return nVal;
     }
     double              getFloat() const        { return fVal; }
-    const std::string&  getString()        { 
+    const std::string&  getString()        {
         if (isInt()){
             char buff[64] = {0};
             snprintf(buff, sizeof(buff), "%ld", long(nVal));
@@ -138,7 +138,7 @@ struct ScriptArgObj{
             snprintf(buff, sizeof(buff), "%g", fVal);
             toString(buff);
         }
-        return sVal; 
+        return sVal;
     }
     const std::vector<SharedPtr<ScriptArgObj> >& getList() const         { return listVal; }
     const std::map<std::string, SharedPtr<ScriptArgObj> >& getDict() const         { return dictVal; }
@@ -206,8 +206,8 @@ struct ScriptArgs{
     template<typename T>
     void returnValue(const T* v) { ret->toInt((int64_t)v); }
     template<typename T>
-    void returnValue(SharedPtr<T> v) { ret->toInt((int64_t)(v.get())); }
-    
+    void returnValue(SharedPtr<T> v) { ret->toInt((int64_t)(SMART_PTR_RAW(v))); }
+
     void dumpArgs(){
         printf("totoal args num:%d\n", int(args.size()));
         for (unsigned int i = 0; i < args.size(); ++i){
@@ -240,7 +240,7 @@ typedef void (*ScriptStaticFunctor)(ScriptArgs&);
 class ScriptFunctor{
 public:
     virtual ~ScriptFunctor(){}
-    
+
     virtual void callFunc(ScriptArgs& args) = 0;
 };
 
@@ -333,14 +333,14 @@ public:
         }
         return false;
     }
-    
-    //!-----call script 
+
+    //!-----call script
     void setCallScriptFunc(CallScriptFunctor f){
         m_funcCallScript = f;
     }
     bool isExceptEnable() const { return m_flagCallScript != 0;}
     void setExceptEnable(int flag) { m_flagCallScript = flag;}
-    
+
     template<typename RET>
     typename CallFuncRetUtil<RET>::RET_TYPE callScriptRaw(const std::string& funcName, ScriptArgs& scriptArg){
         typename CallFuncRetUtil<RET>::RET_TYPE ret = TypeInitValUtil<typename CallFuncRetUtil<RET>::RET_TYPE>::initVal();
@@ -683,35 +683,35 @@ struct CallFuncRetUtil{
     typedef RET RET_TYPE;
     template<typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4,
              typename ARG5, typename ARG6, typename ARG7, typename ARG8, typename ARG9>
-    static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4, 
+    static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4,
                                         ARG5& arg5, ARG6& arg6, ARG7& arg7, ARG8& arg8, ARG9& arg9){
         RET ret = (*f)(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
         CppScriptValutil<RET>::toScriptVal(args.getReturnValue(), ret);
     }
     template<typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4,
              typename ARG5, typename ARG6, typename ARG7, typename ARG8>
-    static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4, 
+    static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4,
                                         ARG5& arg5, ARG6& arg6, ARG7& arg7, ARG8& arg8){
         RET ret = (*f)(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
         CppScriptValutil<RET>::toScriptVal(args.getReturnValue(), ret);
     }
     template<typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4,
              typename ARG5, typename ARG6, typename ARG7>
-    static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4, 
+    static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4,
                                         ARG5& arg5, ARG6& arg6, ARG7& arg7){
         RET ret = (*f)(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
         CppScriptValutil<RET>::toScriptVal(args.getReturnValue(), ret);
     }
     template<typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4,
              typename ARG5, typename ARG6>
-    static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4, 
+    static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4,
                                         ARG5& arg5, ARG6& arg6){
         RET ret = (*f)(arg1, arg2, arg3, arg4, arg5, arg6);
         CppScriptValutil<RET>::toScriptVal(args.getReturnValue(), ret);
     }
     template<typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4,
              typename ARG5>
-    static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4, 
+    static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4,
                                         ARG5& arg5){
         RET ret = (*f)(arg1, arg2, arg3, arg4, arg5);
         CppScriptValutil<RET>::toScriptVal(args.getReturnValue(), ret);
@@ -741,38 +741,38 @@ struct CallFuncRetUtil{
         RET ret = (*f)();
         CppScriptValutil<RET>::toScriptVal(args.getReturnValue(), ret);
     }
-    
+
     template<typename FUNC_CLASS_TYPE, typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4,
              typename ARG5, typename ARG6, typename ARG7, typename ARG8, typename ARG9>
-    static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4, 
+    static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4,
                                         ARG5& arg5, ARG6& arg6, ARG7& arg7, ARG8& arg8, ARG9& arg9){
         RET ret = (obj->*f)(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
         CppScriptValutil<RET>::toScriptVal(args.getReturnValue(), ret);
     }
     template<typename FUNC_CLASS_TYPE, typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4,
              typename ARG5, typename ARG6, typename ARG7, typename ARG8>
-    static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4, 
+    static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4,
                                         ARG5& arg5, ARG6& arg6, ARG7& arg7, ARG8& arg8){
         RET ret = (obj->*f)(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
         CppScriptValutil<RET>::toScriptVal(args.getReturnValue(), ret);
     }
     template<typename FUNC_CLASS_TYPE, typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4,
              typename ARG5, typename ARG6, typename ARG7>
-    static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4, 
+    static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4,
                                         ARG5& arg5, ARG6& arg6, ARG7& arg7){
         RET ret = (obj->*f)(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
         CppScriptValutil<RET>::toScriptVal(args.getReturnValue(), ret);
     }
     template<typename FUNC_CLASS_TYPE, typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4,
              typename ARG5, typename ARG6>
-    static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4, 
+    static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4,
                                         ARG5& arg5, ARG6& arg6){
         RET ret = (obj->*f)(arg1, arg2, arg3, arg4, arg5, arg6);
         CppScriptValutil<RET>::toScriptVal(args.getReturnValue(), ret);
     }
     template<typename FUNC_CLASS_TYPE, typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4,
              typename ARG5>
-    static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4, 
+    static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4,
                                         ARG5& arg5){
         RET ret = (obj->*f)(arg1, arg2, arg3, arg4, arg5);
         CppScriptValutil<RET>::toScriptVal(args.getReturnValue(), ret);
@@ -808,118 +808,118 @@ struct CallFuncRetUtil<void>{
     typedef int RET_TYPE;
     template<typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4,
              typename ARG5, typename ARG6, typename ARG7, typename ARG8, typename ARG9>
-    static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4, 
+    static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4,
                                         ARG5& arg5, ARG6& arg6, ARG7& arg7, ARG8& arg8, ARG9& arg9){
         (*f)(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-        
+
     }
     template<typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4,
              typename ARG5, typename ARG6, typename ARG7, typename ARG8>
-    static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4, 
+    static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4,
                                         ARG5& arg5, ARG6& arg6, ARG7& arg7, ARG8& arg8){
         (*f)(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
-        
+
     }
     template<typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4,
              typename ARG5, typename ARG6, typename ARG7>
-    static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4, 
+    static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4,
                                         ARG5& arg5, ARG6& arg6, ARG7& arg7){
         (*f)(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
-        
+
     }
     template<typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4,
              typename ARG5, typename ARG6>
-    static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4, 
+    static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4,
                                         ARG5& arg5, ARG6& arg6){
         (*f)(arg1, arg2, arg3, arg4, arg5, arg6);
-        
+
     }
     template<typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4,
              typename ARG5>
-    static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4, 
+    static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4,
                                         ARG5& arg5){
         (*f)(arg1, arg2, arg3, arg4, arg5);
-        
+
     }
     template<typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4>
     static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4){
         (*f)(arg1, arg2, arg3, arg4);
-        
+
     }
     template<typename FUNC, typename ARG1, typename ARG2, typename ARG3>
     static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3){
         (*f)(arg1, arg2, arg3);
-        
+
     }
     template<typename FUNC, typename ARG1, typename ARG2>
     static void call(ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2){
         (*f)(arg1, arg2);
-        
+
     }
     template<typename FUNC, typename ARG1>
     static void call(ScriptArgs& args, FUNC f, ARG1& arg1){
         (*f)(arg1);
-        
+
     }
     template<typename FUNC>
     static void call(ScriptArgs& args, FUNC f){
         (*f)();
     }
-    
+
     template<typename FUNC_CLASS_TYPE, typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4,
              typename ARG5, typename ARG6, typename ARG7, typename ARG8, typename ARG9>
-    static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4, 
+    static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4,
                                         ARG5& arg5, ARG6& arg6, ARG7& arg7, ARG8& arg8, ARG9& arg9){
         (obj->*f)(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-        
+
     }
     template<typename FUNC_CLASS_TYPE, typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4,
              typename ARG5, typename ARG6, typename ARG7, typename ARG8>
-    static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4, 
+    static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4,
                                         ARG5& arg5, ARG6& arg6, ARG7& arg7, ARG8& arg8){
         (obj->*f)(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
-        
+
     }
     template<typename FUNC_CLASS_TYPE, typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4,
              typename ARG5, typename ARG6, typename ARG7>
-    static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4, 
+    static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4,
                                         ARG5& arg5, ARG6& arg6, ARG7& arg7){
         (obj->*f)(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
-        
+
     }
     template<typename FUNC_CLASS_TYPE, typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4,
              typename ARG5, typename ARG6>
-    static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4, 
+    static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4,
                                         ARG5& arg5, ARG6& arg6){
         (obj->*f)(arg1, arg2, arg3, arg4, arg5, arg6);
-        
+
     }
     template<typename FUNC_CLASS_TYPE, typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4,
              typename ARG5>
-    static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4, 
+    static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4,
                                         ARG5& arg5){
         (obj->*f)(arg1, arg2, arg3, arg4, arg5);
-        
+
     }
     template<typename FUNC_CLASS_TYPE, typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4>
     static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3, ARG4& arg4){
         (obj->*f)(arg1, arg2, arg3, arg4);
-        
+
     }
     template<typename FUNC_CLASS_TYPE, typename FUNC, typename ARG1, typename ARG2, typename ARG3>
     static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2, ARG3& arg3){
         (obj->*f)(arg1, arg2, arg3);
-        
+
     }
     template<typename FUNC_CLASS_TYPE, typename FUNC, typename ARG1, typename ARG2>
     static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f, ARG1& arg1, ARG2& arg2){
         (obj->*f)(arg1, arg2);
-        
+
     }
     template<typename FUNC_CLASS_TYPE, typename FUNC, typename ARG1>
     static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f, ARG1& arg1){
         (obj->*f)(arg1);
-        
+
     }
     template<typename FUNC_CLASS_TYPE, typename FUNC>
     static void callMethod(FUNC_CLASS_TYPE* obj, ScriptArgs& args, FUNC f){
@@ -953,7 +953,7 @@ struct ScriptFunctorUtil<RET (*)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8,
                 RealType7 arg7 = TypeInitValUtil<RealType7>::initVal();
                 RealType8 arg8 = TypeInitValUtil<RealType8>::initVal();
                 RealType9 arg9 = TypeInitValUtil<RealType9>::initVal();
-                
+
                 CppScriptValutil<RealType1>::toCppVal(args.at(0), arg1);
                 CppScriptValutil<RealType2>::toCppVal(args.at(1), arg2);
                 CppScriptValutil<RealType3>::toCppVal(args.at(2), arg3);
@@ -994,7 +994,7 @@ struct ScriptFunctorUtil<RET (*)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)
                 RealType6 arg6 = TypeInitValUtil<RealType6>::initVal();
                 RealType7 arg7 = TypeInitValUtil<RealType7>::initVal();
                 RealType8 arg8 = TypeInitValUtil<RealType8>::initVal();
-                
+
                 CppScriptValutil<RealType1>::toCppVal(args.at(0), arg1);
                 CppScriptValutil<RealType2>::toCppVal(args.at(1), arg2);
                 CppScriptValutil<RealType3>::toCppVal(args.at(2), arg3);
@@ -1033,7 +1033,7 @@ struct ScriptFunctorUtil<RET (*)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)>{
                 RealType5 arg5 = TypeInitValUtil<RealType5>::initVal();
                 RealType6 arg6 = TypeInitValUtil<RealType6>::initVal();
                 RealType7 arg7 = TypeInitValUtil<RealType7>::initVal();
-                
+
                 CppScriptValutil<RealType1>::toCppVal(args.at(0), arg1);
                 CppScriptValutil<RealType2>::toCppVal(args.at(1), arg2);
                 CppScriptValutil<RealType3>::toCppVal(args.at(2), arg3);
@@ -1069,7 +1069,7 @@ struct ScriptFunctorUtil<RET (*)(ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)>{
                 RealType4 arg4 = TypeInitValUtil<RealType4>::initVal();
                 RealType5 arg5 = TypeInitValUtil<RealType5>::initVal();
                 RealType6 arg6 = TypeInitValUtil<RealType6>::initVal();
-                
+
                 CppScriptValutil<RealType1>::toCppVal(args.at(0), arg1);
                 CppScriptValutil<RealType2>::toCppVal(args.at(1), arg2);
                 CppScriptValutil<RealType3>::toCppVal(args.at(2), arg3);
@@ -1102,7 +1102,7 @@ struct ScriptFunctorUtil<RET (*)(ARG1, ARG2, ARG3, ARG4, ARG5)>{
                 RealType3 arg3 = TypeInitValUtil<RealType3>::initVal();
                 RealType4 arg4 = TypeInitValUtil<RealType4>::initVal();
                 RealType5 arg5 = TypeInitValUtil<RealType5>::initVal();
-                
+
                 CppScriptValutil<RealType1>::toCppVal(args.at(0), arg1);
                 CppScriptValutil<RealType2>::toCppVal(args.at(1), arg2);
                 CppScriptValutil<RealType3>::toCppVal(args.at(2), arg3);
@@ -1131,7 +1131,7 @@ struct ScriptFunctorUtil<RET (*)(ARG1, ARG2, ARG3, ARG4)>{
                 RealType2 arg2 = TypeInitValUtil<RealType2>::initVal();
                 RealType3 arg3 = TypeInitValUtil<RealType3>::initVal();
                 RealType4 arg4 = TypeInitValUtil<RealType4>::initVal();
-                
+
                 CppScriptValutil<RealType1>::toCppVal(args.at(0), arg1);
                 CppScriptValutil<RealType2>::toCppVal(args.at(1), arg2);
                 CppScriptValutil<RealType3>::toCppVal(args.at(2), arg3);
@@ -1157,7 +1157,7 @@ struct ScriptFunctorUtil<RET (*)(ARG1, ARG2, ARG3)>{
                 RealType1 arg1 = TypeInitValUtil<RealType1>::initVal();
                 RealType2 arg2 = TypeInitValUtil<RealType2>::initVal();
                 RealType3 arg3 = TypeInitValUtil<RealType3>::initVal();
-                
+
                 CppScriptValutil<RealType1>::toCppVal(args.at(0), arg1);
                 CppScriptValutil<RealType2>::toCppVal(args.at(1), arg2);
                 CppScriptValutil<RealType3>::toCppVal(args.at(2), arg3);
@@ -1180,7 +1180,7 @@ struct ScriptFunctorUtil<RET (*)(ARG1, ARG2)>{
                 typedef typename RefTypeTraits<ARG2>::RealType RealType2;
                 RealType1 arg1 = TypeInitValUtil<RealType1>::initVal();
                 RealType2 arg2 = TypeInitValUtil<RealType2>::initVal();
-                
+
                 CppScriptValutil<RealType1>::toCppVal(args.at(0), arg1);
                 CppScriptValutil<RealType2>::toCppVal(args.at(1), arg2);
                 CallFuncRetUtil<RET>::call(args, destFunc, arg1, arg2);
@@ -1200,7 +1200,7 @@ struct ScriptFunctorUtil<RET (*)(ARG1)>{
             if (destFunc){
                 typedef typename RefTypeTraits<ARG1>::RealType RealType1;
                 RealType1 arg1 = TypeInitValUtil<RealType1>::initVal();
-                
+
                 CppScriptValutil<RealType1>::toCppVal(args.at(0), arg1);
                 CallFuncRetUtil<RET>::call(args, destFunc, arg1);
             }
@@ -1267,7 +1267,7 @@ struct ScriptFunctorUtil<RET (FUNC_CLASS_TYPE::*)(ARG1, ARG2, ARG3, ARG4, ARG5, 
                 RealType7 arg7 = TypeInitValUtil<RealType7>::initVal();
                 RealType8 arg8 = TypeInitValUtil<RealType8>::initVal();
                 RealType9 arg9 = TypeInitValUtil<RealType9>::initVal();
-                
+
                 CppScriptValutil<RealType1>::toCppVal(args.at(0), arg1);
                 CppScriptValutil<RealType2>::toCppVal(args.at(1), arg2);
                 CppScriptValutil<RealType3>::toCppVal(args.at(2), arg3);
@@ -1310,7 +1310,7 @@ struct ScriptFunctorUtil<RET (FUNC_CLASS_TYPE::*)(ARG1, ARG2, ARG3, ARG4, ARG5, 
                 RealType6 arg6 = TypeInitValUtil<RealType6>::initVal();
                 RealType7 arg7 = TypeInitValUtil<RealType7>::initVal();
                 RealType8 arg8 = TypeInitValUtil<RealType8>::initVal();
-                
+
                 CppScriptValutil<RealType1>::toCppVal(args.at(0), arg1);
                 CppScriptValutil<RealType2>::toCppVal(args.at(1), arg2);
                 CppScriptValutil<RealType3>::toCppVal(args.at(2), arg3);
@@ -1350,7 +1350,7 @@ struct ScriptFunctorUtil<RET (FUNC_CLASS_TYPE::*)(ARG1, ARG2, ARG3, ARG4, ARG5, 
                 RealType5 arg5 = TypeInitValUtil<RealType5>::initVal();
                 RealType6 arg6 = TypeInitValUtil<RealType6>::initVal();
                 RealType7 arg7 = TypeInitValUtil<RealType7>::initVal();
-                
+
                 CppScriptValutil<RealType1>::toCppVal(args.at(0), arg1);
                 CppScriptValutil<RealType2>::toCppVal(args.at(1), arg2);
                 CppScriptValutil<RealType3>::toCppVal(args.at(2), arg3);
@@ -1387,7 +1387,7 @@ struct ScriptFunctorUtil<RET (FUNC_CLASS_TYPE::*)(ARG1, ARG2, ARG3, ARG4, ARG5, 
                 RealType4 arg4 = TypeInitValUtil<RealType4>::initVal();
                 RealType5 arg5 = TypeInitValUtil<RealType5>::initVal();
                 RealType6 arg6 = TypeInitValUtil<RealType6>::initVal();
-                
+
                 CppScriptValutil<RealType1>::toCppVal(args.at(0), arg1);
                 CppScriptValutil<RealType2>::toCppVal(args.at(1), arg2);
                 CppScriptValutil<RealType3>::toCppVal(args.at(2), arg3);
@@ -1421,7 +1421,7 @@ struct ScriptFunctorUtil<RET (FUNC_CLASS_TYPE::*)(ARG1, ARG2, ARG3, ARG4, ARG5)>
                 RealType3 arg3 = TypeInitValUtil<RealType3>::initVal();
                 RealType4 arg4 = TypeInitValUtil<RealType4>::initVal();
                 RealType5 arg5 = TypeInitValUtil<RealType5>::initVal();
-                
+
                 CppScriptValutil<RealType1>::toCppVal(args.at(0), arg1);
                 CppScriptValutil<RealType2>::toCppVal(args.at(1), arg2);
                 CppScriptValutil<RealType3>::toCppVal(args.at(2), arg3);
@@ -1451,7 +1451,7 @@ struct ScriptFunctorUtil<RET (FUNC_CLASS_TYPE::*)(ARG1, ARG2, ARG3, ARG4)>{
                 RealType2 arg2 = TypeInitValUtil<RealType2>::initVal();
                 RealType3 arg3 = TypeInitValUtil<RealType3>::initVal();
                 RealType4 arg4 = TypeInitValUtil<RealType4>::initVal();
-                
+
                 CppScriptValutil<RealType1>::toCppVal(args.at(0), arg1);
                 CppScriptValutil<RealType2>::toCppVal(args.at(1), arg2);
                 CppScriptValutil<RealType3>::toCppVal(args.at(2), arg3);
@@ -1478,7 +1478,7 @@ struct ScriptFunctorUtil<RET (FUNC_CLASS_TYPE::*)(ARG1, ARG2, ARG3)>{
                 RealType1 arg1 = TypeInitValUtil<RealType1>::initVal();
                 RealType2 arg2 = TypeInitValUtil<RealType2>::initVal();
                 RealType3 arg3 = TypeInitValUtil<RealType3>::initVal();
-                
+
                 CppScriptValutil<RealType1>::toCppVal(args.at(0), arg1);
                 CppScriptValutil<RealType2>::toCppVal(args.at(1), arg2);
                 CppScriptValutil<RealType3>::toCppVal(args.at(2), arg3);
@@ -1502,7 +1502,7 @@ struct ScriptFunctorUtil<RET (FUNC_CLASS_TYPE::*)(ARG1, ARG2)>{
                 typedef typename RefTypeTraits<ARG2>::RealType RealType2;
                 RealType1 arg1 = TypeInitValUtil<RealType1>::initVal();
                 RealType2 arg2 = TypeInitValUtil<RealType2>::initVal();
-                
+
                 CppScriptValutil<RealType1>::toCppVal(args.at(0), arg1);
                 CppScriptValutil<RealType2>::toCppVal(args.at(1), arg2);
                 CallFuncRetUtil<RET>::callMethod(obj, args, destFunc, arg1, arg2);
@@ -1523,7 +1523,7 @@ struct ScriptFunctorUtil<RET (FUNC_CLASS_TYPE::*)(ARG1)>{
             if (destFunc){
                 typedef typename RefTypeTraits<ARG1>::RealType RealType1;
                 RealType1 arg1 = TypeInitValUtil<RealType1>::initVal();
-                
+
                 CppScriptValutil<RealType1>::toCppVal(args.at(0), arg1);
                 CallFuncRetUtil<RET>::callMethod(obj, args, destFunc, arg1);
             }
@@ -1549,4 +1549,3 @@ struct ScriptFunctorUtil<RET (FUNC_CLASS_TYPE::*)()>{
 };
 }
 #endif
-

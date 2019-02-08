@@ -72,7 +72,7 @@ struct Task
         task_impl = src_.task_impl->fork();
         return *this;
     }
-    
+
     void run()
     {
         task_impl->run();
@@ -108,7 +108,7 @@ public:
     }
 
     void post(const Task& task_)
-    {        
+    {
         LockGuard lock(m_mutex);
         bool need_sig = m_tasklist.empty();
 
@@ -143,6 +143,7 @@ public:
         while (0 == consume(t))
         {
             t.run();
+            t.clear();
         }
         m_tasklist.clear();
         return 0;
@@ -249,7 +250,7 @@ public:
     }
 
     size_t size() const { return m_tqs.size(); }
-    
+
     TaskQueue* alloc(long id_)
     {
         return m_tqs[id_ %  m_tqs.size()];
@@ -267,9 +268,9 @@ private:
 struct TaskBinder
 {
     //! C function
-    
+
     static Task gen(void (*func_)(void*), void* p_)
-    {  
+    {
         Task ret(func_, p_);
         return ret;
     }

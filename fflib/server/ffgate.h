@@ -32,23 +32,23 @@ class FFGate: public MsgHandler
 public:
     FFGate();
     virtual ~FFGate();
-    
+
     int open(const std::string& broker_addr, const std::string& gate_listen, int gate_index = 0);
     int close();
-    
+
     //! 处理连接断开
-    int handleBroken(SocketPtr sock_);
+    int handleBroken(SocketObjPtr sock_);
     //! 处理消息
-    int handleMsg(const Message& msg_, SocketPtr sock_);
-    
+    int handleMsg(const Message& msg_, SocketObjPtr sock_);
+
     TaskQueue* getTaskQueue();
 public:
     int close_impl();
     //! 逻辑处理,转发消息到logic service
-    int routeLogicMsg(const Message& msg_, SocketPtr sock_, bool first);
+    int routeLogicMsg(const Message& msg_, SocketObjPtr sock_, bool first);
     //! enter scene 回调函数
     int enterWorkerCallback(RPCReq<SessionEnterWorker::out_t>& req_, const userid_t& session_id_);
-    
+
     //! 改变处理client 逻辑的对应的节点
     int changeSessionLogic(RPCReq<GateChangeLogicNode::in_t, GateChangeLogicNode::out_t>& req_);
     //! 关闭某个session socket
@@ -57,11 +57,11 @@ public:
     int routeMsgToSession(RPCReq<GateRouteMsgToSession::in_t, GateRouteMsgToSession::out_t>& req_);
     //! 广播消息给所有的client
     int broadcastMsgToSession(RPCReq<GateBroadcastMsgToSession::in_t, GateBroadcastMsgToSession::out_t>& req_);
-    
-    
+
+
     userid_t allocID();
 private:
-    void cleanup_session(client_info_t& client_info, SocketPtr sock_, bool closesend = true);
+    void cleanup_session(client_info_t& client_info, SocketObjPtr sock_, bool closesend = true);
 public:
     userid_t                                         m_allocID;
     int                                              m_gate_index;//!这是第几个gate，现在只有一个gate，如果以后想要有多个gate，这个要被正确的赋值
@@ -93,7 +93,7 @@ struct FFGate::client_info_t
     client_info_t():
         sock(NULL)
     {}
-    SocketPtr     sock;
+    SocketObjPtr          sock;
     std::string           alloc_worker;
     std::string           group_name;
 };

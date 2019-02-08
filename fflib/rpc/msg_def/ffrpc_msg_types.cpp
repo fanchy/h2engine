@@ -72,51 +72,6 @@ void swap(session_offline_in_t &a, session_offline_in_t &b) {
   swap(a.__isset, b.__isset);
 }
 
-const char* session_offline_out_t::ascii_fingerprint = "99914B932BD37A50B983C5E7C90AE93B";
-const uint8_t session_offline_out_t::binary_fingerprint[16] = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
-
-uint32_t session_offline_out_t::read(::apache::thrift::protocol::TProtocol* iprot) {
-
-  uint32_t xfer = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TType ftype;
-  int16_t fid;
-
-  xfer += iprot->readStructBegin(fname);
-
-  using ::apache::thrift::protocol::TProtocolException;
-
-
-  while (true)
-  {
-    xfer += iprot->readFieldBegin(fname, ftype, fid);
-    if (ftype == ::apache::thrift::protocol::T_STOP) {
-      break;
-    }
-    xfer += iprot->skip(ftype);
-    xfer += iprot->readFieldEnd();
-  }
-
-  xfer += iprot->readStructEnd();
-
-  return xfer;
-}
-
-uint32_t session_offline_out_t::write(::apache::thrift::protocol::TProtocol* oprot) const {
-  uint32_t xfer = 0;
-  xfer += oprot->writeStructBegin("session_offline_out_t");
-
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  return xfer;
-}
-
-void swap(session_offline_out_t &a, session_offline_out_t &b) {
-  using ::std::swap;
-  (void) a;
-  (void) b;
-}
-
 const char* routeLogicMsg_in_t::ascii_fingerprint = "EADC45C9A213F80E462BAA7CE9FA080F";
 const uint8_t routeLogicMsg_in_t::binary_fingerprint[16] = {0xEA,0xDC,0x45,0xC9,0xA2,0x13,0xF8,0x0E,0x46,0x2B,0xAA,0x7C,0xE9,0xFA,0x08,0x0F};
 
@@ -216,51 +171,6 @@ void swap(routeLogicMsg_in_t &a, routeLogicMsg_in_t &b) {
   swap(a.body, b.body);
   swap(a.session_ip, b.session_ip);
   swap(a.__isset, b.__isset);
-}
-
-const char* routeLogicMsg_out_t::ascii_fingerprint = "99914B932BD37A50B983C5E7C90AE93B";
-const uint8_t routeLogicMsg_out_t::binary_fingerprint[16] = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
-
-uint32_t routeLogicMsg_out_t::read(::apache::thrift::protocol::TProtocol* iprot) {
-
-  uint32_t xfer = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TType ftype;
-  int16_t fid;
-
-  xfer += iprot->readStructBegin(fname);
-
-  using ::apache::thrift::protocol::TProtocolException;
-
-
-  while (true)
-  {
-    xfer += iprot->readFieldBegin(fname, ftype, fid);
-    if (ftype == ::apache::thrift::protocol::T_STOP) {
-      break;
-    }
-    xfer += iprot->skip(ftype);
-    xfer += iprot->readFieldEnd();
-  }
-
-  xfer += iprot->readStructEnd();
-
-  return xfer;
-}
-
-uint32_t routeLogicMsg_out_t::write(::apache::thrift::protocol::TProtocol* oprot) const {
-  uint32_t xfer = 0;
-  xfer += oprot->writeStructBegin("routeLogicMsg_out_t");
-
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  return xfer;
-}
-
-void swap(routeLogicMsg_out_t &a, routeLogicMsg_out_t &b) {
-  using ::std::swap;
-  (void) a;
-  (void) b;
 }
 
 const char* gate_change_logic_node_in_t::ascii_fingerprint = "3CC2C885F5B9D03E96907F8376BF80E9";
@@ -377,51 +287,6 @@ void swap(gate_change_logic_node_in_t &a, gate_change_logic_node_in_t &b) {
   swap(a.__isset, b.__isset);
 }
 
-const char* gate_change_logic_node_out_t::ascii_fingerprint = "99914B932BD37A50B983C5E7C90AE93B";
-const uint8_t gate_change_logic_node_out_t::binary_fingerprint[16] = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
-
-uint32_t gate_change_logic_node_out_t::read(::apache::thrift::protocol::TProtocol* iprot) {
-
-  uint32_t xfer = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TType ftype;
-  int16_t fid;
-
-  xfer += iprot->readStructBegin(fname);
-
-  using ::apache::thrift::protocol::TProtocolException;
-
-
-  while (true)
-  {
-    xfer += iprot->readFieldBegin(fname, ftype, fid);
-    if (ftype == ::apache::thrift::protocol::T_STOP) {
-      break;
-    }
-    xfer += iprot->skip(ftype);
-    xfer += iprot->readFieldEnd();
-  }
-
-  xfer += iprot->readStructEnd();
-
-  return xfer;
-}
-
-uint32_t gate_change_logic_node_out_t::write(::apache::thrift::protocol::TProtocol* oprot) const {
-  uint32_t xfer = 0;
-  xfer += oprot->writeStructBegin("gate_change_logic_node_out_t");
-
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  return xfer;
-}
-
-void swap(gate_change_logic_node_out_t &a, gate_change_logic_node_out_t &b) {
-  using ::std::swap;
-  (void) a;
-  (void) b;
-}
-
 const char* gate_closeSession_in_t::ascii_fingerprint = "56A59CE7FFAF82BCA8A19FAACDE4FB75";
 const uint8_t gate_closeSession_in_t::binary_fingerprint[16] = {0x56,0xA5,0x9C,0xE7,0xFF,0xAF,0x82,0xBC,0xA8,0xA1,0x9F,0xAA,0xCD,0xE4,0xFB,0x75};
 
@@ -482,51 +347,6 @@ void swap(gate_closeSession_in_t &a, gate_closeSession_in_t &b) {
   using ::std::swap;
   swap(a.session_id, b.session_id);
   swap(a.__isset, b.__isset);
-}
-
-const char* gate_closeSession_out_t::ascii_fingerprint = "99914B932BD37A50B983C5E7C90AE93B";
-const uint8_t gate_closeSession_out_t::binary_fingerprint[16] = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
-
-uint32_t gate_closeSession_out_t::read(::apache::thrift::protocol::TProtocol* iprot) {
-
-  uint32_t xfer = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TType ftype;
-  int16_t fid;
-
-  xfer += iprot->readStructBegin(fname);
-
-  using ::apache::thrift::protocol::TProtocolException;
-
-
-  while (true)
-  {
-    xfer += iprot->readFieldBegin(fname, ftype, fid);
-    if (ftype == ::apache::thrift::protocol::T_STOP) {
-      break;
-    }
-    xfer += iprot->skip(ftype);
-    xfer += iprot->readFieldEnd();
-  }
-
-  xfer += iprot->readStructEnd();
-
-  return xfer;
-}
-
-uint32_t gate_closeSession_out_t::write(::apache::thrift::protocol::TProtocol* oprot) const {
-  uint32_t xfer = 0;
-  xfer += oprot->writeStructBegin("gate_closeSession_out_t");
-
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  return xfer;
-}
-
-void swap(gate_closeSession_out_t &a, gate_closeSession_out_t &b) {
-  using ::std::swap;
-  (void) a;
-  (void) b;
 }
 
 const char* gate_routeMmsgToSession_in_t::ascii_fingerprint = "0F4880829CCE5EA99C09EDF6EED29938";
@@ -637,51 +457,6 @@ void swap(gate_routeMmsgToSession_in_t &a, gate_routeMmsgToSession_in_t &b) {
   swap(a.__isset, b.__isset);
 }
 
-const char* gate_routeMmsgToSession_out_t::ascii_fingerprint = "99914B932BD37A50B983C5E7C90AE93B";
-const uint8_t gate_routeMmsgToSession_out_t::binary_fingerprint[16] = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
-
-uint32_t gate_routeMmsgToSession_out_t::read(::apache::thrift::protocol::TProtocol* iprot) {
-
-  uint32_t xfer = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TType ftype;
-  int16_t fid;
-
-  xfer += iprot->readStructBegin(fname);
-
-  using ::apache::thrift::protocol::TProtocolException;
-
-
-  while (true)
-  {
-    xfer += iprot->readFieldBegin(fname, ftype, fid);
-    if (ftype == ::apache::thrift::protocol::T_STOP) {
-      break;
-    }
-    xfer += iprot->skip(ftype);
-    xfer += iprot->readFieldEnd();
-  }
-
-  xfer += iprot->readStructEnd();
-
-  return xfer;
-}
-
-uint32_t gate_routeMmsgToSession_out_t::write(::apache::thrift::protocol::TProtocol* oprot) const {
-  uint32_t xfer = 0;
-  xfer += oprot->writeStructBegin("gate_routeMmsgToSession_out_t");
-
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  return xfer;
-}
-
-void swap(gate_routeMmsgToSession_out_t &a, gate_routeMmsgToSession_out_t &b) {
-  using ::std::swap;
-  (void) a;
-  (void) b;
-}
-
 const char* gate_broadcastMsgToSession_in_t::ascii_fingerprint = "15896F1A4438B1ECBB80CEA66AD0C4C5";
 const uint8_t gate_broadcastMsgToSession_in_t::binary_fingerprint[16] = {0x15,0x89,0x6F,0x1A,0x44,0x38,0xB1,0xEC,0xBB,0x80,0xCE,0xA6,0x6A,0xD0,0xC4,0xC5};
 
@@ -755,51 +530,6 @@ void swap(gate_broadcastMsgToSession_in_t &a, gate_broadcastMsgToSession_in_t &b
   swap(a.cmd, b.cmd);
   swap(a.body, b.body);
   swap(a.__isset, b.__isset);
-}
-
-const char* gate_broadcastMsgToSession_out_t::ascii_fingerprint = "99914B932BD37A50B983C5E7C90AE93B";
-const uint8_t gate_broadcastMsgToSession_out_t::binary_fingerprint[16] = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
-
-uint32_t gate_broadcastMsgToSession_out_t::read(::apache::thrift::protocol::TProtocol* iprot) {
-
-  uint32_t xfer = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TType ftype;
-  int16_t fid;
-
-  xfer += iprot->readStructBegin(fname);
-
-  using ::apache::thrift::protocol::TProtocolException;
-
-
-  while (true)
-  {
-    xfer += iprot->readFieldBegin(fname, ftype, fid);
-    if (ftype == ::apache::thrift::protocol::T_STOP) {
-      break;
-    }
-    xfer += iprot->skip(ftype);
-    xfer += iprot->readFieldEnd();
-  }
-
-  xfer += iprot->readStructEnd();
-
-  return xfer;
-}
-
-uint32_t gate_broadcastMsgToSession_out_t::write(::apache::thrift::protocol::TProtocol* oprot) const {
-  uint32_t xfer = 0;
-  xfer += oprot->writeStructBegin("gate_broadcastMsgToSession_out_t");
-
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  return xfer;
-}
-
-void swap(gate_broadcastMsgToSession_out_t &a, gate_broadcastMsgToSession_out_t &b) {
-  using ::std::swap;
-  (void) a;
-  (void) b;
 }
 
 const char* worker_call_msg_in_t::ascii_fingerprint = "15896F1A4438B1ECBB80CEA66AD0C4C5";
@@ -965,8 +695,8 @@ void swap(worker_call_msg_out_t &a, worker_call_msg_out_t &b) {
   swap(a.__isset, b.__isset);
 }
 
-const char* broker_route_msg_in_t::ascii_fingerprint = "CBC652E4B6DDB69E997A960033ECD9B9";
-const uint8_t broker_route_msg_in_t::binary_fingerprint[16] = {0xCB,0xC6,0x52,0xE4,0xB6,0xDD,0xB6,0x9E,0x99,0x7A,0x96,0x00,0x33,0xEC,0xD9,0xB9};
+const char* broker_route_msg_in_t::ascii_fingerprint = "C07CD6450B7CF81ECAF7242A818797B7";
+const uint8_t broker_route_msg_in_t::binary_fingerprint[16] = {0xC0,0x7C,0xD6,0x45,0x0B,0x7C,0xF8,0x1E,0xCA,0xF7,0x24,0x2A,0x81,0x87,0x97,0xB7};
 
 uint32_t broker_route_msg_in_t::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -988,14 +718,6 @@ uint32_t broker_route_msg_in_t::read(::apache::thrift::protocol::TProtocol* ipro
     }
     switch (fid)
     {
-      case 1:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->dest_namespace);
-          this->__isset.dest_namespace = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->dest_service_name);
@@ -1016,14 +738,6 @@ uint32_t broker_route_msg_in_t::read(::apache::thrift::protocol::TProtocol* ipro
         if (ftype == ::apache::thrift::protocol::T_I64) {
           xfer += iprot->readI64(this->dest_node_id);
           this->__isset.dest_node_id = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 5:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->from_namespace);
-          this->__isset.from_namespace = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -1076,10 +790,6 @@ uint32_t broker_route_msg_in_t::write(::apache::thrift::protocol::TProtocol* opr
   uint32_t xfer = 0;
   xfer += oprot->writeStructBegin("broker_route_msg_in_t");
 
-  xfer += oprot->writeFieldBegin("dest_namespace", ::apache::thrift::protocol::T_STRING, 1);
-  xfer += oprot->writeString(this->dest_namespace);
-  xfer += oprot->writeFieldEnd();
-
   xfer += oprot->writeFieldBegin("dest_service_name", ::apache::thrift::protocol::T_STRING, 2);
   xfer += oprot->writeString(this->dest_service_name);
   xfer += oprot->writeFieldEnd();
@@ -1090,10 +800,6 @@ uint32_t broker_route_msg_in_t::write(::apache::thrift::protocol::TProtocol* opr
 
   xfer += oprot->writeFieldBegin("dest_node_id", ::apache::thrift::protocol::T_I64, 4);
   xfer += oprot->writeI64(this->dest_node_id);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("from_namespace", ::apache::thrift::protocol::T_STRING, 5);
-  xfer += oprot->writeString(this->from_namespace);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("from_node_id", ::apache::thrift::protocol::T_I64, 6);
@@ -1119,11 +825,9 @@ uint32_t broker_route_msg_in_t::write(::apache::thrift::protocol::TProtocol* opr
 
 void swap(broker_route_msg_in_t &a, broker_route_msg_in_t &b) {
   using ::std::swap;
-  swap(a.dest_namespace, b.dest_namespace);
   swap(a.dest_service_name, b.dest_service_name);
   swap(a.dest_msg_name, b.dest_msg_name);
   swap(a.dest_node_id, b.dest_node_id);
-  swap(a.from_namespace, b.from_namespace);
   swap(a.from_node_id, b.from_node_id);
   swap(a.callback_id, b.callback_id);
   swap(a.body, b.body);
@@ -1131,8 +835,8 @@ void swap(broker_route_msg_in_t &a, broker_route_msg_in_t &b) {
   swap(a.__isset, b.__isset);
 }
 
-const char* register_to_broker_in_t::ascii_fingerprint = "60E86BD78EA7B6197FFB17BCD59525EC";
-const uint8_t register_to_broker_in_t::binary_fingerprint[16] = {0x60,0xE8,0x6B,0xD7,0x8E,0xA7,0xB6,0x19,0x7F,0xFB,0x17,0xBC,0xD5,0x95,0x25,0xEC};
+const char* register_to_broker_in_t::ascii_fingerprint = "3F5FC93B338687BC7235B1AB103F47B3";
+const uint8_t register_to_broker_in_t::binary_fingerprint[16] = {0x3F,0x5F,0xC9,0x3B,0x33,0x86,0x87,0xBC,0x72,0x35,0xB1,0xAB,0x10,0x3F,0x47,0xB3};
 
 uint32_t register_to_broker_in_t::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -1164,40 +868,8 @@ uint32_t register_to_broker_in_t::read(::apache::thrift::protocol::TProtocol* ip
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->host);
-          this->__isset.host = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 3:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->service_name);
           this->__isset.service_name = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 4:
-        if (ftype == ::apache::thrift::protocol::T_I64) {
-          xfer += iprot->readI64(this->node_id);
-          this->__isset.node_id = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 5:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->reg_namespace);
-          this->__isset.reg_namespace = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 6:
-        if (ftype == ::apache::thrift::protocol::T_I64) {
-          xfer += iprot->readI64(this->bind_broker_id);
-          this->__isset.bind_broker_id = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -1222,24 +894,8 @@ uint32_t register_to_broker_in_t::write(::apache::thrift::protocol::TProtocol* o
   xfer += oprot->writeI32(this->node_type);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("host", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString(this->host);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("service_name", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeFieldBegin("service_name", ::apache::thrift::protocol::T_STRING, 2);
   xfer += oprot->writeString(this->service_name);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("node_id", ::apache::thrift::protocol::T_I64, 4);
-  xfer += oprot->writeI64(this->node_id);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("reg_namespace", ::apache::thrift::protocol::T_STRING, 5);
-  xfer += oprot->writeString(this->reg_namespace);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("bind_broker_id", ::apache::thrift::protocol::T_I64, 6);
-  xfer += oprot->writeI64(this->bind_broker_id);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -1250,16 +906,12 @@ uint32_t register_to_broker_in_t::write(::apache::thrift::protocol::TProtocol* o
 void swap(register_to_broker_in_t &a, register_to_broker_in_t &b) {
   using ::std::swap;
   swap(a.node_type, b.node_type);
-  swap(a.host, b.host);
   swap(a.service_name, b.service_name);
-  swap(a.node_id, b.node_id);
-  swap(a.reg_namespace, b.reg_namespace);
-  swap(a.bind_broker_id, b.bind_broker_id);
   swap(a.__isset, b.__isset);
 }
 
-const char* register_to_broker_out_t::ascii_fingerprint = "08FF3A9C5042F50B54A30CA9AEF4E748";
-const uint8_t register_to_broker_out_t::binary_fingerprint[16] = {0x08,0xFF,0x3A,0x9C,0x50,0x42,0xF5,0x0B,0x54,0xA3,0x0C,0xA9,0xAE,0xF4,0xE7,0x48};
+const char* register_to_broker_out_t::ascii_fingerprint = "1F41639F8135007E546B5DA3F7363917";
+const uint8_t register_to_broker_out_t::binary_fingerprint[16] = {0x1F,0x41,0x63,0x9F,0x81,0x35,0x00,0x7E,0x54,0x6B,0x5D,0xA3,0xF7,0x36,0x39,0x17};
 
 uint32_t register_to_broker_out_t::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -1320,72 +972,6 @@ uint32_t register_to_broker_out_t::read(::apache::thrift::protocol::TProtocol* i
           xfer += iprot->skip(ftype);
         }
         break;
-      case 4:
-        if (ftype == ::apache::thrift::protocol::T_MAP) {
-          {
-            this->slave_broker_data.clear();
-            uint32_t _size13;
-            ::apache::thrift::protocol::TType _ktype14;
-            ::apache::thrift::protocol::TType _vtype15;
-            xfer += iprot->readMapBegin(_ktype14, _vtype15, _size13);
-            uint32_t _i17;
-            for (_i17 = 0; _i17 < _size13; ++_i17)
-            {
-              std::string _key18;
-              xfer += iprot->readString(_key18);
-              int64_t& _val19 = this->slave_broker_data[_key18];
-              xfer += iprot->readI64(_val19);
-            }
-            xfer += iprot->readMapEnd();
-          }
-          this->__isset.slave_broker_data = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 5:
-        if (ftype == ::apache::thrift::protocol::T_MAP) {
-          {
-            this->rpc_bind_broker_info.clear();
-            uint32_t _size20;
-            ::apache::thrift::protocol::TType _ktype21;
-            ::apache::thrift::protocol::TType _vtype22;
-            xfer += iprot->readMapBegin(_ktype21, _vtype22, _size20);
-            uint32_t _i24;
-            for (_i24 = 0; _i24 < _size20; ++_i24)
-            {
-              int64_t _key25;
-              xfer += iprot->readI64(_key25);
-              int64_t& _val26 = this->rpc_bind_broker_info[_key25];
-              xfer += iprot->readI64(_val26);
-            }
-            xfer += iprot->readMapEnd();
-          }
-          this->__isset.rpc_bind_broker_info = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 6:
-        if (ftype == ::apache::thrift::protocol::T_LIST) {
-          {
-            this->reg_namespace_list.clear();
-            uint32_t _size27;
-            ::apache::thrift::protocol::TType _etype30;
-            xfer += iprot->readListBegin(_etype30, _size27);
-            this->reg_namespace_list.resize(_size27);
-            uint32_t _i31;
-            for (_i31 = 0; _i31 < _size27; ++_i31)
-            {
-              xfer += iprot->readString(this->reg_namespace_list[_i31]);
-            }
-            xfer += iprot->readListEnd();
-          }
-          this->__isset.reg_namespace_list = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -1413,51 +999,13 @@ uint32_t register_to_broker_out_t::write(::apache::thrift::protocol::TProtocol* 
   xfer += oprot->writeFieldBegin("service2node_id", ::apache::thrift::protocol::T_MAP, 3);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->service2node_id.size()));
-    std::map<std::string, int64_t> ::const_iterator _iter32;
-    for (_iter32 = this->service2node_id.begin(); _iter32 != this->service2node_id.end(); ++_iter32)
+    std::map<std::string, int64_t> ::const_iterator _iter13;
+    for (_iter13 = this->service2node_id.begin(); _iter13 != this->service2node_id.end(); ++_iter13)
     {
-      xfer += oprot->writeString(_iter32->first);
-      xfer += oprot->writeI64(_iter32->second);
+      xfer += oprot->writeString(_iter13->first);
+      xfer += oprot->writeI64(_iter13->second);
     }
     xfer += oprot->writeMapEnd();
-  }
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("slave_broker_data", ::apache::thrift::protocol::T_MAP, 4);
-  {
-    xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->slave_broker_data.size()));
-    std::map<std::string, int64_t> ::const_iterator _iter33;
-    for (_iter33 = this->slave_broker_data.begin(); _iter33 != this->slave_broker_data.end(); ++_iter33)
-    {
-      xfer += oprot->writeString(_iter33->first);
-      xfer += oprot->writeI64(_iter33->second);
-    }
-    xfer += oprot->writeMapEnd();
-  }
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("rpc_bind_broker_info", ::apache::thrift::protocol::T_MAP, 5);
-  {
-    xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_I64, ::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->rpc_bind_broker_info.size()));
-    std::map<int64_t, int64_t> ::const_iterator _iter34;
-    for (_iter34 = this->rpc_bind_broker_info.begin(); _iter34 != this->rpc_bind_broker_info.end(); ++_iter34)
-    {
-      xfer += oprot->writeI64(_iter34->first);
-      xfer += oprot->writeI64(_iter34->second);
-    }
-    xfer += oprot->writeMapEnd();
-  }
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("reg_namespace_list", ::apache::thrift::protocol::T_LIST, 6);
-  {
-    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->reg_namespace_list.size()));
-    std::vector<std::string> ::const_iterator _iter35;
-    for (_iter35 = this->reg_namespace_list.begin(); _iter35 != this->reg_namespace_list.end(); ++_iter35)
-    {
-      xfer += oprot->writeString((*_iter35));
-    }
-    xfer += oprot->writeListEnd();
   }
   xfer += oprot->writeFieldEnd();
 
@@ -1471,9 +1019,6 @@ void swap(register_to_broker_out_t &a, register_to_broker_out_t &b) {
   swap(a.register_flag, b.register_flag);
   swap(a.node_id, b.node_id);
   swap(a.service2node_id, b.service2node_id);
-  swap(a.slave_broker_data, b.slave_broker_data);
-  swap(a.rpc_bind_broker_info, b.rpc_bind_broker_info);
-  swap(a.reg_namespace_list, b.reg_namespace_list);
   swap(a.__isset, b.__isset);
 }
 
@@ -1647,51 +1192,6 @@ void swap(session_enter_worker_in_t &a, session_enter_worker_in_t &b) {
   swap(a.to_worker, b.to_worker);
   swap(a.extra_data, b.extra_data);
   swap(a.__isset, b.__isset);
-}
-
-const char* session_enter_worker_out_t::ascii_fingerprint = "99914B932BD37A50B983C5E7C90AE93B";
-const uint8_t session_enter_worker_out_t::binary_fingerprint[16] = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
-
-uint32_t session_enter_worker_out_t::read(::apache::thrift::protocol::TProtocol* iprot) {
-
-  uint32_t xfer = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TType ftype;
-  int16_t fid;
-
-  xfer += iprot->readStructBegin(fname);
-
-  using ::apache::thrift::protocol::TProtocolException;
-
-
-  while (true)
-  {
-    xfer += iprot->readFieldBegin(fname, ftype, fid);
-    if (ftype == ::apache::thrift::protocol::T_STOP) {
-      break;
-    }
-    xfer += iprot->skip(ftype);
-    xfer += iprot->readFieldEnd();
-  }
-
-  xfer += iprot->readStructEnd();
-
-  return xfer;
-}
-
-uint32_t session_enter_worker_out_t::write(::apache::thrift::protocol::TProtocol* oprot) const {
-  uint32_t xfer = 0;
-  xfer += oprot->writeStructBegin("session_enter_worker_out_t");
-
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  return xfer;
-}
-
-void swap(session_enter_worker_out_t &a, session_enter_worker_out_t &b) {
-  using ::std::swap;
-  (void) a;
-  (void) b;
 }
 
 } // namespace

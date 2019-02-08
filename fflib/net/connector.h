@@ -25,14 +25,14 @@ namespace ff {
 class Connector
 {
 public:
-    static SocketPtr connect(const std::string& host_, EventLoop* e_, MsgHandler* msg_handler_, TaskQueue* tq_)
+    static SocketObjPtr connect(const std::string& host_, EventLoop* e_, MsgHandler* msg_handler_, TaskQueue* tq_)
     {
-        SocketPtr ret = NULL;
+        SocketObjPtr ret = NULL;
         //! example tcp://192.168.1.1:1024
         std::vector<std::string> vt;
         StrTool::split(host_, vt, "://");
         if (vt.size() != 2) return NULL;
-        
+
         std::vector<std::string> vt2;
         StrTool::split(vt[1], vt2, ":");
         if (vt2.size() != 2) return NULL;
@@ -42,7 +42,7 @@ public:
         }
         SocketFd s;
         struct sockaddr_in addr;
-        
+
         if((s = socket(AF_INET,SOCK_STREAM,0)) < 0)
         {
             perror("socket");
@@ -64,15 +64,19 @@ public:
             return ret;
         }
         #ifndef _WIN32
-        ret = new SocketLinux(e_, new SocketCtrlCommon(msg_handler_), s, tq_);
+        SocketLinux* pret = new SocketLinux(e_, new SocketCtrlCommon(msg_handler_), s, tq_);
+        ret = pret;
+        pret->refSelf(ret);
         #else
-        ret = new SocketWin(e_, new SocketCtrlCommon(msg_handler_), s, tq_);
+        SocketWin* pret = new SocketWin(e_, new SocketCtrlCommon(msg_handler_), s, tq_);
+        ret = pret;
+        pret->refSelf(ret);
         #endif
         ret->open();
         return ret;
     }
 
 };
-    
+
 }
 #endif

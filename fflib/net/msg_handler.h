@@ -12,8 +12,8 @@ class MsgHandler
 public:
     virtual ~MsgHandler() {} ;
 
-    virtual int handleBroken(SocketPtr sock_)  = 0;
-    virtual int handleMsg(const Message& msg_, SocketPtr sock_) = 0;
+    virtual int handleBroken(SocketObjPtr sock_)  = 0;
+    virtual int handleMsg(const Message& msg_, SocketObjPtr sock_) = 0;
 
     virtual TaskQueue* getTaskQueue() = 0;
 };

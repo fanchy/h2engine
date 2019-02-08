@@ -60,36 +60,6 @@ class session_offline_in_t {
 
 void swap(session_offline_in_t &a, session_offline_in_t &b);
 
-
-class session_offline_out_t {
- public:
-
-  static const char* ascii_fingerprint; // = "99914B932BD37A50B983C5E7C90AE93B";
-  static const uint8_t binary_fingerprint[16]; // = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
-
-  session_offline_out_t() {
-  }
-
-  virtual ~session_offline_out_t() throw() {}
-
-
-  bool operator == (const session_offline_out_t & /* rhs */) const
-  {
-    return true;
-  }
-  bool operator != (const session_offline_out_t &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const session_offline_out_t & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-void swap(session_offline_out_t &a, session_offline_out_t &b);
-
 typedef struct _routeLogicMsg_in_t__isset {
   _routeLogicMsg_in_t__isset() : session_id(true), cmd(true), body(false), session_ip(false) {}
   bool session_id;
@@ -156,36 +126,6 @@ class routeLogicMsg_in_t {
 };
 
 void swap(routeLogicMsg_in_t &a, routeLogicMsg_in_t &b);
-
-
-class routeLogicMsg_out_t {
- public:
-
-  static const char* ascii_fingerprint; // = "99914B932BD37A50B983C5E7C90AE93B";
-  static const uint8_t binary_fingerprint[16]; // = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
-
-  routeLogicMsg_out_t() {
-  }
-
-  virtual ~routeLogicMsg_out_t() throw() {}
-
-
-  bool operator == (const routeLogicMsg_out_t & /* rhs */) const
-  {
-    return true;
-  }
-  bool operator != (const routeLogicMsg_out_t &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const routeLogicMsg_out_t & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-void swap(routeLogicMsg_out_t &a, routeLogicMsg_out_t &b);
 
 typedef struct _gate_change_logic_node_in_t__isset {
   _gate_change_logic_node_in_t__isset() : session_id(true), alloc_worker(false), cur_group_name(false), dest_group_name(false), extra_data(false) {}
@@ -262,36 +202,6 @@ class gate_change_logic_node_in_t {
 
 void swap(gate_change_logic_node_in_t &a, gate_change_logic_node_in_t &b);
 
-
-class gate_change_logic_node_out_t {
- public:
-
-  static const char* ascii_fingerprint; // = "99914B932BD37A50B983C5E7C90AE93B";
-  static const uint8_t binary_fingerprint[16]; // = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
-
-  gate_change_logic_node_out_t() {
-  }
-
-  virtual ~gate_change_logic_node_out_t() throw() {}
-
-
-  bool operator == (const gate_change_logic_node_out_t & /* rhs */) const
-  {
-    return true;
-  }
-  bool operator != (const gate_change_logic_node_out_t &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const gate_change_logic_node_out_t & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-void swap(gate_change_logic_node_out_t &a, gate_change_logic_node_out_t &b);
-
 typedef struct _gate_closeSession_in_t__isset {
   _gate_closeSession_in_t__isset() : session_id(true) {}
   bool session_id;
@@ -334,36 +244,6 @@ class gate_closeSession_in_t {
 };
 
 void swap(gate_closeSession_in_t &a, gate_closeSession_in_t &b);
-
-
-class gate_closeSession_out_t {
- public:
-
-  static const char* ascii_fingerprint; // = "99914B932BD37A50B983C5E7C90AE93B";
-  static const uint8_t binary_fingerprint[16]; // = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
-
-  gate_closeSession_out_t() {
-  }
-
-  virtual ~gate_closeSession_out_t() throw() {}
-
-
-  bool operator == (const gate_closeSession_out_t & /* rhs */) const
-  {
-    return true;
-  }
-  bool operator != (const gate_closeSession_out_t &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const gate_closeSession_out_t & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-void swap(gate_closeSession_out_t &a, gate_closeSession_out_t &b);
 
 typedef struct _gate_routeMmsgToSession_in_t__isset {
   _gate_routeMmsgToSession_in_t__isset() : session_id(true), cmd(true), body(false) {}
@@ -425,36 +305,6 @@ class gate_routeMmsgToSession_in_t {
 
 void swap(gate_routeMmsgToSession_in_t &a, gate_routeMmsgToSession_in_t &b);
 
-
-class gate_routeMmsgToSession_out_t {
- public:
-
-  static const char* ascii_fingerprint; // = "99914B932BD37A50B983C5E7C90AE93B";
-  static const uint8_t binary_fingerprint[16]; // = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
-
-  gate_routeMmsgToSession_out_t() {
-  }
-
-  virtual ~gate_routeMmsgToSession_out_t() throw() {}
-
-
-  bool operator == (const gate_routeMmsgToSession_out_t & /* rhs */) const
-  {
-    return true;
-  }
-  bool operator != (const gate_routeMmsgToSession_out_t &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const gate_routeMmsgToSession_out_t & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-void swap(gate_routeMmsgToSession_out_t &a, gate_routeMmsgToSession_out_t &b);
-
 typedef struct _gate_broadcastMsgToSession_in_t__isset {
   _gate_broadcastMsgToSession_in_t__isset() : cmd(true), body(false) {}
   bool cmd;
@@ -505,36 +355,6 @@ class gate_broadcastMsgToSession_in_t {
 };
 
 void swap(gate_broadcastMsgToSession_in_t &a, gate_broadcastMsgToSession_in_t &b);
-
-
-class gate_broadcastMsgToSession_out_t {
- public:
-
-  static const char* ascii_fingerprint; // = "99914B932BD37A50B983C5E7C90AE93B";
-  static const uint8_t binary_fingerprint[16]; // = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
-
-  gate_broadcastMsgToSession_out_t() {
-  }
-
-  virtual ~gate_broadcastMsgToSession_out_t() throw() {}
-
-
-  bool operator == (const gate_broadcastMsgToSession_out_t & /* rhs */) const
-  {
-    return true;
-  }
-  bool operator != (const gate_broadcastMsgToSession_out_t &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const gate_broadcastMsgToSession_out_t & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-void swap(gate_broadcastMsgToSession_out_t &a, gate_broadcastMsgToSession_out_t &b);
 
 typedef struct _worker_call_msg_in_t__isset {
   _worker_call_msg_in_t__isset() : cmd(true), body(false) {}
@@ -647,12 +467,10 @@ class worker_call_msg_out_t {
 void swap(worker_call_msg_out_t &a, worker_call_msg_out_t &b);
 
 typedef struct _broker_route_msg_in_t__isset {
-  _broker_route_msg_in_t__isset() : dest_namespace(false), dest_service_name(false), dest_msg_name(false), dest_node_id(false), from_namespace(false), from_node_id(false), callback_id(false), body(false), err_info(false) {}
-  bool dest_namespace;
+  _broker_route_msg_in_t__isset() : dest_service_name(false), dest_msg_name(false), dest_node_id(false), from_node_id(false), callback_id(false), body(false), err_info(false) {}
   bool dest_service_name;
   bool dest_msg_name;
   bool dest_node_id;
-  bool from_namespace;
   bool from_node_id;
   bool callback_id;
   bool body;
@@ -662,29 +480,23 @@ typedef struct _broker_route_msg_in_t__isset {
 class broker_route_msg_in_t {
  public:
 
-  static const char* ascii_fingerprint; // = "CBC652E4B6DDB69E997A960033ECD9B9";
-  static const uint8_t binary_fingerprint[16]; // = {0xCB,0xC6,0x52,0xE4,0xB6,0xDD,0xB6,0x9E,0x99,0x7A,0x96,0x00,0x33,0xEC,0xD9,0xB9};
+  static const char* ascii_fingerprint; // = "C07CD6450B7CF81ECAF7242A818797B7";
+  static const uint8_t binary_fingerprint[16]; // = {0xC0,0x7C,0xD6,0x45,0x0B,0x7C,0xF8,0x1E,0xCA,0xF7,0x24,0x2A,0x81,0x87,0x97,0xB7};
 
-  broker_route_msg_in_t() : dest_namespace(), dest_service_name(), dest_msg_name(), dest_node_id(0), from_namespace(), from_node_id(0), callback_id(0), body(), err_info() {
+  broker_route_msg_in_t() : dest_service_name(), dest_msg_name(), dest_node_id(0), from_node_id(0), callback_id(0), body(), err_info() {
   }
 
   virtual ~broker_route_msg_in_t() throw() {}
 
-  std::string dest_namespace;
   std::string dest_service_name;
   std::string dest_msg_name;
   int64_t dest_node_id;
-  std::string from_namespace;
   int64_t from_node_id;
   int64_t callback_id;
   std::string body;
   std::string err_info;
 
   _broker_route_msg_in_t__isset __isset;
-
-  void __set_dest_namespace(const std::string& val) {
-    dest_namespace = val;
-  }
 
   void __set_dest_service_name(const std::string& val) {
     dest_service_name = val;
@@ -696,10 +508,6 @@ class broker_route_msg_in_t {
 
   void __set_dest_node_id(const int64_t val) {
     dest_node_id = val;
-  }
-
-  void __set_from_namespace(const std::string& val) {
-    from_namespace = val;
   }
 
   void __set_from_node_id(const int64_t val) {
@@ -720,15 +528,11 @@ class broker_route_msg_in_t {
 
   bool operator == (const broker_route_msg_in_t & rhs) const
   {
-    if (!(dest_namespace == rhs.dest_namespace))
-      return false;
     if (!(dest_service_name == rhs.dest_service_name))
       return false;
     if (!(dest_msg_name == rhs.dest_msg_name))
       return false;
     if (!(dest_node_id == rhs.dest_node_id))
-      return false;
-    if (!(from_namespace == rhs.from_namespace))
       return false;
     if (!(from_node_id == rhs.from_node_id))
       return false;
@@ -754,32 +558,24 @@ class broker_route_msg_in_t {
 void swap(broker_route_msg_in_t &a, broker_route_msg_in_t &b);
 
 typedef struct _register_to_broker_in_t__isset {
-  _register_to_broker_in_t__isset() : node_type(false), host(false), service_name(false), node_id(false), reg_namespace(false), bind_broker_id(false) {}
+  _register_to_broker_in_t__isset() : node_type(false), service_name(false) {}
   bool node_type;
-  bool host;
   bool service_name;
-  bool node_id;
-  bool reg_namespace;
-  bool bind_broker_id;
 } _register_to_broker_in_t__isset;
 
 class register_to_broker_in_t {
  public:
 
-  static const char* ascii_fingerprint; // = "60E86BD78EA7B6197FFB17BCD59525EC";
-  static const uint8_t binary_fingerprint[16]; // = {0x60,0xE8,0x6B,0xD7,0x8E,0xA7,0xB6,0x19,0x7F,0xFB,0x17,0xBC,0xD5,0x95,0x25,0xEC};
+  static const char* ascii_fingerprint; // = "3F5FC93B338687BC7235B1AB103F47B3";
+  static const uint8_t binary_fingerprint[16]; // = {0x3F,0x5F,0xC9,0x3B,0x33,0x86,0x87,0xBC,0x72,0x35,0xB1,0xAB,0x10,0x3F,0x47,0xB3};
 
-  register_to_broker_in_t() : node_type(0), host(), service_name(), node_id(0), reg_namespace(), bind_broker_id(0) {
+  register_to_broker_in_t() : node_type(0), service_name() {
   }
 
   virtual ~register_to_broker_in_t() throw() {}
 
   int32_t node_type;
-  std::string host;
   std::string service_name;
-  int64_t node_id;
-  std::string reg_namespace;
-  int64_t bind_broker_id;
 
   _register_to_broker_in_t__isset __isset;
 
@@ -787,39 +583,15 @@ class register_to_broker_in_t {
     node_type = val;
   }
 
-  void __set_host(const std::string& val) {
-    host = val;
-  }
-
   void __set_service_name(const std::string& val) {
     service_name = val;
-  }
-
-  void __set_node_id(const int64_t val) {
-    node_id = val;
-  }
-
-  void __set_reg_namespace(const std::string& val) {
-    reg_namespace = val;
-  }
-
-  void __set_bind_broker_id(const int64_t val) {
-    bind_broker_id = val;
   }
 
   bool operator == (const register_to_broker_in_t & rhs) const
   {
     if (!(node_type == rhs.node_type))
       return false;
-    if (!(host == rhs.host))
-      return false;
     if (!(service_name == rhs.service_name))
-      return false;
-    if (!(node_id == rhs.node_id))
-      return false;
-    if (!(reg_namespace == rhs.reg_namespace))
-      return false;
-    if (!(bind_broker_id == rhs.bind_broker_id))
       return false;
     return true;
   }
@@ -837,20 +609,17 @@ class register_to_broker_in_t {
 void swap(register_to_broker_in_t &a, register_to_broker_in_t &b);
 
 typedef struct _register_to_broker_out_t__isset {
-  _register_to_broker_out_t__isset() : register_flag(false), node_id(false), service2node_id(false), slave_broker_data(false), rpc_bind_broker_info(false), reg_namespace_list(false) {}
+  _register_to_broker_out_t__isset() : register_flag(false), node_id(false), service2node_id(false) {}
   bool register_flag;
   bool node_id;
   bool service2node_id;
-  bool slave_broker_data;
-  bool rpc_bind_broker_info;
-  bool reg_namespace_list;
 } _register_to_broker_out_t__isset;
 
 class register_to_broker_out_t {
  public:
 
-  static const char* ascii_fingerprint; // = "08FF3A9C5042F50B54A30CA9AEF4E748";
-  static const uint8_t binary_fingerprint[16]; // = {0x08,0xFF,0x3A,0x9C,0x50,0x42,0xF5,0x0B,0x54,0xA3,0x0C,0xA9,0xAE,0xF4,0xE7,0x48};
+  static const char* ascii_fingerprint; // = "1F41639F8135007E546B5DA3F7363917";
+  static const uint8_t binary_fingerprint[16]; // = {0x1F,0x41,0x63,0x9F,0x81,0x35,0x00,0x7E,0x54,0x6B,0x5D,0xA3,0xF7,0x36,0x39,0x17};
 
   register_to_broker_out_t() : register_flag(0), node_id(0) {
   }
@@ -860,9 +629,6 @@ class register_to_broker_out_t {
   int16_t register_flag;
   int64_t node_id;
   std::map<std::string, int64_t>  service2node_id;
-  std::map<std::string, int64_t>  slave_broker_data;
-  std::map<int64_t, int64_t>  rpc_bind_broker_info;
-  std::vector<std::string>  reg_namespace_list;
 
   _register_to_broker_out_t__isset __isset;
 
@@ -878,18 +644,6 @@ class register_to_broker_out_t {
     service2node_id = val;
   }
 
-  void __set_slave_broker_data(const std::map<std::string, int64_t> & val) {
-    slave_broker_data = val;
-  }
-
-  void __set_rpc_bind_broker_info(const std::map<int64_t, int64_t> & val) {
-    rpc_bind_broker_info = val;
-  }
-
-  void __set_reg_namespace_list(const std::vector<std::string> & val) {
-    reg_namespace_list = val;
-  }
-
   bool operator == (const register_to_broker_out_t & rhs) const
   {
     if (!(register_flag == rhs.register_flag))
@@ -897,12 +651,6 @@ class register_to_broker_out_t {
     if (!(node_id == rhs.node_id))
       return false;
     if (!(service2node_id == rhs.service2node_id))
-      return false;
-    if (!(slave_broker_data == rhs.slave_broker_data))
-      return false;
-    if (!(rpc_bind_broker_info == rhs.rpc_bind_broker_info))
-      return false;
-    if (!(reg_namespace_list == rhs.reg_namespace_list))
       return false;
     return true;
   }
@@ -1031,36 +779,6 @@ class session_enter_worker_in_t {
 };
 
 void swap(session_enter_worker_in_t &a, session_enter_worker_in_t &b);
-
-
-class session_enter_worker_out_t {
- public:
-
-  static const char* ascii_fingerprint; // = "99914B932BD37A50B983C5E7C90AE93B";
-  static const uint8_t binary_fingerprint[16]; // = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
-
-  session_enter_worker_out_t() {
-  }
-
-  virtual ~session_enter_worker_out_t() throw() {}
-
-
-  bool operator == (const session_enter_worker_out_t & /* rhs */) const
-  {
-    return true;
-  }
-  bool operator != (const session_enter_worker_out_t &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const session_enter_worker_out_t & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-void swap(session_enter_worker_out_t &a, session_enter_worker_out_t &b);
 
 } // namespace
 

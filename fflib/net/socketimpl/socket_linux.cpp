@@ -13,6 +13,7 @@
 #include "base/lock.h"
 #include "base/task_queue.h"
 #include "base/log.h"
+#define FFNET "FFNET"
 
 using namespace std;
 using namespace ff;
@@ -27,8 +28,9 @@ SocketLinux::SocketLinux(EventLoop* e_, SocketCtrlI* seh_, int fd_, TaskQueue* t
 
 SocketLinux::~SocketLinux()
 {
-    m_send_buffer.clear();
+    m_sendBuffer.clear();
     delete m_sc;
+    LOGTRACE((FFNET, "SocketLinux::~SocketLinux  %x", (long)this));
 }
 
 void SocketLinux::open()
@@ -40,10 +42,10 @@ void SocketLinux::open()
 
 void SocketLinux::close()
 {
-    m_tq->post(TaskBinder::gen(&SocketLinux::close_impl, this));
+    m_tq->post(TaskBinder::gen(&SocketLinux::closeImpl, this));
 }
 
-void SocketLinux::close_impl()
+void SocketLinux::closeImpl()
 {
     if (m_fd > 0)
     {
@@ -61,7 +63,7 @@ int SocketLinux::handleEpollRead()
 
 int SocketLinux::handleEpollRead_impl()
 {
-    if (is_open())
+    if (isOpen())
     {
         int nread = 0;
         char recv_buffer[RECV_BUFFER_SIZE];
@@ -71,7 +73,12 @@ int SocketLinux::handleEpollRead_impl()
             if (nread > 0)
             {
                 recv_buffer[nread] = '\0';
-                m_sc->handleRead(this, recv_buffer, size_t(nread));
+                if (m_refSocket)
+                    m_sc->handleRead(this, recv_buffer, size_t(nread));
+                else{
+                    LOGERROR((FFNET, "SocketLinux::handleEpollRead_impl  exception %x", (long)this));
+                }
+
                 if (nread < int(sizeof(recv_buffer) - 1))
                 {
                 	break;//! equal EWOULDBLOCK
@@ -102,10 +109,20 @@ int SocketLinux::handleEpollRead_impl()
     }
     return 0;
 }
-
+int SocketLinux::handleEpollErrorImpl(){
+    if (m_refSocket){
+        this->getSocketCtrl()->handleError(this);
+        m_refSocket = NULL;
+        LOGTRACE((FFNET, "SocketLinux::handleEpollErrorImpl  %x", (long)this));
+    }
+    else{
+        LOGTRACE((FFNET, "SocketLinux::handleEpollErrorImpl error  %x", (long)this));
+    }
+    return 0;
+}
 int SocketLinux::handleEpollDel()
 {
-    m_tq->post(TaskBinder::gen(&SocketCtrlI::handleError, this->getSocketCtrl(), this));
+    m_tq->post(TaskBinder::gen(&SocketLinux::handleEpollErrorImpl, this));
     return 0;
 }
 
@@ -119,15 +136,15 @@ int SocketLinux::handleEpollWrite_impl()
 {
     int ret = 0;
 
-    if (false == is_open() || true == m_send_buffer.empty())
+    if (false == isOpen() || true == m_sendBuffer.empty())
     {
         return 0;
     }
 
     do
     {
-        ff_str_buffer_t& pbuff = m_send_buffer.front();
-        ret = do_send(&pbuff);
+        ff_str_buffer_t& pbuff = m_sendBuffer.front();
+        ret = doSend(&pbuff);
 
         if (ret < 0)
         {
@@ -140,31 +157,31 @@ int SocketLinux::handleEpollWrite_impl()
         }
         else
         {
-            m_send_buffer.pop_front();
+            m_sendBuffer.pop_front();
         }
-    } while (false == m_send_buffer.empty());
-
-    m_sc->handleWriteCompleted(this);
+    } while (false == m_sendBuffer.empty());
+    if (m_refSocket)
+        m_sc->handleWriteCompleted(this);
     return 0;
 }
 
 void SocketLinux::asyncSend(const string& msg_)
 {
-    m_tq->post(TaskBinder::gen(&SocketLinux::send_str_impl, this, msg_));
+    m_tq->post(TaskBinder::gen(&SocketLinux::sendStrImpl, this, msg_));
 }
 
-void SocketLinux::send_str_impl(const string& buff_)
+void SocketLinux::sendStrImpl(const string& buff_)
 {
-    this->send_impl(buff_, 1);
+    this->sendImpl(buff_, 1);
 }
 void SocketLinux::sendRaw(const string& buff_)
 {
-    this->send_impl(buff_, 0);
+    this->sendImpl(buff_, 0);
 }
-void SocketLinux::send_impl(const string& buff_src, int flag)
+void SocketLinux::sendImpl(const string& buff_src, int flag)
 {
     string buff_ = buff_src;
-    if (false == is_open() || (flag != 0  && m_sc->checkPreSend(this, buff_, flag)))
+    if (false == isOpen() || (flag != 0  && m_sc->checkPreSend(this, buff_, flag)))
     {
         return;
     }
@@ -173,13 +190,13 @@ void SocketLinux::send_impl(const string& buff_src, int flag)
     new_buff.buff = buff_;
     new_buff.flag = flag;
     //! socket buff is full, cache the data
-    if (false == m_send_buffer.empty())
+    if (false == m_sendBuffer.empty())
     {
-        m_send_buffer.push_back(new_buff);
+        m_sendBuffer.push_back(new_buff);
         return;
     }
 
-    int ret = do_send(&new_buff);
+    int ret = doSend(&new_buff);
 
     if (ret < 0)
     {
@@ -187,7 +204,7 @@ void SocketLinux::send_impl(const string& buff_src, int flag)
     }
     else if (ret > 0)//!left some data
     {
-        m_send_buffer.push_back(new_buff);
+        m_sendBuffer.push_back(new_buff);
     }
     else
     {
@@ -196,7 +213,7 @@ void SocketLinux::send_impl(const string& buff_src, int flag)
     }
 }
 
-int SocketLinux::do_send(ff_str_buffer_t* buff_)
+int SocketLinux::doSend(ff_str_buffer_t* buff_)
 {
     size_t nleft             = (size_t)(buff_->left_size());
     const char* buffer       = buff_->cur_data();
@@ -234,16 +251,11 @@ void SocketLinux::asyncRecv()
     m_epoll->register_fd(this);
 }
 
-void SocketLinux::safeDelete()
-{
-    struct lambda_t
-    {
-        static void exe(void* p_)
-        {
-            delete ((SocketLinux*)p_);
-        }
-    };
-    m_tq->post(Task(&lambda_t::exe, this));
+SharedPtr<SocketI> SocketLinux::toSharedPtr(){
+    return m_refSocket;
 }
 
+void SocketLinux::refSelf(SharedPtr<SocketI> p){
+    m_refSocket = p;
+}
 #endif
