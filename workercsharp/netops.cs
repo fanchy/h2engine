@@ -46,7 +46,7 @@ namespace ff
         }
     }
 
-    class NetOps
+    class FFNet
     {
         public static FFSocket connect(string ip, int port, SocketMsgHandler funcMsg, SocketBrokenHandler funcBroken){
             SocketCtrl ctrl = new SocketCtrl(funcMsg, funcBroken);
