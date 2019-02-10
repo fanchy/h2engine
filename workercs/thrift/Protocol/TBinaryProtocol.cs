@@ -223,7 +223,7 @@ namespace Thrift.Protocol
                 uint version = (uint)size & VERSION_MASK;
                 if (version != VERSION_1)
                 {
-                    throw new TProtocolException(TProtocolException.BAD_VERSION, "Bad version in ReadMessageBegin: " + version);
+                    //throw new TProtocolException(TProtocolException.BAD_VERSION, "Bad version in ReadMessageBegin: " + version);
                 }
                 message.Type = (TMessageType)(size & 0x000000ff);
                 message.Name = ReadString();

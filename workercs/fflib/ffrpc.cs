@@ -19,10 +19,13 @@ namespace ff
         public string   m_strServiceName;
         public string   m_strBrokerIP;
         public int      m_nBrokerPort;
+        public long     m_nNodeID;
+        public RegisterToBrokerRet m_brokerData;
         public FFRpc(string strName){
             m_strServiceName = strName;
             m_strBrokerIP    = "127.0.0.1";
             m_nBrokerPort    = 43210;
+            m_brokerData = new RegisterToBrokerRet();
         }
         public bool open(string strBrokerCfg){
             string[] strList = strBrokerCfg.Split(":");
@@ -31,7 +34,7 @@ namespace ff
             }
             m_strBrokerIP = strList[0];
             m_nBrokerPort = int.Parse(strList[1]);
-            Console.WriteLine("open....{0}, {1}", m_strBrokerIP, m_nBrokerPort);
+            Console.WriteLine("ffrpc open....{0}, {1}", m_strBrokerIP, m_nBrokerPort);
             if (!connectToBroker()){
                 return false;
             }
@@ -42,13 +45,11 @@ namespace ff
             if (null == m_socketBroker){
                 return false;
             }
-            Console.WriteLine("connect....{0}, {1}", m_strBrokerIP, m_nBrokerPort);
             RegisterToBrokerReq reqMsg = new RegisterToBrokerReq();
             reqMsg.Node_type = 2;
             reqMsg.Service_name = m_strServiceName;
 
             FFNet.sendMsg(m_socketBroker, 2, reqMsg);
-            Console.WriteLine("send....{0}, {1}", m_strBrokerIP, m_nBrokerPort);
             return true;
         }
         public bool close(){
@@ -56,6 +57,14 @@ namespace ff
         }
         public void handleMsg(FFSocket ffsocket, Int16 cmd, string strMsg){
             Console.WriteLine("handleMsg....{0}, {1}", cmd, strMsg.Length);
+            if (cmd == 3){
+                FFNet.decodeMsg(m_brokerData, strMsg);
+                Console.WriteLine("handleMsg....{0}, {1}", m_brokerData.Node_id, m_brokerData.Register_flag);
+                if (m_brokerData.Register_flag == 1)
+                {
+                    m_nNodeID = m_brokerData.Node_id;//! -1表示注册失败，0表示同步消息，1表示注册成功
+                }
+            }
         }
         public void handleBroken(FFSocket ffsocket){
 

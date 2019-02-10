@@ -137,7 +137,7 @@ int FFBroker::handleBroken(SocketObjPtr sock_)
 int FFBroker::handleMsg(const Message& msg_, SocketObjPtr sock_)
 {
     uint16_t cmd = msg_.getCmd();
-    LOGTRACE((BROKER, "FFBroker::handleMsg_impl cmd<%u> begin", cmd));
+    LOGINFO((BROKER, "FFBroker::handleMsg_impl cmd<%u> ,len:%u begin", cmd, msg_.getBody().size()));
 
     FFSlot::FFCallBack* cb = m_ffslot.get_callback(cmd);
     if (cb)

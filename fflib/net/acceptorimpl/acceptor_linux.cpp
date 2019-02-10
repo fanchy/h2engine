@@ -164,7 +164,7 @@ int AcceptorLinux::handleEpollRead()
             SocketOp::set_no_delay(new_fd);
             SocketObjPtr socket = create_socket(new_fd);
             socket->refSelf(socket);
-            LOGINFO(("FFNET", "SocketLinux::SocketLinux  %x", (long)(SMART_PTR_RAW(socket))));
+            //LOGTRACE(("FFNET", "SocketLinux::SocketLinux  %x", (long)(SMART_PTR_RAW(socket))));
             socket->open();
         #endif
     } while (true);

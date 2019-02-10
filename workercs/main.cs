@@ -12,7 +12,7 @@ namespace ff
         public static void Main(string[] args)
         {
             FFRpc ffrpc = new FFRpc("worker#0");
-            if (ffrpc.open("147.101.179.174:43210") == false){
+            if (ffrpc.open("127.0.0.1:43210") == false){
                 Console.WriteLine("ffrpc open failed!");
             }
             Console.ReadKey();

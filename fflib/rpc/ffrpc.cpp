@@ -115,9 +115,10 @@ SocketObjPtr FFRpc::connectToBroker(const string& host_, uint32_t node_id_)
     RegisterToBrokerReq reg_msg;
     reg_msg.node_type = RPC_NODE;
     reg_msg.service_name = m_service_name;
-    MsgSender::send(sock, REGISTER_TO_BROKER_REQ, FFThrift::EncodeAsString(reg_msg));
+    string strMsg = FFThrift::EncodeAsString(reg_msg);
+    MsgSender::send(sock, REGISTER_TO_BROKER_REQ, strMsg);
 
-    LOGINFO((FFRPC, "FFRpc::connectToBroker end"));
+    LOGINFO((FFRPC, "FFRpc::connectToBroker end strMsg.size=%u", strMsg.size()));
     return sock;
 }
 //! 投递到ffrpc 特定的线程
@@ -393,8 +394,6 @@ int FFRpc::handleBrokerRegResponse(RegisterToBrokerRet& msg_, SocketObjPtr sock_
     }
     m_broker_data = msg_;
 
-    if (m_master_broker_sock)
-        timerReconnectBroker();
     LOGTRACE((FFRPC, "FFBroker::handleBrokerRegResponse end service num=%d, ", m_broker_data.service2node_id.size()));
     return 0;
 }

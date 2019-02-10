@@ -25,9 +25,9 @@ struct FFThrift
         using apache::thrift::protocol::TBinaryProtocol;
         FFTMemoryBuffer ffmem(&data_);
         TBinaryProtocol  proto(&ffmem);
-        proto.writeMessageBegin(GET_TYPE_NAME_FFTHRIFT(T), (apache::thrift::protocol::TMessageType)0, (int32_t)0);
+        //proto.writeMessageBegin(GET_TYPE_NAME_FFTHRIFT(T), (apache::thrift::protocol::TMessageType)0, (int32_t)0);
         msg_.write(&proto);
-        proto.writeMessageEnd();
+        //proto.writeMessageEnd();
         return true;
     }
     template<typename T>
@@ -44,14 +44,14 @@ struct FFThrift
         using apache::thrift::protocol::TBinaryProtocol;
         FFTMemoryBuffer ffmem(data_);
         TBinaryProtocol  proto(&ffmem);
-        std::string msg_name;
-        apache::thrift::protocol::TMessageType nType = (apache::thrift::protocol::TMessageType)0;
-        int32_t nFlag = 0;
-        proto.readMessageBegin(msg_name, nType, nFlag);
+        //std::string msg_name;
+        //apache::thrift::protocol::TMessageType nType = (apache::thrift::protocol::TMessageType)0;
+        //int32_t nFlag = 0;
+        //proto.readMessageBegin(msg_name, nType, nFlag);
         msg_.read(&proto);
-        proto.readMessageEnd();
+        //proto.readMessageEnd();
         //printf("msg=%s\n", msg_name.c_str());
-        return true;   
+        return true;
     }
 };
 
