@@ -32,9 +32,9 @@ int FFWorker::regExitFunc(WorkerFunc f){
     gExitFunc[n] = f;
     return 0;
 }
-//自定义排序函数  
+//自定义排序函数
 static bool cmpTmp(const WorkerInitFileInfo& a, const WorkerInitFileInfo& b){
-    return a.priority > b.priority;//从大到小排序，从小到大排序为a<b  
+    return a.priority > b.priority;//从大到小排序，从小到大排序为a<b
 }
 static bool callSetupFunc(){
     std::sort(FFWorker::gSetupFunc, FFWorker::gSetupFunc+(sizeof(FFWorker::gSetupFunc) / sizeof(WorkerInitFileInfo)), cmpTmp);
@@ -59,7 +59,7 @@ static bool callExitFunc(){
 }
 FFWorker::FFWorker():m_nWorkerIndex(0), m_allocID(0),m_ffrpc(NULL)
 {
-    
+
 }
 FFWorker::~FFWorker()
 {
@@ -70,11 +70,11 @@ int FFWorker::open(const string& brokercfg, int worker_index)
 {
     LOGTRACE((FFWORKER_LOG, "FFWorker::open begin"));
     FFWorker::gSingletonWorker = this;
-    
+
     m_nWorkerIndex = worker_index;
     char msgbuff[128] = {0};
     snprintf(msgbuff, sizeof(msgbuff), "worker#%d", worker_index);
-    
+
     m_logic_name = msgbuff;
 
     m_ffrpc = new FFRpc(m_logic_name);
@@ -82,7 +82,7 @@ int FFWorker::open(const string& brokercfg, int worker_index)
     m_ffrpc->reg(&FFWorker::processSessionOffline, this);
     m_ffrpc->reg(&FFWorker::processSessionEnter, this);
     m_ffrpc->reg(&FFWorker::processWorkerCall, this);
-    
+
     if (m_ffrpc->open(brokercfg))
     {
         LOGERROR((FFWORKER_LOG, "FFWorker::open failed check brokercfg %s", brokercfg));
@@ -96,9 +96,9 @@ int FFWorker::open(const string& brokercfg, int worker_index)
 
     m_shared_mem_mgr.init_worker(port, worker_index, m_ffrpc->getTaskQueue());
     Singleton<FFWorkerMgr>::instance().add(m_logic_name, this);
-    
+
     LOGTRACE((FFWORKER_LOG, "FFWorker::open end ok"));
-    
+
     SCRIPT_CACHE.init();
     DB_MGR.setDefaultTaskQueue(this->getRpc().getTaskQueue());
     EntityModule::init();
@@ -134,14 +134,14 @@ bool FFWorker::cleanupModule(){
     return true;
 }
 //! 转发client消息
-int FFWorker::processSessionReq(RPCReq<RouteLogicMsg_t::in_t, RouteLogicMsg_t::out_t>& req_)
+int FFWorker::processSessionReq(RPCReq<RouteLogicMsgReq, EmptyMsgRet>& req_)
 {
     LOGTRACE((FFWORKER_LOG, "FFWorker::processSessionReq begin cmd[%u]", req_.msg.cmd));
     std::map<userid_t, WorkerClient>::iterator it = m_worker_client.find(req_.msg.session_id);
     WorkerClient* pWorkerClient = NULL;
     if (it == m_worker_client.end()){
         WorkerClient& worker_client = m_worker_client[req_.msg.session_id];
-        
+
         worker_client.from_gate = m_ffrpc->getServicesById(req_.dest_node_id);
         worker_client.session_ip= req_.msg.session_ip;
         if (worker_client.from_gate.empty())
@@ -154,7 +154,7 @@ int FFWorker::processSessionReq(RPCReq<RouteLogicMsg_t::in_t, RouteLogicMsg_t::o
     else{
         pWorkerClient = &(it->second);
     }
-    
+
     SessionReqEvent eMsg(pWorkerClient->entity, req_.msg.cmd, req_.msg.body);
     if (LOGOUT_CMD != req_.msg.cmd){//!如果有客户端发了错误包，忽略0xFFFF是保留协议
         EVENT_BUS_FIRE(eMsg);
@@ -162,10 +162,10 @@ int FFWorker::processSessionReq(RPCReq<RouteLogicMsg_t::in_t, RouteLogicMsg_t::o
     if (eMsg.isDone == false){
         onSessionReq(req_.msg.session_id, req_.msg.cmd, req_.msg.body);
     }
-    
+
     if (req_.callback_id != 0)
     {
-        RouteLogicMsg_t::out_t out;
+        EmptyMsgRet out;
         req_.response(out);
     }
     getSharedMem().writeLockEnd();
@@ -174,7 +174,7 @@ int FFWorker::processSessionReq(RPCReq<RouteLogicMsg_t::in_t, RouteLogicMsg_t::o
 }
 
 //! 处理client 下线
-int FFWorker::processSessionOffline(RPCReq<SessionOffline::in_t, SessionOffline::out_t>& req_)
+int FFWorker::processSessionOffline(RPCReq<SessionOfflineReq, EmptyMsgRet>& req_)
 {
     LOGTRACE((FFWORKER_LOG, "FFWorker::processSessionOffline begin"));
     EntityPtr entity = m_worker_client[req_.msg.session_id].entity;
@@ -184,8 +184,8 @@ int FFWorker::processSessionOffline(RPCReq<SessionOffline::in_t, SessionOffline:
     SessionReqEvent eMsg(entity, LOGOUT_CMD, "", 1);
     EVENT_BUS_FIRE(eMsg);
     onSessionOffline(req_.msg.session_id);
-    
-    SessionOffline::out_t out;
+
+    EmptyMsgRet out;
     req_.response(out);
     m_worker_client.erase(req_.msg.session_id);
     getSharedMem().writeLockEnd();
@@ -193,23 +193,23 @@ int FFWorker::processSessionOffline(RPCReq<SessionOffline::in_t, SessionOffline:
 }
 
 //! 处理client 跳转
-int FFWorker::processSessionEnter(RPCReq<SessionEnterWorker::in_t, SessionEnterWorker::out_t>& req_)
+int FFWorker::processSessionEnter(RPCReq<SessionEnterWorkerReq, EmptyMsgRet>& req_)
 {
     LOGTRACE((FFWORKER_LOG, "FFWorker::processSessionEnter begin gate[%s]", req_.msg.from_gate));
 
     WorkerClient& worker_client = m_worker_client[req_.msg.session_id];
     worker_client.from_gate = req_.msg.from_gate;
-    
-    SessionEnterWorker::out_t out;
+
+    EmptyMsgRet out;
     req_.response(out);
-    
-    
+
+
     OnSessionEnterEvent eMsg(req_.msg.session_id, req_.msg.extra_data);
     EVENT_BUS_FIRE(eMsg);
     if (eMsg.isDone == false){
         onSessionEnter(req_.msg.session_id, req_.msg.extra_data);
     }
-    
+
     getSharedMem().writeLockEnd();
     LOGTRACE((FFWORKER_LOG, "FFWorker::processSessionEnter end ok"));
 
@@ -217,12 +217,12 @@ int FFWorker::processSessionEnter(RPCReq<SessionEnterWorker::in_t, SessionEnterW
 }
 
 //! scene 之间的互调用
-int FFWorker::processWorkerCall(RPCReq<WorkerCallMsgt::in_t, WorkerCallMsgt::out_t>& req_)
+int FFWorker::processWorkerCall(RPCReq<WorkerCallMsgReq, WorkerCallMsgRet>& req_)
 {
     LOGTRACE((FFWORKER_LOG, "FFWorker::processWorkerCall begin cmd[%u]", req_.msg.cmd));
-    
-    WorkerCallMsgt::out_t out;
-    
+
+    WorkerCallMsgRet out;
+
     OnWorkerCallEvent eMsg(req_.msg.cmd, req_.msg.body);
     EVENT_BUS_FIRE(eMsg);
     if (eMsg.isDone){
@@ -291,10 +291,10 @@ int FFWorker::sessionChangeWorker(const userid_t& session_id_, int to_worker_ind
 {
     char buff[128] = {0};
     snprintf(buff, sizeof(buff), "worker#%d", to_worker_index_);
-    
+
     std::map<userid_t, WorkerClient>::iterator it = m_worker_client.find(session_id_);
     if (it != m_worker_client.end()){
-        GateChangeLogicNode::in_t msg;
+        GateChangeLogicNodeReq msg;
         msg.session_id = session_id_;
         msg.alloc_worker = buff;
         msg.extra_data = extra_data;
@@ -310,7 +310,7 @@ int FFWorker::sessionSendMsg(const string& gate_name, const userid_t& session_id
         return -1;
     LOGTRACE((FFWORKER_LOG, "FFWorker::send_msg_session begin session_id_<%ld>", session_id_));
 
-    GateRouteMsgToSession::in_t msg;
+    GateRouteMsgToSessionReq msg;
     msg.session_id.push_back(session_id_);
     msg.cmd  = cmd_;
     msg.body = data_;
@@ -322,7 +322,7 @@ int FFWorker::sessionMulticastMsg(const string& gate_name, const vector<userid_t
 {
     LOGTRACE((FFWORKER_LOG, "FFWorker::multicast_msg_session begin session_id_<%u>", session_id_.size()));
 
-    GateRouteMsgToSession::in_t msg;
+    GateRouteMsgToSessionReq msg;
     msg.session_id = session_id_;
     msg.cmd  = cmd_;
     msg.body = data_;
@@ -336,7 +336,7 @@ int FFWorker::sessionKFSendMsg(const string& group_name, const string& gate_name
 {
     LOGTRACE((FFWORKER_LOG, "FFWorker::send_msg_session begin session_id_<%ld>", session_id_));
 
-    GateRouteMsgToSession::in_t msg;
+    GateRouteMsgToSessionReq msg;
     msg.session_id.push_back(session_id_);
     msg.cmd  = cmd_;
     msg.body = data_;
@@ -347,7 +347,7 @@ int FFWorker::sessionKFSendMsg(const string& group_name, const string& gate_name
 //! 广播 整个gate
 int FFWorker::gateBroadcastMsg(const string& gate_name_, uint16_t cmd_, const string& data_)
 {
-    GateBroadcastMsgToSession::in_t msg;
+    GateBroadcastMsgToSessionReq msg;
     msg.cmd = cmd_;
     msg.body = data_;
     m_ffrpc->call(gate_name_, msg);
@@ -356,7 +356,7 @@ int FFWorker::gateBroadcastMsg(const string& gate_name_, uint16_t cmd_, const st
 //! 关闭某个session
 int FFWorker::sessionClose(const string& gate_name_, const userid_t& session_id_)
 {
-    GateCloseSession::in_t msg;
+    GateCloseSessionReq msg;
     msg.session_id = session_id_;
     m_ffrpc->call(gate_name_, msg);
     return 0;
@@ -373,12 +373,12 @@ void FFWorker::regTimer(uint64_t mstimeout_, Task func){
     getRpc().getTimer().onceTimer(mstimeout_, TaskBinder::gen(&timer_cb::callback, this, func));
 }
 void FFWorker::workerRPC(int workerindex, uint16_t cmd, const std::string& data, FFSlot::FFCallBack* cb){
-    WorkerCallMsgt::in_t reqmsg;
+    WorkerCallMsgReq reqmsg;
     reqmsg.cmd = cmd;
     reqmsg.body= data;
     char service_name[128] = {0};
     snprintf(service_name, sizeof(service_name), "worker#%d", workerindex);
-    
+
     getRpc().call(service_name, reqmsg, cb);
 }
 void FFWorker::asyncHttp(const std::string& url_, int timeoutsec, FFSlot::FFCallBack* cb){

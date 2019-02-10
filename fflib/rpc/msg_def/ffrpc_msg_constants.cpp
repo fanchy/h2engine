@@ -6,7 +6,7 @@
  */
 #include "ffrpc_msg_constants.h"
 
-namespace ffrpc_msg {
+namespace ff {
 
 const ffrpc_msgConstants g_ffrpc_msg_constants;
 
@@ -14,4 +14,3 @@ ffrpc_msgConstants::ffrpc_msgConstants() {
 }
 
 } // namespace
-

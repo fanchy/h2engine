@@ -47,16 +47,16 @@ public:
     //! 逻辑处理,转发消息到logic service
     int routeLogicMsg(const Message& msg_, SocketObjPtr sock_, bool first);
     //! enter scene 回调函数
-    int enterWorkerCallback(RPCReq<SessionEnterWorker::out_t>& req_, const userid_t& session_id_);
+    int enterWorkerCallback(RPCReq<EmptyMsgRet>& req_, const userid_t& session_id_);
 
     //! 改变处理client 逻辑的对应的节点
-    int changeSessionLogic(RPCReq<GateChangeLogicNode::in_t, GateChangeLogicNode::out_t>& req_);
+    int changeSessionLogic(RPCReq<GateChangeLogicNodeReq, EmptyMsgRet>& req_);
     //! 关闭某个session socket
-    int closeSession(RPCReq<GateCloseSession::in_t, GateCloseSession::out_t>& req_);
+    int closeSession(RPCReq<GateCloseSessionReq, EmptyMsgRet>& req_);
     //! 转发消息给client
-    int routeMsgToSession(RPCReq<GateRouteMsgToSession::in_t, GateRouteMsgToSession::out_t>& req_);
+    int routeMsgToSession(RPCReq<GateRouteMsgToSessionReq, EmptyMsgRet>& req_);
     //! 广播消息给所有的client
-    int broadcastMsgToSession(RPCReq<GateBroadcastMsgToSession::in_t, GateBroadcastMsgToSession::out_t>& req_);
+    int broadcastMsgToSession(RPCReq<GateBroadcastMsgToSessionReq, EmptyMsgRet>& req_);
 
 
     userid_t allocID();

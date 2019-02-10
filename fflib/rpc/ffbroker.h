@@ -32,7 +32,7 @@ class FFBroker: public MsgHandler
         //!各个节点对应的连接信息
         std::map<uint64_t/* node id*/, SocketObjPtr>     node_sockets;
         //!service对应的nodeid
-        RegisterToBroker::out_t                          broker_data;
+        RegisterToBrokerRet                              broker_data;
     };
 
 public:
@@ -46,16 +46,14 @@ public:
     TaskQueue* getTaskQueue();
 
     //! 处理其他broker或者client注册到此server
-    int handleRegisterToBroker(RegisterToBroker::in_t& msg_, SocketObjPtr sock_);
+    int handleRegisterToBroker(RegisterToBrokerReq& msg_, SocketObjPtr sock_);
     //! 处理转发消息的操作
-    int handleBrokerRouteMsg(BrokerRouteMsg::in_t& msg_, SocketObjPtr sock_);
-    //!处理注册到master broker的消息
-    int handleRegisterMasterRet(RegisterToBroker::out_t& msg_, SocketObjPtr sock_);
+    int handleBrokerRouteMsg(BrokerRouteMsgReq& msg_, SocketObjPtr sock_);
 
     //!ff 获取节点信息
     uint64_t allocNodeId(SocketObjPtr sock_);
     //! 处理同步客户端的调用请求
-    int processSyncClientReq(BrokerRouteMsg::in_t& msg_, SocketObjPtr sock_);
+    int processSyncClientReq(BrokerRouteMsgReq& msg_, SocketObjPtr sock_);
 public:
     int open(const std::string& listen, std::string bridge_broker = "", std::string master_broker = "");
     int close();
@@ -65,14 +63,14 @@ public:
     TimerService& getTimer();
 
     //! 传递消息
-    int sendToRPcNode(BrokerRouteMsg::in_t& msg_);
+    int sendToRPcNode(BrokerRouteMsgReq& msg_);
 
     int getPortCfg();
     const std::string& getHostCfg();
 private:
 
     //! 同步给所有的节点，当前的各个节点的信息
-    int syncNodeInfo(RegisterToBroker::out_t& ret_msg, SocketObjPtr sock_ = NULL);
+    int syncNodeInfo(RegisterToBrokerRet& ret_msg, SocketObjPtr sock_ = NULL);
 private:
     Acceptor*                                               m_acceptor;
 	//! 用于分配node id

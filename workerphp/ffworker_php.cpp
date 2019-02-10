@@ -818,7 +818,7 @@ PHP_METHOD(h2ext, workerRPC)
                 return;
             }
             SlotReqArg* msg_data = (SlotReqArg*)args_;
-            WorkerCallMsgt::out_t retmsg;
+            WorkerCallMsgRet retmsg;
             try{
                 FFThrift::DecodeFromString(retmsg, msg_data->body);
             }

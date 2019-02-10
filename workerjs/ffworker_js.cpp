@@ -693,7 +693,7 @@ static BIND_FUNC_RET_TYPE js_workerRPC(const Arguments& args){
             SlotReqArg* msg_data = (SlotReqArg*)args_;
             try
             {
-                WorkerCallMsgt::out_t retmsg;
+                WorkerCallMsgRet retmsg;
                 try{
                     FFThrift::DecodeFromString(retmsg, msg_data->body);
                 }

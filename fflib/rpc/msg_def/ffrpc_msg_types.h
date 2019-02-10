@@ -15,76 +15,76 @@
 #include <thrift/cxxfunctional.h>
 
 
-namespace ffrpc_msg {
+namespace ff {
 
-typedef struct _session_offline_in_t__isset {
-  _session_offline_in_t__isset() : session_id(true) {}
+typedef struct _SessionOfflineReq__isset {
+  _SessionOfflineReq__isset() : session_id(true) {}
   bool session_id;
-} _session_offline_in_t__isset;
+} _SessionOfflineReq__isset;
 
-class session_offline_in_t {
+class SessionOfflineReq {
  public:
 
   static const char* ascii_fingerprint; // = "7CBAC864381682B525334E49955F454B";
   static const uint8_t binary_fingerprint[16]; // = {0x7C,0xBA,0xC8,0x64,0x38,0x16,0x82,0xB5,0x25,0x33,0x4E,0x49,0x95,0x5F,0x45,0x4B};
 
-  session_offline_in_t() : session_id(0LL) {
+  SessionOfflineReq() : session_id(0LL) {
   }
 
-  virtual ~session_offline_in_t() throw() {}
+  virtual ~SessionOfflineReq() throw() {}
 
   int64_t session_id;
 
-  _session_offline_in_t__isset __isset;
+  _SessionOfflineReq__isset __isset;
 
   void __set_session_id(const int64_t val) {
     session_id = val;
   }
 
-  bool operator == (const session_offline_in_t & rhs) const
+  bool operator == (const SessionOfflineReq & rhs) const
   {
     if (!(session_id == rhs.session_id))
       return false;
     return true;
   }
-  bool operator != (const session_offline_in_t &rhs) const {
+  bool operator != (const SessionOfflineReq &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const session_offline_in_t & ) const;
+  bool operator < (const SessionOfflineReq & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-void swap(session_offline_in_t &a, session_offline_in_t &b);
+void swap(SessionOfflineReq &a, SessionOfflineReq &b);
 
-typedef struct _routeLogicMsg_in_t__isset {
-  _routeLogicMsg_in_t__isset() : session_id(true), cmd(true), body(false), session_ip(false) {}
+typedef struct _RouteLogicMsgReq__isset {
+  _RouteLogicMsgReq__isset() : session_id(true), cmd(true), body(false), session_ip(false) {}
   bool session_id;
   bool cmd;
   bool body;
   bool session_ip;
-} _routeLogicMsg_in_t__isset;
+} _RouteLogicMsgReq__isset;
 
-class routeLogicMsg_in_t {
+class RouteLogicMsgReq {
  public:
 
   static const char* ascii_fingerprint; // = "EADC45C9A213F80E462BAA7CE9FA080F";
   static const uint8_t binary_fingerprint[16]; // = {0xEA,0xDC,0x45,0xC9,0xA2,0x13,0xF8,0x0E,0x46,0x2B,0xAA,0x7C,0xE9,0xFA,0x08,0x0F};
 
-  routeLogicMsg_in_t() : session_id(0LL), cmd(0), body(), session_ip() {
+  RouteLogicMsgReq() : session_id(0LL), cmd(0), body(), session_ip() {
   }
 
-  virtual ~routeLogicMsg_in_t() throw() {}
+  virtual ~RouteLogicMsgReq() throw() {}
 
   int64_t session_id;
   int16_t cmd;
   std::string body;
   std::string session_ip;
 
-  _routeLogicMsg_in_t__isset __isset;
+  _RouteLogicMsgReq__isset __isset;
 
   void __set_session_id(const int64_t val) {
     session_id = val;
@@ -102,7 +102,7 @@ class routeLogicMsg_in_t {
     session_ip = val;
   }
 
-  bool operator == (const routeLogicMsg_in_t & rhs) const
+  bool operator == (const RouteLogicMsgReq & rhs) const
   {
     if (!(session_id == rhs.session_id))
       return false;
@@ -114,38 +114,38 @@ class routeLogicMsg_in_t {
       return false;
     return true;
   }
-  bool operator != (const routeLogicMsg_in_t &rhs) const {
+  bool operator != (const RouteLogicMsgReq &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const routeLogicMsg_in_t & ) const;
+  bool operator < (const RouteLogicMsgReq & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-void swap(routeLogicMsg_in_t &a, routeLogicMsg_in_t &b);
+void swap(RouteLogicMsgReq &a, RouteLogicMsgReq &b);
 
-typedef struct _gate_change_logic_node_in_t__isset {
-  _gate_change_logic_node_in_t__isset() : session_id(true), alloc_worker(false), cur_group_name(false), dest_group_name(false), extra_data(false) {}
+typedef struct _GateChangeLogicNodeReq__isset {
+  _GateChangeLogicNodeReq__isset() : session_id(true), alloc_worker(false), cur_group_name(false), dest_group_name(false), extra_data(false) {}
   bool session_id;
   bool alloc_worker;
   bool cur_group_name;
   bool dest_group_name;
   bool extra_data;
-} _gate_change_logic_node_in_t__isset;
+} _GateChangeLogicNodeReq__isset;
 
-class gate_change_logic_node_in_t {
+class GateChangeLogicNodeReq {
  public:
 
   static const char* ascii_fingerprint; // = "3CC2C885F5B9D03E96907F8376BF80E9";
   static const uint8_t binary_fingerprint[16]; // = {0x3C,0xC2,0xC8,0x85,0xF5,0xB9,0xD0,0x3E,0x96,0x90,0x7F,0x83,0x76,0xBF,0x80,0xE9};
 
-  gate_change_logic_node_in_t() : session_id(0LL), alloc_worker(), cur_group_name(), dest_group_name(), extra_data() {
+  GateChangeLogicNodeReq() : session_id(0LL), alloc_worker(), cur_group_name(), dest_group_name(), extra_data() {
   }
 
-  virtual ~gate_change_logic_node_in_t() throw() {}
+  virtual ~GateChangeLogicNodeReq() throw() {}
 
   int64_t session_id;
   std::string alloc_worker;
@@ -153,7 +153,7 @@ class gate_change_logic_node_in_t {
   std::string dest_group_name;
   std::string extra_data;
 
-  _gate_change_logic_node_in_t__isset __isset;
+  _GateChangeLogicNodeReq__isset __isset;
 
   void __set_session_id(const int64_t val) {
     session_id = val;
@@ -175,7 +175,7 @@ class gate_change_logic_node_in_t {
     extra_data = val;
   }
 
-  bool operator == (const gate_change_logic_node_in_t & rhs) const
+  bool operator == (const GateChangeLogicNodeReq & rhs) const
   {
     if (!(session_id == rhs.session_id))
       return false;
@@ -189,86 +189,86 @@ class gate_change_logic_node_in_t {
       return false;
     return true;
   }
-  bool operator != (const gate_change_logic_node_in_t &rhs) const {
+  bool operator != (const GateChangeLogicNodeReq &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const gate_change_logic_node_in_t & ) const;
+  bool operator < (const GateChangeLogicNodeReq & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-void swap(gate_change_logic_node_in_t &a, gate_change_logic_node_in_t &b);
+void swap(GateChangeLogicNodeReq &a, GateChangeLogicNodeReq &b);
 
-typedef struct _gate_closeSession_in_t__isset {
-  _gate_closeSession_in_t__isset() : session_id(true) {}
+typedef struct _GateCloseSessionReq__isset {
+  _GateCloseSessionReq__isset() : session_id(true) {}
   bool session_id;
-} _gate_closeSession_in_t__isset;
+} _GateCloseSessionReq__isset;
 
-class gate_closeSession_in_t {
+class GateCloseSessionReq {
  public:
 
   static const char* ascii_fingerprint; // = "56A59CE7FFAF82BCA8A19FAACDE4FB75";
   static const uint8_t binary_fingerprint[16]; // = {0x56,0xA5,0x9C,0xE7,0xFF,0xAF,0x82,0xBC,0xA8,0xA1,0x9F,0xAA,0xCD,0xE4,0xFB,0x75};
 
-  gate_closeSession_in_t() : session_id(0LL) {
+  GateCloseSessionReq() : session_id(0LL) {
   }
 
-  virtual ~gate_closeSession_in_t() throw() {}
+  virtual ~GateCloseSessionReq() throw() {}
 
   int64_t session_id;
 
-  _gate_closeSession_in_t__isset __isset;
+  _GateCloseSessionReq__isset __isset;
 
   void __set_session_id(const int64_t val) {
     session_id = val;
   }
 
-  bool operator == (const gate_closeSession_in_t & rhs) const
+  bool operator == (const GateCloseSessionReq & rhs) const
   {
     if (!(session_id == rhs.session_id))
       return false;
     return true;
   }
-  bool operator != (const gate_closeSession_in_t &rhs) const {
+  bool operator != (const GateCloseSessionReq &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const gate_closeSession_in_t & ) const;
+  bool operator < (const GateCloseSessionReq & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-void swap(gate_closeSession_in_t &a, gate_closeSession_in_t &b);
+void swap(GateCloseSessionReq &a, GateCloseSessionReq &b);
 
-typedef struct _gate_routeMmsgToSession_in_t__isset {
-  _gate_routeMmsgToSession_in_t__isset() : session_id(true), cmd(true), body(false) {}
+typedef struct _GateRouteMsgToSessionReq__isset {
+  _GateRouteMsgToSessionReq__isset() : session_id(true), cmd(true), body(false) {}
   bool session_id;
   bool cmd;
   bool body;
-} _gate_routeMmsgToSession_in_t__isset;
+} _GateRouteMsgToSessionReq__isset;
 
-class gate_routeMmsgToSession_in_t {
+class GateRouteMsgToSessionReq {
  public:
 
   static const char* ascii_fingerprint; // = "0F4880829CCE5EA99C09EDF6EED29938";
   static const uint8_t binary_fingerprint[16]; // = {0x0F,0x48,0x80,0x82,0x9C,0xCE,0x5E,0xA9,0x9C,0x09,0xED,0xF6,0xEE,0xD2,0x99,0x38};
 
-  gate_routeMmsgToSession_in_t() : cmd(0), body() {
+  GateRouteMsgToSessionReq() : cmd(0), body() {
 
   }
 
-  virtual ~gate_routeMmsgToSession_in_t() throw() {}
+  virtual ~GateRouteMsgToSessionReq() throw() {}
 
   std::vector<int64_t>  session_id;
   int16_t cmd;
   std::string body;
 
-  _gate_routeMmsgToSession_in_t__isset __isset;
+  _GateRouteMsgToSessionReq__isset __isset;
 
   void __set_session_id(const std::vector<int64_t> & val) {
     session_id = val;
@@ -282,7 +282,7 @@ class gate_routeMmsgToSession_in_t {
     body = val;
   }
 
-  bool operator == (const gate_routeMmsgToSession_in_t & rhs) const
+  bool operator == (const GateRouteMsgToSessionReq & rhs) const
   {
     if (!(session_id == rhs.session_id))
       return false;
@@ -292,40 +292,40 @@ class gate_routeMmsgToSession_in_t {
       return false;
     return true;
   }
-  bool operator != (const gate_routeMmsgToSession_in_t &rhs) const {
+  bool operator != (const GateRouteMsgToSessionReq &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const gate_routeMmsgToSession_in_t & ) const;
+  bool operator < (const GateRouteMsgToSessionReq & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-void swap(gate_routeMmsgToSession_in_t &a, gate_routeMmsgToSession_in_t &b);
+void swap(GateRouteMsgToSessionReq &a, GateRouteMsgToSessionReq &b);
 
-typedef struct _gate_broadcastMsgToSession_in_t__isset {
-  _gate_broadcastMsgToSession_in_t__isset() : cmd(true), body(false) {}
+typedef struct _GateBroadcastMsgToSessionReq__isset {
+  _GateBroadcastMsgToSessionReq__isset() : cmd(true), body(false) {}
   bool cmd;
   bool body;
-} _gate_broadcastMsgToSession_in_t__isset;
+} _GateBroadcastMsgToSessionReq__isset;
 
-class gate_broadcastMsgToSession_in_t {
+class GateBroadcastMsgToSessionReq {
  public:
 
   static const char* ascii_fingerprint; // = "15896F1A4438B1ECBB80CEA66AD0C4C5";
   static const uint8_t binary_fingerprint[16]; // = {0x15,0x89,0x6F,0x1A,0x44,0x38,0xB1,0xEC,0xBB,0x80,0xCE,0xA6,0x6A,0xD0,0xC4,0xC5};
 
-  gate_broadcastMsgToSession_in_t() : cmd(0), body() {
+  GateBroadcastMsgToSessionReq() : cmd(0), body() {
   }
 
-  virtual ~gate_broadcastMsgToSession_in_t() throw() {}
+  virtual ~GateBroadcastMsgToSessionReq() throw() {}
 
   int16_t cmd;
   std::string body;
 
-  _gate_broadcastMsgToSession_in_t__isset __isset;
+  _GateBroadcastMsgToSessionReq__isset __isset;
 
   void __set_cmd(const int16_t val) {
     cmd = val;
@@ -335,7 +335,7 @@ class gate_broadcastMsgToSession_in_t {
     body = val;
   }
 
-  bool operator == (const gate_broadcastMsgToSession_in_t & rhs) const
+  bool operator == (const GateBroadcastMsgToSessionReq & rhs) const
   {
     if (!(cmd == rhs.cmd))
       return false;
@@ -343,40 +343,40 @@ class gate_broadcastMsgToSession_in_t {
       return false;
     return true;
   }
-  bool operator != (const gate_broadcastMsgToSession_in_t &rhs) const {
+  bool operator != (const GateBroadcastMsgToSessionReq &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const gate_broadcastMsgToSession_in_t & ) const;
+  bool operator < (const GateBroadcastMsgToSessionReq & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-void swap(gate_broadcastMsgToSession_in_t &a, gate_broadcastMsgToSession_in_t &b);
+void swap(GateBroadcastMsgToSessionReq &a, GateBroadcastMsgToSessionReq &b);
 
-typedef struct _worker_call_msg_in_t__isset {
-  _worker_call_msg_in_t__isset() : cmd(true), body(false) {}
+typedef struct _WorkerCallMsgReq__isset {
+  _WorkerCallMsgReq__isset() : cmd(true), body(false) {}
   bool cmd;
   bool body;
-} _worker_call_msg_in_t__isset;
+} _WorkerCallMsgReq__isset;
 
-class worker_call_msg_in_t {
+class WorkerCallMsgReq {
  public:
 
   static const char* ascii_fingerprint; // = "15896F1A4438B1ECBB80CEA66AD0C4C5";
   static const uint8_t binary_fingerprint[16]; // = {0x15,0x89,0x6F,0x1A,0x44,0x38,0xB1,0xEC,0xBB,0x80,0xCE,0xA6,0x6A,0xD0,0xC4,0xC5};
 
-  worker_call_msg_in_t() : cmd(0), body() {
+  WorkerCallMsgReq() : cmd(0), body() {
   }
 
-  virtual ~worker_call_msg_in_t() throw() {}
+  virtual ~WorkerCallMsgReq() throw() {}
 
   int16_t cmd;
   std::string body;
 
-  _worker_call_msg_in_t__isset __isset;
+  _WorkerCallMsgReq__isset __isset;
 
   void __set_cmd(const int16_t val) {
     cmd = val;
@@ -386,7 +386,7 @@ class worker_call_msg_in_t {
     body = val;
   }
 
-  bool operator == (const worker_call_msg_in_t & rhs) const
+  bool operator == (const WorkerCallMsgReq & rhs) const
   {
     if (!(cmd == rhs.cmd))
       return false;
@@ -394,42 +394,42 @@ class worker_call_msg_in_t {
       return false;
     return true;
   }
-  bool operator != (const worker_call_msg_in_t &rhs) const {
+  bool operator != (const WorkerCallMsgReq &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const worker_call_msg_in_t & ) const;
+  bool operator < (const WorkerCallMsgReq & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-void swap(worker_call_msg_in_t &a, worker_call_msg_in_t &b);
+void swap(WorkerCallMsgReq &a, WorkerCallMsgReq &b);
 
-typedef struct _worker_call_msg_out_t__isset {
-  _worker_call_msg_out_t__isset() : err(false), msg_type(false), body(false) {}
+typedef struct _WorkerCallMsgRet__isset {
+  _WorkerCallMsgRet__isset() : err(false), msg_type(false), body(false) {}
   bool err;
   bool msg_type;
   bool body;
-} _worker_call_msg_out_t__isset;
+} _WorkerCallMsgRet__isset;
 
-class worker_call_msg_out_t {
+class WorkerCallMsgRet {
  public:
 
   static const char* ascii_fingerprint; // = "AB879940BD15B6B25691265F7384B271";
   static const uint8_t binary_fingerprint[16]; // = {0xAB,0x87,0x99,0x40,0xBD,0x15,0xB6,0xB2,0x56,0x91,0x26,0x5F,0x73,0x84,0xB2,0x71};
 
-  worker_call_msg_out_t() : err(), msg_type(), body() {
+  WorkerCallMsgRet() : err(), msg_type(), body() {
   }
 
-  virtual ~worker_call_msg_out_t() throw() {}
+  virtual ~WorkerCallMsgRet() throw() {}
 
   std::string err;
   std::string msg_type;
   std::string body;
 
-  _worker_call_msg_out_t__isset __isset;
+  _WorkerCallMsgRet__isset __isset;
 
   void __set_err(const std::string& val) {
     err = val;
@@ -443,7 +443,7 @@ class worker_call_msg_out_t {
     body = val;
   }
 
-  bool operator == (const worker_call_msg_out_t & rhs) const
+  bool operator == (const WorkerCallMsgRet & rhs) const
   {
     if (!(err == rhs.err))
       return false;
@@ -453,21 +453,21 @@ class worker_call_msg_out_t {
       return false;
     return true;
   }
-  bool operator != (const worker_call_msg_out_t &rhs) const {
+  bool operator != (const WorkerCallMsgRet &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const worker_call_msg_out_t & ) const;
+  bool operator < (const WorkerCallMsgRet & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-void swap(worker_call_msg_out_t &a, worker_call_msg_out_t &b);
+void swap(WorkerCallMsgRet &a, WorkerCallMsgRet &b);
 
-typedef struct _broker_route_msg_in_t__isset {
-  _broker_route_msg_in_t__isset() : dest_service_name(false), dest_msg_name(false), dest_node_id(false), from_node_id(false), callback_id(false), body(false), err_info(false) {}
+typedef struct _BrokerRouteMsgReq__isset {
+  _BrokerRouteMsgReq__isset() : dest_service_name(false), dest_msg_name(false), dest_node_id(false), from_node_id(false), callback_id(false), body(false), err_info(false) {}
   bool dest_service_name;
   bool dest_msg_name;
   bool dest_node_id;
@@ -475,18 +475,18 @@ typedef struct _broker_route_msg_in_t__isset {
   bool callback_id;
   bool body;
   bool err_info;
-} _broker_route_msg_in_t__isset;
+} _BrokerRouteMsgReq__isset;
 
-class broker_route_msg_in_t {
+class BrokerRouteMsgReq {
  public:
 
   static const char* ascii_fingerprint; // = "C07CD6450B7CF81ECAF7242A818797B7";
   static const uint8_t binary_fingerprint[16]; // = {0xC0,0x7C,0xD6,0x45,0x0B,0x7C,0xF8,0x1E,0xCA,0xF7,0x24,0x2A,0x81,0x87,0x97,0xB7};
 
-  broker_route_msg_in_t() : dest_service_name(), dest_msg_name(), dest_node_id(0), from_node_id(0), callback_id(0), body(), err_info() {
+  BrokerRouteMsgReq() : dest_service_name(), dest_msg_name(), dest_node_id(0), from_node_id(0), callback_id(0), body(), err_info() {
   }
 
-  virtual ~broker_route_msg_in_t() throw() {}
+  virtual ~BrokerRouteMsgReq() throw() {}
 
   std::string dest_service_name;
   std::string dest_msg_name;
@@ -496,7 +496,7 @@ class broker_route_msg_in_t {
   std::string body;
   std::string err_info;
 
-  _broker_route_msg_in_t__isset __isset;
+  _BrokerRouteMsgReq__isset __isset;
 
   void __set_dest_service_name(const std::string& val) {
     dest_service_name = val;
@@ -526,7 +526,7 @@ class broker_route_msg_in_t {
     err_info = val;
   }
 
-  bool operator == (const broker_route_msg_in_t & rhs) const
+  bool operator == (const BrokerRouteMsgReq & rhs) const
   {
     if (!(dest_service_name == rhs.dest_service_name))
       return false;
@@ -544,40 +544,40 @@ class broker_route_msg_in_t {
       return false;
     return true;
   }
-  bool operator != (const broker_route_msg_in_t &rhs) const {
+  bool operator != (const BrokerRouteMsgReq &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const broker_route_msg_in_t & ) const;
+  bool operator < (const BrokerRouteMsgReq & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-void swap(broker_route_msg_in_t &a, broker_route_msg_in_t &b);
+void swap(BrokerRouteMsgReq &a, BrokerRouteMsgReq &b);
 
-typedef struct _registerfd_to_broker_in_t__isset {
-  _registerfd_to_broker_in_t__isset() : node_type(false), service_name(false) {}
+typedef struct _RegisterToBrokerReq__isset {
+  _RegisterToBrokerReq__isset() : node_type(false), service_name(false) {}
   bool node_type;
   bool service_name;
-} _registerfd_to_broker_in_t__isset;
+} _RegisterToBrokerReq__isset;
 
-class registerfd_to_broker_in_t {
+class RegisterToBrokerReq {
  public:
 
   static const char* ascii_fingerprint; // = "3F5FC93B338687BC7235B1AB103F47B3";
   static const uint8_t binary_fingerprint[16]; // = {0x3F,0x5F,0xC9,0x3B,0x33,0x86,0x87,0xBC,0x72,0x35,0xB1,0xAB,0x10,0x3F,0x47,0xB3};
 
-  registerfd_to_broker_in_t() : node_type(0), service_name() {
+  RegisterToBrokerReq() : node_type(0), service_name() {
   }
 
-  virtual ~registerfd_to_broker_in_t() throw() {}
+  virtual ~RegisterToBrokerReq() throw() {}
 
   int32_t node_type;
   std::string service_name;
 
-  _registerfd_to_broker_in_t__isset __isset;
+  _RegisterToBrokerReq__isset __isset;
 
   void __set_node_type(const int32_t val) {
     node_type = val;
@@ -587,7 +587,7 @@ class registerfd_to_broker_in_t {
     service_name = val;
   }
 
-  bool operator == (const registerfd_to_broker_in_t & rhs) const
+  bool operator == (const RegisterToBrokerReq & rhs) const
   {
     if (!(node_type == rhs.node_type))
       return false;
@@ -595,45 +595,45 @@ class registerfd_to_broker_in_t {
       return false;
     return true;
   }
-  bool operator != (const registerfd_to_broker_in_t &rhs) const {
+  bool operator != (const RegisterToBrokerReq &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const registerfd_to_broker_in_t & ) const;
+  bool operator < (const RegisterToBrokerReq & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-void swap(registerfd_to_broker_in_t &a, registerfd_to_broker_in_t &b);
+void swap(RegisterToBrokerReq &a, RegisterToBrokerReq &b);
 
-typedef struct _registerfd_to_broker_out_t__isset {
-  _registerfd_to_broker_out_t__isset() : registerfd_flag(false), node_id(false), service2node_id(false) {}
-  bool registerfd_flag;
+typedef struct _RegisterToBrokerRet__isset {
+  _RegisterToBrokerRet__isset() : register_flag(false), node_id(false), service2node_id(false) {}
+  bool register_flag;
   bool node_id;
   bool service2node_id;
-} _registerfd_to_broker_out_t__isset;
+} _RegisterToBrokerRet__isset;
 
-class registerfd_to_broker_out_t {
+class RegisterToBrokerRet {
  public:
 
   static const char* ascii_fingerprint; // = "1F41639F8135007E546B5DA3F7363917";
   static const uint8_t binary_fingerprint[16]; // = {0x1F,0x41,0x63,0x9F,0x81,0x35,0x00,0x7E,0x54,0x6B,0x5D,0xA3,0xF7,0x36,0x39,0x17};
 
-  registerfd_to_broker_out_t() : registerfd_flag(0), node_id(0) {
+  RegisterToBrokerRet() : register_flag(0), node_id(0) {
   }
 
-  virtual ~registerfd_to_broker_out_t() throw() {}
+  virtual ~RegisterToBrokerRet() throw() {}
 
-  int16_t registerfd_flag;
+  int16_t register_flag;
   int64_t node_id;
   std::map<std::string, int64_t>  service2node_id;
 
-  _registerfd_to_broker_out_t__isset __isset;
+  _RegisterToBrokerRet__isset __isset;
 
-  void __set_registerfd_flag(const int16_t val) {
-    registerfd_flag = val;
+  void __set_register_flag(const int16_t val) {
+    register_flag = val;
   }
 
   void __set_node_id(const int64_t val) {
@@ -644,9 +644,9 @@ class registerfd_to_broker_out_t {
     service2node_id = val;
   }
 
-  bool operator == (const registerfd_to_broker_out_t & rhs) const
+  bool operator == (const RegisterToBrokerRet & rhs) const
   {
-    if (!(registerfd_flag == rhs.registerfd_flag))
+    if (!(register_flag == rhs.register_flag))
       return false;
     if (!(node_id == rhs.node_id))
       return false;
@@ -654,69 +654,69 @@ class registerfd_to_broker_out_t {
       return false;
     return true;
   }
-  bool operator != (const registerfd_to_broker_out_t &rhs) const {
+  bool operator != (const RegisterToBrokerRet &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const registerfd_to_broker_out_t & ) const;
+  bool operator < (const RegisterToBrokerRet & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-void swap(registerfd_to_broker_out_t &a, registerfd_to_broker_out_t &b);
+void swap(RegisterToBrokerRet &a, RegisterToBrokerRet &b);
 
 
-class empty_ret_msg {
+class EmptyMsgRet {
  public:
 
   static const char* ascii_fingerprint; // = "99914B932BD37A50B983C5E7C90AE93B";
   static const uint8_t binary_fingerprint[16]; // = {0x99,0x91,0x4B,0x93,0x2B,0xD3,0x7A,0x50,0xB9,0x83,0xC5,0xE7,0xC9,0x0A,0xE9,0x3B};
 
-  empty_ret_msg() {
+  EmptyMsgRet() {
   }
 
-  virtual ~empty_ret_msg() throw() {}
+  virtual ~EmptyMsgRet() throw() {}
 
 
-  bool operator == (const empty_ret_msg & /* rhs */) const
+  bool operator == (const EmptyMsgRet & /* rhs */) const
   {
     return true;
   }
-  bool operator != (const empty_ret_msg &rhs) const {
+  bool operator != (const EmptyMsgRet &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const empty_ret_msg & ) const;
+  bool operator < (const EmptyMsgRet & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-void swap(empty_ret_msg &a, empty_ret_msg &b);
+void swap(EmptyMsgRet &a, EmptyMsgRet &b);
 
-typedef struct _session_enter_worker_in_t__isset {
-  _session_enter_worker_in_t__isset() : session_id(false), session_ip(false), from_gate(false), from_worker(false), to_worker(false), extra_data(false) {}
+typedef struct _SessionEnterWorkerReq__isset {
+  _SessionEnterWorkerReq__isset() : session_id(false), session_ip(false), from_gate(false), from_worker(false), to_worker(false), extra_data(false) {}
   bool session_id;
   bool session_ip;
   bool from_gate;
   bool from_worker;
   bool to_worker;
   bool extra_data;
-} _session_enter_worker_in_t__isset;
+} _SessionEnterWorkerReq__isset;
 
-class session_enter_worker_in_t {
+class SessionEnterWorkerReq {
  public:
 
   static const char* ascii_fingerprint; // = "1F10F993631B3ABD721D79EE58C2056E";
   static const uint8_t binary_fingerprint[16]; // = {0x1F,0x10,0xF9,0x93,0x63,0x1B,0x3A,0xBD,0x72,0x1D,0x79,0xEE,0x58,0xC2,0x05,0x6E};
 
-  session_enter_worker_in_t() : session_id(0), session_ip(), from_gate(), from_worker(), to_worker(), extra_data() {
+  SessionEnterWorkerReq() : session_id(0), session_ip(), from_gate(), from_worker(), to_worker(), extra_data() {
   }
 
-  virtual ~session_enter_worker_in_t() throw() {}
+  virtual ~SessionEnterWorkerReq() throw() {}
 
   int64_t session_id;
   std::string session_ip;
@@ -725,7 +725,7 @@ class session_enter_worker_in_t {
   std::string to_worker;
   std::string extra_data;
 
-  _session_enter_worker_in_t__isset __isset;
+  _SessionEnterWorkerReq__isset __isset;
 
   void __set_session_id(const int64_t val) {
     session_id = val;
@@ -751,7 +751,7 @@ class session_enter_worker_in_t {
     extra_data = val;
   }
 
-  bool operator == (const session_enter_worker_in_t & rhs) const
+  bool operator == (const SessionEnterWorkerReq & rhs) const
   {
     if (!(session_id == rhs.session_id))
       return false;
@@ -767,18 +767,18 @@ class session_enter_worker_in_t {
       return false;
     return true;
   }
-  bool operator != (const session_enter_worker_in_t &rhs) const {
+  bool operator != (const SessionEnterWorkerReq &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const session_enter_worker_in_t & ) const;
+  bool operator < (const SessionEnterWorkerReq & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
-void swap(session_enter_worker_in_t &a, session_enter_worker_in_t &b);
+void swap(SessionEnterWorkerReq &a, SessionEnterWorkerReq &b);
 
 } // namespace
 

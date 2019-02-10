@@ -20,7 +20,6 @@
 
 #include "rpc/msg_def/ffrpc_msg_types.h"
 #include "rpc/msg_def/ffrpc_msg_constants.h"
-using namespace ffrpc_msg;
 
 namespace apache
 {
@@ -788,90 +787,6 @@ enum ffrpc_cmd_def_e
     SYNC_CLIENT_REQ, //! 同步客户端的请求，如python,php
 };
 
-
-//! gate 验证client的sessionid的消息
-// struct session_verify_t
-// {
-    // typedef session_verify_in_t  in_t;
-    // typedef session_verify_out_t out_t;
-// };
-
-//!session 第一次进入
-// struct session_first_entere_t
-// {
-    // typedef session_first_entere_in_t  in_t;
-    // typedef session_first_entere_out_t out_t;
-// };
-//! gate session 进入场景服务器消息
-struct SessionEnterWorker
-{
-    typedef session_enter_worker_in_t  in_t;
-    typedef empty_ret_msg out_t;
-
-};
-//! gate session 下线
-struct SessionOffline
-{
-    typedef session_offline_in_t  in_t;
-    typedef empty_ret_msg out_t;
-
-};
-
-//! gate 转发client的消息
-struct RouteLogicMsg_t
-{
-    typedef routeLogicMsg_in_t  in_t;
-    typedef empty_ret_msg out_t;
-};
-//! 改变gate 中client 对应的logic节点
-struct GateChangeLogicNode
-{
-    typedef gate_change_logic_node_in_t  in_t;
-    typedef empty_ret_msg out_t;
-
-};
-
-//! 关闭gate中的某个session
-struct GateCloseSession
-{
-    typedef gate_closeSession_in_t  in_t;
-    typedef empty_ret_msg out_t;
-
-};
-//! 转发消息给client
-struct GateRouteMsgToSession
-{
-    typedef gate_routeMmsgToSession_in_t  in_t;
-    typedef empty_ret_msg out_t;
-
-};
-//! 转发消息给所有client
-struct GateBroadcastMsgToSession
-{
-    typedef gate_broadcastMsgToSession_in_t  in_t;
-    typedef empty_ret_msg out_t;
-};
-//! login 日志
-// struct user_login_event_t
-// {
-    // typedef user_login_event_in_t  in_t;
-    // typedef empty_ret_msg out_t;
-// };
-//! login 日志
-// struct user_logout_event_t
-// {
-    // typedef user_logout_event_in_t  in_t;
-    // typedef empty_ret_msg out_t;
-// };
-//! scene 之间的互调用
-
-struct WorkerCallMsgt
-{
-    typedef worker_call_msg_in_t  in_t;
-    typedef worker_call_msg_out_t out_t;
-};
-
-
 //! 用于broker 和 rpc 在内存间投递消息
 class FFRpc;
 class FFBroker;
@@ -964,21 +879,6 @@ struct FFRpcMemoryRoute
     SafeStl<node_info_map_t> m_node_info;
     Mutex                     m_mutex;
 };
-
-//!新版本的实现*********************************************************************************************
-
-//! 处理其他broker或者client注册到此server
-struct RegisterToBroker
-{
-    typedef registerfd_to_broker_in_t  in_t;
-    typedef registerfd_to_broker_out_t out_t;
-};
-//! 处理转发消息的操作
-struct BrokerRouteMsg
-{
-    typedef broker_route_msg_in_t in_t;
-};
-
 
 }
 

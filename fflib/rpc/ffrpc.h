@@ -82,7 +82,7 @@ public:
     //!获取broker socket
     SocketObjPtr getBrokerSocket();
     //! 新版 调用消息对应的回调函数
-    int handleRpcCallMsg(BrokerRouteMsg::in_t& msg_, SocketObjPtr sock_);
+    int handleRpcCallMsg(BrokerRouteMsgReq& msg_, SocketObjPtr sock_);
     //! 注册接口【支持动态的增加接口】
     void reg(const std::string& name_, FFSlot::FFCallBack* func_);
 
@@ -96,7 +96,7 @@ private:
 
     //! 新版实现
     //! 处理注册,
-    int handleBrokerRegResponse(RegisterToBroker::out_t& msg_, SocketObjPtr sock_);
+    int handleBrokerRegResponse(RegisterToBrokerRet& msg_, SocketObjPtr sock_);
 
 public:
     bool                                            m_runing;
@@ -114,7 +114,7 @@ private:
     SocketObjPtr                                    m_master_broker_sock;
 
     //!ff new impl
-    RegisterToBroker::out_t                         m_broker_data;
+    RegisterToBrokerRet                             m_broker_data;
 };
 
 //! 注册接口

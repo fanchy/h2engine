@@ -93,7 +93,7 @@ void FFGate::cleanup_session(client_info_t& client_info, SocketObjPtr sock_, boo
     {
         if (closesend)
         {
-            SessionOffline::in_t msg;
+            SessionOfflineReq msg;
             msg.session_id  = session_data->id();
             m_ffrpc->call(client_info.alloc_worker, msg);
         }
@@ -141,7 +141,7 @@ int FFGate::handleMsg(const Message& msg_, SocketObjPtr sock_)
 
 
 //! enter scene 回调函数
-int FFGate::enterWorkerCallback(RPCReq<SessionEnterWorker::out_t>& req_, const userid_t& session_id_)
+int FFGate::enterWorkerCallback(RPCReq<EmptyMsgRet>& req_, const userid_t& session_id_)
 {
     LOGTRACE((FFGATE, "FFGate::enterWorkerCallback session_id[%ld]", session_id_));
     LOGTRACE((FFGATE, "FFGate::enterWorkerCallback end ok"));
@@ -156,7 +156,7 @@ int FFGate::routeLogicMsg(const Message& msg_, SocketObjPtr sock_, bool first)
 
     client_info_t& client_info   = m_client_set[session_data->id()];
 
-    RouteLogicMsg_t::in_t msg;
+    RouteLogicMsgReq msg;
     msg.session_id = session_data->id();
     msg.cmd        = msg_.getCmd();
     msg.body       = msg_.getBody();
@@ -172,7 +172,7 @@ int FFGate::routeLogicMsg(const Message& msg_, SocketObjPtr sock_, bool first)
 }
 
 //! 改变处理client 逻辑的对应的节点
-int FFGate::changeSessionLogic(RPCReq<GateChangeLogicNode::in_t, GateChangeLogicNode::out_t>& req_)
+int FFGate::changeSessionLogic(RPCReq<GateChangeLogicNodeReq, EmptyMsgRet>& req_)
 {
     LOGTRACE((FFGATE, "FFGate::changeSessionLogic session_id[%ld]", req_.msg.session_id));
     map<userid_t/*sessionid*/, client_info_t>::iterator it = m_client_set.find(req_.msg.session_id);
@@ -181,10 +181,10 @@ int FFGate::changeSessionLogic(RPCReq<GateChangeLogicNode::in_t, GateChangeLogic
         return 0;
     }
 
-    GateChangeLogicNode::out_t out;
+    EmptyMsgRet out;
     req_.response(out);
 
-    SessionEnterWorker::in_t enter_msg;
+    SessionEnterWorkerReq enter_msg;
     it->second.group_name = req_.msg.dest_group_name;
     //enter_msg.from_group = req_.msg.cur_group_name;
     enter_msg.from_worker = it->second.alloc_worker;
@@ -206,11 +206,11 @@ int FFGate::changeSessionLogic(RPCReq<GateChangeLogicNode::in_t, GateChangeLogic
 }
 
 //! 关闭某个session socket
-int FFGate::closeSession(RPCReq<GateCloseSession::in_t, GateCloseSession::out_t>& req_)
+int FFGate::closeSession(RPCReq<GateCloseSessionReq, EmptyMsgRet>& req_)
 {
     LOGTRACE((FFGATE, "FFGate::closeSession session_id[%ld]", req_.msg.session_id));
 
-    GateCloseSession::out_t out;
+    EmptyMsgRet out;
     req_.response(out);
     map<userid_t/*sessionid*/, client_info_t>::iterator it = m_client_set.find(req_.msg.session_id);
     if (it == m_client_set.end())
@@ -225,7 +225,7 @@ int FFGate::closeSession(RPCReq<GateCloseSession::in_t, GateCloseSession::out_t>
 }
 
 //! 转发消息给client
-int FFGate::routeMsgToSession(RPCReq<GateRouteMsgToSession::in_t, GateRouteMsgToSession::out_t>& req_)
+int FFGate::routeMsgToSession(RPCReq<GateRouteMsgToSessionReq, EmptyMsgRet>& req_)
 {
     LOGTRACE((FFGATE, "FFGate::routeMsgToSession begin num[%d]", req_.msg.session_id.size()));
 
@@ -242,14 +242,14 @@ int FFGate::routeMsgToSession(RPCReq<GateRouteMsgToSession::in_t, GateRouteMsgTo
 
         MsgSender::send(it->second.sock, req_.msg.cmd, req_.msg.body);
     }
-    GateRouteMsgToSession::out_t out;
+    EmptyMsgRet out;
     req_.response(out);
     LOGTRACE((FFGATE, "FFGate::routeMsgToSession end ok"));
     return 0;
 }
 
 //! 广播消息给所有的client
-int FFGate::broadcastMsgToSession(RPCReq<GateBroadcastMsgToSession::in_t, GateBroadcastMsgToSession::out_t>& req_)
+int FFGate::broadcastMsgToSession(RPCReq<GateBroadcastMsgToSessionReq, EmptyMsgRet>& req_)
 {
     LOGTRACE((FFGATE, "FFGate::broadcastMsgToSession begin"));
 
@@ -259,7 +259,7 @@ int FFGate::broadcastMsgToSession(RPCReq<GateBroadcastMsgToSession::in_t, GateBr
         MsgSender::send(it->second.sock, req_.msg.cmd, req_.msg.body);
     }
 
-    GateBroadcastMsgToSession::out_t out;
+    EmptyMsgRet out;
     req_.response(out);
     LOGTRACE((FFGATE, "FFGate::broadcastMsgToSession end ok"));
     return 0;

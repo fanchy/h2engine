@@ -368,7 +368,7 @@ static void py_workerRPC(int workerindex, uint16_t cmd, const string& argdata, P
                 {
                     return;
                 }
-                WorkerCallMsgt::out_t retmsg;
+                WorkerCallMsgRet retmsg;
                 try{
                     FFThrift::DecodeFromString(retmsg, msg_data->body);
                 }

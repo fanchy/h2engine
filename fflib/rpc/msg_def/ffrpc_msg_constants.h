@@ -9,7 +9,7 @@
 
 #include "ffrpc_msg_types.h"
 
-namespace ffrpc_msg {
+namespace ff {
 
 class ffrpc_msgConstants {
  public:

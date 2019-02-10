@@ -112,7 +112,7 @@ SocketObjPtr FFRpc::connectToBroker(const string& host_, uint32_t node_id_)
     psession->node_id = node_id_;
 
     //!新版发送注册消息
-    RegisterToBroker::in_t reg_msg;
+    RegisterToBrokerReq reg_msg;
     reg_msg.node_type = RPC_NODE;
     reg_msg.service_name = m_service_name;
     MsgSender::send(sock, REGISTER_TO_BROKER_REQ, FFThrift::EncodeAsString(reg_msg));
@@ -202,7 +202,7 @@ int FFRpc::handleMsg(const Message& msg_, SocketObjPtr sock_)
 
 
 //! 新版 调用消息对应的回调函数
-int FFRpc::handleRpcCallMsg(BrokerRouteMsg::in_t& msg_, SocketObjPtr sock_)
+int FFRpc::handleRpcCallMsg(BrokerRouteMsgReq& msg_, SocketObjPtr sock_)
 {
     LOGTRACE((FFRPC, "FFRpc::handleRpcCallMsg msg begin service_name=%s dest_msg_name=%s callback_id=%u, body_size=%d",
                      msg_.dest_service_name, msg_.dest_msg_name, msg_.callback_id, msg_.body.size()));
@@ -329,7 +329,7 @@ void FFRpc::sendToDestNode(const string& service_name_, const string& msg_name_,
                                 uint64_t dest_node_id_, int64_t callback_id_, const string& body_, string error_info)
 {
     LOGTRACE((FFRPC, "FFRpc::send_to_broker_by_nodeid begin dest_node_id[%u]", dest_node_id_));
-    BrokerRouteMsg::in_t dest_msg;
+    BrokerRouteMsgReq dest_msg;
     dest_msg.dest_service_name = service_name_;
     dest_msg.dest_msg_name = msg_name_;
     dest_msg.dest_node_id = dest_node_id_;
@@ -375,17 +375,17 @@ void FFRpc::response(const string& msg_name_,  uint64_t dest_node_id_, int64_t c
 }
 
 //! 处理注册,
-int FFRpc::handleBrokerRegResponse(RegisterToBroker::out_t& msg_, SocketObjPtr sock_)
+int FFRpc::handleBrokerRegResponse(RegisterToBrokerRet& msg_, SocketObjPtr sock_)
 {
     LOGTRACE((FFRPC, "FFBroker::handleBrokerRegResponse begin node_id=%d", msg_.node_id));
-    if (msg_.registerfd_flag < 0)
+    if (msg_.register_flag < 0)
     {
         LOGERROR((FFRPC, "FFBroker::handleBrokerRegResponse registerfd failed, service exist"));
         m_master_broker_sock->close();
         m_master_broker_sock = NULL;
         return -1;
     }
-    if (msg_.registerfd_flag == 1)
+    if (msg_.register_flag == 1)
     {
         m_node_id = msg_.node_id;//! -1表示注册失败，0表示同步消息，1表示注册成功
         Singleton<FFRpcMemoryRoute>::instance().addNode(m_node_id, this);

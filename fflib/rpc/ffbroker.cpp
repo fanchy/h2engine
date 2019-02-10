@@ -127,7 +127,7 @@ int FFBroker::handleBroken(SocketObjPtr sock_)
     }
 
     //!广播给所有的子节点
-    RegisterToBroker::out_t ret_msg = m_all_registerfded_info.broker_data;
+    RegisterToBrokerRet ret_msg = m_all_registerfded_info.broker_data;
     syncNodeInfo(ret_msg);
     LOGTRACE((BROKER, "FFBroker::handleBroken_impl end ok"));
     return 0;
@@ -165,7 +165,7 @@ int FFBroker::handleMsg(const Message& msg_, SocketObjPtr sock_)
 
 
 //! 处理其他broker或者client注册到此server
-int FFBroker::handleRegisterToBroker(RegisterToBroker::in_t& msg_, SocketObjPtr sock_)
+int FFBroker::handleRegisterToBroker(RegisterToBrokerReq& msg_, SocketObjPtr sock_)
 {
     LOGINFO((BROKER, "FFBroker::handleRegisterToBroker begin service_name=%s", msg_.service_name));
 
@@ -176,8 +176,8 @@ int FFBroker::handleRegisterToBroker(RegisterToBroker::in_t& msg_, SocketObjPtr 
         return 0;
     }
 
-    RegisterToBroker::out_t ret_msg;
-    ret_msg.registerfd_flag = -1;//! -1表示注册失败，0表示同步消息，1表示注册成功,
+    RegisterToBrokerRet ret_msg;
+    ret_msg.register_flag = -1;//! -1表示注册失败，0表示同步消息，1表示注册成功,
 
     if (RPC_NODE == msg_.node_type)
     {
@@ -218,7 +218,7 @@ int FFBroker::handleRegisterToBroker(RegisterToBroker::in_t& msg_, SocketObjPtr 
     return 0;
 }
 //! 同步给所有的节点，当前的各个节点的信息
-int FFBroker::syncNodeInfo(RegisterToBroker::out_t& ret_msg, SocketObjPtr sock_)
+int FFBroker::syncNodeInfo(RegisterToBrokerRet& ret_msg, SocketObjPtr sock_)
 {
     //!广播给所有的子节点
     map<uint64_t/* node id*/, SocketObjPtr>::iterator it = m_all_registerfded_info.node_sockets.begin();
@@ -226,11 +226,11 @@ int FFBroker::syncNodeInfo(RegisterToBroker::out_t& ret_msg, SocketObjPtr sock_)
     {
         if (sock_ == it->second)
         {
-            ret_msg.registerfd_flag  = 1;
+            ret_msg.register_flag  = 1;
         }
         else
         {
-            ret_msg.registerfd_flag = 0;
+            ret_msg.register_flag = 0;
         }
         MsgSender::send(it->second, REGISTER_TO_BROKER_RET, FFThrift::EncodeAsString(ret_msg));
     }
@@ -238,7 +238,7 @@ int FFBroker::syncNodeInfo(RegisterToBroker::out_t& ret_msg, SocketObjPtr sock_)
 }
 
 //! 处理转发消息的操作
-int FFBroker::handleBrokerRouteMsg(BrokerRouteMsg::in_t& msg_, SocketObjPtr sock_)
+int FFBroker::handleBrokerRouteMsg(BrokerRouteMsgReq& msg_, SocketObjPtr sock_)
 {
     LOGTRACE((BROKER, "FFBroker::handleBrokerRouteMsg begin"));
     SessionData* psession = sock_->getData<SessionData>();
@@ -253,7 +253,7 @@ int FFBroker::handleBrokerRouteMsg(BrokerRouteMsg::in_t& msg_, SocketObjPtr sock
 }
 
 //! 处理同步客户端的调用请求
-int FFBroker::processSyncClientReq(BrokerRouteMsg::in_t& msg_, SocketObjPtr sock_)
+int FFBroker::processSyncClientReq(BrokerRouteMsgReq& msg_, SocketObjPtr sock_)
 {
     LOGTRACE((BROKER, "FFBroker::processSyncClientReq begin"));
     SessionData* psession = sock_->getData<SessionData>();
@@ -284,7 +284,7 @@ int FFBroker::processSyncClientReq(BrokerRouteMsg::in_t& msg_, SocketObjPtr sock
     return 0;
 }
 
-int FFBroker::sendToRPcNode(BrokerRouteMsg::in_t& msg_)
+int FFBroker::sendToRPcNode(BrokerRouteMsgReq& msg_)
 {
     FFRpc* pffrpc = Singleton<FFRpcMemoryRoute>::instance().getRpc(msg_.dest_node_id);
     if (pffrpc)
