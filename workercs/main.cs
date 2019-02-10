@@ -11,18 +11,10 @@ namespace ff
         }
         public static void Main(string[] args)
         {
-            FFAcceptor ffaceptor = FFNet.listen("*", 43210, new SocketMsgHandler(onRecv), new SocketBrokenHandler(onBroken));
-
-            WriteLine("scoket test", ConsoleColor.Red);
-
-            FFSocket ffsocket = FFNet.connect("127.0.0.1", 43210, new SocketMsgHandler(onRecv2), new SocketBrokenHandler(onBroken2));
-
-            FFNet.sendMsg(ffsocket, 10, "hello!");
-            FFNet.sendMsg(ffsocket, 11, "hello2!");
-            Console.ReadKey();
-            FFNet.sendMsg(ffsocket, 11, "hello3!");
-            Console.ReadKey();
-            ffsocket.close();
+            FFRpc ffrpc = new FFRpc("worker#0");
+            if (ffrpc.open("147.101.179.174:43210") == false){
+                Console.WriteLine("ffrpc open failed!");
+            }
             Console.ReadKey();
         }
         public static void onRecv(FFSocket ffsocket, Int16 cmd, string strData){
