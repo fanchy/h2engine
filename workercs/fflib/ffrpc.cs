@@ -25,7 +25,11 @@ namespace ff
             if (null == m_socketBroker){
                 return false;
             }
-            FFNet.sendMsg(m_socketBroker, 10, "");
+            RegisterToBrokerReq reqMsg = new RegisterToBrokerReq();
+            reqMsg.Node_type = 2;
+            reqMsg.Service_name = m_strServiceName;
+
+            FFNet.sendMsg(m_socketBroker, 10, reqMsg);
             return true;
         }
         bool close(){

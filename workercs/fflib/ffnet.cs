@@ -78,9 +78,48 @@ namespace ff
             strRet += System.Text.Encoding.UTF8.GetString(resArray, 0, resArray.Length);
             //Console.WriteLine("sendMsg {0}, {1}", strRet.Length, strData.Length);
             strRet += strData;
+            ffsocket.asyncSend(strRet);
+        }
+
+        public static void sendMsg<T>(FFSocket ffsocket, Int16 cmd, T reqMsg) where T : Thrift.Protocol.TBase{
+            string strData = encodeMsg<T>(reqMsg);
+            int len = strData.Length;
+            len = System.Net.IPAddress.HostToNetworkOrder(len);
+            cmd = System.Net.IPAddress.HostToNetworkOrder(cmd);
+            byte[] lenArray = BitConverter.GetBytes(len);
+            byte[] cmdArray = BitConverter.GetBytes(cmd);
+            byte[] resArray = new byte[2]{0, 0};
+            string strRet = System.Text.Encoding.UTF8.GetString(lenArray, 0, lenArray.Length);
+            //Console.WriteLine("sendMsg {0}, {1}", strRet.Length, strData.Length);
+            strRet += System.Text.Encoding.UTF8.GetString(cmdArray, 0, cmdArray.Length);
+            //Console.WriteLine("sendMsg {0}, {1}", strRet.Length, strData.Length);
+            strRet += System.Text.Encoding.UTF8.GetString(resArray, 0, resArray.Length);
+            //Console.WriteLine("sendMsg {0}, {1}", strRet.Length, strData.Length);
+            strRet += strData;
             Console.WriteLine("sendMsg {0}, {1}", strRet.Length, strData.Length);
 
             ffsocket.asyncSend(strRet);
+        }
+        public static string encodeMsg<T>(T reqMsg) where T : Thrift.Protocol.TBase{
+            var tmem = new Thrift.Transport.TMemoryBuffer();
+            var proto = new Thrift.Protocol.TBinaryProtocol(tmem);
+            var msgdef = new Thrift.Protocol.TMessage("ffthrift", Thrift.Protocol.TMessageType.Call, 0);
+            proto.WriteMessageBegin(msgdef);
+            reqMsg.Write(proto);
+            proto.WriteMessageEnd();
+            byte[] byteData = tmem.GetBuffer();
+            string strRet = System.Text.Encoding.UTF8.GetString(byteData, 0, byteData.Length);
+            return strRet;
+        }
+        public static bool decodeMsg<T>(T reqMsg, string strData) where T : Thrift.Protocol.TBase{
+            byte[] data = System.Text.Encoding.UTF8.GetBytes(strData);
+            var tmem = new Thrift.Transport.TMemoryBuffer(data);
+            var proto = new Thrift.Protocol.TBinaryProtocol(tmem);
+            //var msgdef = new Thrift.Protocol.TMessage("ffthrift", Thrift.Protocol.TMessageType.Call, 0);
+            proto.ReadMessageBegin();
+            reqMsg.Read(proto);
+            proto.ReadMessageEnd();
+            return true;
         }
     }
 }
