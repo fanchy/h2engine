@@ -65,7 +65,6 @@ public:
                 tg = new TaskQueuePool(thread_num_);
                 thread.create_thread(Task(&runEpoll, this), 1);
                 thread.create_thread(TaskQueuePool::gen_task(tg), thread_num_);
-                LOGTRACE(("FFNET", "net factory start ok  thread_num_=%d", thread_num_));
             }
         }
         void stop()

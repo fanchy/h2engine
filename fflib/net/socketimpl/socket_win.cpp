@@ -275,4 +275,11 @@ void SocketWin::asyncRecv()
     m_epoll->registerfd(this);
 }
 
+SharedPtr<SocketI> SocketWin::toSharedPtr(){
+    return m_refSocket;
+}
+
+void SocketWin::refSelf(SharedPtr<SocketI> p){
+    m_refSocket = p;
+}
 #endif

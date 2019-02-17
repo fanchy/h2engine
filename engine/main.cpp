@@ -43,7 +43,6 @@ static bool flagok = false;
 
 int main(int argc, char* argv[])
 {
-
 	ArgHelper arg_helper(argc, argv);
     if (arg_helper.isEnableOption("-f"))
     {
@@ -56,9 +55,6 @@ int main(int argc, char* argv[])
         DaemonTool::daemon();
         #endif
     }
-    #ifdef _WIN32
-    Singleton<NetFactory::NetData>::instance().start();
-    #endif
 
     //! 美丽的日志组件，shell输出是彩色滴！！
     if (arg_helper.isEnableOption("-log_path"))
@@ -69,6 +65,10 @@ int main(int argc, char* argv[])
     {
         LOG.start("-log_path ./log -log_filename log -log_class DB_MGR,FFNET,BROKER,FFRPC,FFGATE,FFWORKER,FFWORKER_PYTHON,FFWORKER_LUA,FFWORKER_JS,FFNET,HHTP_MGR -log_print_screen true -log_print_file true -log_level 4");
     }
+    #ifdef _WIN32
+    Singleton<NetFactory::NetData>::instance().start();
+    #endif
+
     std::string perf_path = "./perf";
     long perf_timeout = 10*60;//! second
     if (arg_helper.isEnableOption("-perf_path"))
@@ -149,7 +149,7 @@ err_proc:
 #ifdef _WIN32
     if  (!flagok)
     {
-    	sleep(10);
+    	Sleep(300);
 	}
 #endif
 

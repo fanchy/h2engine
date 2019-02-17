@@ -13,7 +13,19 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
+					<Add option="-D_WIN32" />
+					<Add directory="fflib" />
+					<Add directory="lib3party" />
+					<Add directory="windependency/include" />
+					<Add directory="src" />
 				</Compiler>
+				<Linker>
+					<Add library="WS2_32" />
+					<Add library="windependency/lib/libmysql.a" />
+					<Add library="windependency/lib/libcrypto.a" />
+					<Add library="windependency/lib/libssl.a" />
+					<Add directory="windependency/lib" />
+				</Linker>
 			</Target>
 		</Build>
 		<Compiler>
@@ -411,22 +423,6 @@
 		<Unit filename="src/skill/skill.h" />
 		<Unit filename="src/task/task.cpp" />
 		<Unit filename="src/task/task.h" />
-		<Unit filename="workercpp/ffworker_cpp.cpp" />
-		<Unit filename="workercpp/ffworker_cpp.h" />
-		<Unit filename="workercpp/main.cpp" />
-		<Unit filename="workerjs/ffworker_js.cpp" />
-		<Unit filename="workerjs/ffworker_js.h" />
-		<Unit filename="workerjs/main.cpp" />
-		<Unit filename="workerlua/ffworker_lua.cpp" />
-		<Unit filename="workerlua/ffworker_lua.h" />
-		<Unit filename="workerlua/luaops.h" />
-		<Unit filename="workerlua/main.cpp" />
-		<Unit filename="workerphp/ffworker_php.cpp" />
-		<Unit filename="workerphp/ffworker_php.h" />
-		<Unit filename="workerphp/main.cpp" />
-		<Unit filename="workerpy/ffworker_python.cpp" />
-		<Unit filename="workerpy/ffworker_python.h" />
-		<Unit filename="workerpy/main.cpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />
