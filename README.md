@@ -26,7 +26,7 @@ H2服务器引擎架构是轻量级的，与其说是引擎，个人觉得称之
 ## 构建
 H2Engine目前只有Linux版本，使用cmake，确保系统安装了cmake
 ```shell
-$ cmake  
+$ cmake  CMakeLists.txt
 ```
 H2Engine进程分另个，h2engine 和h2worker ,其中h2worker根据使用语言的不同，分h2workerpy、h2workerlua、h2workerjs、h2workerphp,根据你使用的语言构建你需要的h2worker即可。
 ```shell
