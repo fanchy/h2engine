@@ -89,13 +89,13 @@ static bool py_regTimer(int mstimeout_, PyObject* pFuncSrc)
             Py_XDECREF(pFunc);
         }
     };
-    
+
     if (pFuncSrc != NULL)
     {
         Py_INCREF(pFuncSrc);
     }
-        
-    Singleton<FFWorkerPython>::instance().regTimer(mstimeout_, 
+
+    Singleton<FFWorkerPython>::instance().regTimer(mstimeout_,
                 TaskBinder::gen(&lambda_cb::callback, pFuncSrc));
     return true;
 }
@@ -121,7 +121,7 @@ struct PyQueryCallBack
         {
             return;
         }
-        
+
         PyObject* pyRet = PyDict_New();
         {
             string key = "datas";
@@ -199,7 +199,7 @@ struct AsyncQueryNameCb
         {
             return;
         }
-        
+
         PyObject* pyRet = PyDict_New();
         {
             string key = "datas";
@@ -263,7 +263,7 @@ static PyObject* py_query(const string& sql_)
     vector<string> col;
     int affectedRows = 0;
     DB_MGR.query(sql_, &retdata, &errinfo, &affectedRows, &col);
-    
+
     {
         string key = "datas";
         PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
@@ -307,7 +307,7 @@ static PyObject* py_QueryByName(const string& name_, const string& sql_)
     vector<string> col;
     int affectedRows = 0;
     DB_MGR.queryByName(name_, sql_, &retdata, &errinfo, &affectedRows, &col);
-    
+
     {
         string key = "datas";
         PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
@@ -342,9 +342,9 @@ static PyObject* py_QueryByName(const string& name_, const string& sql_)
     }
     return pyRet;
 }
-//!调用其他worker的接口 
+//!调用其他worker的接口
 static void py_workerRPC(int workerindex, uint16_t cmd, const string& argdata, PyObject* pFuncArg){
-    
+
     struct lambda_cb: public FFSlot::FFCallBack
     {
         lambda_cb(PyObject* pFuncArg):pFunc(pFuncArg){}
@@ -429,12 +429,12 @@ static bool py_asyncHttp(const string& url_, int timeoutsec, PyObject* pFuncSrc)
         virtual FFSlot::FFCallBack* fork() { return new lambda_cb(pFunc); }
         PyObject* pFunc;
     };
-    
+
     if (pFuncSrc != NULL)
     {
         Py_INCREF(pFuncSrc);
     }
-    
+
     Singleton<FFWorkerPython>::instance().asyncHttp(url_, timeoutsec, new lambda_cb(pFuncSrc));
     return true;
 }
@@ -579,14 +579,14 @@ static PyObject* callFunc(PyObject* pvalue){
     Py_ssize_t  nLen    = 0;
     PyString_AsStringAndSize(pyName, &pDest, &nLen);
     string funcName(pDest, nLen);
-    
+
     for (int i = 1; i < n; ++i)
     {
         PyObject *pyElem = PyTuple_GetItem(pvalue, i);
         ScriptArgObjPtr elem = toScriptArg(pyElem);
         scriptArgs.args.push_back(elem);
     }
-    
+
     //LOGTRACE((FFWORKER_PYTHON, "FFWorkerPython::callFunc begin argsize=%d", scriptArgs.args.size()));
     if (false == SCRIPT_UTIL.callFunc(funcName, scriptArgs)){
         LOGERROR((FFWORKER_PYTHON, "FFWorkerPython::callFunc no funcname:%s", funcName));
@@ -619,7 +619,7 @@ static bool callScriptImpl(const std::string& funcNameArg, ScriptArgs& varScript
 		scriptName = vt[0];
 		funcName = vt[1];
 	}
-	
+
     ffpython_t& ffpython = Singleton<FFWorkerPython>::instance().getFFpython();
     ScriptArgObjPtr ret;
     PyObject* args[9];
@@ -674,7 +674,7 @@ static bool callScriptImpl(const std::string& funcNameArg, ScriptArgs& varScript
                 args[3] = fromScriptArgToPy(varScript.at(3));
                 args[4] = fromScriptArgToPy(varScript.at(4));
                 args[5] = fromScriptArgToPy(varScript.at(5));
-                ret = ffpython.call<ScriptArgObjPtr>(scriptName, funcName, args[0], args[1], args[2], args[3], args[4], 
+                ret = ffpython.call<ScriptArgObjPtr>(scriptName, funcName, args[0], args[1], args[2], args[3], args[4],
                                                 args[5]);
             }break;
             case 7:
@@ -686,7 +686,7 @@ static bool callScriptImpl(const std::string& funcNameArg, ScriptArgs& varScript
                 args[4] = fromScriptArgToPy(varScript.at(4));
                 args[5] = fromScriptArgToPy(varScript.at(5));
                 args[6] = fromScriptArgToPy(varScript.at(6));
-                ret = ffpython.call<ScriptArgObjPtr>(scriptName, funcName, args[0], args[1], args[2], args[3], args[4], 
+                ret = ffpython.call<ScriptArgObjPtr>(scriptName, funcName, args[0], args[1], args[2], args[3], args[4],
                                                 args[5], args[6]);
             }break;
             case 8:
@@ -699,7 +699,7 @@ static bool callScriptImpl(const std::string& funcNameArg, ScriptArgs& varScript
                 args[5] = fromScriptArgToPy(varScript.at(5));
                 args[6] = fromScriptArgToPy(varScript.at(6));
                 args[7] = fromScriptArgToPy(varScript.at(7));
-                ret = ffpython.call<ScriptArgObjPtr>(scriptName, funcName, args[0], args[1], args[2], args[3], args[4], 
+                ret = ffpython.call<ScriptArgObjPtr>(scriptName, funcName, args[0], args[1], args[2], args[3], args[4],
                                                 args[5], args[6], args[7]);
             }break;
             case 9:
@@ -713,7 +713,7 @@ static bool callScriptImpl(const std::string& funcNameArg, ScriptArgs& varScript
                 args[6] = fromScriptArgToPy(varScript.at(6));
                 args[7] = fromScriptArgToPy(varScript.at(7));
                 args[8] = fromScriptArgToPy(varScript.at(8));
-                ret = ffpython.call<ScriptArgObjPtr>(scriptName, funcName, args[0], args[1], args[2], args[3], args[4], 
+                ret = ffpython.call<ScriptArgObjPtr>(scriptName, funcName, args[0], args[1], args[2], args[3], args[4],
                                                 args[5], args[6], args[7], args[8]);
             }break;
             default:
@@ -728,7 +728,7 @@ static bool callScriptImpl(const std::string& funcNameArg, ScriptArgs& varScript
     if (ret){
         varScript.ret = ret;
     }
-    if (exceptInfo.empty() == false && SCRIPT_UTIL.isExceptEnable()){ 
+    if (exceptInfo.empty() == false && SCRIPT_UTIL.isExceptEnable()){
         throw std::runtime_error(exceptInfo);
     }
 
@@ -752,9 +752,9 @@ int FFWorkerPython::scriptInit(const string& py_root)
     m_ext_name = m_ext_name.substr(0, pos);
 
     LOGTRACE((FFWORKER_PYTHON, "FFWorkerPython::scriptInit begin path:%s, m_ext_name:%s", path, m_ext_name));
-    
+
     getSharedMem().setNotifyFunc(onSyncSharedData);
-    
+
     (*m_ffpython).reg(&FFDb::escape, "escape")
                  .reg(&py_send_msg_session, "sessionSendMsg")
                  .reg(&py_broadcast_msg_gate, "gateBroadcastMsg")
@@ -779,8 +779,8 @@ int FFWorkerPython::scriptInit(const string& py_root)
                  .reg(&py_writeLockGuard, "writeLockGuard")
                  .reg(&callFunc, "callFunc", "", true)
                  ;
-    
-            
+
+
     (*m_ffpython).init(EXT_NAME);
 
     DB_MGR.start();
@@ -801,14 +801,14 @@ int FFWorkerPython::scriptInit(const string& py_root)
     else{
         LOGERROR((FFWORKER_PYTHON, "FFWorkerPython::no db config"));
     }
-    
+
     int ret = -2;
-    
+
     try{
-        
+
         Mutex                    mutex;
         ConditionVar            cond(mutex);
-        
+
         getRpc().getTaskQueue()->post(TaskBinder::gen(&FFWorkerPython::processInit, this, &mutex, &cond, &ret));
         LOGINFO((FFWORKER_PYTHON, "FFWorkerPython::begin init py"));
         LockGuard lock(mutex);
@@ -857,7 +857,8 @@ void FFWorkerPython::scriptCleanup()
 {
     try
     {
-        (*m_ffpython).call<void>(m_ext_name, string("cleanup"));
+        if (m_ext_name.empty() == false)
+            (*m_ffpython).call<void>(m_ext_name, string("cleanup"));
     }
     catch(exception& e_)
     {
@@ -989,7 +990,7 @@ string FFWorkerPython::onWorkerCall(uint16_t cmd, const std::string& body)
         ret = "!";
         ret += e_.what();
         LOGERROR((FFWORKER_PYTHON, "onWorkerCall failed er=<%s>", ret));
-        
+
     }
     return ret;
 }

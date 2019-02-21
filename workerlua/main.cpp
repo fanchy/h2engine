@@ -25,22 +25,22 @@ using namespace std;
 
 #ifdef _WIN32
 static bool g_flagwait = true;
-BOOL CtrlHandler( DWORD fdwCtrlType ) 
-{ 
-  switch( fdwCtrlType ) 
-  { 
-    // Handle the CTRL-C signal. 
+BOOL CtrlHandler( DWORD fdwCtrlType )
+{
+  switch( fdwCtrlType )
+  {
+    // Handle the CTRL-C signal.
     case CTRL_C_EVENT:
 	case SIGTERM:
-	case 2: 
+	case 2:
       printf( "Ctrl-C event\n\n" );
       g_flagwait = false;
       return( TRUE );
-    default: 
+    default:
       printf( "recv=%d please use Ctrl-C \n\n", (int)fdwCtrlType );
-      return FALSE; 
-  } 
-} 
+      return FALSE;
+  }
+}
 static bool flagok = false;
 #endif
 
@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
         arg_helper.loadFromFile(arg_helper.getOptionValue("-f"));
     }
 
-    
+
     if (arg_helper.isEnableOption("-d"))
     {
     	#ifndef _WIN32
@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
     #ifdef _WIN32
     Singleton<NetFactory::NetData>::instance().start();
     #endif
-    
+
     //! 美丽的日志组件，shell输出是彩色滴！！
     if (arg_helper.isEnableOption("-log_path"))
     {
@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
     {
         return -1;
     }
-    
+
 
     try
     {
@@ -98,12 +98,12 @@ int main(int argc, char* argv[])
         }
 
         Singleton<HttpMgr>::instance().start();
-        
+
         std::string brokercfg = "tcp://127.0.0.1:43210";
         if (arg_helper.isEnableOption("-broker")){
             brokercfg = arg_helper.getOptionValue("-broker");
         }
-        
+
         string entry = "main.lua";
         if (arg_helper.isEnableOption("-entry")){
             entry = arg_helper.getOptionValue("-entry");
@@ -112,7 +112,7 @@ int main(int argc, char* argv[])
         else{
             printf("use default entry %s, user -entry redirect entry script\n", entry.c_str());
         }
-        
+
         if (Singleton<FFWorkerLua>::instance().open(brokercfg, worker_index))
         {
             printf("FFWorkerLua open error!\n");
@@ -133,35 +133,35 @@ int main(int argc, char* argv[])
 #ifndef _WIN32
     SignalHelper::wait();
 #else
-    if (SetConsoleCtrlHandler((PHANDLER_ROUTINE)CtrlHandler, TRUE)) 
-	  { 
-	    printf( "\nserver is running.\n" ); 
-	    printf( "--  Ctrl+C exit\n" ); 
+    if (SetConsoleCtrlHandler((PHANDLER_ROUTINE)CtrlHandler, TRUE))
+	  {
+	    printf( "\nserver is running.\n" );
+	    printf( "--  Ctrl+C exit\n" );
 		while(g_flagwait){
 			usleep(1000*100);
 		}
 	  }
-	  else 
+	  else
 	  {
-	    printf( "\nERROR: Could not set control handler"); 
+	    printf( "\nERROR: Could not set control handler");
 	    return 1;
 	  }
-	flagok = true;  
+	flagok = true;
 #endif
 err_proc:
-    
+
     Singleton<FFWorkerLua>::instance().close();
     PERF_MONITOR.stop();
     usleep(100);
     NetFactory::stop();
     usleep(200);
-    
+
     Singleton<SharedSyncmemMgr>::instance().cleanup();
     Singleton<HttpMgr>::instance().stop();
 #ifdef _WIN32
     if  (!flagok)
     {
-    	sleep(10);
+    	Sleep(100);
 	}
 #endif
 
