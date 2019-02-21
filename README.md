@@ -36,6 +36,8 @@ $ make h2workerlua
 $ make h2workerjs
 $ make h2workerphp
 ```
+Windows 下需要下载CodeBlocks，然后打开工程文件h2.workspace
+
 ## 依赖说明：
 - cmake:构建的时候需要
 - python2.6或python2.7:构建h2workerpy的时候需要
