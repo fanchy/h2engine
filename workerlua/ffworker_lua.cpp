@@ -6,7 +6,7 @@
 #include "server/http_mgr.h"
 #include "server/script.h"
 
-#include <stdio.h> 
+#include <stdio.h>
 #include "luaops.h"
 using namespace ff;
 using namespace std;
@@ -75,25 +75,25 @@ static int  lua_regTimer(lua_State* ls_)
     static int64_t timer_idx = 0;
     int mstimeout_ = 0;
     luacpp_op_t<int>::lua2cpp(ls_, ADDR_ARG_POS(1), mstimeout_);
-    
+
     char fieldname[256] = {0};
     ++timer_idx;
     long idx = long(timer_idx);
     snprintf(fieldname, sizeof(fieldname), "timer#%ld", idx);
-    
+
     lua_getglobal(ls_, EXT_NAME);
     lua_pushstring(ls_, fieldname);
     lua_pushvalue(ls_, ADDR_ARG_POS(2));
     lua_settable(ls_, -3);
     lua_pop(ls_, 1);
-    
+
     struct lambda_cb
     {
         static void callback(lua_State* ls_, long idx)
         {
             char fieldname[256] = {0};
             snprintf(fieldname, sizeof(fieldname), "timer#%ld", idx);
-            
+
             lua_getglobal(ls_, EXT_NAME);
             lua_pushstring(ls_, fieldname);
             lua_gettable (ls_, -2);
@@ -111,15 +111,15 @@ static int  lua_regTimer(lua_State* ls_)
             {
                 LOGERROR((FFWORKER_LUA, "FFWorkerLua::lua_regTimer exception<%s>", e_.what()));
             }
-            
+
             lua_pushstring(ls_, fieldname);
             lua_pushnil(ls_);
             lua_settable(ls_, -3);
             lua_pop(ls_, 1);
         }
     };
-    
-    Singleton<FFWorkerLua>::instance().regTimer(mstimeout_, 
+
+    Singleton<FFWorkerLua>::instance().regTimer(mstimeout_,
                 TaskBinder::gen(&lambda_cb::callback, ls_, idx));
     return 0;
 }
@@ -148,12 +148,12 @@ struct AsyncQueryCB
         }
         char fieldname[256] = {0};
         snprintf(fieldname, sizeof(fieldname), "db#%ld", idx);
-        
+
         lua_getglobal(ls_, EXT_NAME);
         lua_pushstring(ls_, fieldname);
         lua_gettable (ls_, -2);
-        
-        
+
+
         lua_newtable(ls_);
         {
             string key = "datas";
@@ -161,7 +161,7 @@ struct AsyncQueryCB
             luacpp_op_t<vector<vector<string> > >::cpp2luastack(ls_, ret_);
             lua_settable(ls_, -3);
         }
-        
+
         {
             string key = "fields";
             luacpp_op_t<string>::cpp2luastack(ls_, key);
@@ -176,7 +176,7 @@ struct AsyncQueryCB
         }
         {
             string key = "affectedRows";
-            
+
             luacpp_op_t<string>::cpp2luastack(ls_, key);
             luacpp_op_t<int >::cpp2luastack(ls_, affectedRows);
             lua_settable(ls_, -3);
@@ -195,7 +195,7 @@ struct AsyncQueryCB
         {
             LOGERROR((FFWORKER_LUA, "workerobj_lua_t::gen_queryDB_callback exception<%s>", e_.what()));
         }
-        
+
         lua_pushstring(ls_, fieldname);
         lua_pushnil(ls_);
         lua_settable(ls_, -3);
@@ -210,21 +210,21 @@ static int lua_asyncQuery(lua_State* ls_)
 {
     int64_t db_id_ = 0;
     luacpp_op_t<int64_t>::lua2cpp(ls_, ADDR_ARG_POS(1), db_id_);
-    
+
     string sql_;
     luacpp_op_t<string>::lua2cpp(ls_, ADDR_ARG_POS(2), sql_);
-    
+
     char fieldname[256] = {0};
     ++db_idx;
     long idx = long(db_idx);
     snprintf(fieldname, sizeof(fieldname), "db#%ld", idx);
-    
+
     lua_getglobal(ls_, EXT_NAME);
     lua_pushstring(ls_, fieldname);
     lua_pushvalue(ls_, ADDR_ARG_POS(3));
     lua_settable(ls_, -3);
     lua_pop(ls_, 1);
-    
+
     AsyncQueryCB cb(ls_, idx);
     DB_MGR.asyncQueryModId(db_id_, sql_, cb, Singleton<FFWorkerLua>::instance().getRpc().getTaskQueue());
     return 0;
@@ -245,12 +245,12 @@ struct AsyncQueryNameCB
         }
         char fieldname[256] = {0};
         snprintf(fieldname, sizeof(fieldname), "db#%ld", idx);
-        
+
         lua_getglobal(ls_, EXT_NAME);
         lua_pushstring(ls_, fieldname);
         lua_gettable (ls_, -2);
-        
-        
+
+
         lua_newtable(ls_);
         {
             string key = "datas";
@@ -258,7 +258,7 @@ struct AsyncQueryNameCB
             luacpp_op_t<vector<vector<string> > >::cpp2luastack(ls_, ret_);
             lua_settable(ls_, -3);
         }
-        
+
         {
             string key = "fields";
             luacpp_op_t<string>::cpp2luastack(ls_, key);
@@ -273,7 +273,7 @@ struct AsyncQueryNameCB
         }
         {
             string key = "affectedRows";
-            
+
             luacpp_op_t<string>::cpp2luastack(ls_, key);
             luacpp_op_t<int >::cpp2luastack(ls_, affectedRows);
             lua_settable(ls_, -3);
@@ -292,7 +292,7 @@ struct AsyncQueryNameCB
         {
             LOGERROR((FFWORKER_LUA, "workerobj_lua_t::gen_queryDB_callback exception<%s>", e_.what()));
         }
-        
+
         lua_pushstring(ls_, fieldname);
         lua_pushnil(ls_);
         lua_settable(ls_, -3);
@@ -306,24 +306,24 @@ static int lua_asyncQueryByName(lua_State* ls_)
 {
     string name;
     luacpp_op_t<string>::lua2cpp(ls_, ADDR_ARG_POS(1), name);
-    
+
     //long mod_ = 0;
     //luacpp_op_t<long>::lua2cpp(ls_, ADDR_ARG_POS(2), mod_);
-    
+
     string sql_;
     luacpp_op_t<string>::lua2cpp(ls_, ADDR_ARG_POS(2), sql_);
-    
+
     char fieldname[256] = {0};
     ++db_idx;
     long idx = long(db_idx);
     snprintf(fieldname, sizeof(fieldname), "db#%ld", idx);
-    
+
     lua_getglobal(ls_, EXT_NAME);
     lua_pushstring(ls_, fieldname);
     lua_pushvalue(ls_, ADDR_ARG_POS(3));
     lua_settable(ls_, -3);
     lua_pop(ls_, 1);
-    
+
     AsyncQueryNameCB cb(ls_, idx);
     DB_MGR.asyncQueryByName(name, sql_, cb, Singleton<FFWorkerLua>::instance().getRpc().getTaskQueue());
     return 0;
@@ -332,19 +332,19 @@ static int lua_queryByName(lua_State* ls_)
 {
     string name;
     luacpp_op_t<string>::lua2cpp(ls_, ADDR_ARG_POS(1), name);
-    
+
     //long mod_ = 0;
     //luacpp_op_t<long>::lua2cpp(ls_, ADDR_ARG_POS(2), mod_);
-    
+
     string sql_;
     luacpp_op_t<string>::lua2cpp(ls_, ADDR_ARG_POS(2), sql_);
-    
+
     string errinfo;
     vector<vector<string> > retdata;
     vector<string> col;
     int affectedRows = 0;
     DB_MGR.queryByName(name, sql_, &retdata, &errinfo, &affectedRows, &col);
-    
+
     lua_newtable(ls_);
     {
         string key = "datas";
@@ -352,7 +352,7 @@ static int lua_queryByName(lua_State* ls_)
         luacpp_op_t<vector<vector<string> > >::cpp2luastack(ls_, retdata);
         lua_settable(ls_, -3);
     }
-    
+
     {
         string key = "fields";
         luacpp_op_t<string>::cpp2luastack(ls_, key);
@@ -367,7 +367,7 @@ static int lua_queryByName(lua_State* ls_)
     }
     {
         string key = "affectedRows";
-        
+
         luacpp_op_t<string>::cpp2luastack(ls_, key);
         luacpp_op_t<int >::cpp2luastack(ls_, affectedRows);
         lua_settable(ls_, -3);
@@ -379,16 +379,16 @@ static int lua_query(lua_State* ls_)
 {
     //long db_id_ = 0;
     //luacpp_op_t<long>::lua2cpp(ls_, ADDR_ARG_POS(1), db_id_);
-    
+
     string sql_;
     luacpp_op_t<string>::lua2cpp(ls_, ADDR_ARG_POS(1), sql_);
-    
+
     string errinfo;
     vector<vector<string> > retdata;
     vector<string> col;
     int affectedRows = 0;
     DB_MGR.query(sql_, &retdata, &errinfo, &affectedRows, &col);
-    
+
     lua_newtable(ls_);
     {
         string key = "datas";
@@ -396,7 +396,7 @@ static int lua_query(lua_State* ls_)
         luacpp_op_t<vector<vector<string> > >::cpp2luastack(ls_, retdata);
         lua_settable(ls_, -3);
     }
-    
+
     {
         string key = "fields";
         luacpp_op_t<string>::cpp2luastack(ls_, key);
@@ -411,38 +411,38 @@ static int lua_query(lua_State* ls_)
     }
     {
         string key = "affectedRows";
-        
+
         luacpp_op_t<string>::cpp2luastack(ls_, key);
         luacpp_op_t<int >::cpp2luastack(ls_, affectedRows);
         lua_settable(ls_, -3);
     }
     return 1;
 }
-//!调用其他worker的接口 
+//!调用其他worker的接口
 static int lua_workerRPC(lua_State* ls_){
     //int workerindex, int16_t cmd, const string& argdata, PyObject* pFuncArg
-    
+
     int workerindex = 0;
     luacpp_op_t<int>::lua2cpp(ls_, ADDR_ARG_POS(1), workerindex);
-    
+
     uint16_t cmd = 0;
     luacpp_op_t<uint16_t>::lua2cpp(ls_, ADDR_ARG_POS(2), cmd);
-    
+
     string argdata;
     luacpp_op_t<string>::lua2cpp(ls_, ADDR_ARG_POS(3), argdata);
-    
+
     static int64_t rpc_idx = 0;
     char fieldname[256] = {0};
     ++rpc_idx;
     long idx = long(rpc_idx);
     snprintf(fieldname, sizeof(fieldname), "rpc#%ld", idx);
-    
+
     lua_getglobal(ls_, EXT_NAME);
     lua_pushstring(ls_, fieldname);
     lua_pushvalue(ls_, ADDR_ARG_POS(4));
     lua_settable(ls_, -3);
     lua_pop(ls_, 1);
-    
+
     struct lambda_cb: public FFSlot::FFCallBack
     {
         lambda_cb(lua_State* lsarg, int idxarg):ls_(lsarg), idx(idxarg){}
@@ -460,14 +460,14 @@ static int lua_workerRPC(lua_State* ls_){
             catch(exception& e_)
             {
             }
-            
+
             char fieldname[256] = {0};
             snprintf(fieldname, sizeof(fieldname), "rpc#%ld", idx);
-            
+
             lua_getglobal(ls_, EXT_NAME);
             lua_pushstring(ls_, fieldname);
             lua_gettable (ls_, -2);
-            
+
             lua_pushlstring(ls_, retmsg.body.c_str(), retmsg.body.size());
             try
             {
@@ -501,22 +501,22 @@ static int lua_asyncHttp(lua_State* ls_)
 {
     string url;
     luacpp_op_t<string>::lua2cpp(ls_, ADDR_ARG_POS(1), url);
-    
+
     int timeoutsec = 0;
     luacpp_op_t<int>::lua2cpp(ls_, ADDR_ARG_POS(2), timeoutsec);
-    
+
     static int64_t http_idx = 0;
     char fieldname[256] = {0};
     ++http_idx;
     long idx = long(http_idx);
     snprintf(fieldname, sizeof(fieldname), "http#%ld", idx);
-    
+
     lua_getglobal(ls_, EXT_NAME);
     lua_pushstring(ls_, fieldname);
     lua_pushvalue(ls_, ADDR_ARG_POS(3));
     lua_settable(ls_, -3);
     lua_pop(ls_, 1);
-    
+
     struct lambda_cb: public FFSlot::FFCallBack
     {
         lambda_cb(lua_State* lsaarg_, long idxarg):ls_(lsaarg_), idx(idxarg){}
@@ -538,12 +538,12 @@ static int lua_asyncHttp(lua_State* ls_)
             }
             char fieldname[256] = {0};
             snprintf(fieldname, sizeof(fieldname), "http#%ld", idx);
-            
+
             lua_getglobal(ls_, EXT_NAME);
             lua_pushstring(ls_, fieldname);
             lua_gettable (ls_, -2);
             luacpp_op_t<string>::cpp2luastack(ls_, retdata);
-            
+
             try
             {
                 if (::lua_pcall(ls_, 1, 0, 0) != 0)
@@ -557,7 +557,7 @@ static int lua_asyncHttp(lua_State* ls_)
             {
                 LOGERROR((FFWORKER_LUA, "workerobj_lua_t::gen_queryDB_callback exception<%s>", e_.what()));
             }
-            
+
             lua_pushstring(ls_, fieldname);
             lua_pushnil(ls_);
             lua_settable(ls_, -3);
@@ -567,7 +567,7 @@ static int lua_asyncHttp(lua_State* ls_)
         lua_State* ls_;
         long idx;
     };
-    
+
     Singleton<FFWorkerLua>::instance().asyncHttp(url, timeoutsec,  new lambda_cb(ls_, idx));
     return 0;
 }
@@ -617,11 +617,11 @@ static ScriptArgObjPtr toScriptArg(lua_State* ls_, int pos_){
     }
     else if (lua_istable(ls_, pos_)){
         ret->toDict();
-        
+
         lua_pushnil(ls_);
     	int real_pos = pos_;
     	if (pos_ < 0) real_pos = real_pos - 1;
-        
+
         bool isList = true;
         int nIndex  = 1;
         while (lua_next(ls_, real_pos) != 0)
@@ -658,7 +658,7 @@ static ScriptArgObjPtr toScriptArg(lua_State* ls_, int pos_){
                 lua_pop(ls_, 1);
                 ret->dictVal[strKey] = pval;
             }
-			
+
 			lua_pop(ls_, 1);
 		}
     }
@@ -683,7 +683,7 @@ static void fromScriptArgToLua(lua_State* ls_, ScriptArgObjPtr pvalue){
     }
     else if (pvalue->isList()){
         lua_newtable(ls_);
-        
+
         for (size_t i = 0; i < pvalue->listVal.size(); ++i){
             lua_pushnumber(ls_, (lua_Number)(i+1));
             fromScriptArgToLua(ls_, pvalue->listVal[i]);
@@ -707,7 +707,7 @@ static void fromScriptArgToLua(lua_State* ls_, ScriptArgObjPtr pvalue){
 static int lua_callFunc(lua_State* ls_){
     string funcName;
     luacpp_op_t<string>::lua2cpp(ls_, ADDR_ARG_POS(1), funcName);
-    
+
     ScriptArgs scriptArgs;
     //!最多9个额外参数
     for (int i = 2; i <= 10; ++i){
@@ -747,13 +747,13 @@ static bool callScriptImpl(const std::string& funcName, ScriptArgs& varScript){
     {
         return false;
     }
-    
+
     lua_args_t luaarg;
     luaarg.arg_num = varScript.args.size();
     luaarg.pdata = &varScript;
     luaarg.func = pushLuaArgs;
     luaops_t& fflua = Singleton<FFWorkerLua>::instance().getFFlua();
-    
+
     std::string exceptInfo;
     try{
         varScript.ret = fflua.call<ScriptArgObjPtr>(funcName, luaarg);
@@ -763,7 +763,7 @@ static bool callScriptImpl(const std::string& funcName, ScriptArgs& varScript){
         LOGERROR((FFWORKER_LUA, "FFWorkerLua::callScriptImpl exception=%s", e_.what()));
         exceptInfo = e_.what();
     }
-    if (exceptInfo.empty() == false && SCRIPT_UTIL.isExceptEnable()){ 
+    if (exceptInfo.empty() == false && SCRIPT_UTIL.isExceptEnable()){
         throw std::runtime_error(exceptInfo);
     }
     return true;
@@ -772,10 +772,10 @@ static bool callScriptImpl(const std::string& funcName, ScriptArgs& varScript){
 struct ffext_t{};
 
 static bool  lua_reg(lua_State* ls)
-{                 ;             
+{                 ;
     lua_reg_func_t(ls, EXT_NAME)
                  .def(&FFDb::escape, "escape")
-                 
+
                  .def(&lua_send_msg_session, "sessionSendMsg")
                  .def(&lua_broadcast_msg_gate, "gateBroadcastMsg")
                  .def(&lua_multicast_msg_session, "sessionMulticastMsg")
@@ -809,7 +809,7 @@ int FFWorkerLua::scriptInit(const string& lua_root)
     if (pos != string::npos)
     {
         path = lua_root.substr(0, pos+1);
-        m_ext_name = lua_root.substr(pos+1, lua_root.size() - pos - 1);
+        m_ext_name = lua_root;//lua_root.substr(pos+1, lua_root.size() - pos - 1);
         getFFlua().add_package_path(path);
     }
     else{
@@ -818,8 +818,8 @@ int FFWorkerLua::scriptInit(const string& lua_root)
     }
     //pos = m_ext_name.find(".lua");
     //m_ext_name = m_ext_name.substr(0, pos);
-    
-    LOGTRACE((FFWORKER_LUA, "FFWorkerLua::scriptInit begin path:%s, m_ext_name:%s", path, m_ext_name));
+
+    LOGINFO((FFWORKER_LUA, "FFWorkerLua::scriptInit begin path:%s, m_ext_name:%s", path, m_ext_name));
 
     getSharedMem().setNotifyFunc(onSyncSharedData);
     (*m_fflua).reg(lua_reg);
@@ -840,14 +840,14 @@ int FFWorkerLua::scriptInit(const string& lua_root)
             }
         }
     }
-    
+
     int ret = -2;
-    
+
     try{
-        
+
         Mutex                    mutex;
         ConditionVar            cond(mutex);
-        
+
         getRpc().getTaskQueue()->post(TaskBinder::gen(&FFWorkerLua::processInit, this, &mutex, &cond, &ret));
         LockGuard lock(mutex);
         if (ret == -2){

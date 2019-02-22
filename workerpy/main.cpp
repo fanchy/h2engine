@@ -1,4 +1,4 @@
-ï»¿#include <stdio.h>
+#include <stdio.h>
 
 #include "base/fftype.h"
 #include "base/daemon_tool.h"
@@ -11,6 +11,7 @@
 #include "base/daemon_tool.h"
 #include "base/perf_monitor.h"
 #include "base/event_bus.h"
+#include "base/os_tool.h"
 
 #include "rpc/ffrpc.h"
 #include "rpc/ffbroker.h"
@@ -50,10 +51,15 @@ int main(int argc, char* argv[])
 {
     ArgHelper& arg_helper = Singleton<ArgHelper>::instance();
 	arg_helper.load(argc, argv);
+	string cfgfile = "h2.conf";
     if (arg_helper.isEnableOption("-f"))
     {
-        arg_helper.loadFromFile(arg_helper.getOptionValue("-f"));
+        cfgfile = arg_helper.getOptionValue("-f");
     }
+    else if (OSTool::isFile("../h2.conf")){
+        cfgfile = "../h2.conf";
+    }
+    arg_helper.loadFromFile(cfgfile);
 
 
     if (arg_helper.isEnableOption("-d"))
@@ -66,7 +72,7 @@ int main(int argc, char* argv[])
     Singleton<NetFactory::NetData>::instance().start();
     #endif
 
-    //! ç¾ä¸½çš„æ—¥å¿—ç»„ä»¶ï¼Œshellè¾“å‡ºæ˜¯å½©è‰²æ»´ï¼ï¼
+    //! ÃÀÀöµÄÈÕÖ¾×é¼ş£¬shellÊä³öÊÇ²ÊÉ«µÎ£¡£¡
     if (arg_helper.isEnableOption("-log_path"))
     {
         LOG.start(arg_helper);
@@ -112,6 +118,9 @@ int main(int argc, char* argv[])
             printf("use entry %s\n", entry.c_str());
         }
         else{
+            if (OSTool::isFile("../main.py")){
+                entry = "../main.py";
+            }
             printf("use default entry %s, user -entry redirect entry script\n", entry.c_str());
         }
 
