@@ -463,9 +463,14 @@ namespace Thrift.Transport
                 if (disposing)
                 {
                     if (inputStream != null)
+                    {
                         inputStream.Dispose();
+                    }
+
                     if (outputStream != null)
+                    {
                         outputStream.Dispose();
+                    }
                 }
             }
             _IsDisposed = true;

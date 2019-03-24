@@ -680,7 +680,10 @@ namespace Thrift.Protocol
         public override byte[] ReadBinary()
         {
             int length = (int)ReadVarint32();
-            if (length == 0) return new byte[0];
+            if (length == 0)
+            {
+                return new byte[0];
+            }
 
             byte[] buf = new byte[length];
             trans.ReadAll(buf, 0, length);
@@ -692,7 +695,10 @@ namespace Thrift.Protocol
         /// </summary>
         private byte[] ReadBinary(int length)
         {
-            if (length == 0) return new byte[0];
+            if (length == 0)
+            {
+                return new byte[0];
+            }
 
             byte[] buf = new byte[length];
             trans.ReadAll(buf, 0, length);
@@ -725,7 +731,11 @@ namespace Thrift.Protocol
             {
                 byte b = (byte)ReadByte();
                 result |= (uint)(b & 0x7f) << shift;
-                if ((b & 0x80) != 0x80) break;
+                if ((b & 0x80) != 0x80)
+                {
+                    break;
+                }
+
                 shift += 7;
             }
             return result;
@@ -743,7 +753,11 @@ namespace Thrift.Protocol
             {
                 byte b = (byte)ReadByte();
                 result |= (ulong)(b & 0x7f) << shift;
-                if ((b & 0x80) != 0x80) break;
+                if ((b & 0x80) != 0x80)
+                {
+                    break;
+                }
+
                 shift += 7;
             }
 

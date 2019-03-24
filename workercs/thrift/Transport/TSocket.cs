@@ -175,7 +175,9 @@ namespace Thrift.Transport
                 try
                 {
                     if (hlp.Client.Client != null)
+                    {
                         hlp.Client.EndConnect(asyncres);
+                    }
                 }
                 catch (Exception)
                 {
@@ -193,7 +195,9 @@ namespace Thrift.Transport
                     try
                     {
                         if (hlp.Client is IDisposable)
+                        {
                             ((IDisposable)hlp.Client).Dispose();
+                        }
                     }
                     catch (Exception) { }
                     hlp.Client = null;
@@ -234,7 +238,10 @@ namespace Thrift.Transport
                 if (disposing)
                 {
                     if (client != null)
+                    {
                         ((IDisposable)client).Dispose();
+                    }
+
                     base.Dispose(disposing);
                 }
             }

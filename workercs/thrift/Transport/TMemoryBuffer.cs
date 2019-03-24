@@ -108,7 +108,9 @@ namespace Thrift.Transport
                 if (disposing)
                 {
                     if (byteStream != null)
+                    {
                         byteStream.Dispose();
+                    }
                 }
             }
             _IsDisposed = true;

@@ -56,9 +56,13 @@ namespace Thrift.Protocol
         public void IncrementRecursionDepth()
         {
             if (recursionDepth < recursionLimit)
+            {
                 ++recursionDepth;
+            }
             else
+            {
                 throw new TProtocolException(TProtocolException.DEPTH_LIMIT, "Depth limit exceeded");
+            }
         }
 
         public void DecrementRecursionDepth()
@@ -82,7 +86,9 @@ namespace Thrift.Protocol
                 if (disposing)
                 {
                     if (trans is IDisposable)
+                    {
                         (trans as IDisposable).Dispose();
+                    }
                 }
             }
             _IsDisposed = true;

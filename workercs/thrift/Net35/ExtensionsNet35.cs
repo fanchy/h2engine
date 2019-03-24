@@ -18,7 +18,9 @@ namespace Thrift
             {
                 int nRead = source.Read(buffer, 0, buffer.Length);
                 if (nRead <= 0)  // done?
+                {
                     return nTotal;
+                }
 
                 target.Write(buffer, 0, nRead);
                 nTotal += nRead;

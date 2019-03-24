@@ -13,7 +13,7 @@ namespace ff
             m_funcRecv  = onRecv;
             m_funcBroken= onBroken;
         }
-        public bool listen(string ip, int port){
+        public bool Listen(string ip, int port){
             try{
                 if (ip == "*" || ip == ""){
                     m_oSocket.Bind(new System.Net.IPEndPoint(System.Net.IPAddress.Any, port));
@@ -22,49 +22,44 @@ namespace ff
                     m_oSocket.Bind(new System.Net.IPEndPoint(System.Net.IPAddress.Parse(ip), port));
                 }
                 m_oSocket.Listen(2);
-                m_oSocket.BeginAccept(new AsyncCallback(handleAccepted), m_oSocket);
+                m_oSocket.BeginAccept(new AsyncCallback(HandleAccepted), m_oSocket);
             }
             catch (Exception ex)
             {
-                WriteLine("scoket: listen Error " + ex.Message, ConsoleColor.Red);
+                FFLog.Trace("scoket: listen Error " + ex.Message);
                 return false;
             }
             return true;
         }
-        public void handleAccepted(IAsyncResult ar)
+        public void HandleAccepted(IAsyncResult ar)
         {
             try
             {
-                var socket = ar.AsyncState as Socket;
+                Socket socket = (Socket)ar.AsyncState;
 
                 //方法参考：http://msdn.microsoft.com/zh-cn/library/system.net.sockets.socket.endreceive.aspx
                 if (socket != null)
                 {
                     var client = socket.EndAccept(ar);
-                    FFSocket ffsocket = new FFScoketAsync(m_funcRecv, m_funcBroken, client);
-                    ffsocket.asyncRecv();
-                    m_oSocket.BeginAccept(new AsyncCallback(handleAccepted), m_oSocket);
+                    IFFSocket ffsocket = new FFScoketAsync(m_funcRecv, m_funcBroken, client);
+                    ffsocket.AsyncRecv();
+                    m_oSocket.BeginAccept(new AsyncCallback(HandleAccepted), m_oSocket);
                 }
             }
             catch (Exception ex)
             {
-                WriteLine("scoket: handleAccepted Error " + ex.Message, ConsoleColor.Red);
+                FFLog.Trace("scoket: handleAccepted Error " + ex.Message);
             }
 
         }
-        public void close(){
+        public void Close(){
             try {
                 m_oSocket.Close();
             }
             catch (Exception ex)
             {
-                WriteLine("scoket: close Error " + ex.Message, ConsoleColor.Red);
+                FFLog.Trace("scoket: close Error " + ex.Message);
             }
-        }
-        public static void WriteLine(string str, ConsoleColor color = ConsoleColor.Black)
-        {
-            Console.ForegroundColor = color;
-            Console.WriteLine("[{0:MM-dd HH:mm:ss}] {1}", DateTime.Now, str);
         }
     }
 }

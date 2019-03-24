@@ -145,9 +145,14 @@ namespace Thrift.Transport
                     // If a TSocket was successfully created, then let
                     // it do proper cleanup of the TcpClient object.
                     if (result2 != null)
+                    {
                         result2.Dispose();
+                    }
                     else //  Otherwise, clean it up ourselves.
+                    {
                         ((IDisposable)result).Dispose();
+                    }
+
                     throw;
                 }
             }

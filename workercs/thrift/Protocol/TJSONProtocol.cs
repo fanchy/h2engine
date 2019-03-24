@@ -490,12 +490,16 @@ namespace Thrift.Protocol
 
             bool escapeNum = context.EscapeNumbers();
             if (escapeNum)
+            {
                 trans.Write(QUOTE);
+            }
 
             trans.Write(utf8Encoding.GetBytes(str));
 
             if (escapeNum)
+            {
                 trans.Write(QUOTE);
+            }
         }
 
         /// <summary>
@@ -525,12 +529,16 @@ namespace Thrift.Protocol
             bool escapeNum = special || context.EscapeNumbers();
 
             if (escapeNum)
+            {
                 trans.Write(QUOTE);
+            }
 
             trans.Write(utf8Encoding.GetBytes(str));
 
             if (escapeNum)
+            {
                 trans.Write(QUOTE);
+            }
         }
         /// <summary>
         /// Write out contents of byte array b as a JSON string with base-64 encoded

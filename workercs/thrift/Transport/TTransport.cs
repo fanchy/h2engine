@@ -40,18 +40,24 @@ namespace Thrift.Transport
         {
             //If we already have a byte read but not consumed, do nothing.
             if (_hasPeekByte)
+            {
                 return true;
+            }
 
             //If transport closed we can't peek.
             if (!IsOpen)
+            {
                 return false;
+            }
 
             //Try to read one byte. If succeeds we will need to store it for the next read.
             try
             {
                 int bytes = Read(_peekBuffer, 0, 1);
                 if (bytes == 0)
+                {
                     return false;
+                }
             }
             catch (IOException)
             {
@@ -69,13 +75,24 @@ namespace Thrift.Transport
         protected static void ValidateBufferArgs(byte[] buf, int off, int len)
         {
             if (buf == null)
+            {
                 throw new ArgumentNullException("buf");
+            }
+
             if (off < 0)
+            {
                 throw new ArgumentOutOfRangeException("Buffer offset is smaller than zero.");
+            }
+
             if (len < 0)
+            {
                 throw new ArgumentOutOfRangeException("Buffer length is smaller than zero.");
+            }
+
             if (off + len > buf.Length)
+            {
                 throw new ArgumentOutOfRangeException("Not enough data.");
+            }
         }
 
         public abstract int Read(byte[] buf, int off, int len);

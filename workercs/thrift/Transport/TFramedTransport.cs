@@ -41,7 +41,10 @@ namespace Thrift.Transport
         public TFramedTransport(TTransport transport)
         {
             if (transport == null)
+            {
                 throw new ArgumentNullException("transport");
+            }
+
             this.transport = transport;
             InitWriteBuffer();
         }
@@ -73,7 +76,10 @@ namespace Thrift.Transport
             CheckNotDisposed();
             ValidateBufferArgs(buf, off, len);
             if (!IsOpen)
+            {
                 throw new TTransportException(TTransportException.ExceptionType.NotOpen);
+            }
+
             int got = readBuffer.Read(buf, off, len);
             if (got > 0)
             {
@@ -102,9 +108,15 @@ namespace Thrift.Transport
             CheckNotDisposed();
             ValidateBufferArgs(buf, off, len);
             if (!IsOpen)
+            {
                 throw new TTransportException(TTransportException.ExceptionType.NotOpen);
+            }
+
             if (writeBuffer.Length + (long)len > (long)int.MaxValue)
+            {
                 Flush();
+            }
+
             writeBuffer.Write(buf, off, len);
         }
 
@@ -112,12 +124,17 @@ namespace Thrift.Transport
         {
             CheckNotDisposed();
             if (!IsOpen)
+            {
                 throw new TTransportException(TTransportException.ExceptionType.NotOpen);
+            }
+
             byte[] buf = writeBuffer.GetBuffer();
             int len = (int)writeBuffer.Length;
             int data_len = len - HeaderSize;
             if (data_len < 0)
+            {
                 throw new System.InvalidOperationException(); // logic error actually
+            }
 
             // Inject message header into the reserved buffer space
             EncodeFrameSize(data_len, buf);
@@ -177,7 +194,9 @@ namespace Thrift.Transport
         private void CheckNotDisposed()
         {
             if (_IsDisposed)
+            {
                 throw new ObjectDisposedException("TFramedTransport");
+            }
         }
 
         #region " IDisposable Support "
@@ -191,11 +210,19 @@ namespace Thrift.Transport
                 if (disposing)
                 {
                     if (readBuffer != null)
+                    {
                         readBuffer.Dispose();
+                    }
+
                     if (writeBuffer != null)
+                    {
                         writeBuffer.Dispose();
+                    }
+
                     if (transport != null)
+                    {
                         transport.Dispose();
+                    }
                 }
             }
             _IsDisposed = true;
