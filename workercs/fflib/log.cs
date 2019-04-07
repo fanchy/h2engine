@@ -6,17 +6,18 @@ namespace ff
 {
     enum FFLogLevel
     {
-        DEBUG = 0,
-        TRACE,
-        INFO,
+        ERROR = 1,
         WARNING,
-        ERROR
+        INFO,
+        TRACE,
+        DEBUG,
     };
     class FFLog
     {
         private TaskQueue m_taskQueue;
         private FileStream m_fs;
         private StreamWriter m_sw;
+        private int m_nLogLevel;
         public static FFLog gInstance = null;
         public static FFLog GetInstance()
         {
@@ -32,12 +33,15 @@ namespace ff
 
             m_taskQueue = new TaskQueue();
             m_taskQueue.Run();
+            m_nLogLevel = (int)FFLogLevel.DEBUG;
         }
         ~FFLog()
         {
-            Close();
+            DoCleanup();
         }
-        void Close()
+        void SetLogLevel(int n) { m_nLogLevel = n; }
+        int  GetLogLevel() { return m_nLogLevel; }
+        void DoCleanup()
         {
             if (m_taskQueue.IsRunning())
             {
@@ -55,6 +59,10 @@ namespace ff
         }
         public void LogToFile(FFLogLevel nLogLevel, string data)
         {
+            if (m_nLogLevel < (int)nLogLevel)
+            {
+                return;
+            }
             ConsoleColor color = ConsoleColor.Gray;
             string logdata = "";
             switch(nLogLevel)
@@ -115,6 +123,10 @@ namespace ff
         public static void Error(string data)
         {
             FFLog.GetInstance().LogToFile(FFLogLevel.ERROR, data);
+        }
+        public static void Cleanup()
+        {
+            FFLog.GetInstance().DoCleanup();
         }
     }
 }

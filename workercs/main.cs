@@ -1,5 +1,7 @@
 using System;
 
+
+
 namespace ff
 {
     public class FFMain
@@ -9,16 +11,54 @@ namespace ff
             string host = "tcp://127.0.0.1:43210";
             FFBroker ffbroker = new FFBroker();
             ffbroker.Open(host);
-            FFRpc ffrpc = new FFRpc("worker#0");
+
+            string strServiceName = "worker#0";
+            FFRpc ffrpc = new FFRpc(strServiceName);
             if (ffrpc.Open(host) == false){
                 FFLog.Trace("ffrpc open failed!");
             }
-
-            FFNet.Timerout(1000, Theout);
-            FFNet.Timerout(2000, Theout);
-            FFNet.Timerout(5000, Theout);
-            FFLog.Trace(string.Format("main! {0}", System.Threading.Thread.CurrentThread.ManagedThreadId.ToString()));
+            ffrpc.Reg((SessionEnterWorkerReq req) =>
+            {
+                FFLog.Trace(string.Format("ffrpc SessionEnterWorkerReq £¡£¡£¡FromGate={0}", req.From_gate));
+                return req;
+            });
             Console.ReadKey();
+            ffrpc.GetTaskQueue().Post(() =>
+            {
+                SessionEnterWorkerReq reqMsg = new SessionEnterWorkerReq() { From_gate = "gate#0" };
+                WorkerCallMsgReq reqWorkerCall = new WorkerCallMsgReq();
+                //ffrpc.Call(strServiceName, reqMsg);
+                reqMsg.From_gate = "gate#1";
+                ffrpc.Call(strServiceName, reqWorkerCall, (SessionEnterWorkerReq retMsg) =>
+                {
+                    FFLog.Trace(string.Format("ffrpc SessionEnterWorkerReq return£¡£¡£¡FromGate={0}", retMsg.From_gate));
+                });
+            });
+
+            //FFNet.Timerout(1000, Theout);
+            //FFNet.Timerout(2000, Theout);
+            FFNet.Timerout(100000, () =>
+            {
+                FFLog.Debug("AAAAAAAAAAAAAAA1");
+                ffrpc.Close();
+            });
+            FFLog.Trace(string.Format("main! {0}", System.Threading.Thread.CurrentThread.ManagedThreadId.ToString()));
+            
+            AppDomain.CurrentDomain.ProcessExit += (sender, arg) =>
+            {
+                FFLog.Trace("exist!!");
+            };
+            Console.CancelKeyPress += (object sender, ConsoleCancelEventArgs e) =>{
+                e.Cancel = true;
+                FFLog.Trace("exist3!!");
+
+                FFNet.Cleanup();
+                FFLog.Cleanup();
+            };
+            Console.ReadKey();
+            FFLog.Trace("exist!!");
+            FFNet.Cleanup();
+            FFLog.Cleanup();
         }
         static public void Theout()
         {
@@ -28,20 +68,6 @@ namespace ff
             FFLog.Info("AAAAAAAAAAAAAAA3");
             FFLog.Warning("AAAAAAAAAAAAAAA4");
             FFLog.Error("AAAAAAAAAAAAAAA5");
-        }
-        public static void OnRecv(IFFSocket ffsocket, Int16 cmd, string strData){
-            FFLog.Trace(string.Format("onRecv....{0}, {1}", strData, cmd));
-            FFNet.SendMsg(ffsocket, cmd, strData);
-        }
-
-        public static void OnRecv2(IFFSocket ffsocket, Int16 cmd, string strData){
-            FFLog.Trace(string.Format("onRecv2....{0}, {1}", strData, cmd));
-        }
-        public static void OnBroken(IFFSocket ffsocket){
-            FFLog.Trace("onBroken....");
-        }
-        public static void OnBroken2(IFFSocket ffsocket){
-            FFLog.Trace("onBroken2....");
         }
         //[Xunit.Fact]
         public void TestMax()

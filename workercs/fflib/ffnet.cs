@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using Xunit;
 namespace ff
 {
-    public delegate void SocketMsgHandler(IFFSocket ffsocket, Int16 cmd, string strData);
+    public delegate void SocketMsgHandler(IFFSocket ffsocket, UInt16 cmd, string strData);
     class SocketCtrl
     {
         public Int32 size;
-        public Int16 cmd;
+        public UInt16 cmd;
         public Int16 flag;
         public string m_strRecvData;
         public SocketMsgHandler         m_funcMsgHandler;
@@ -24,10 +24,11 @@ namespace ff
         public void HandleRecv(IFFSocket ffsocket, string strData){
             m_strRecvData += strData;
             while (m_strRecvData.Length >= 8){
-                byte[] btValue = System.Text.Encoding.UTF8.GetBytes(m_strRecvData);
+                byte[] btValue = Util.String2Byte(m_strRecvData);
                 size = System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt32(btValue, 0));
-                cmd  = System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt16(btValue, 4));
+                cmd  = (UInt16)System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt16(btValue, 4));
                 flag = System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt16(btValue, 6));
+                FFLog.Trace(string.Format("HandleRecv cmd:{0},len:{1}", cmd, size));
                 if (m_strRecvData.Length < 8 + size){
                     break;
                 }
@@ -39,7 +40,14 @@ namespace ff
                     strMsg = strMsg.Remove(size);
                     m_strRecvData = m_strRecvData.Remove(0, 8 + size);
                 }
-                m_funcMsgHandler(ffsocket, cmd, strMsg);
+                try
+                {
+                    m_funcMsgHandler(ffsocket, cmd, strMsg);
+                }
+                catch (Exception ex)
+                {
+                    FFLog.Error("scoket.HandleRecv error:" + ex.Message);
+                }
             }
         }
         public void HandleBroken(IFFSocket ffsocket){
@@ -66,6 +74,13 @@ namespace ff
             m_timer.Elapsed += new System.Timers.ElapsedEventHandler(this.HandleTimeout);//到达时间的时候执行事件；
             m_timer.AutoReset = true;//设置是执行一次（false）还是一直执行(true)；
             m_timer.Enabled = true;//是否执行System.Timers.Timer.Elapsed事件；
+        }
+        public void Cleanup()
+        {
+            if (GetTaskQueue().IsRunning())
+            {
+                GetTaskQueue().Stop();
+            }
         }
         public TaskQueue GetTaskQueue() { return m_taskQueue; }
         public void HandleTimeout(object source, System.Timers.ElapsedEventArgs e)
@@ -113,11 +128,7 @@ namespace ff
 
         public static bool Cleanup()
         {
-            if (GetTaskQueue().IsRunning())
-            {
-                GetTaskQueue().Stop();
-            }
-
+            GetContext().Cleanup();
             return true;
         }
         public static IFFSocket Connect(string host, SocketMsgHandler funcMsg, SocketBrokenHandler funcBroken){
@@ -170,39 +181,41 @@ namespace ff
             }
             return null;
         }
-        public static void SendMsg(IFFSocket ffsocket, Int16 cmd, string strData){
+        public static void SendMsg(IFFSocket ffsocket, UInt16 cmdSrc, byte[] strData){
             int len = strData.Length;
             len = System.Net.IPAddress.HostToNetworkOrder(len);
-            cmd = System.Net.IPAddress.HostToNetworkOrder(cmd);
+            UInt16 cmd = (UInt16)System.Net.IPAddress.HostToNetworkOrder((Int16)cmdSrc);
             byte[] lenArray = BitConverter.GetBytes(len);
             byte[] cmdArray = BitConverter.GetBytes(cmd);
             byte[] resArray = new byte[2]{0, 0};
-            string strRet = System.Text.Encoding.UTF8.GetString(lenArray, 0, lenArray.Length);
-            //FFLog.Trace("sendMsg {0}, {1}", strRet.Length, strData.Length);
-            strRet += System.Text.Encoding.UTF8.GetString(cmdArray, 0, cmdArray.Length);
-            //FFLog.Trace("sendMsg {0}, {1}", strRet.Length, strData.Length);
-            strRet += System.Text.Encoding.UTF8.GetString(resArray, 0, resArray.Length);
-            //FFLog.Trace("sendMsg {0}, {1}", strRet.Length, strData.Length);
-            strRet += strData;
-            ffsocket.AsyncSend(strRet);
+            byte[][] p = { lenArray, cmdArray, resArray, strData };
+            byte[] sendData = Util.MergeArray(p);
+            ffsocket.AsyncSend(sendData);
+            FFLog.Trace(string.Format("SendMsg cmd:{0},len:{1},len2:{2}", cmdSrc, strData.Length, sendData.Length));
         }
 
-        public static void SendMsg<T>(IFFSocket ffsocket, Int16 cmd, T reqMsg) where T : Thrift.Protocol.TBase{
-            string strData = EncodeMsg<T>(reqMsg);
+        public static void SendMsg(IFFSocket ffsocket, UInt16 cmd, Thrift.Protocol.TBase reqMsg)
+        {
+            byte[] strData = EncodeMsg(reqMsg);
             SendMsg(ffsocket, cmd, strData);
         }
-        public static string EncodeMsg<T>(T reqMsg) where T : Thrift.Protocol.TBase{
+        public static byte[] EncodeMsg(Thrift.Protocol.TBase reqMsg)
+        {
             var tmem = new Thrift.Transport.TMemoryBuffer();
             var proto = new Thrift.Protocol.TBinaryProtocol(tmem);
             //proto.WriteMessageBegin(new Thrift.Protocol.TMessage("ff::RegisterToBrokerReq", Thrift.Protocol.TMessageType.Call, 0));
             reqMsg.Write(proto);
             //proto.WriteMessageEnd();
             byte[] byteData = tmem.GetBuffer();
-            string strRet = System.Text.Encoding.UTF8.GetString(byteData, 0, byteData.Length);
-            return strRet;
+            return byteData;
         }
-        public static bool DecodeMsg<T>(T reqMsg, string strData) where T : Thrift.Protocol.TBase{
-            byte[] data = System.Text.Encoding.UTF8.GetBytes(strData);
+        public static bool DecodeMsg(Thrift.Protocol.TBase reqMsg, string strData)
+        {
+            if (strData.Length == 0)
+            {
+                return false;
+            }
+            byte[] data = Util.String2Byte(strData);
             var tmem = new Thrift.Transport.TMemoryBuffer(data);
             var proto = new Thrift.Protocol.TBinaryProtocol(tmem);
             //var msgdef = new Thrift.Protocol.TMessage("ffthrift", Thrift.Protocol.TMessageType.Call, 0);
@@ -210,6 +223,29 @@ namespace ff
             reqMsg.Read(proto);
             //proto.ReadMessageEnd();
             return true;
+        }
+        public static byte[] MergeArray(byte[] array1, byte[] array2)
+        {
+            byte[] ret = new byte[array1.Length + array2.Length];
+            array1.CopyTo(array1, 0);
+            array2.CopyTo(array2, array1.Length);
+            return ret;
+        }
+        public static byte[] MergeArray(List<byte[]> listByteArray)
+        {
+            int totalLen = 0;
+            foreach (var each in listByteArray)
+            {
+                totalLen += each.Length;
+            }
+            byte[] ret = new byte[totalLen];
+            totalLen = 0;
+            foreach (var each in listByteArray)
+            {
+                each.CopyTo(ret, totalLen);
+                totalLen += each.Length;
+            }
+            return ret;
         }
     }
 }

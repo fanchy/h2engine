@@ -11,7 +11,7 @@ namespace ff
         private AutoResetEvent  m_event;
         private Thread          m_thread;
         private List<FFTask>    m_taskList;
-        private bool            m_running;
+        private volatile bool   m_running;
         public TaskQueue(){
             m_mutex = new Mutex();
             m_event = new AutoResetEvent(false);
@@ -60,7 +60,7 @@ namespace ff
             while (m_running)
             {
                 m_mutex.WaitOne();
-                while (m_taskList.Count == 0)
+                while (m_running && m_taskList.Count == 0)
                 {
                     m_mutex.ReleaseMutex();
                     m_event.WaitOne(100);
