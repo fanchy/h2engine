@@ -22,18 +22,24 @@ namespace ff
                 FFLog.Trace(string.Format("ffrpc SessionEnterWorkerReq £¡£¡£¡FromGate={0}", req.From_gate));
                 return req;
             });
-            Console.ReadKey();
-            ffrpc.GetTaskQueue().Post(() =>
+            //Console.ReadKey();
+            //ffrpc.GetTaskQueue().Post(() =>
+            //{
+            //    SessionEnterWorkerReq reqMsg = new SessionEnterWorkerReq() { From_gate = "gate#0" };
+            //    WorkerCallMsgReq reqWorkerCall = new WorkerCallMsgReq();
+            //    //ffrpc.Call(strServiceName, reqMsg);
+            //    reqMsg.From_gate = "gate#1";
+            //    ffrpc.Call(strServiceName, reqWorkerCall, (SessionEnterWorkerReq retMsg) =>
+            //    {
+            //        FFLog.Trace(string.Format("ffrpc SessionEnterWorkerReq return£¡£¡£¡FromGate={0}", retMsg.From_gate));
+            //    });
+            //});
+            FFGate ffGate = new FFGate("gate#0");
+            if (ffGate.Open(host, "tcp://127.0.0.1:44000", 0) == false)
             {
-                SessionEnterWorkerReq reqMsg = new SessionEnterWorkerReq() { From_gate = "gate#0" };
-                WorkerCallMsgReq reqWorkerCall = new WorkerCallMsgReq();
-                //ffrpc.Call(strServiceName, reqMsg);
-                reqMsg.From_gate = "gate#1";
-                ffrpc.Call(strServiceName, reqWorkerCall, (SessionEnterWorkerReq retMsg) =>
-                {
-                    FFLog.Trace(string.Format("ffrpc SessionEnterWorkerReq return£¡£¡£¡FromGate={0}", retMsg.From_gate));
-                });
-            });
+                FFLog.Trace("ffGate open failed!");
+            }
+            
 
             //FFNet.Timerout(1000, Theout);
             //FFNet.Timerout(2000, Theout);
@@ -56,6 +62,7 @@ namespace ff
                 FFLog.Cleanup();
             };
             Console.ReadKey();
+
             FFLog.Trace("exist!!");
             FFNet.Cleanup();
             FFLog.Cleanup();

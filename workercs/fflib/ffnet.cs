@@ -4,45 +4,114 @@ using System.Collections.Generic;
 using Xunit;
 namespace ff
 {
-    public delegate void SocketMsgHandler(IFFSocket ffsocket, UInt16 cmd, string strData);
+    public delegate void SocketMsgHandler(IFFSocket ffsocket, UInt16 cmd, byte[] strData);
     class SocketCtrl
     {
         public Int32 size;
         public UInt16 cmd;
         public Int16 flag;
-        public string m_strRecvData;
+        public byte[] m_strRecvData;
         public SocketMsgHandler         m_funcMsgHandler;
         public SocketBrokenHandler      m_funcBroken;
+        public WSProtocol               m_oWSProtocol;
         public SocketCtrl(SocketMsgHandler funcMsg, SocketBrokenHandler funcBroken){
             size = 0;
             cmd  = 0;
             flag = 0;
-            m_strRecvData    = "";
+            m_strRecvData    = new byte[0];
             m_funcMsgHandler = funcMsg;
             m_funcBroken     = funcBroken;
+            m_oWSProtocol = new WSProtocol();
         }
-        public void HandleRecv(IFFSocket ffsocket, string strData){
-            m_strRecvData += strData;
+        public byte[] PreSendCheck(byte[] data)
+        {
+            if (m_oWSProtocol.IsWebSocketConnection())
+            {
+                return m_oWSProtocol.BuildPkg(data);
+            }
+            return data;
+        }
+        public void HandleRecv(IFFSocket ffsocket, byte[] strData){
+            if (m_oWSProtocol.IsWebSocketConnection())
+            {
+                if (m_oWSProtocol.HandleRecv(strData))
+                {
+                    if (ffsocket.GetProtocolType().Length == 0)
+                    {
+                        ffsocket.SetProtocolType("websocket");
+                    }
+                    foreach (var eachWaitSend in m_oWSProtocol.GetSendPkg())
+                    {
+                        ffsocket.AsyncSend(eachWaitSend, false);
+                    }
+                    m_oWSProtocol.ClearSendPkg();
+
+                    foreach (var eachRecvPkg in m_oWSProtocol.GetRecvPkg())
+                    {
+                        int nHeadEndIndex = -1;
+                        for (int i = 0; i < eachRecvPkg.Length; ++i)
+                        {
+                            if (eachRecvPkg[i] == '\n')
+                            {
+                                nHeadEndIndex = i;
+                                break;
+                            }
+                        }
+                        UInt16 nCmd = 0;
+                        byte[] dataBody = eachRecvPkg;
+                        if (nHeadEndIndex > 0)
+                        {
+                            byte[] bytesHead = new byte[nHeadEndIndex];
+                            dataBody  = new byte[eachRecvPkg.Length - nHeadEndIndex - 1];
+                            Array.Copy(eachRecvPkg, 0, bytesHead, 0, bytesHead.Length);
+                            Array.Copy(eachRecvPkg, nHeadEndIndex + 1, dataBody, 0, dataBody.Length);
+
+                            string[] strHeads = Util.Byte2String(bytesHead).Split(",");
+                            string[] strCmds  = strHeads[0].Split(":");
+                            if (strCmds.Length == 2 && strCmds[1].Length > 0)
+                            {
+                                nCmd = Convert.ToUInt16(strCmds[1]);
+                            }
+                        }
+                        FFLog.Trace(string.Format("cmd={0},data={1}", nCmd, Util.Byte2String(dataBody)));
+                        
+                        try
+                        {
+                            m_funcMsgHandler(ffsocket, nCmd, dataBody);
+                        }
+                        catch (Exception ex)
+                        {
+                            FFLog.Error("wsscoket.HandleRecv error:" + ex.Message);
+                        }
+                    }
+                    m_oWSProtocol.ClearRecvPkg();
+                    return;
+                }
+            }
+            
+            m_strRecvData = Util.MergeArray(m_strRecvData, strData);
             while (m_strRecvData.Length >= 8){
-                byte[] btValue = Util.String2Byte(m_strRecvData);
-                size = System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt32(btValue, 0));
-                cmd  = (UInt16)System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt16(btValue, 4));
-                flag = System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt16(btValue, 6));
+                size = System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt32(m_strRecvData, 0));
+                cmd  = (UInt16)System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt16(m_strRecvData, 4));
+                flag = System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt16(m_strRecvData, 6));
                 FFLog.Trace(string.Format("HandleRecv cmd:{0},len:{1}", cmd, size));
                 if (m_strRecvData.Length < 8 + size){
                     break;
                 }
-                string strMsg = m_strRecvData.Remove(0, 8);
-                if (strMsg.Length == size){
-                    m_strRecvData = "";
+                byte[] msgBody = new byte[size];
+                Array.Copy(m_strRecvData, 8, msgBody, 0, size);
+                if (m_strRecvData.Length == 8 + size)
+                {
+                    m_strRecvData = new byte[0];
                 }
                 else{
-                    strMsg = strMsg.Remove(size);
-                    m_strRecvData = m_strRecvData.Remove(0, 8 + size);
+                    byte[] leftData = new byte[m_strRecvData.Length - (8 + size)];
+                    Array.Copy(m_strRecvData, 8 + size, leftData, 0, size);
+                    m_strRecvData = leftData;
                 }
                 try
                 {
-                    m_funcMsgHandler(ffsocket, cmd, strMsg);
+                    m_funcMsgHandler(ffsocket, cmd, msgBody);
                 }
                 catch (Exception ex)
                 {
@@ -175,13 +244,20 @@ namespace ff
 
             int port = int.Parse(strList[2]);
             SocketCtrl ctrl = new SocketCtrl(funcMsg, funcBroken);
-            FFAcceptor ffacceptor = new FFAcceptor(new SocketRecvHandler(ctrl.HandleRecv), new SocketBrokenHandler(ctrl.HandleBroken));
+            FFAcceptor ffacceptor = new FFAcceptor(new SocketRecvHandler(ctrl.HandleRecv), new SocketBrokenHandler(ctrl.HandleBroken), new SocketPreSendCheck(ctrl.PreSendCheck));
             if (ffacceptor.Listen(ip, port)){
                 return ffacceptor;
             }
             return null;
         }
         public static void SendMsg(IFFSocket ffsocket, UInt16 cmdSrc, byte[] strData){
+            if (ffsocket.GetProtocolType() == "websocket")
+            {
+                byte[] cmddata = Util.String2Byte(string.Format("cmd:{0}\n", cmdSrc));
+                byte[] wsData = Util.MergeArray(cmddata, strData);
+                ffsocket.AsyncSend(wsData);
+                return;
+            }
             int len = strData.Length;
             len = System.Net.IPAddress.HostToNetworkOrder(len);
             UInt16 cmd = (UInt16)System.Net.IPAddress.HostToNetworkOrder((Int16)cmdSrc);
@@ -216,6 +292,20 @@ namespace ff
                 return false;
             }
             byte[] data = Util.String2Byte(strData);
+            var tmem = new Thrift.Transport.TMemoryBuffer(data);
+            var proto = new Thrift.Protocol.TBinaryProtocol(tmem);
+            //var msgdef = new Thrift.Protocol.TMessage("ffthrift", Thrift.Protocol.TMessageType.Call, 0);
+            //proto.ReadMessageBegin();
+            reqMsg.Read(proto);
+            //proto.ReadMessageEnd();
+            return true;
+        }
+        public static bool DecodeMsg(Thrift.Protocol.TBase reqMsg, byte[] data)
+        {
+            if (data.Length == 0)
+            {
+                return false;
+            }
             var tmem = new Thrift.Transport.TMemoryBuffer(data);
             var proto = new Thrift.Protocol.TBinaryProtocol(tmem);
             //var msgdef = new Thrift.Protocol.TMessage("ffthrift", Thrift.Protocol.TMessageType.Call, 0);

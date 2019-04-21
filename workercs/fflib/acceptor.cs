@@ -8,10 +8,13 @@ namespace ff
         protected Socket              m_oSocket;
         protected SocketRecvHandler   m_funcRecv;
         protected SocketBrokenHandler m_funcBroken;
-        public FFAcceptor(SocketRecvHandler onRecv, SocketBrokenHandler onBroken){
+        protected SocketPreSendCheck  m_funcPreSendCheck;
+        public FFAcceptor(SocketRecvHandler onRecv, SocketBrokenHandler onBroken, SocketPreSendCheck f)
+        {
             m_oSocket   = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             m_funcRecv  = onRecv;
             m_funcBroken= onBroken;
+            m_funcPreSendCheck = f;
         }
         public bool Listen(string ip, int port){
             try{
@@ -41,9 +44,10 @@ namespace ff
                 if (socket != null)
                 {
                     var client = socket.EndAccept(ar);
-                    IFFSocket ffsocket = new FFScoketAsync(m_funcRecv, m_funcBroken, client);
+                    IFFSocket ffsocket = new FFScoketAsync(m_funcRecv, m_funcBroken, m_funcPreSendCheck, client);
                     ffsocket.AsyncRecv();
                     m_oSocket.BeginAccept(new AsyncCallback(HandleAccepted), m_oSocket);
+                    FFLog.Trace(string.Format("scoket: handleAccepted ip:{0}", ffsocket.GetIP()));
                 }
             }
             catch (Exception ex)

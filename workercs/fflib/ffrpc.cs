@@ -82,6 +82,14 @@ namespace ff
             string msgname = strList[strList.Length - 1];
             return msgname;
         }
+        public bool IsExistNode(string strServiceName)
+        {
+            if (m_brokerData.Service2node_id.ContainsKey(strServiceName))
+            {
+                return true;
+            }
+            return false;
+        }
         public FFRpc Reg<MSG_TYPE, RET_TYPE>(TUserFunc<MSG_TYPE, RET_TYPE> funcUser) 
             where MSG_TYPE : Thrift.Protocol.TBase, new()
             where RET_TYPE : Thrift.Protocol.TBase, new()
@@ -111,7 +119,7 @@ namespace ff
         {
             if (!m_brokerData.Service2node_id.ContainsKey(strServiceName))
             {
-                FFLog.Trace(string.Format("ffrpc.Call servervice:{0} not exist", strServiceName));
+                FFLog.Error(string.Format("ffrpc.Call servervice:{0} not exist", strServiceName));
                 return false;
             }
             BrokerRouteMsgReq reqMsg = new BrokerRouteMsgReq() { Callback_id = 0, Err_info = ""};
@@ -128,7 +136,7 @@ namespace ff
         {
             if (!m_brokerData.Service2node_id.ContainsKey(strServiceName))
             {
-                FFLog.Trace(string.Format("ffrpc.Call servervice:{0} not exist", strServiceName));
+                FFLog.Error(string.Format("ffrpc.Call servervice:{0} not exist", strServiceName));
                 RET_TYPE retMsg = new RET_TYPE();
                 callback(retMsg);
                 return false;
@@ -148,7 +156,7 @@ namespace ff
             SendToDestNode(reqMsg);
             return true;
         }
-        public void HandleMsg(IFFSocket ffsocket, UInt16 cmd, string strMsg){
+        public void HandleMsg(IFFSocket ffsocket, UInt16 cmd, byte[] strMsg){
             //FFLog.Trace(string.Format("ffrpc.FFRpc handleMsg....{0}, {1} [{2}]", cmd, strMsg.Length, System.Threading.Thread.CurrentThread.ManagedThreadId.ToString()));
             try
             {

@@ -11,8 +11,8 @@ namespace ff
         public static byte[] MergeArray(byte[] array1, byte[] array2)
         {
             byte[] ret = new byte[array1.Length + array2.Length];
-            array1.CopyTo(array1, 0);
-            array2.CopyTo(array2, array1.Length);
+            Array.Copy(array1, 0, ret, 0, array1.Length);
+            Array.Copy(array2, 0, ret, array1.Length, array2.Length);
             return ret;
         }
         public static byte[] MergeArray(byte[][] listByteArray)

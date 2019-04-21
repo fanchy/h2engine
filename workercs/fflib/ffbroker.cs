@@ -37,7 +37,7 @@ namespace ff
         public bool Close(){
             return true;
         }
-        public void HandleMsg(IFFSocket ffsocket, UInt16 cmd, string strMsg) {
+        public void HandleMsg(IFFSocket ffsocket, UInt16 cmd, byte[] strMsg) {
             //FFLog.Trace(string.Format("FFBroker handleMsg....{0}, {1} [{2}]", cmd, strMsg.Length, System.Threading.Thread.CurrentThread.ManagedThreadId.ToString()));
             try
             {

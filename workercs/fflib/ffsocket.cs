@@ -7,13 +7,17 @@ namespace ff
     public interface IFFSocket{
         bool Connect(string ip, int port);
         void AsyncRecv();
-        void AsyncSend(byte[] strData);
+        void AsyncSend(byte[] strData, bool c = true);
         void Close();
         void SetSessionData(object o);
         object GetSessionData();
+        string GetIP();
+        string GetProtocolType();
+        void SetProtocolType(string s);
     }
-    public delegate void SocketRecvHandler(IFFSocket ffsocket, string strData);
+    public delegate void SocketRecvHandler(IFFSocket ffsocket, byte[] strData);
     public delegate void SocketBrokenHandler(IFFSocket ffsocket);
+    public delegate byte[] SocketPreSendCheck(byte[] strData);
     class FFScoketAsync: IFFSocket
     {
         protected Socket                        m_oSocket;
@@ -21,17 +25,22 @@ namespace ff
         protected List<byte[]>                  m_oBuffSending;
         protected SocketRecvHandler             m_funcRecv;
         protected SocketBrokenHandler           m_funcBroken;
+        protected SocketPreSendCheck            m_funcPreSendCheck;
         protected object                        m_sessionData;
         protected int                           m_nStatus;
-        public void SetSessionData(object o)
+        protected string                        m_strProtocolType;
+        public string GetProtocolType(){   return m_strProtocolType;   }
+        public void SetProtocolType(string s) { m_strProtocolType = s; }
+        public void SetSessionData(object data)
         {
-            m_sessionData = 0;
+            m_sessionData = data;
         }
         public object GetSessionData()
         {
             return m_sessionData;
         }
-        public FFScoketAsync(SocketRecvHandler onRecv, SocketBrokenHandler onBroken, Socket socket = null){
+        public FFScoketAsync(SocketRecvHandler onRecv, SocketBrokenHandler onBroken, SocketPreSendCheck checkFunc = null, Socket socket = null)
+        {
             m_nStatus = 0;
             if (socket == null)
             {
@@ -46,7 +55,11 @@ namespace ff
             m_oBuffSending  = new List<byte[]>();
             m_funcRecv      = onRecv;
             m_funcBroken    = onBroken;
+            m_funcPreSendCheck = checkFunc;
+            m_sessionData   = null;
+            m_strProtocolType = "";
         }
+        void SetPreSendCheckFunc(SocketPreSendCheck f) { m_funcPreSendCheck = f; }
         public bool Connect(string ip, int port){
             try{
                 m_oSocket.Connect(ip, port);
@@ -70,7 +83,7 @@ namespace ff
             m_nStatus = 1;
             m_oSocket.BeginReceive(m_oBuffer, 0, m_oBuffer.Length, SocketFlags.None, new AsyncCallback(HandleRecv), m_oSocket);
         }
-        public void PostMsg(string data){
+        public void PostMsg(byte[] data){
             m_funcRecv(this, data);
         }
         public void HandleRecv(IAsyncResult ar)
@@ -107,7 +120,8 @@ namespace ff
             {
                 try
                 {
-                    var message = Util.Byte2String(m_oBuffer, 0, length);
+                    byte[] message = new byte[length];
+                    Array.Copy(m_oBuffer, 0, message, 0, length);
                     PostMsg(message);
                     //接收下一个消息
                     if (m_oSocket != null)
@@ -122,12 +136,17 @@ namespace ff
                 }
             });
         }
-        public void AsyncSend(byte[] strData){
+        public void AsyncSend(byte[] strData, bool bCheckSend = true){
             FFNet.GetTaskQueue().Post(() =>
             {
                 if (strData.Length == 0 || m_oSocket == null)
                 {
                     return;
+                }
+
+                if (bCheckSend == true && m_funcPreSendCheck != null)
+                {
+                    strData = m_funcPreSendCheck(strData);
                 }
 
                 m_oBuffSending.Add(strData);
@@ -190,6 +209,9 @@ namespace ff
                 m_funcBroken(this);
             });
         }
-
+        public string GetIP()
+        {
+            return ((System.Net.IPEndPoint)m_oSocket.RemoteEndPoint).Address.ToString();//
+        }
     }
 }
