@@ -34,7 +34,7 @@ SocketI* AcceptorLinuxGate::create_socket(SocketFd new_fd_)
     #ifdef _WIN32
     return new SocketWin(m_epoll, new SocketCtrlCommon(m_msg_handler), new_fd_, m_tq->alloc(new_fd_));
 	#else
-    return new SocketLinux(m_epoll, new SocketCtrlCommon(m_msg_handler, &m_net_stat), new_fd_, m_tq->alloc(new_fd_));
+    return new SocketLinux(m_epoll, new SocketCtrlCommon(m_msg_handler), new_fd_, m_tq->alloc(new_fd_));
 	#endif
 }
 void AcceptorLinuxGate::close()

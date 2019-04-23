@@ -225,27 +225,42 @@ public:
             return true;
         }
         int nFIN = ((cacheRecvData[0] & 0x80) == 0x80)? 1: 0;
+
         int nOpcode = cacheRecvData[0] & 0x0F;
         //int nMask = ((cacheRecvData[1] & 0x80) == 0x80) ? 1 : 0; //!this must be 1
-        unsigned int nPayload_length = cacheRecvData[1] & 0x7F;
+        int nPayload_length = cacheRecvData[1] & 0x7F;
         int nPlayLoadLenByteNum = 1;
+        int nMaskingKeyByteNum = 4;
+        
         if (nPayload_length == 126)
         {
             nPlayLoadLenByteNum = 3;
-            uint16_t tmpLen = 0;
-            memcpy(&tmpLen, cacheRecvData.c_str() + 2, 2);
-            nPayload_length = ntohs((int16_t)tmpLen);
-            printf("nPayload_length1=%u\n", nPayload_length);
         }
         else if (nPayload_length == 127)
         {
             nPlayLoadLenByteNum = 9;
+        }
+        if ((int)cacheRecvData.size() < (1 + nPlayLoadLenByteNum + nMaskingKeyByteNum))
+        {
+            return true;
+        }
+        if (nPayload_length == 126)
+        {
+            uint16_t tmpLen = 0;
+            memcpy(&tmpLen, cacheRecvData.c_str() + 2, 2);
+            nPayload_length = ntohs((int16_t)tmpLen);
+        }
+        else if (nPayload_length == 127)
+        {
             int64_t tmpLen = 0;
             memcpy(&tmpLen, cacheRecvData.c_str() + 2, 8);
-            nPayload_length = (unsigned int)ws_ntoh64(tmpLen);
-            printf("nPayload_length2=%u\n", nPayload_length);
+            nPayload_length = (int)ws_ntoh64(tmpLen);
         }
-        int nMaskingKeyByteNum = 4;
+        
+        if ((int)cacheRecvData.size() < (1 + nPlayLoadLenByteNum + nMaskingKeyByteNum + nPayload_length))
+        {
+            return true;
+        }
         std::string aMasking_key;
         aMasking_key.assign(cacheRecvData.c_str() + 1 + nPlayLoadLenByteNum, nMaskingKeyByteNum);
         std::string aPayload_data;
@@ -258,7 +273,7 @@ public:
             leftBytes.assign(cacheRecvData.c_str() + 1 + nPlayLoadLenByteNum + nMaskingKeyByteNum + nPayload_length, nLeftSize);
             cacheRecvData = leftBytes;
         }
-        for (unsigned int i = 0; i < nPayload_length; i++)
+        for (int i = 0; i < nPayload_length; i++)
         {
             aPayload_data[i] = (char)(aPayload_data[i] ^ aMasking_key[i % nMaskingKeyByteNum]);
         }
