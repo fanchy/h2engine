@@ -139,8 +139,7 @@ function Log(Text, MessageType) {
 };
 function btnConnect(){
     if (ws){
-        Log("连接已经建立!!。", "ERROR");
-        return;
+        ws.close();
     }
     gHost = document.getElementById("ip").value + ":" + document.getElementById("port").value;
     Log("begin connect:"+gHost)
@@ -160,7 +159,7 @@ function btnClose(){
     if (ws)
         ws.close();
 }
-function WSonOpen() {
+function WSonOpen(event) {
     Log("连接已经建立。", "OK");
     //$("#SendDataContainer").show();
         //ws.send('cmd:1\n{"_webdebug_":true,"username":"' + document.getElementById("user").value+'"}');//,"reconnectUid":15728642
