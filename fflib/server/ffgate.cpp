@@ -124,7 +124,7 @@ int FFGate::handleMsg(const Message& msg_, SocketObjPtr sock_)
         vector<string> allwoker = m_ffrpc->getServicesLike("worker#");
         if (allwoker.empty()){
             LOGERROR((FFGATE, "FFGate::handleMsg no worer exist"));
-            MsgSender::send(sock_, 0, "server busy!");
+            MsgSender::send(sock_, 0, "server is busy!0x0!");
             //sock_->close();
             return 0;
         }

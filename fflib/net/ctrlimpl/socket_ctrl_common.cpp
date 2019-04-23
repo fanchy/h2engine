@@ -41,6 +41,59 @@ int SocketCtrlCommon::handleError(SocketI* sp_)
 
 int SocketCtrlCommon::handleRead(SocketI* sp_, const char* buff, size_t len)
 {
+    if (m_oWSProtocol.handleRecv(buff, len))
+    {
+        const vector<string>& waitToSend = m_oWSProtocol.getSendPkg();
+        for (size_t i = 0; i < waitToSend.size(); ++i)
+        {
+            sp_->sendRaw(waitToSend[i]);
+        }
+        m_oWSProtocol.clearSendPkg();
+
+        const vector<string>& recvPkg = m_oWSProtocol.getRecvPkg();
+        for (size_t i = 0; i < recvPkg.size(); ++i)
+        {
+            const string& eachRecvPkg = recvPkg[i];
+            int nHeadEndIndex = -1;
+            for (int i = 0; i < (int)eachRecvPkg.size(); ++i)
+            {
+                if (eachRecvPkg[i] == '\n')
+                {
+                    nHeadEndIndex = i;
+                    break;
+                }
+            }
+            uint16_t nCmd = 0;
+            if (nHeadEndIndex > 0)
+            {
+                string bytesHead(eachRecvPkg.c_str(), nHeadEndIndex);
+                m_message.appendToBody(eachRecvPkg.c_str() + nHeadEndIndex + 1, eachRecvPkg.size() - nHeadEndIndex - 1);
+
+                vector<string> strHeads;
+                m_oWSProtocol.strSplit(bytesHead, strHeads, ",");
+                vector<string> strCmds;
+                m_oWSProtocol.strSplit(strHeads[0], strCmds, ":");
+                if (strCmds.size() == 2 && strCmds[1].size() > 0)
+                {
+                    nCmd = (uint16_t)atoi(strCmds[1].c_str());
+                }
+            }
+            else{
+                m_message.appendToBody(eachRecvPkg.c_str(), eachRecvPkg.size());
+            }
+            m_message.getHead().cmd = nCmd;
+            m_message.getHead().size = m_message.getBody().size();
+            this->post_msg(sp_);
+            m_message.clear();
+        }
+        m_oWSProtocol.clearRecvPkg();
+        if (m_oWSProtocol.isClose())
+        {
+            sp_->close();
+        }
+        return 0;
+    }
+
     size_t left_len = len;
     size_t tmp      = 0;
 
@@ -89,11 +142,23 @@ int SocketCtrlCommon::handleWriteCompleted(SocketI* sp_)
     return 0;
 }
 
-int SocketCtrlCommon::checkPreSend(SocketI* sp_, const string& buff, int flag)
+int SocketCtrlCommon::checkPreSend(SocketI* sp_, string& buff, int flag)
 {
     if (sp_->socket() < 0)
     {
         return -1;
+    }
+    if (m_oWSProtocol.isWebSocketConnection())
+    {
+        buff = m_oWSProtocol.buildPkg(buff);
+    }
+    return 0;
+}
+int SocketCtrlCommon::get_type() const
+{
+    if (m_oWSProtocol.isWebSocketConnection())
+    {
+        return 1;
     }
     return 0;
 }

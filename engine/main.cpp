@@ -16,7 +16,7 @@
 #include "server/ffgate.h"
 #include "server/shared_mem.h"
 
-
+#include "net/wsprotocol.h"
 using namespace ff;
 using namespace std;
 
@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        LOG.start("-log_path ./log -log_filename log -log_class DB_MGR,FFNET,BROKER,FFRPC,FFGATE,FFWORKER,FFWORKER_PYTHON,FFWORKER_LUA,FFWORKER_JS,FFNET,HHTP_MGR -log_print_screen true -log_print_file true -log_level 4");
+        LOG.start("-log_path ./log -log_filename log -log_class DB_MGR,FFNET,BROKER,FFRPC,FFGATE,FFWORKER,FFWORKER_PYTHON,FFWORKER_LUA,FFWORKER_JS,FFNET,HHTP_MGR -log_print_screen true -log_print_file true -log_level 6");
     }
     #ifdef _WIN32
     Singleton<NetFactory::NetData>::instance().start();

@@ -32,61 +32,63 @@ namespace ff
             return data;
         }
         public void HandleRecv(IFFSocket ffsocket, byte[] strData){
-            if (m_oWSProtocol.IsWebSocketConnection())
+            
+            if (m_oWSProtocol.HandleRecv(strData))
             {
-                if (m_oWSProtocol.HandleRecv(strData))
+                if (ffsocket.GetProtocolType().Length == 0)
                 {
-                    if (ffsocket.GetProtocolType().Length == 0)
-                    {
-                        ffsocket.SetProtocolType("websocket");
-                    }
-                    foreach (var eachWaitSend in m_oWSProtocol.GetSendPkg())
-                    {
-                        ffsocket.AsyncSend(eachWaitSend, false);
-                    }
-                    m_oWSProtocol.ClearSendPkg();
-
-                    foreach (var eachRecvPkg in m_oWSProtocol.GetRecvPkg())
-                    {
-                        int nHeadEndIndex = -1;
-                        for (int i = 0; i < eachRecvPkg.Length; ++i)
-                        {
-                            if (eachRecvPkg[i] == '\n')
-                            {
-                                nHeadEndIndex = i;
-                                break;
-                            }
-                        }
-                        UInt16 nCmd = 0;
-                        byte[] dataBody = eachRecvPkg;
-                        if (nHeadEndIndex > 0)
-                        {
-                            byte[] bytesHead = new byte[nHeadEndIndex];
-                            dataBody  = new byte[eachRecvPkg.Length - nHeadEndIndex - 1];
-                            Array.Copy(eachRecvPkg, 0, bytesHead, 0, bytesHead.Length);
-                            Array.Copy(eachRecvPkg, nHeadEndIndex + 1, dataBody, 0, dataBody.Length);
-
-                            string[] strHeads = Util.Byte2String(bytesHead).Split(",");
-                            string[] strCmds  = strHeads[0].Split(":");
-                            if (strCmds.Length == 2 && strCmds[1].Length > 0)
-                            {
-                                nCmd = Convert.ToUInt16(strCmds[1]);
-                            }
-                        }
-                        FFLog.Trace(string.Format("cmd={0},data={1}", nCmd, Util.Byte2String(dataBody)));
-                        
-                        try
-                        {
-                            m_funcMsgHandler(ffsocket, nCmd, dataBody);
-                        }
-                        catch (Exception ex)
-                        {
-                            FFLog.Error("wsscoket.HandleRecv error:" + ex.Message);
-                        }
-                    }
-                    m_oWSProtocol.ClearRecvPkg();
-                    return;
+                    ffsocket.SetProtocolType("websocket");
                 }
+                foreach (var eachWaitSend in m_oWSProtocol.GetSendPkg())
+                {
+                    ffsocket.AsyncSend(eachWaitSend, false);
+                }
+                m_oWSProtocol.ClearSendPkg();
+
+                foreach (var eachRecvPkg in m_oWSProtocol.GetRecvPkg())
+                {
+                    int nHeadEndIndex = -1;
+                    for (int i = 0; i < eachRecvPkg.Length; ++i)
+                    {
+                        if (eachRecvPkg[i] == '\n')
+                        {
+                            nHeadEndIndex = i;
+                            break;
+                        }
+                    }
+                    UInt16 nCmd = 0;
+                    byte[] dataBody = eachRecvPkg;
+                    if (nHeadEndIndex > 0)
+                    {
+                        byte[] bytesHead = new byte[nHeadEndIndex];
+                        dataBody  = new byte[eachRecvPkg.Length - nHeadEndIndex - 1];
+                        Array.Copy(eachRecvPkg, 0, bytesHead, 0, bytesHead.Length);
+                        Array.Copy(eachRecvPkg, nHeadEndIndex + 1, dataBody, 0, dataBody.Length);
+
+                        string[] strHeads = Util.Byte2String(bytesHead).Split(",");
+                        string[] strCmds  = strHeads[0].Split(":");
+                        if (strCmds.Length == 2 && strCmds[1].Length > 0)
+                        {
+                            nCmd = Convert.ToUInt16(strCmds[1]);
+                        }
+                    }
+                    FFLog.Trace(string.Format("cmd={0},data={1}", nCmd, Util.Byte2String(dataBody)));
+                        
+                    try
+                    {
+                        m_funcMsgHandler(ffsocket, nCmd, dataBody);
+                    }
+                    catch (Exception ex)
+                    {
+                        FFLog.Error("wsscoket.HandleRecv error:" + ex.Message);
+                    }
+                }
+                m_oWSProtocol.ClearRecvPkg();
+                if (m_oWSProtocol.IsClose())
+                {
+                    ffsocket.Close();
+                }
+                return;
             }
             
             m_strRecvData = Util.MergeArray(m_strRecvData, strData);

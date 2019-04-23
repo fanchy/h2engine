@@ -31,16 +31,11 @@ public:
             }
             else
             {
-                if (cmd_ != 0){
-                    char msg[128] = {0};
-                    snprintf(msg, sizeof(msg), "cmd:%u\n", (uint32_t)cmd_);
-                    std::string dest(msg);
-                    dest += str_;
-                    pSocket->asyncSend(dest);
-                }
-                else{
-                    pSocket->asyncSend(str_);
-                }
+                char msg[128] = {0};
+                snprintf(msg, sizeof(msg), "cmd:%u\n", (uint32_t)cmd_);
+                std::string dest(msg);
+                dest += str_;
+                pSocket->asyncSend(dest);
             }
         }
     }

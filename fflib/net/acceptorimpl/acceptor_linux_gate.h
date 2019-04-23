@@ -2,7 +2,6 @@
 #define _GATEWAY_ACCEPTOR_H_
 
 #include "net/acceptorimpl/acceptor_linux.h"
-#include "net/ctrlimpl/socket_ctrl_gate.h"
 #include "net/net_stat.h"
 #include "base/arg_helper.h"
 
