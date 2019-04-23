@@ -227,11 +227,23 @@ public:
         int nFIN = ((cacheRecvData[0] & 0x80) == 0x80)? 1: 0;
         int nOpcode = cacheRecvData[0] & 0x0F;
         //int nMask = ((cacheRecvData[1] & 0x80) == 0x80) ? 1 : 0; //!this must be 1
-        int nPayload_length = cacheRecvData[1] & 0x7F;
+        unsigned int nPayload_length = cacheRecvData[1] & 0x7F;
         int nPlayLoadLenByteNum = 1;
         if (nPayload_length == 126)
         {
             nPlayLoadLenByteNum = 3;
+            uint16_t tmpLen = 0;
+            memcpy(&tmpLen, cacheRecvData.c_str() + 2, 2);
+            nPayload_length = ntohs((int16_t)tmpLen);
+            printf("nPayload_length1=%u\n", nPayload_length);
+        }
+        else if (nPayload_length == 127)
+        {
+            nPlayLoadLenByteNum = 9;
+            int64_t tmpLen = 0;
+            memcpy(&tmpLen, cacheRecvData.c_str() + 2, 8);
+            nPayload_length = (unsigned int)ws_ntoh64(tmpLen);
+            printf("nPayload_length2=%u\n", nPayload_length);
         }
         int nMaskingKeyByteNum = 4;
         std::string aMasking_key;
@@ -246,7 +258,7 @@ public:
             leftBytes.assign(cacheRecvData.c_str() + 1 + nPlayLoadLenByteNum + nMaskingKeyByteNum + nPayload_length, nLeftSize);
             cacheRecvData = leftBytes;
         }
-        for (int i = 0; i < nPayload_length; i++)
+        for (unsigned int i = 0; i < nPayload_length; i++)
         {
             aPayload_data[i] = (char)(aPayload_data[i] ^ aMasking_key[i % nMaskingKeyByteNum]);
         }
@@ -328,7 +340,7 @@ public:
         return ret;
     }
 
-    std::string sha1Encode(const std::string strSrc)
+    std::string sha1Encode(const std::string& strSrc)
     {
         const char *src = strSrc.c_str();
         SHA_CTX c;
@@ -369,7 +381,7 @@ public:
         buff[bptr->length] = 0;
 
         BIO_free_all(b64);
-        std::string ret(buff, bptr->length);
+        std::string ret(buff);
         ::free(buff);
         return ret;
     }
