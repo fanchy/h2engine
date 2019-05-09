@@ -15,17 +15,19 @@ namespace ff
         string GetProtocolType();
         void SetProtocolType(string s);
     }
-    public delegate void SocketRecvHandler(IFFSocket ffsocket, byte[] strData);
-    public delegate void SocketBrokenHandler(IFFSocket ffsocket);
-    public delegate byte[] SocketPreSendCheck(byte[] strData);
+    public interface ISocketCtrl
+    {
+        void HandleRecv(IFFSocket ffsocket, byte[] strData);
+        void HandleBroken(IFFSocket ffsocket);
+        byte[] PreSendCheck(byte[] strData);
+        ISocketCtrl ForkSelf();
+    }
     class FFScoketAsync: IFFSocket
     {
         protected Socket                        m_oSocket;
+        protected ISocketCtrl                   m_oSocketCtrl;
         protected byte[]                        m_oBuffer;
         protected List<byte[]>                  m_oBuffSending;
-        protected SocketRecvHandler             m_funcRecv;
-        protected SocketBrokenHandler           m_funcBroken;
-        protected SocketPreSendCheck            m_funcPreSendCheck;
         protected object                        m_sessionData;
         protected int                           m_nStatus;
         protected string                        m_strProtocolType;
@@ -39,7 +41,7 @@ namespace ff
         {
             return m_sessionData;
         }
-        public FFScoketAsync(SocketRecvHandler onRecv, SocketBrokenHandler onBroken, SocketPreSendCheck checkFunc = null, Socket socket = null)
+        public FFScoketAsync(ISocketCtrl socketCtrl, Socket socket = null)
         {
             m_nStatus = 0;
             if (socket == null)
@@ -53,13 +55,10 @@ namespace ff
 
             m_oBuffer       = new byte[1024*4];
             m_oBuffSending  = new List<byte[]>();
-            m_funcRecv      = onRecv;
-            m_funcBroken    = onBroken;
-            m_funcPreSendCheck = checkFunc;
+            m_oSocketCtrl   = socketCtrl;
             m_sessionData   = null;
             m_strProtocolType = "";
         }
-        void SetPreSendCheckFunc(SocketPreSendCheck f) { m_funcPreSendCheck = f; }
         public bool Connect(string ip, int port){
             try{
                 m_oSocket.Connect(ip, port);
@@ -84,7 +83,7 @@ namespace ff
             m_oSocket.BeginReceive(m_oBuffer, 0, m_oBuffer.Length, SocketFlags.None, new AsyncCallback(HandleRecv), m_oSocket);
         }
         public void PostMsg(byte[] data){
-            m_funcRecv(this, data);
+            m_oSocketCtrl.HandleRecv(this, data);
         }
         public void HandleRecv(IAsyncResult ar)
         {
@@ -144,9 +143,9 @@ namespace ff
                     return;
                 }
 
-                if (bCheckSend == true && m_funcPreSendCheck != null)
+                if (bCheckSend == true)
                 {
-                    strData = m_funcPreSendCheck(strData);
+                    strData = m_oSocketCtrl.PreSendCheck(strData);
                 }
 
                 m_oBuffSending.Add(strData);
@@ -206,7 +205,7 @@ namespace ff
                 m_oSocket.Close();
                 m_oSocket = null;
                 m_oBuffSending.Clear();
-                m_funcBroken(this);
+                m_oSocketCtrl.HandleBroken(this);
             });
         }
         public string GetIP()

@@ -175,12 +175,36 @@ namespace ff
             //int nMask = ((cacheRecvData[1] & 0x80) == 0x80) ? 1 : 0;
             int nPayload_length = cacheRecvData[1] & 0x7F;
             int nPlayLoadLenByteNum = 1;
+            int nMaskingKeyByteNum = 4;
             if (nPayload_length == 126)
             {
                 nPlayLoadLenByteNum = 3;
-                //flag = System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt16(cacheRecvData, 2));
             }
-            int nMaskingKeyByteNum = 4;
+            else if (nPayload_length == 127)
+            {
+                nPlayLoadLenByteNum = 9;
+            }
+            if (cacheRecvData.Length < (1 + nPlayLoadLenByteNum + nMaskingKeyByteNum))
+            {
+                return true;
+            }
+            if (nPayload_length == 126)
+            {
+                byte[] nPayload_length_Bytes = new byte[2];
+                Array.Copy(cacheRecvData, 2, nPayload_length_Bytes, 0, nPayload_length_Bytes.Length);
+                nPayload_length = System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt16(nPayload_length_Bytes, 0));
+            }
+            else if (nPayload_length == 127)
+            {
+                byte[] nPayload_length_Bytes = new byte[8];
+                Array.Copy(cacheRecvData, 2, nPayload_length_Bytes, 0, nPayload_length_Bytes.Length);
+                nPayload_length = (int)System.Net.IPAddress.NetworkToHostOrder((long)BitConverter.ToInt64(nPayload_length_Bytes, 0));
+            }
+            if (cacheRecvData.Length < (1 + nPlayLoadLenByteNum + nMaskingKeyByteNum + nPayload_length))
+            {
+                return true;
+            }
+
             byte[] aMasking_key = new byte[nMaskingKeyByteNum];
             Array.Copy(cacheRecvData, 1 + nPlayLoadLenByteNum, aMasking_key, 0, nMaskingKeyByteNum);
             byte[] aPayload_data = new byte[nPayload_length];
@@ -190,13 +214,13 @@ namespace ff
             if (nLeftSize > 0)
             {
                 Array.Copy(cacheRecvData, 1 + nPlayLoadLenByteNum + nMaskingKeyByteNum + nPayload_length, leftBytes, 0, nLeftSize);
-                cacheRecvData = leftBytes;
             }
+            cacheRecvData = leftBytes;
             for (int i = 0; i < nPayload_length; i++)
             {
                 aPayload_data[i] = (byte)(aPayload_data[i] ^ aMasking_key[i % 4]);
             }
-
+            FFLog.Trace(string.Format("nOpcode={0},data={1}", nOpcode, aPayload_data.Length));
             if (8 == nOpcode)
             {
                 AddSendPkg(BuildPkg(new byte[0], nOpcode));// close

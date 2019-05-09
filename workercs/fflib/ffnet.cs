@@ -5,7 +5,8 @@ using Xunit;
 namespace ff
 {
     public delegate void SocketMsgHandler(IFFSocket ffsocket, UInt16 cmd, byte[] strData);
-    class SocketCtrl
+    public delegate void SocketBrokenHandler(IFFSocket ffsocket);
+    class SocketCtrl: ISocketCtrl
     {
         public Int32 size;
         public UInt16 cmd;
@@ -22,6 +23,10 @@ namespace ff
             m_funcMsgHandler = funcMsg;
             m_funcBroken     = funcBroken;
             m_oWSProtocol = new WSProtocol();
+        }
+        public ISocketCtrl ForkSelf()
+        {
+            return new SocketCtrl(m_funcMsgHandler, m_funcBroken);
         }
         public byte[] PreSendCheck(byte[] data)
         {
@@ -72,7 +77,7 @@ namespace ff
                             nCmd = Convert.ToUInt16(strCmds[1]);
                         }
                     }
-                    FFLog.Trace(string.Format("cmd={0},data={1}", nCmd, Util.Byte2String(dataBody)));
+                    FFLog.Trace(string.Format("cmd={0},data={1}", nCmd, dataBody.Length));
                         
                     try
                     {
@@ -221,7 +226,7 @@ namespace ff
 
             int port = int.Parse(strList[2]);
             SocketCtrl ctrl = new SocketCtrl(funcMsg, funcBroken);
-            IFFSocket ffsocket = new FFScoketAsync(new SocketRecvHandler(ctrl.HandleRecv), new SocketBrokenHandler(ctrl.HandleBroken));
+            IFFSocket ffsocket = new FFScoketAsync(ctrl);
             if (ffsocket.Connect(ip, port)){
                 return ffsocket;
             }
@@ -246,7 +251,7 @@ namespace ff
 
             int port = int.Parse(strList[2]);
             SocketCtrl ctrl = new SocketCtrl(funcMsg, funcBroken);
-            FFAcceptor ffacceptor = new FFAcceptor(new SocketRecvHandler(ctrl.HandleRecv), new SocketBrokenHandler(ctrl.HandleBroken), new SocketPreSendCheck(ctrl.PreSendCheck));
+            FFAcceptor ffacceptor = new FFAcceptor(ctrl);
             if (ffacceptor.Listen(ip, port)){
                 return ffacceptor;
             }
