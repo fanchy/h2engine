@@ -1,10 +1,10 @@
 #ifndef _NET_FACTORY_H_
 #define _NET_FACTORY_H_
 
-#include "net/acceptorimpl/acceptor_linux.h"
+#include "net/acceptor_linux.h"
 
-#include "net/eventloopimpl/epoll.h"
-#include "net/eventloopimpl/select.h"
+#include "net/epoll.h"
+#include "net/select.h"
 #include "connector.h"
 #include "base/singleton.h"
 #include "base/perf_monitor.h"

@@ -7,7 +7,7 @@
 #include <sys/socket.h>
 #endif
 
-#include "net/socketimpl/socket_win.h"
+#include "net/socket_win.h"
 #include "net/event_loop.h"
 #include "net/socket_ctrl.h"
 #include "net/socket_op.h"

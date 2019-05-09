@@ -5,7 +5,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-#include "net/socketimpl/socket_linux.h"
+#include "net/socket_linux.h"
 #include "net/event_loop.h"
 #include "net/socket_ctrl.h"
 #include "net/socket_op.h"

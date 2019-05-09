@@ -20,10 +20,10 @@
 using namespace std;
 
 #include "net/event_loop.h"
-#include "net/acceptorimpl/acceptor_linux.h"
-#include "net/socketimpl/socket_linux.h"
-#include "net/socketimpl/socket_win.h"
-#include "net/ctrlimpl/socket_ctrl_common.h"
+#include "net/acceptor_linux.h"
+#include "net/socket_linux.h"
+#include "net/socket_win.h"
+#include "net/socket_ctrl_common.h"
 #include "base/str_tool.h"
 #include "net/socket_op.h"
 #include "net/msg_handler.h"
