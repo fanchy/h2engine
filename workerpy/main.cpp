@@ -49,6 +49,7 @@ static bool flagok = false;
 
 int main(int argc, char* argv[])
 {
+    SignalHelper::bloack();
     ArgHelper& arg_helper = Singleton<ArgHelper>::instance();
 	arg_helper.load(argc, argv);
 	string cfgfile = "h2.conf";
@@ -72,7 +73,7 @@ int main(int argc, char* argv[])
     Singleton<NetFactory::NetData>::instance().start();
     #endif
 
-    //! ÃÀÀöµÄÈÕÖ¾×é¼þ£¬shellÊä³öÊÇ²ÊÉ«µÎ£¡£¡
+    //! ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾ï¿½ï¿½ï¿½ï¿½ï¿½shellï¿½ï¿½ï¿½ï¿½Ç²ï¿½É«ï¿½Î£ï¿½ï¿½ï¿½
     if (arg_helper.isEnableOption("-log_path"))
     {
         LOG.start(arg_helper);

@@ -828,7 +828,7 @@ struct luaops_t{
         run_string(new_path);
         return 0;
     }
-    int  load_file(const std::string& file_name_) throw (lua_err_t)
+    int  load_file(const std::string& file_name_) 
 	{
 		if (luaL_loadfile(m_ls, file_name_.c_str()))
 		{
@@ -839,7 +839,7 @@ struct luaops_t{
 
 		return 0;
 	}
-	int  do_file(const std::string& file_name_) throw (lua_err_t)
+	int  do_file(const std::string& file_name_) 
 	{
 		if (luaL_dofile(m_ls, file_name_.c_str()))
 		{
@@ -850,7 +850,7 @@ struct luaops_t{
 
 		return 0;
 	}
-    void run_string(const char* str_) throw (lua_err_t)
+    void run_string(const char* str_) 
 	{
 		if (luaL_dostring(m_ls, str_))
 		{
@@ -859,7 +859,7 @@ struct luaops_t{
 			throw lua_err_t(err);
 		}
 	}
-    void run_string(const std::string& str_) throw (lua_err_t)
+    void run_string(const std::string& str_) 
     {
         run_string(str_.c_str());
     }

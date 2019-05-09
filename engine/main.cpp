@@ -43,6 +43,7 @@ static bool flagok = false;
 
 int main(int argc, char* argv[])
 {
+    SignalHelper::bloack();
 	ArgHelper arg_helper(argc, argv);
     if (arg_helper.isEnableOption("-f"))
     {
@@ -139,11 +140,15 @@ int main(int argc, char* argv[])
 #endif
 err_proc:
     ffgate.close();
+    //printf( "%s %d\n", __FILE__, __LINE__);
     PERF_MONITOR.stop();
+    //printf( "%s %d\n", __FILE__, __LINE__);
     usleep(100);
+    //printf( "%s %d\n", __FILE__, __LINE__);
     NetFactory::stop();
+    //printf( "%s %d\n", __FILE__, __LINE__);
     usleep(200);
-
+    //printf( "%s %d\n", __FILE__, __LINE__);
     Singleton<SharedSyncmemMgr>::instance().cleanup();
 
 #ifdef _WIN32
