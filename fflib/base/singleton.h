@@ -2,6 +2,7 @@
 #define _SINGLETON_H_
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <pthread.h>
 
 template<class T>
@@ -26,11 +27,14 @@ private:
     }
     static void destroy()
     {
+        //printf("%s begin\n", __PRETTY_FUNCTION__);
         if(m_instance)
         {
-                delete m_instance;
-                m_instance = 0;
+            delete m_instance;
+            m_instance = 0;
         }
+
+        //printf("%s end\n", __PRETTY_FUNCTION__);
     }
 
 private:

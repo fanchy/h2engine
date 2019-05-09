@@ -19,7 +19,6 @@ int DbMgr::start()
     for (size_t i = 0; i < DB_THREAD_NUM; ++i)
     {
         m_tq.push_back(new TaskQueue());
-        m_thread.create_thread(TaskBinder::gen(&TaskQueue::run, SMART_PTR_RAW(m_tq[i])), 1);
     }
     return 0;
 }
@@ -30,7 +29,7 @@ int DbMgr::stop()
     {
         m_tq[i]->close();
     }
-    m_thread.join();
+
     LOGINFO((DB_MGR_LOG, "DbMgr::stop end"));
     return 0;
 }

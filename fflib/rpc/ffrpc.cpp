@@ -12,7 +12,8 @@ FFRpc::FFRpc(string service_name_):
     m_runing(false),
     m_service_name(service_name_),
     m_node_id(0),
-    m_timer(&m_tq),
+    m_tq(new TaskQueue()),
+    m_timer(m_tq),
     m_master_broker_sock(NULL)
 {
 }
@@ -20,6 +21,7 @@ FFRpc::FFRpc(string service_name_):
 FFRpc::~FFRpc()
 {
     this->close();
+    LOGTRACE((FFRPC, "FFRpc::~FFRpc end"));
 }
 int FFRpc::open(ArgHelper& arg_helper)
 {
@@ -35,8 +37,6 @@ int FFRpc::open(const string& broker_addr)
     NetFactory::start(1);
     m_host = broker_addr;
 
-    m_thread.create_thread(TaskBinder::gen(&TaskQueue::run, &m_tq), 1);
-
     //!新版本
     m_ffslot.bind(REGISTER_TO_BROKER_RET, FFRpcOps::genCallBack(&FFRpc::handleBrokerRegResponse, this))
             .bind(BROKER_TO_CLIENT_MSG, FFRpcOps::genCallBack(&FFRpc::handleRpcCallMsg, this));
@@ -45,6 +45,7 @@ int FFRpc::open(const string& broker_addr)
 
     if (!m_master_broker_sock)
     {
+        getTaskQueue()->close();
         LOGERROR((FFRPC, "FFRpc::open failed, can't connect to remote broker<%s>", m_host.c_str()));
         return -1;
     }
@@ -79,7 +80,7 @@ int FFRpc::close()
     {
         return 0;
     }
-    m_timer.stop(true);
+    LOGTRACE((FFRPC, "FFRpc::close 11"));
     if (m_master_broker_sock)
     {
         m_master_broker_sock->close();
@@ -89,9 +90,10 @@ int FFRpc::close()
             break;
         usleep(1000);
     }
+    LOGTRACE((FFRPC, "FFRpc::close 22"));
     m_master_broker_sock = NULL;
-    m_tq.close();
-    m_thread.join();
+    getTaskQueue()->close();
+
     m_runing = false;
     LOGINFO((FFRPC, "FFRpc::close end ok"));
     //usleep(100);
@@ -156,7 +158,7 @@ void FFRpc::timerReconnectBroker()
 //! 获取任务队列对象
 TaskQueue* FFRpc::getTaskQueue()
 {
-    return &m_tq;
+    return m_tq.get();
 }
 
 int FFRpc::handleBroken(SocketObjPtr sock_)
@@ -372,7 +374,7 @@ bool FFRpc::isExist(const string& service_name_)
 void FFRpc::response(const string& msg_name_,  uint64_t dest_node_id_, int64_t callback_id_, const string& body_, string err_info)
 {
     static string null_str;
-    m_tq.post(TaskBinder::gen(&FFRpc::sendToDestNode, this, null_str, msg_name_, dest_node_id_, callback_id_, body_, err_info));
+    getTaskQueue()->post(TaskBinder::gen(&FFRpc::sendToDestNode, this, null_str, msg_name_, dest_node_id_, callback_id_, body_, err_info));
 }
 
 //! 处理注册,

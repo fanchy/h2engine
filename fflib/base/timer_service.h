@@ -20,22 +20,23 @@
 #include "base/thread.h"
 #include "base/lock.h"
 #include "base/task_queue.h"
+#include "base/smart_ptr.h"
 
 namespace ff {
 
 class TimerService 
 {
-    struct interupt_info_t
+    struct InteruptInfo
     {
         int pair_fds[2];
-        interupt_info_t()
+        InteruptInfo()
         {
             assert(0 == ::socketpair(AF_LOCAL, SOCK_STREAM, 0, pair_fds));
             if (write(pair_fds[1], "0", 1)){
                 //!just for warning
             }
         }
-        ~interupt_info_t()
+        ~InteruptInfo()
         {
             ::close(pair_fds[0]);
             ::close(pair_fds[1]);
@@ -43,14 +44,15 @@ class TimerService
         int read_fd() { return pair_fds[0]; }
         int write_fd() { return pair_fds[1]; }
     };
-    struct registerfded_info_t
+    struct RegisterfdedInfo
     {
-        registerfded_info_t(int64_t ms_, uint64_t dest_ms_, const Task& t_, bool is_loop_):
+        RegisterfdedInfo(int64_t ms_, uint64_t dest_ms_, const Task& t_, bool is_loop_, uint64_t id):
             timeout(ms_),
             counter_val(ms_),
             dest_tm(dest_ms_),
             callback(t_),
-            is_loop(is_loop_)
+            is_loop(is_loop_),
+            timerID(id)
         {}
         bool is_timeout(uint64_t cur_ms_, long min_timeout)
         {
@@ -67,19 +69,21 @@ class TimerService
         int64_t     timeout;
         int64_t     counter_val;
         uint64_t    dest_tm;
-        Task      callback;
+        Task        callback;
         bool        is_loop;
+        uint64_t    timerID;
     };
-    typedef std::list<registerfded_info_t>             registerfded_info_list_t;
-    typedef std::multimap<long, registerfded_info_t>   registerfded_info_map_t;
+    typedef std::list<RegisterfdedInfo>             RegisterfdedInfoList;
+    typedef std::multimap<long, RegisterfdedInfo>   RegisterfdedInfoMap;
 public:
-    TimerService(TaskQueue* tq_ = NULL, long tick = 50):
-        m_tq(tq_),
+    static TimerService& instance(){ return Singleton<TimerService>::instance(); }
+    TimerService(long tick = 50):
         m_runing(true),
         m_efd(-1),
         m_min_timeout(tick),
         m_cache_list(0),
-        m_checking_list(1)
+        m_checking_list(1),
+        m_nAutoIncID(0)
     {
         m_efd = ::epoll_create(16);
         
@@ -96,7 +100,7 @@ public:
     {
         
     }
-    void stop(bool clearpost = false)
+    void stop()
     {
         if (m_runing)
         {
@@ -105,47 +109,38 @@ public:
             
             ::close(m_efd);
             m_thread.join();
-            if (clearpost && m_tq){
-                m_tq->post(TaskBinder::gen(&TimerService::cleardata, this));
-            }
-            else{
-                cleardata();
-            }
-            for (int i = 0; i < 10; ++i){
-                if (m_registerfded_store.empty() == false){
-                    usleep(10);
-                }
-                else{
-                    break;
-                }
-            }
+            cleardata();
         }
     }
     void cleardata(){
-        m_tmp_registerfd_list.clear();
-        m_registerfded_store.clear();
+        m_tmpRegisterfdList.clear();
+        m_mapRegisterfdedStore.clear();
     }
     void loopTimer(uint64_t ms_, Task func)
     {
+        if (!m_runing)
+        {
+            return;
+        }
         struct timeval tv;
         gettimeofday(&tv, NULL);
         uint64_t   dest_ms = uint64_t(tv.tv_sec)*1000 + tv.tv_usec / 1000 + ms_;
 
         LockGuard lock(m_mutex);
-        m_tmp_registerfd_list.push_back(registerfded_info_t(ms_, dest_ms, func, true));
+        m_tmpRegisterfdList.push_back(RegisterfdedInfo(ms_, dest_ms, func, true, ++m_nAutoIncID));
     }
     void onceTimer(uint64_t ms_, Task func)
     {
+        if (!m_runing)
+        {
+            return;
+        }
         struct timeval tv;
         gettimeofday(&tv, NULL);
         uint64_t   dest_ms = uint64_t(tv.tv_sec)*1000 + tv.tv_usec / 1000 + ms_;
         
         LockGuard lock(m_mutex);
-        m_tmp_registerfd_list.push_back(registerfded_info_t(ms_, dest_ms, func, false));
-    }
-    void timerCallback(uint64_t ms_, Task func)
-    {
-        onceTimer(ms_, func);
+        m_tmpRegisterfdList.push_back(RegisterfdedInfo(ms_, dest_ms, func, false, ++m_nAutoIncID));
     }
 
     void run()
@@ -167,22 +162,22 @@ public:
             gettimeofday(&tv, NULL);
             uint64_t cur_ms = tv.tv_sec*1000 + tv.tv_usec / 1000;
             
-            add_new_timer();
-            process_timerCallback(cur_ms);
+            addNewTimer();
+            processTimerCallback(cur_ms);
             
         }while (true) ;
     }
     
 private:
-    void add_new_timer()
+    void addNewTimer()
     {
         LockGuard lock(m_mutex);
-        registerfded_info_list_t::iterator it = m_tmp_registerfd_list.begin();
-        for (; it != m_tmp_registerfd_list.end(); ++it)
+        RegisterfdedInfoList::iterator it = m_tmpRegisterfdList.begin();
+        for (; it != m_tmpRegisterfdList.end(); ++it)
         {
-            m_registerfded_store.insert(std::make_pair(it->dest_tm, *it));
+            m_mapRegisterfdedStore.insert(std::make_pair(it->dest_tm, *it));
         }
-        m_tmp_registerfd_list.clear();
+        m_tmpRegisterfdList.clear();
     }
 
     void interupt()
@@ -190,28 +185,22 @@ private:
         epoll_event ev = { 0, { 0 } };
         ev.events = EPOLLIN | EPOLLPRI | EPOLLOUT | EPOLLHUP;
         
-        ::epoll_ctl(m_efd, EPOLL_CTL_ADD, m_interupt_info.read_fd(), &ev);
+        ::epoll_ctl(m_efd, EPOLL_CTL_ADD, m_infoInterupt.read_fd(), &ev);
     }
-    void process_timerCallback(uint64_t now_)
+    void processTimerCallback(uint64_t now_)
     {
-        registerfded_info_map_t::iterator it_begin = m_registerfded_store.begin();
-        registerfded_info_map_t::iterator it       = it_begin;
+        RegisterfdedInfoMap::iterator it_begin = m_mapRegisterfdedStore.begin();
+        RegisterfdedInfoMap::iterator it       = it_begin;
 
-        for (; it != m_registerfded_store.end(); ++it)
+        for (; it != m_mapRegisterfdedStore.end(); ++it)
         {
-            registerfded_info_t& last = it->second;
+            RegisterfdedInfo& last = it->second;
             if (false == last.is_timeout(now_, m_min_timeout))
             {
                 break;
             }
             
-            if (m_tq){
-                m_tq->post(last.callback); //! 投递到目标线程执行
-                last.callback.clear();
-            }
-            else{
-                last.callback.run();
-            }
+            last.callback.run();
             
             if (last.is_loop)//! 如果是循环定时器，还要重新加入到定时器队列中
             {
@@ -221,22 +210,58 @@ private:
         
         if (it != it_begin)//! some timeout 
         {
-            m_registerfded_store.erase(it_begin, it);
+            m_mapRegisterfdedStore.erase(it_begin, it);
         }
     }
 
 private:
-    TaskQueue*            m_tq;
-    volatile bool            m_runing;
-    int                      m_efd;
-    volatile long            m_min_timeout;
-    int                      m_cache_list;
-    int                      m_checking_list;
-    registerfded_info_list_t   m_tmp_registerfd_list;
-    registerfded_info_map_t    m_registerfded_store;
-    interupt_info_t          m_interupt_info;
-    Thread                 m_thread;
-    Mutex                  m_mutex;
+    volatile bool               m_runing;
+    int                         m_efd;
+    volatile long               m_min_timeout;
+    int                         m_cache_list;
+    int                         m_checking_list;
+    RegisterfdedInfoList        m_tmpRegisterfdList;
+    RegisterfdedInfoMap         m_mapRegisterfdedStore;
+    InteruptInfo                m_infoInterupt;
+    Thread                      m_thread;
+    Mutex                       m_mutex;
+    uint64_t                    m_nAutoIncID;
+};
+class Timer
+{
+public:
+    struct TimerCB
+    {
+        static void callback(SharedPtr<TaskQueue> tq, Task func)
+        {
+            tq->post(func);
+        }
+    };
+    Timer(SharedPtr<TaskQueue>& tq_):
+        m_tq(tq_)
+    {
+    }
+    void setTQ(SharedPtr<TaskQueue> tq){ m_tq = tq;}
+    void loopTimer(uint64_t ms_, Task func)
+    {
+        if (m_tq){
+            TimerService::instance().loopTimer(ms_, TaskBinder::gen(&TimerCB::callback, m_tq, func));
+        }
+        else{
+            TimerService::instance().loopTimer(ms_, func);
+        }
+    }
+    void onceTimer(uint64_t ms_, Task func)
+    {
+        if (m_tq){
+            TimerService::instance().onceTimer(ms_, TaskBinder::gen(&TimerCB::callback, m_tq, func));
+        }
+        else{
+            TimerService::instance().onceTimer(ms_, func);
+        }
+    }
+private:
+    SharedPtr<TaskQueue>            m_tq;
 };
 
 }

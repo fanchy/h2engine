@@ -325,7 +325,6 @@ public:
 	void setPrintScreen(bool flag_);
 private:
 	Log*			m_log;
-	Thread          m_thread;
 	TaskQueue       m_task_queue;
 };
 

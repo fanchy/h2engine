@@ -42,7 +42,6 @@ private:
     void    request_impl(const std::string& sql_, int timeoutsec, FFSlot::FFCallBack* callback_);
 private:
     TaskQueue                                m_tq;
-    Thread                                    m_thread;
 };
 
 

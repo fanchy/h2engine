@@ -2,7 +2,6 @@
 #define _NET_FACTORY_H_
 
 #include "net/acceptorimpl/acceptor_linux.h"
-#include "net/acceptorimpl/acceptor_linux_gate.h"
 
 #include "net/eventloopimpl/epoll.h"
 #include "net/eventloopimpl/select.h"
@@ -116,7 +115,7 @@ public:
     static Acceptor* gatewayListen(const std::string& host_, MsgHandler* msg_handler_)
     {
         Singleton<NetData>::instance().start();
-        AcceptorLinux* ret = new AcceptorLinuxGate(&(Singleton<NetData>::instance().epoll),
+        AcceptorLinux* ret = new AcceptorLinux(&(Singleton<NetData>::instance().epoll),
                                                    msg_handler_,
                                                    (Singleton<NetData>::instance().tg));
 
@@ -131,11 +130,11 @@ public:
 	static Acceptor* gatewayListen(ArgHelper& arg_helper, MsgHandler* msg_handler_)
     {
         Singleton<NetData>::instance().start();
-        AcceptorLinuxGate* ret = new AcceptorLinuxGate(&(Singleton<NetData>::instance().epoll),
+        AcceptorLinux* ret = new AcceptorLinux(&(Singleton<NetData>::instance().epoll),
                                                    msg_handler_,
                                                    (Singleton<NetData>::instance().tg));
 
-        if (ret->open(arg_helper))
+        if (ret->open(arg_helper.getOptionValue("-gate_listen")))
         {
             delete ret;
             return NULL;

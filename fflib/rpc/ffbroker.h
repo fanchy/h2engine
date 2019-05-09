@@ -60,7 +60,7 @@ public:
     void docleaanup();
 
     //! 定时器
-    TimerService& getTimer();
+    Timer& getTimer();
 
     //! 传递消息
     int sendToRPcNode(BrokerRouteMsgReq& msg_);
@@ -79,15 +79,14 @@ private:
     RegisteredNodeInfo                                      m_all_registerfded_info;
 
     //!工具类
-    TaskQueue                                               m_tq;
-    Thread                                                  m_thread;
+    SharedPtr<TaskQueue>                                    m_tq;
     //! 用于绑定回调函数
     FFSlot                                                  m_ffslot;
 
     //! 本 broker的监听信息
     std::string                                             m_listen_host;
     //! broker 分配的slave node id
-    TimerService                                            m_timer;
+    Timer                                                   m_timer;
 };
 
 //! 每个连接都要分配一个session，用于记录该socket，对应的信息

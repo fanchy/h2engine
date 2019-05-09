@@ -41,7 +41,7 @@ int NetStat::start(ArgHelper& arg_helper_)
     
     m_timerService = new TimerService();
     
-    m_timerService->timerCallback(m_heartbeat.timeout()*1000, Task(&timer_check, (void*)this));
+    m_timerService->onceTimer(m_heartbeat.timeout()*1000, Task(&timer_check, (void*)this));
     return 0;
 }
 
@@ -51,7 +51,7 @@ int NetStat::start(int max_packet_size, int heartbeat_timeout)
     m_heartbeat.set_option(heartbeat_timeout, timer_close);
     m_timerService = new TimerService();
     
-    m_timerService->timerCallback(m_heartbeat.timeout()*1000, Task(&timer_check, (void*)this));
+    m_timerService->onceTimer(m_heartbeat.timeout()*1000, Task(&timer_check, (void*)this));
     return 0;
 }
 void NetStat::handleTimerCheck()
@@ -59,7 +59,7 @@ void NetStat::handleTimerCheck()
     m_heartbeat.timer_check();
     if (m_timerService)
     {
-        m_timerService->timerCallback(m_heartbeat.timeout()*1000, Task(&timer_check, (void*)this));
+        m_timerService->onceTimer(m_heartbeat.timeout()*1000, Task(&timer_check, (void*)this));
     }
 }
 

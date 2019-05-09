@@ -234,7 +234,7 @@ void SharedSyncmemMgr::cleanup(){
     {
         //printf("SharedSyncmemMgr::cleanup....\n");
         pshared_mem->locksignal();//!发信号，对方进程会自动读取数据
-        m_thread.join();
+
         //printf("SharedSyncmemMgr::cleanup....end ok\n");
     }
 }

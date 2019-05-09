@@ -273,6 +273,9 @@ public:
             leftBytes.assign(cacheRecvData.c_str() + 1 + nPlayLoadLenByteNum + nMaskingKeyByteNum + nPayload_length, nLeftSize);
             cacheRecvData = leftBytes;
         }
+        else{
+            cacheRecvData.clear();
+        }
         for (int i = 0; i < nPayload_length; i++)
         {
             aPayload_data[i] = (char)(aPayload_data[i] ^ aMasking_key[i % nMaskingKeyByteNum]);
@@ -443,9 +446,9 @@ private:
     bool  bIsClose;
     std::string cacheRecvData;
     std::map<std::string, std::string> dictParams;
-    std::vector<std::string> listSendPkg;//!ĞèÒª·¢ËÍµÄÊı¾İ
-    std::vector<std::string> listRecvPkg;//!ÒÑ¾­½ÓÊÕµÄ
-    std::string dataFragmentation;//!»º´æ·ÖÆ¬Êı¾İ
+    std::vector<std::string> listSendPkg;//!éœ€è¦å‘é€çš„æ•°æ®
+    std::vector<std::string> listRecvPkg;//!å·²ç»æ¥æ”¶çš„
+    std::string dataFragmentation;//!ç¼“å­˜åˆ†ç‰‡æ•°æ®
 };
 
 }

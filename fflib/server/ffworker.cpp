@@ -63,7 +63,11 @@ FFWorker::FFWorker():m_nWorkerIndex(0), m_allocID(0),m_ffrpc(NULL)
 }
 FFWorker::~FFWorker()
 {
+    LOGTRACE((FFWORKER_LOG, "FFWorker::~FFWorker begin"));
     m_shared_mem_mgr.cleanup();
+    LOGTRACE((FFWORKER_LOG, "FFWorker::~FFWorker begin2"));
+    m_ffrpc = NULL;
+    LOGTRACE((FFWORKER_LOG, "FFWorker::~FFWorker end"));
 }
 FFWorker* FFWorker::gSingletonWorker = NULL;
 int FFWorker::open(const string& brokercfg, int worker_index)
@@ -86,6 +90,7 @@ int FFWorker::open(const string& brokercfg, int worker_index)
     if (m_ffrpc->open(brokercfg))
     {
         LOGERROR((FFWORKER_LOG, "FFWorker::open failed check brokercfg %s", brokercfg));
+        m_ffrpc->close();
         return -1;
     }
     string host = m_ffrpc->getHostCfg();

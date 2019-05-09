@@ -74,7 +74,7 @@ public:
     //! 定时重连 broker master
     void timerReconnectBroker();
 
-    TimerService& getTimer() { return m_timer; }
+    Timer& getTimer() { return m_timer; }
 
     //! 判断某个service是否存在
     bool isExist(const std::string& service_name_);
@@ -105,9 +105,9 @@ private:
     std::string                                     m_service_name;//! 注册的服务名称
     uint64_t                                        m_node_id;     //! 通过注册broker，分配的node id
 
-    TaskQueue                                       m_tq;
-    TimerService                                    m_timer;
-    Thread                                          m_thread;
+    SharedPtr<TaskQueue>                            m_tq;
+    Timer                                           m_timer;
+
     FFSlot                                          m_ffslot;//! 注册broker 消息的回调函数
     FFSlot                                          m_ffslot_interface;//! 通过reg 注册的接口会暂时的存放在这里
     FFSlot                                          m_ffslot_callback;//!
@@ -144,7 +144,7 @@ struct FFRpc::SessionData
 template <typename T>
 int FFRpc::call(const std::string& name_, T& req_, FFSlot::FFCallBack* callback_)
 {
-    m_tq.post(TaskBinder::gen(&FFRpc::docall, this, name_, TYPE_NAME(T), FFThrift::EncodeAsString(req_), callback_));
+    getTaskQueue()->post(TaskBinder::gen(&FFRpc::docall, this, name_, TYPE_NAME(T), FFThrift::EncodeAsString(req_), callback_));
     return 0;
 }
 
@@ -180,7 +180,7 @@ int FFRpc::callPB(const std::string& name_, T& req_, FFSlot::FFCallBack* callbac
 {
     std::string ret;
     req_.SerializeToString(&ret);
-    m_tq.post(TaskBinder::gen(&FFRpc::docall, this, name_, TYPE_NAME(T), ret, callback_));
+    getTaskQueue()->post(TaskBinder::gen(&FFRpc::docall, this, name_, TYPE_NAME(T), ret, callback_));
     return 0;
 }
 
@@ -195,7 +195,7 @@ int FFRpc::callPB(const std::string& namespace_, const std::string& name_, T& re
     else{
         std::string ret;
         req_.SerializeToString(&ret);
-        m_tq.post(TaskBinder::gen(&FFRpc::bridgeDocall, this, namespace_, name_, TYPE_NAME(T), ret, callback_));
+        getTaskQueue()->post(TaskBinder::gen(&FFRpc::bridgeDocall, this, namespace_, name_, TYPE_NAME(T), ret, callback_));
     }
     return 0;
 }

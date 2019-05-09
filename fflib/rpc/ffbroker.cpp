@@ -8,7 +8,8 @@ using namespace ff;
 FFBroker::FFBroker():
     m_acceptor(NULL),
     m_for_allocID(0),
-    m_timer(&m_tq)
+    m_tq(new TaskQueue()),
+    m_timer(m_tq)
 {
 }
 FFBroker::~FFBroker()
@@ -69,8 +70,6 @@ int FFBroker::open(const string& listen, string bridge_broker, string master_bro
             .bind(BROKER_ROUTE_MSG, FFRpcOps::genCallBack(&FFBroker::handleBrokerRouteMsg, this))
             .bind(SYNC_CLIENT_REQ, FFRpcOps::genCallBack(&FFBroker::processSyncClientReq, this));//! 处理同步客户端的调用请求
 
-    //! 任务队列绑定线程
-    m_thread.create_thread(TaskBinder::gen(&TaskQueue::run, &m_tq), 1);
 
     Singleton<FFRpcMemoryRoute>::instance().addNode(BROKER_MASTER_NODE_ID, this);
     LOGINFO((BROKER, "FFBroker::open end ok"));
@@ -78,7 +77,7 @@ int FFBroker::open(const string& listen, string bridge_broker, string master_bro
 }
 
 //! 定时器
-TimerService& FFBroker::getTimer()
+Timer& FFBroker::getTimer()
 {
     return m_timer;
 }
@@ -97,16 +96,16 @@ int FFBroker::close()
         return 0;
     m_acceptor->close();
     m_acceptor = NULL;
-    m_tq.post(TaskBinder::gen(&FFBroker::docleaanup, this));
-    m_timer.stop();
-    m_tq.close();
-    m_thread.join();
+    getTaskQueue()->post(TaskBinder::gen(&FFBroker::docleaanup, this));
+
+    getTaskQueue()->close();
+    
     //usleep(100);
     return 0;
 }
 TaskQueue* FFBroker::getTaskQueue()
 {
-    return &m_tq;
+    return m_tq.get();
 }
 
 //! 当有连接断开，则被回调

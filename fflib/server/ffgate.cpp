@@ -167,7 +167,7 @@ int FFGate::routeLogicMsg(const Message& msg_, SocketObjPtr sock_, bool first)
                     session_data->id(), msg.session_ip, client_info.alloc_worker));
     }
     m_ffrpc->call(client_info.group_name, client_info.alloc_worker, msg);
-    LOGTRACE((FFGATE, "FFGate::routeLogicMsg end ok alloc_worker[%s] body=%s", client_info.alloc_worker, msg.body));
+    LOGTRACE((FFGATE, "FFGate::routeLogicMsg end ok alloc_worker[%s] bodysize=%u", client_info.alloc_worker, msg.body.size()));
     return 0;
 }
 

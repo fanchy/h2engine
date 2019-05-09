@@ -10,18 +10,14 @@ using namespace ff;
 PerfMonitor::PerfMonitor():
 m_started(false),
 m_timeout_sec(3600),
-m_timerService(NULL)
+m_task_queue(new TaskQueue()),
+m_timer(m_task_queue)
 {
 }
 
 PerfMonitor::~PerfMonitor()
 {
     stop();
-    if (m_timerService)
-    {
-        delete m_timerService;
-        m_timerService = NULL;
-    }
 }
 
 
@@ -43,36 +39,20 @@ int PerfMonitor::start(string path_, int seconds_)
     
     m_timeout_sec = seconds_;
     
-    //! 启动定时器 1 times/seconds
-    m_timerService = new TimerService(&m_task_queue, 1000);
-    
     m_started = true; //! timer will start
     
-    struct lambda_t
-    {
-        static void run(void* p_)
-        {
-            ((PerfMonitor*)p_)->run();
-        }
-    };
-
-    m_thread.create_thread(Task(&lambda_t::run, this), 1);
+    this->run();
     return 0;
 }
 
 int PerfMonitor::stop()
 {
     if (false == m_started) return -1;
-    
-    if (m_timerService)
-    {
-    	m_timerService->stop();
-    }
-    
+
     m_started = false; //! timer will stop
     
-    m_task_queue.close();
-    m_thread.join();
+    m_task_queue->close();
+
     return 0;
 }
 
@@ -80,7 +60,7 @@ void PerfMonitor::post(const string& mod_, long arg_, long us_)
 {
     if (m_started)
     {
-        m_task_queue.post(TaskBinder::gen(&PerfMonitor::addPerfData, this, mod_, arg_, us_));
+        getTaskQueue().post(TaskBinder::gen(&PerfMonitor::addPerfData, this, mod_, arg_, us_));
     }
     else
     {
@@ -92,8 +72,7 @@ void PerfMonitor::handleTimer()
 {
     flush();
     //m_perf_info.clear();
-    if (m_timerService)
-	    m_timerService->timerCallback(m_timeout_sec * 1000, Task(&TimerLambda::setupTimer, this));
+    m_timer.onceTimer(m_timeout_sec * 1000, Task(&TimerLambda::setupTimer, this));
 }
 
 void PerfMonitor::flush()
@@ -150,8 +129,7 @@ void PerfMonitor::flush()
 
 void PerfMonitor::run()
 {
-    m_timerService->timerCallback(m_timeout_sec * 1000, Task(&TimerLambda::setupTimer, this));
-    m_task_queue.run();
+    m_timer.onceTimer(m_timeout_sec * 1000, Task(&TimerLambda::setupTimer, this));
 }
 
 void PerfMonitor::addPerfData(const string& mod_, long arg_, long us_)

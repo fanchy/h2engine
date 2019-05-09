@@ -177,7 +177,7 @@ private:
     std::vector<SharedPtr<TaskQueue> >                  m_tq;
     Mutex                                               m_mutex;
     std::map<long/*dbid*/, DBConnectionInfo>            m_db_connection;
-    Thread                                              m_thread;
+
     std::map<std::string, DBConnectionInfo*>            m_name2connection;
     TaskQueue*                                          m_tqWorkerDefault;
 };

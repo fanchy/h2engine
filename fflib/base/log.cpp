@@ -389,7 +389,6 @@ int LogService::start(ArgHelper& arg)
 	}
 
 	m_log = new Log(level, arg.getOptionValue("-log_class"), path, filename, print_file, print_screen);
-	m_thread.create_thread(TaskBinder::gen(&TaskQueue::run, &m_task_queue), 1);
 
 	return 0;
 }
@@ -399,7 +398,7 @@ int LogService::stop()
 	if (NULL == m_log) return 0;
 
 	m_task_queue.close();
-	m_thread.join();
+
 	delete m_log;
 	m_log = NULL;
 	return 0;

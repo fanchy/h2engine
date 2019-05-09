@@ -20,7 +20,7 @@ HttpMgr::~HttpMgr()
 int HttpMgr::start()
 {
     #ifdef FF_ENABLE_CURL
-    m_thread.create_thread(TaskBinder::gen(&TaskQueue::run, (&m_tq)), 10);
+
     #endif
     return 0;
 }
@@ -30,7 +30,6 @@ int HttpMgr::stop()
     LOGINFO((HHTP_MGR, "HttpMgr::stop begin..."));
     
     m_tq.close();
-    m_thread.join();
     
     LOGINFO((HHTP_MGR, "HttpMgr::stop end"));
     #endif

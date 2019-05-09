@@ -12,6 +12,7 @@
 
 #include "base/thread.h"
 #include "base/singleton.h"
+#include "base/smart_ptr.h"
 
 namespace ff {
 
@@ -90,7 +91,7 @@ public:
 
     void run();
 
-    TaskQueue& getTaskQueue() { return m_task_queue; }
+    TaskQueue& getTaskQueue() { return *m_task_queue; }
 public:
     void addPerfData(const std::string& mod_, long arg_, long us);
 
@@ -101,10 +102,9 @@ private:
     volatile bool                       m_started;
     int                                 m_timeout_sec;
     std::map<std::string, PerfInfo>     m_perf_info;
-    TaskQueue                           m_task_queue;
-    Thread                              m_thread;
+    SharedPtr<TaskQueue>                m_task_queue;
     std::string                         m_path;
-    TimerService*                       m_timerService;
+    Timer                               m_timer;
 };
 
 }
