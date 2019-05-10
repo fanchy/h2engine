@@ -1,0 +1,1420 @@
+# depslib dependency file v1.0
+1557452731 source:d:\code\h2engine\engine\main.cpp
+	"base/fftype.h"
+	"base/daemon_tool.h"
+	"base/arg_helper.h"
+	"base/str_tool.h"
+	"base/smart_ptr.h"
+	"base/log.h"
+	"base/signal_helper.h"
+	"base/daemon_tool.h"
+	"base/perf_monitor.h"
+	"rpc/ffrpc.h"
+	"rpc/ffbroker.h"
+	"server/ffgate.h"
+	"server/shared_mem.h"
+	"net/wsprotocol.h"
+
+1550371997 d:\code\h2engine\fflib\base\fftype.h
+	<winsock2.h>
+	<stdio.h>
+	<windows.h>
+	"base/singleton.h"
+	"base/lock.h"
+	"base/atomic_op.h"
+	<stdint.h>
+	<list>
+	<fstream>
+	<string>
+	<map>
+	<time.h>
+
+1557407338 d:\code\h2engine\fflib\base\singleton.h
+	<stdlib.h>
+	<stdio.h>
+	<pthread.h>
+
+1550371997 d:\code\h2engine\fflib\base\lock.h
+	<pthread.h>
+
+1550371997 d:\code\h2engine\fflib\base\atomic_op.h
+
+1550371997 d:\code\h2engine\src\map
+
+1550371997 d:\code\h2engine\fflib\base\daemon_tool.h
+	<sys/types.h>
+	<unistd.h>
+	<string.h>
+	<stdlib.h>
+	<stdio.h>
+	<pwd.h>
+	<errno.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<fcntl.h>
+
+1550371997 d:\code\h2engine\fflib\base\arg_helper.h
+	<string>
+	<vector>
+	<fstream>
+	"base/str_tool.h"
+
+1550371997 d:\code\h2engine\fflib\base\str_tool.h
+	<string.h>
+	<iostream>
+	<sstream>
+	<vector>
+
+1550371997 d:\code\h2engine\fflib\base\smart_ptr.h
+	"atomic_op.h"
+	"base/lock.h"
+	<assert.h>
+	<stdexcept>
+
+1557407338 d:\code\h2engine\fflib\base\log.h
+	<unistd.h>
+	<sys/syscall.h>
+	<stdarg.h>
+	<stdio.h>
+	<stdlib.h>
+	<string>
+	<sstream>
+	<set>
+	<vector>
+	<fstream>
+	"base/task_queue.h"
+	"base/thread.h"
+	"base/singleton.h"
+	"base/arg_helper.h"
+	<windows.h>
+
+1557407338 d:\code\h2engine\fflib\base\task_queue.h
+	<list>
+	<vector>
+	<stdexcept>
+	"base/lock.h"
+	"base/fftype.h"
+	"base/task.h"
+	"base/thread.h"
+
+1557407338 d:\code\h2engine\fflib\base\thread.h
+	<pthread.h>
+	<list>
+	"base/task.h"
+
+1557452841 d:\code\h2engine\fflib\base\signal_helper.h
+	<signal.h>
+	<map>
+	<string>
+
+1557407338 d:\code\h2engine\fflib\base\perf_monitor.h
+	<string>
+	<map>
+	<fstream>
+	<iostream>
+	"base/task_queue.h"
+	"base/timer_service.h"
+	"base/thread.h"
+	"base/singleton.h"
+	"base/smart_ptr.h"
+
+1557407338 d:\code\h2engine\fflib\base\timer_service.h
+	"base/timer_service_win.h"
+	<sys/epoll.h>
+	<errno.h>
+	<fcntl.h>
+	<sys/time.h>
+	<sys/types.h>
+	<sys/socket.h>
+	<assert.h>
+	<stdint.h>
+	<unistd.h>
+	<list>
+	<map>
+	"base/thread.h"
+	"base/lock.h"
+	"base/task_queue.h"
+	"base/smart_ptr.h"
+
+1557452685 d:\code\h2engine\fflib\base\timer_service_win.h
+	<errno.h>
+	<fcntl.h>
+	<sys/time.h>
+	<sys/types.h>
+	<assert.h>
+	<stdint.h>
+	<unistd.h>
+	<list>
+	<map>
+	"base/fftype.h"
+	"base/thread.h"
+	"base/lock.h"
+	"base/task_queue.h"
+	"base/smart_ptr.h"
+
+1557407338 d:\code\h2engine\fflib\rpc\ffrpc.h
+	<string>
+	<map>
+	<vector>
+	<set>
+	"net/msg_handler.h"
+	"base/task_queue.h"
+	"base/ffslot.h"
+	"net/codec.h"
+	"base/thread.h"
+	"rpc/ffrpc_ops.h"
+	"net/msg_sender.h"
+	"base/timer_service.h"
+	"base/arg_helper.h"
+
+1550371997 d:\code\h2engine\fflib\net\msg_handler.h
+	"net/socket.h"
+	"net/message.h"
+
+1550371997 d:\code\h2engine\fflib\net\socket.h
+	<string>
+	"base/smart_ptr.h"
+	"netbase.h"
+
+1550371997 d:\code\h2engine\fflib\net\netbase.h
+	"base/fftype.h"
+
+1550371997 d:\code\h2engine\fflib\net\message.h
+	<stdint.h>
+	<string>
+	<string.h>
+	<arpa/inet.h>
+	<winsock2.h>
+	<windows.h>
+
+1550371997 d:\code\h2engine\fflib\base\ffslot.h
+	<assert.h>
+	<string>
+	<map>
+
+1550371997 d:\code\h2engine\fflib\net\codec.h
+	<arpa/inet.h>
+	<string>
+	<stdexcept>
+	<vector>
+	<iostream>
+	<map>
+	<set>
+	<endian.h>
+	<byteswap.h>
+	"net/message.h"
+	"base/singleton.h"
+	"base/atomic_op.h"
+	"base/lock.h"
+	"base/fftype.h"
+	"base/smart_ptr.h"
+
+1550371997 d:\code\h2engine\fflib\rpc\ffrpc_ops.h
+	<assert.h>
+	<string>
+	"base/ffslot.h"
+	"net/socket.h"
+	"base/fftype.h"
+	"net/codec.h"
+	"base/singleton.h"
+	<google/protobuf/message.h>
+	<thrift/FFThrift.h>
+	"rpc/msg_def/ffrpc_msg_types.h"
+	"rpc/msg_def/ffrpc_msg_constants.h"
+
+1550371997 d:\code\h2engine\lib3party\thrift\ffthrift.h
+	<string>
+	<thrift/Thrift.h>
+	<thrift/transport/TTransport.h>
+	<thrift/protocol/TBinaryProtocol.h>
+	<thrift/transport/FFTransport.h>
+
+1550371997 d:\code\h2engine\lib3party\thrift\thrift.h
+	<time.h>
+	<string.h>
+	<cstring>
+	<stdio.h>
+	<arpa/inet.h>
+	<thrift/ThriftConfig.h>
+	<winsock2.h>
+	<windows.h>
+	<stdio.h>
+	"./ThriftConfig.h"
+
+1550371997 d:\code\h2engine\lib3party\thrift\thriftconfig.h
+	<assert.h>
+	<string>
+	<map>
+	<list>
+	<set>
+	<vector>
+	<exception>
+	<typeinfo>
+	<algorithm>
+	<winsock2.h>
+	<Windows.h>
+	<Windows.h>
+	<stdint.h>
+	<stdint.h>
+
+1550371997 d:\code\h2engine\lib3party\thrift\transport\ttransport.h
+	"../Thrift.h"
+	"../transport/TTransportException.h"
+	<string>
+
+1550371997 d:\code\h2engine\lib3party\thrift\transport\ttransportexception.h
+	<string>
+	"../Thrift.h"
+
+1550371997 d:\code\h2engine\lib3party\thrift\protocol\tbinaryprotocol.h
+	"TProtocol.h"
+	"TVirtualProtocol.h"
+	<limits>
+
+1550371997 d:\code\h2engine\lib3party\thrift\protocol\tprotocol.h
+	<thrift/ThriftConfig.h>
+	<thrift/protocol/TProtocolException.h>
+	<thrift/transport/TTransport.h>
+	"../ThriftConfig.h"
+	"../protocol/TProtocolException.h"
+	"../transport/TTransport.h"
+	<byteswap.h>
+
+1555638736 d:\code\h2engine\lib3party\thrift\protocol\tprotocolexception.h
+	<string>
+
+1550371997 d:\code\h2engine\lib3party\thrift\protocol\tvirtualprotocol.h
+	<thrift/protocol/TProtocol.h>
+
+1550371997 d:\code\h2engine\lib3party\thrift\transport\fftransport.h
+	<stddef.h>
+	<thrift/transport/TTransport.h>
+	<thrift/transport/TVirtualTransport.h>
+
+1550371997 d:\code\h2engine\lib3party\thrift\transport\tvirtualtransport.h
+	<thrift/transport/TTransport.h>
+
+1550371997 d:\code\h2engine\fflib\rpc\msg_def\ffrpc_msg_types.h
+	<thrift/Thrift.h>
+	<thrift/TApplicationException.h>
+	<thrift/protocol/TProtocol.h>
+	<thrift/transport/TTransport.h>
+	<thrift/cxxfunctional.h>
+
+1550371997 d:\code\h2engine\lib3party\thrift\tapplicationexception.h
+
+1550371997 d:\code\h2engine\lib3party\thrift\cxxfunctional.h
+
+1550371997 d:\code\h2engine\fflib\rpc\msg_def\ffrpc_msg_constants.h
+	"ffrpc_msg_types.h"
+
+1555937019 d:\code\h2engine\fflib\net\msg_sender.h
+	"net/socket.h"
+	"net/socket_ctrl.h"
+	"net/message.h"
+	"net/codec.h"
+
+1550371997 d:\code\h2engine\fflib\net\socket_ctrl.h
+	<string>
+
+1557407338 d:\code\h2engine\fflib\rpc\ffbroker.h
+	<assert.h>
+	<string>
+	<map>
+	<set>
+	"net/msg_handler.h"
+	"base/task_queue.h"
+	"base/ffslot.h"
+	"base/thread.h"
+	"base/smart_ptr.h"
+	"net/net_factory.h"
+	"rpc/ffrpc_ops.h"
+	"base/arg_helper.h"
+
+1557407338 d:\code\h2engine\fflib\net\net_factory.h
+	"net/acceptor_linux.h"
+	"net/epoll.h"
+	"net/select.h"
+	"connector.h"
+	"base/singleton.h"
+	"base/perf_monitor.h"
+	"base/thread.h"
+	"net/codec.h"
+	"net/msg_sender.h"
+	"base/log.h"
+
+1550371997 d:\code\h2engine\fflib\net\acceptorimpl\acceptor_linux.h
+	"net/acceptor.h"
+
+1550371997 d:\code\h2engine\fflib\net\acceptor.h
+	<string>
+	"netbase.h"
+
+1555984120 d:\code\h2engine\fflib\net\acceptorimpl\acceptor_linux_gate.h
+	"net/acceptorimpl/acceptor_linux.h"
+	"net/net_stat.h"
+	"base/arg_helper.h"
+
+1550371997 d:\code\h2engine\fflib\net\ctrlimpl\socket_ctrl_gate.h
+	"net/ctrlimpl/socket_ctrl_common.h"
+
+1555936356 d:\code\h2engine\fflib\net\ctrlimpl\socket_ctrl_common.h
+	<string>
+	"net/socket_ctrl.h"
+	"net/message.h"
+	"net/msg_handler.h"
+	"net/wsprotocol.h"
+
+1550371997 d:\code\h2engine\fflib\net\net_stat.h
+	"net/socket.h"
+	"base/arg_helper.h"
+	"base/timer_service.h"
+	"base_heartbeat.h"
+	<stdlib.h>
+	<string>
+
+1550371997 d:\code\h2engine\fflib\net\base_heartbeat.h
+	<stdint.h>
+	<stdlib.h>
+	<map>
+	<list>
+	"base/lock.h"
+	"base/arg_helper.h"
+
+1550371997 d:\code\h2engine\fflib\net\eventloopimpl\epoll.h
+	<list>
+	"net/event_loop.h"
+	"base/task_queue.h"
+	"base/lock.h"
+
+1550371997 d:\code\h2engine\fflib\net\event_loop.h
+
+1550371997 d:\code\h2engine\fflib\net\eventloopimpl\select.h
+	<list>
+	"net/event_loop.h"
+	"base/task_queue.h"
+	"base/lock.h"
+
+1557407338 d:\code\h2engine\fflib\net\connector.h
+	<assert.h>
+	<sys/types.h>
+	<sys/socket.h>
+	<arpa/inet.h>
+	<stdio.h>
+	<unistd.h>
+	<stdlib.h>
+	<string.h>
+	"net/socket_linux.h"
+	"net/socket_win.h"
+	"base/str_tool.h"
+	"net/msg_handler.h"
+	"net/socket_ctrl_common.h"
+
+1550371997 d:\code\h2engine\fflib\net\socketimpl\socket_linux.h
+	<list>
+	<string>
+	"net/socket.h"
+	"base/obj_pool.h"
+
+1550371997 d:\code\h2engine\fflib\base\obj_pool.h
+	<malloc.h>
+	<string.h>
+	<list>
+
+1550373681 d:\code\h2engine\fflib\net\socketimpl\socket_win.h
+	<list>
+	<string>
+	"net/socket.h"
+	"base/obj_pool.h"
+
+1550371997 d:\code\h2engine\fflib\server\ffgate.h
+	<string>
+	<map>
+	<vector>
+	<set>
+	<queue>
+	"net/msg_handler.h"
+	"base/task_queue.h"
+	"base/ffslot.h"
+	"net/codec.h"
+	"base/thread.h"
+	"rpc/ffrpc.h"
+	"net/msg_sender.h"
+	"base/timer_service.h"
+	"base/arg_helper.h"
+
+1550371997 d:\code\h2engine\fflib\server\shared_mem.h
+	<stdio.h>
+	"base/fftype.h"
+	"base/daemon_tool.h"
+	"base/arg_helper.h"
+	"base/str_tool.h"
+	"base/smart_ptr.h"
+	"base/log.h"
+	"base/signal_helper.h"
+	"base/daemon_tool.h"
+	"base/perf_monitor.h"
+	"rpc/ffrpc.h"
+	"rpc/ffbroker.h"
+	"server/shared_mem.h"
+	"rapidjson/document.h"
+	"rapidjson/prettywriter.h"
+	"rapidjson/writer.h"
+	"rapidjson/filestream.h"
+	"rapidjson/stringbuffer.h"
+	"base/lock.h"
+	"base/event_bus.h"
+	<semaphore.h>
+	<sys/ipc.h>
+	<sys/shm.h>
+
+1550371997 d:\code\h2engine\lib3party\rapidjson\document.h
+	"reader.h"
+	"internal/strfunc.h"
+	<new>
+
+1550371997 d:\code\h2engine\lib3party\rapidjson\reader.h
+	"rapidjson.h"
+	"internal/pow10.h"
+	"internal/stack.h"
+	<csetjmp>
+	<nmmintrin.h>
+	<emmintrin.h>
+
+1550371997 d:\code\h2engine\lib3party\rapidjson\rapidjson.h
+	<cstdlib>
+	<cstring>
+	<inttypes.h>
+	<cassert>
+
+1550371997 d:\code\h2engine\lib3party\rapidjson\internal\pow10.h
+
+1550371997 d:\code\h2engine\lib3party\rapidjson\internal\stack.h
+
+1550371997 d:\code\h2engine\lib3party\rapidjson\internal\strfunc.h
+
+1550371997 d:\code\h2engine\lib3party\rapidjson\prettywriter.h
+	"writer.h"
+
+1550371997 d:\code\h2engine\lib3party\rapidjson\writer.h
+	"rapidjson.h"
+	"internal/stack.h"
+	"internal/strfunc.h"
+	<cstdio>
+	<new>
+
+1550371997 d:\code\h2engine\lib3party\rapidjson\filestream.h
+	<cstdio>
+
+1550371997 d:\code\h2engine\lib3party\rapidjson\stringbuffer.h
+	"rapidjson.h"
+	"internal/stack.h"
+
+1550371997 d:\code\h2engine\fflib\base\event_bus.h
+	<string>
+	<vector>
+	"base/singleton.h"
+	"base/fftype.h"
+
+1550371997 source:d:\code\h2engine\fflib\base\event_bus.cpp
+	"base/event_bus.h"
+
+1550371997 source:d:\code\h2engine\fflib\base\lock.cpp
+	"base/lock.h"
+	<sys/time.h>
+
+1557407338 source:d:\code\h2engine\fflib\base\log.cpp
+	"base/fftype.h"
+	"base/log.h"
+	"base/atomic_op.h"
+	"base/str_tool.h"
+	"base/arg_helper.h"
+	<errno.h>
+	<unistd.h>
+	<string.h>
+	<sys/stat.h>
+	<sys/types.h>
+	<sys/time.h>
+
+1557407338 source:d:\code\h2engine\fflib\base\perf_monitor.cpp
+	"base/perf_monitor.h"
+	"base/fftype.h"
+	<string.h>
+	<sys/stat.h>
+	<sys/types.h>
+
+1550371997 source:d:\code\h2engine\fflib\base\thread.cpp
+	"base/thread.h"
+
+1550749196 source:d:\code\h2engine\fflib\db\sqlite3.c
+	"config.h"
+	<stdint.h>
+	<inttypes.h>
+	<tcl.h>
+	<stdarg.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<assert.h>
+	<stddef.h>
+	<windows.h>
+	<ctype.h>
+	<time.h>
+	<sys/sysctl.h>
+	<malloc/malloc.h>
+	<libkern/OSAtomic.h>
+	<malloc.h>
+	<pthread.h>
+	<math.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<fcntl.h>
+	<unistd.h>
+	<sys/time.h>
+	<errno.h>
+	<sys/mman.h>
+	<sys/ioctl.h>
+	<semaphore.h>
+	<limits.h>
+	<sys/file.h>
+	<sys/param.h>
+	<sys/mount.h>
+	<utime.h>
+	<sys/dcmd_blk.h>
+	<sys/statvfs.h>
+	<dlfcn.h>
+	<sys/cygwin.h>
+	"sqlite3rtree.h"
+	<unicode/utypes.h>
+	<unicode/uregex.h>
+	<unicode/ustring.h>
+	<unicode/ucol.h>
+	<unicode/ubrk.h>
+	<unicode/utf16.h>
+
+1550371997 source:d:\code\h2engine\fflib\db\ffdb.cpp
+	<winsock2.h>
+	<stdio.h>
+	"db/ffdb.h"
+	"base/str_tool.h"
+	"db/sqlite_ops.h"
+	"db/mysql_ops.h"
+
+1550371997 d:\code\h2engine\fflib\db\ffdb.h
+	<string>
+	<vector>
+	"db/db_ops.h"
+
+1550371997 d:\code\h2engine\fflib\db\db_ops.h
+	<string>
+
+1550371997 d:\code\h2engine\fflib\db\sqlite_ops.h
+	"db/db_ops.h"
+	"db/sqlite3.h"
+	<vector>
+
+1550371997 d:\code\h2engine\fflib\db\sqlite3.h
+	<stdarg.h>
+
+1550371997 d:\code\h2engine\fflib\db\mysql_ops.h
+	<mysql/mysql.h>
+	<mysql/errmsg.h>
+	<string>
+	"db/db_ops.h"
+	"base/lock.h"
+
+1542283530 d:\code\h2engine\winbuild\include\mysql\mysql.h
+	<sys/types.h>
+	<winsock.h>
+	"mysql_com.h"
+	"mysql_time.h"
+	"mysql_version.h"
+	"typelib.h"
+	"my_list.h"
+	"my_alloc.h"
+
+1542283530 d:\code\h2engine\winbuild\include\mysql\mysql_com.h
+
+1542283530 d:\code\h2engine\winbuild\include\mysql\mysql_time.h
+
+1542283530 d:\code\h2engine\winbuild\include\mysql\mysql_version.h
+	<custom_conf.h>
+
+1542283530 d:\code\h2engine\winbuild\include\mysql\typelib.h
+
+1542283530 d:\code\h2engine\winbuild\include\mysql\my_list.h
+
+1542283530 d:\code\h2engine\winbuild\include\mysql\my_alloc.h
+
+1542283530 d:\code\h2engine\winbuild\include\mysql\errmsg.h
+
+1550371997 source:d:\code\h2engine\fflib\db\mysql_ops.cpp
+	<winsock2.h>
+	"db/mysql_ops.h"
+	"base/str_tool.h"
+	<string.h>
+	<stdlib.h>
+	<stdio.h>
+
+1550371997 source:d:\code\h2engine\fflib\db\sqlite_ops.cpp
+	"db/sqlite_ops.h"
+	<string.h>
+
+1550373415 source:d:\code\h2engine\fflib\net\acceptorimpl\acceptor_linux.cpp
+	<sys/types.h>
+	<sys/socket.h>
+	<netdb.h>
+	<winsock2.h>
+	<windows.h>
+	<ws2tcpip.h>
+	<stdio.h>
+	<assert.h>
+	<stdio.h>
+	<string.h>
+	<errno.h>
+	<vector>
+	"net/event_loop.h"
+	"net/acceptorimpl/acceptor_linux.h"
+	"net/socketimpl/socket_linux.h"
+	"net/socketimpl/socket_win.h"
+	"net/ctrlimpl/socket_ctrl_common.h"
+	"base/str_tool.h"
+	"net/socket_op.h"
+	"net/msg_handler.h"
+	"base/task_queue.h"
+	"base/log.h"
+
+1550371997 d:\code\h2engine\fflib\net\socket_op.h
+	"base/fftype.h"
+	<fcntl.h>
+	<errno.h>
+	<unistd.h>
+	<sys/socket.h>
+	<netinet/in.h>
+	<arpa/inet.h>
+	<netinet/tcp.h>
+	<windows.h>
+	<string>
+
+1556026234 source:d:\code\h2engine\fflib\net\acceptorimpl\acceptor_linux_gate.cpp
+	"net/acceptorimpl/acceptor_linux_gate.h"
+	"net/socketimpl/socket_linux.h"
+	"net/socketimpl/socket_win.h"
+	"net/ctrlimpl/socket_ctrl_common.h"
+
+1550371997 source:d:\code\h2engine\fflib\net\codec.cpp
+	"net/codec.h"
+	<thrift/FFThrift.h>
+
+1556002197 source:d:\code\h2engine\fflib\net\ctrlimpl\socket_ctrl_common.cpp
+	"net/ctrlimpl/socket_ctrl_common.h"
+	"net/socket.h"
+	"base/str_tool.h"
+	"base/task_queue.h"
+	<string.h>
+	<assert.h>
+	<stdlib.h>
+	<iostream>
+	<sstream>
+
+1555913879 source:d:\code\h2engine\fflib\net\ctrlimpl\socket_ctrl_gate.cpp
+	"net/ctrlimpl/socket_ctrl_gate.h"
+	"net/net_stat.h"
+	"base/log.h"
+	"base/str_tool.h"
+	"net/codec.h"
+	<openssl/evp.h>
+	<openssl/sha.h>
+	<openssl/des.h>
+	<openssl/evp.h>
+	<openssl/bio.h>
+	<openssl/buffer.h>
+	<openssl/md5.h>
+	<stdio.h>
+
+1542264737 d:\code\h2engine\winbuild\include\openssl\evp.h
+	<openssl/opensslconf.h>
+	<openssl/opensslconf.h>
+	<openssl/ossl_typ.h>
+	<openssl/symhacks.h>
+	<openssl/bio.h>
+	<openssl/objects.h>
+
+1542264737 d:\code\h2engine\winbuild\include\openssl\opensslconf.h
+
+1542264737 d:\code\h2engine\winbuild\include\openssl\ossl_typ.h
+	<openssl/e_os2.h>
+
+1542264737 d:\code\h2engine\winbuild\include\openssl\e_os2.h
+	<openssl/opensslconf.h>
+
+1542264737 d:\code\h2engine\winbuild\include\openssl\symhacks.h
+	<openssl/e_os2.h>
+
+1542264736 d:\code\h2engine\winbuild\include\openssl\bio.h
+	<openssl/e_os2.h>
+	<stdio.h>
+	<stdarg.h>
+	<openssl/crypto.h>
+
+1542264736 d:\code\h2engine\winbuild\include\openssl\crypto.h
+	<stdlib.h>
+	<openssl/e_os2.h>
+	<stdio.h>
+	<openssl/stack.h>
+	<openssl/safestack.h>
+	<openssl/opensslv.h>
+	<openssl/ossl_typ.h>
+	<openssl/ebcdic.h>
+	<openssl/symhacks.h>
+
+1542264737 d:\code\h2engine\winbuild\include\openssl\stack.h
+
+1542264737 d:\code\h2engine\winbuild\include\openssl\safestack.h
+	<openssl/stack.h>
+
+1542264737 d:\code\h2engine\winbuild\include\openssl\opensslv.h
+
+1542264736 d:\code\h2engine\winbuild\include\openssl\ebcdic.h
+	<sys/types.h>
+
+1542264737 d:\code\h2engine\winbuild\include\openssl\objects.h
+	<openssl/obj_mac.h>
+	<openssl/bio.h>
+	<openssl/asn1.h>
+
+1542264737 d:\code\h2engine\winbuild\include\openssl\obj_mac.h
+
+1542264736 d:\code\h2engine\winbuild\include\openssl\asn1.h
+	<time.h>
+	<openssl/e_os2.h>
+	<openssl/bio.h>
+	<openssl/stack.h>
+	<openssl/safestack.h>
+	<openssl/symhacks.h>
+	<openssl/ossl_typ.h>
+	<openssl/bn.h>
+
+1542264736 d:\code\h2engine\winbuild\include\openssl\bn.h
+	<openssl/e_os2.h>
+	<stdio.h>
+	<openssl/ossl_typ.h>
+	<assert.h>
+
+1542264737 d:\code\h2engine\winbuild\include\openssl\sha.h
+	<openssl/e_os2.h>
+	<stddef.h>
+
+1542264736 d:\code\h2engine\winbuild\include\openssl\des.h
+	<openssl/e_os2.h>
+	<openssl/des_old.h>
+
+1542264736 d:\code\h2engine\winbuild\include\openssl\des_old.h
+	<openssl/e_os2.h>
+	<openssl/symhacks.h>
+	<openssl/ui_compat.h>
+
+1542264737 d:\code\h2engine\winbuild\include\openssl\ui_compat.h
+	<openssl/opensslconf.h>
+	<openssl/ui.h>
+
+1542264737 d:\code\h2engine\winbuild\include\openssl\ui.h
+	<openssl/crypto.h>
+	<openssl/safestack.h>
+	<openssl/ossl_typ.h>
+
+1542264736 d:\code\h2engine\winbuild\include\openssl\buffer.h
+	<openssl/ossl_typ.h>
+	<stddef.h>
+	<sys/types.h>
+
+1542264737 d:\code\h2engine\winbuild\include\openssl\md5.h
+	<openssl/e_os2.h>
+	<stddef.h>
+
+1550371997 source:d:\code\h2engine\fflib\net\eventloopimpl\epoll.cpp
+	<sys/epoll.h>
+	<errno.h>
+	<unistd.h>
+	<stdio.h>
+	<fcntl.h>
+	<sys/types.h>
+	<sys/socket.h>
+	<assert.h>
+	"net/socket_op.h"
+	"net/netbase.h"
+	"net/eventloopimpl/epoll.h"
+
+1550371997 source:d:\code\h2engine\fflib\net\eventloopimpl\select.cpp
+	<sys/epoll.h>
+	<sys/socket.h>
+	<errno.h>
+	<unistd.h>
+	<stdio.h>
+	<fcntl.h>
+	<sys/types.h>
+	<assert.h>
+	"net/socket_op.h"
+	"net/netbase.h"
+	"net/eventloopimpl/select.h"
+
+1550371997 source:d:\code\h2engine\fflib\net\net_stat.cpp
+	"net/net_stat.h"
+	"base/log.h"
+
+1550371997 source:d:\code\h2engine\fflib\net\socketimpl\socket_linux.cpp
+	<errno.h>
+	<assert.h>
+	<sys/types.h>
+	<sys/socket.h>
+	"net/socketimpl/socket_linux.h"
+	"net/event_loop.h"
+	"net/socket_ctrl.h"
+	"net/socket_op.h"
+	"base/singleton.h"
+	"base/lock.h"
+	"base/task_queue.h"
+	"base/log.h"
+
+1550373662 source:d:\code\h2engine\fflib\net\socketimpl\socket_win.cpp
+	<errno.h>
+	<assert.h>
+	<sys/types.h>
+	<sys/socket.h>
+	"net/socketimpl/socket_win.h"
+	"net/event_loop.h"
+	"net/socket_ctrl.h"
+	"net/socket_op.h"
+	"base/singleton.h"
+	"base/lock.h"
+	"base/task_queue.h"
+	"base/log.h"
+
+1557407338 source:d:\code\h2engine\fflib\rpc\ffbroker.cpp
+	"rpc/ffbroker.h"
+	"base/log.h"
+	"base/arg_helper.h"
+	"rpc/ffrpc.h"
+
+1557407338 source:d:\code\h2engine\fflib\rpc\ffrpc.cpp
+	"rpc/ffrpc.h"
+	"rpc/ffrpc_ops.h"
+	"base/log.h"
+	"net/net_factory.h"
+	"rpc/ffbroker.h"
+
+1550371997 source:d:\code\h2engine\fflib\rpc\msg_def\ffrpc_msg_constants.cpp
+	"ffrpc_msg_constants.h"
+
+1550371997 source:d:\code\h2engine\fflib\rpc\msg_def\ffrpc_msg_types.cpp
+	"ffrpc_msg_types.h"
+	<algorithm>
+
+1550371997 source:d:\code\h2engine\fflib\server\cmd_util.cpp
+	"server/cmd_util.h"
+	"server/ffworker.h"
+	"rpc/ffbroker.h"
+
+1550371997 d:\code\h2engine\fflib\server\cmd_util.h
+	<string>
+	<vector>
+	<list>
+	<map>
+	<set>
+	"base/smart_ptr.h"
+	"base/event_bus.h"
+	"server/entity.h"
+	"thrift/FFThrift.h"
+
+1550371997 d:\code\h2engine\fflib\server\entity.h
+	<string>
+	<vector>
+	<list>
+	<map>
+	"base/fftype.h"
+	"base/smart_ptr.h"
+	"server/script.h"
+	"server/prop.h"
+
+1550371997 d:\code\h2engine\fflib\server\script.h
+	<string>
+	<vector>
+	<list>
+	<map>
+	<set>
+	"base/singleton.h"
+	"base/smart_ptr.h"
+	"base/fftype.h"
+
+1550371997 d:\code\h2engine\fflib\server\prop.h
+	<string>
+	<vector>
+	<list>
+	<map>
+	<set>
+	"base/fftype.h"
+	"base/singleton.h"
+
+1550371997 d:\code\h2engine\fflib\server\ffworker.h
+	<string>
+	"base/ffslot.h"
+	"base/fftype.h"
+	"net/codec.h"
+	"rpc/ffrpc.h"
+	"base/arg_helper.h"
+	"server/shared_mem.h"
+	"base/event_bus.h"
+	"server/entity.h"
+	"server/prop.h"
+	"server/cmd_util.h"
+
+1557407338 source:d:\code\h2engine\fflib\server\db_mgr.cpp
+	"server/db_mgr.h"
+	"base/perf_monitor.h"
+
+1557407338 d:\code\h2engine\fflib\server\db_mgr.h
+	<assert.h>
+	<string>
+	<vector>
+	<map>
+	"base/fftype.h"
+	"base/log.h"
+	"base/smart_ptr.h"
+	"db/ffdb.h"
+	"base/lock.h"
+	"base/ffslot.h"
+	"base/singleton.h"
+
+1550371997 source:d:\code\h2engine\fflib\server\entity.cpp
+	"server/entity.h"
+	"server/ffworker.h"
+	"server/script.h"
+	"server/prop.h"
+
+1557407338 source:d:\code\h2engine\fflib\server\ffgate.cpp
+	"server/ffgate.h"
+	"net/net_factory.h"
+	"base/log.h"
+	"net/socket_op.h"
+	"server/shared_mem.h"
+
+1557407338 source:d:\code\h2engine\fflib\server\ffworker.cpp
+	"server/ffworker.h"
+	"base/log.h"
+	"server/http_mgr.h"
+	"server/script_cache.h"
+	"server/db_mgr.h"
+
+1557407338 d:\code\h2engine\fflib\server\http_mgr.h
+	<assert.h>
+	<string>
+	<vector>
+	<map>
+	"base/fftype.h"
+	"base/log.h"
+	"base/smart_ptr.h"
+	"db/ffdb.h"
+	"base/lock.h"
+	"base/ffslot.h"
+
+1550371997 d:\code\h2engine\fflib\server\script_cache.h
+	<string>
+	<vector>
+	<map>
+	"base/singleton.h"
+	"base/str_tool.h"
+	"server/script.h"
+
+1557407338 source:d:\code\h2engine\fflib\server\gen-cpp\msg_constants.cpp
+	"msg_constants.h"
+
+1557407338 d:\code\h2engine\fflib\server\gen-cpp\msg_constants.h
+	"msg_types.h"
+
+1557407338 d:\code\h2engine\fflib\server\gen-cpp\msg_types.h
+	<thrift/Thrift.h>
+	<thrift/TApplicationException.h>
+	<thrift/protocol/TProtocol.h>
+	<thrift/transport/TTransport.h>
+	<thrift/cxxfunctional.h>
+
+1557407338 source:d:\code\h2engine\fflib\server\gen-cpp\msg_types.cpp
+	"msg_types.h"
+	<algorithm>
+
+1557407338 source:d:\code\h2engine\fflib\server\http_mgr.cpp
+	<curl/curl.h>
+	"server/http_mgr.h"
+	"base/perf_monitor.h"
+
+1542282944 d:\code\h2engine\winbuild\include\curl\curl.h
+	"curlver.h"
+	<stdio.h>
+	<limits.h>
+	<types.h>
+	<time.h>
+	<sys/types.h>
+	<time.h>
+	<support/SupportDefs.h>
+	"easy.h"
+	"multi.h"
+
+1542282944 d:\code\h2engine\winbuild\include\curl\curlver.h
+
+1542282944 d:\code\h2engine\winbuild\include\curl\easy.h
+
+1542282944 d:\code\h2engine\winbuild\include\curl\multi.h
+	<winsock2.h>
+	<sys/select.h>
+	<sys/socket.h>
+	<sys/time.h>
+	<sys/types.h>
+	"curl.h"
+
+1550371997 source:d:\code\h2engine\fflib\server\shared_mem.cpp
+	"server/shared_mem.h"
+
+1557407338 source:d:\code\h2engine\fflib\server\shared_mem_win.cpp
+	<ctime>
+	"server/shared_mem.h"
+
+1550371997 source:d:\code\h2engine\fflib\xml\ffxml.cpp
+	"xml/ffxml.h"
+	"base/str_tool.h"
+	"tinyxml.h"
+
+1550371997 d:\code\h2engine\fflib\xml\ffxml.h
+	<stdint.h>
+	<stdlib.h>
+	<string>
+	<xml/tinyxml.h>
+
+1550371997 d:\code\h2engine\fflib\xml\tinyxml.h
+	<ctype.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<assert.h>
+	<string>
+	<iostream>
+	<sstream>
+	"xml/tinystr.h"
+
+1550371997 d:\code\h2engine\fflib\xml\tinystr.h
+	<assert.h>
+	<string.h>
+
+1550371997 source:d:\code\h2engine\fflib\xml\tinystr.cpp
+	"xml/tinystr.h"
+
+1550371997 source:d:\code\h2engine\fflib\xml\tinyxml.cpp
+	<ctype.h>
+	<sstream>
+	<iostream>
+	"xml/tinyxml.h"
+
+1550371997 source:d:\code\h2engine\fflib\xml\tinyxmlerror.cpp
+	"xml/tinyxml.h"
+
+1550371997 source:d:\code\h2engine\fflib\xml\tinyxmlparser.cpp
+	<ctype.h>
+	<stddef.h>
+	"xml/tinyxml.h"
+	<windows.h>
+
+1550371997 source:d:\code\h2engine\src\chat\chat.cpp
+	"server/cmd_util.h"
+	"server/entity.h"
+	"server/ffworker.h"
+	"server/db_mgr.h"
+	"chat/chat.h"
+	"common/common_def.h"
+
+1550371997 d:\code\h2engine\src\chat\chat.h
+
+1550371997 d:\code\h2engine\src\common\common_def.h
+
+1550371997 source:d:\code\h2engine\src\item\item.cpp
+	<ctype.h>
+	"item/item.h"
+	"server/db_mgr.h"
+	"common/common_def.h"
+	"common/game_event.h"
+	"base/os_tool.h"
+
+1550371997 d:\code\h2engine\src\item\item.h
+	<string>
+	<vector>
+	<list>
+	<map>
+	<set>
+	"server/entity.h"
+	"base/smart_ptr.h"
+
+1550371997 d:\code\h2engine\src\common\game_event.h
+	"base/event_bus.h"
+	"server/entity.h"
+
+1550371997 d:\code\h2engine\fflib\base\os_tool.h
+	<unistd.h>
+	<stdio.h>
+	<dirent.h>
+	<string.h>
+	<sys/stat.h>
+	<string>
+	<vector>
+
+1550371997 source:d:\code\h2engine\src\map\map.cpp
+	<stdio.h>
+	<math.h>
+	"base/log.h"
+	"server/ffworker.h"
+	"map/map.h"
+	"common/game_event.h"
+	"base/os_tool.h"
+
+1550371997 d:\code\h2engine\src\map\map.h
+	<string>
+	<vector>
+	<list>
+	<map>
+	<set>
+	"server/entity.h"
+	"base/smart_ptr.h"
+
+1550371997 source:d:\code\h2engine\src\npc\npc.cpp
+	<ctype.h>
+	"npc/npc.h"
+	"server/db_mgr.h"
+	"common/common_def.h"
+	"common/game_event.h"
+	"base/str_tool.h"
+	"server/script.h"
+
+1550371997 d:\code\h2engine\src\npc\npc.h
+	<string>
+	<vector>
+	<list>
+	<map>
+	<set>
+	"server/entity.h"
+	"base/smart_ptr.h"
+
+1550371997 source:d:\code\h2engine\src\player\player.cpp
+	"server/ffworker.h"
+	"player/player.h"
+
+1550371997 d:\code\h2engine\src\player\player.h
+	<string>
+	<vector>
+	<list>
+	<map>
+	<set>
+	"server/entity.h"
+	"base/smart_ptr.h"
+
+1550371997 source:d:\code\h2engine\src\setup.cpp
+	"server/ffworker.h"
+	"server/entity.h"
+	"player/player.h"
+	"map/map.h"
+	"task/task.h"
+	"chat/chat.h"
+
+1550371997 d:\code\h2engine\src\task\task.h
+	<string>
+	<vector>
+	<list>
+	<map>
+	<set>
+	"server/entity.h"
+	"base/smart_ptr.h"
+
+1550371997 source:d:\code\h2engine\src\skill\skill.cpp
+	<ctype.h>
+	<algorithm>
+	"skill/skill.h"
+	"server/db_mgr.h"
+	"common/game_event.h"
+	"base/str_tool.h"
+	"server/script.h"
+	"common/common_def.h"
+	"common/game_event.h"
+	"base/os_tool.h"
+
+1550371997 d:\code\h2engine\src\skill\skill.h
+	<string>
+	<vector>
+	<list>
+	<map>
+	<set>
+	"server/entity.h"
+	"base/smart_ptr.h"
+
+1550371997 source:d:\code\h2engine\src\task\task.cpp
+	<ctype.h>
+	<algorithm>
+	"task/task.h"
+	"server/db_mgr.h"
+	"common/game_event.h"
+	"server/ffworker.h"
+	"base/log.h"
+	"base/time_tool.h"
+	"base/os_tool.h"
+
+1550371997 d:\code\h2engine\fflib\base\time_tool.h
+	<string.h>
+	<stdio.h>
+	<stdlib.h>
+	<time.h>
+	<map>
+	<set>
+	<vector>
+	<fstream>
+	<string>
+
+1555578825 source:d:\code\h2engine\lib3party\thrift\protocol\tbase64utils.cpp
+	<thrift/protocol/TBase64Utils.h>
+
+1376575469 d:\code\h2engine\lib3party\thrift\protocol\tbase64utils.h
+	<stdint.h>
+	<string>
+
+1557407338 d:\code\h2engine\fflib\net\wsprotocol.h
+	<string>
+	<vector>
+	<map>
+	<openssl/evp.h>
+	<openssl/sha.h>
+	<openssl/des.h>
+	<openssl/evp.h>
+	<openssl/bio.h>
+	<openssl/buffer.h>
+	<openssl/md5.h>
+
+1557407338 d:\code\h2engine\fflib\base\task.h
+	"base/fftype.h"
+
+1557407338 d:\code\h2engine\fflib\net\acceptor_linux.h
+	"net/acceptor.h"
+
+1557407338 d:\code\h2engine\fflib\net\epoll.h
+	<list>
+	"net/event_loop.h"
+	"base/task_queue.h"
+	"base/lock.h"
+
+1557407338 d:\code\h2engine\fflib\net\select.h
+	<list>
+	"net/event_loop.h"
+	"base/task_queue.h"
+	"base/lock.h"
+
+1557407338 d:\code\h2engine\fflib\net\socket_linux.h
+	<list>
+	<string>
+	"net/socket.h"
+	"base/obj_pool.h"
+
+1557407338 d:\code\h2engine\fflib\net\socket_win.h
+	<list>
+	<string>
+	"net/socket.h"
+	"base/obj_pool.h"
+
+1557407338 d:\code\h2engine\fflib\net\socket_ctrl_common.h
+	<string>
+	"net/socket_ctrl.h"
+	"net/message.h"
+	"net/msg_handler.h"
+	"net/wsprotocol.h"
+
+1557407338 source:d:\code\h2engine\fflib\net\acceptor_linux.cpp
+	<sys/types.h>
+	<sys/socket.h>
+	<netdb.h>
+	<winsock2.h>
+	<windows.h>
+	<ws2tcpip.h>
+	<stdio.h>
+	<assert.h>
+	<stdio.h>
+	<string.h>
+	<errno.h>
+	<vector>
+	"net/event_loop.h"
+	"net/acceptor_linux.h"
+	"net/socket_linux.h"
+	"net/socket_win.h"
+	"net/socket_ctrl_common.h"
+	"base/str_tool.h"
+	"net/socket_op.h"
+	"net/msg_handler.h"
+	"base/task_queue.h"
+	"base/log.h"
+
+1557407338 source:d:\code\h2engine\fflib\net\epoll.cpp
+	<sys/epoll.h>
+	<errno.h>
+	<unistd.h>
+	<stdio.h>
+	<fcntl.h>
+	<sys/types.h>
+	<sys/socket.h>
+	<assert.h>
+	"net/socket_op.h"
+	"net/netbase.h"
+	"net/epoll.h"
+
+1557407338 source:d:\code\h2engine\fflib\net\select.cpp
+	<sys/epoll.h>
+	<sys/socket.h>
+	<errno.h>
+	<unistd.h>
+	<stdio.h>
+	<fcntl.h>
+	<sys/types.h>
+	<assert.h>
+	"net/socket_op.h"
+	"net/netbase.h"
+	"net/select.h"
+
+1557407338 source:d:\code\h2engine\fflib\net\socket_ctrl_common.cpp
+	"net/socket_ctrl_common.h"
+	"net/socket.h"
+	"base/str_tool.h"
+	"base/task_queue.h"
+	<string.h>
+	<assert.h>
+	<stdlib.h>
+	<iostream>
+	<sstream>
+
+1557407338 source:d:\code\h2engine\fflib\net\socket_linux.cpp
+	<errno.h>
+	<assert.h>
+	<sys/types.h>
+	<sys/socket.h>
+	"net/socket_linux.h"
+	"net/event_loop.h"
+	"net/socket_ctrl.h"
+	"net/socket_op.h"
+	"base/singleton.h"
+	"base/lock.h"
+	"base/task_queue.h"
+	"base/log.h"
+
+1557407338 source:d:\code\h2engine\fflib\net\socket_win.cpp
+	<errno.h>
+	<assert.h>
+	<sys/types.h>
+	<sys/socket.h>
+	"net/socket_win.h"
+	"net/event_loop.h"
+	"net/socket_ctrl.h"
+	"net/socket_op.h"
+	"base/singleton.h"
+	"base/lock.h"
+	"base/task_queue.h"
+	"base/log.h"
+

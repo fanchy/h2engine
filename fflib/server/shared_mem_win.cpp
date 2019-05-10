@@ -166,6 +166,9 @@ bool SharedSyncmemMgr::syncSharedData(int32_t cmd, const std::string& data){
     {
         if (i != m_worker_index)
         {
+            if (!m_worker_shm){
+                return false;
+            }
             //printf("SharedSyncmemMgr::syncSharedData i =%d\n", i);
             wroker_shared_data_t* workdata = m_worker_shm + i;
             if (workdata->pid != 0)
@@ -332,12 +335,18 @@ void wroker_shared_data_t::cleanup()
     ::sem_destroy(&(this->sem));
 }
 writelock_gurard_t::writelock_gurard_t(MasterSharedData* master):m_master_data(master), pid(0){
+    if (!m_master_data){
+        return;
+    }
     m_master_data->timelock();
     pid = ::getpid();
     m_master_data->pidusing = pid;
     //printf("writelock_gurard_t...............\n");
 }
 writelock_gurard_t::~writelock_gurard_t(){
+    if (!m_master_data){
+        return;
+    }
     if (pid == m_master_data->pidusing)
     {
         m_master_data->unlock();

@@ -1,8 +1,8 @@
-#ifndef _WIN32
+
 #ifndef _SIGNAL_HELPER_H_
 #define _SIGNAL_HELPER_H_
 
-
+#ifndef _WIN32
 #include <signal.h>
 
 #include <map>
@@ -34,7 +34,13 @@ public:
         return sig_num;
     }
 };
-
+#else
+class SignalHelper
+{
+public:
+    static int bloack() {return 0;}
+    static int wait(std::string option_ = ""){return 0;}
+};
 #endif
 
 #endif
