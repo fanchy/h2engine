@@ -32,7 +32,7 @@ using namespace std;
 
 using namespace ff;
 
-AcceptorLinux::AcceptorLinux(EventLoop* e_, MsgHandler* msg_handler_, TaskQueuePool* tq_):
+AcceptorLinux::AcceptorLinux(EventLoop* e_, MsgHandler* msg_handler_, TaskQueue* tq_):
     m_listen_fd(-1),
     m_epoll(e_),
     m_msg_handler(msg_handler_),
@@ -180,8 +180,8 @@ int AcceptorLinux::handleEpollDel()
 SocketI* AcceptorLinux::create_socket(SocketFd new_fd_)
 {
 	#ifdef _WIN32
-    return new SocketWin(m_epoll, new SocketCtrlCommon(m_msg_handler), new_fd_, m_tq->alloc(new_fd_));
+    return new SocketWin(m_epoll, new SocketCtrlCommon(m_msg_handler), new_fd_, m_tq);
 	#else
-    return new SocketLinux(m_epoll, new SocketCtrlCommon(m_msg_handler), new_fd_, m_tq->alloc(new_fd_));
+    return new SocketLinux(m_epoll, new SocketCtrlCommon(m_msg_handler), new_fd_, m_tq);
 	#endif
 }

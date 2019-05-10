@@ -10,12 +10,12 @@ namespace ff {
 class EventLoop;
 class SocketI;
 class MsgHandler;
-class TaskQueuePool;
+class TaskQueue;
 
 class AcceptorLinux: public Acceptor
 {
 public:
-    AcceptorLinux(EventLoop*, MsgHandler*, TaskQueuePool* tq_);
+    AcceptorLinux(EventLoop*, MsgHandler*, TaskQueue* tq_);
     ~AcceptorLinux();
     int   open(const std::string& address_);
     void close();
@@ -31,7 +31,7 @@ protected:
     int                 m_listen_fd;
     EventLoop*          m_epoll;
     MsgHandler*         m_msg_handler;
-    TaskQueuePool*      m_tq;
+    TaskQueue*          m_tq;
 };
 
 }

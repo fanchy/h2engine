@@ -21,7 +21,7 @@ public:
     struct NetData
     {
         volatile bool           started_flag;
-        TaskQueuePool*          tg;
+        TaskQueue*              tg;
         Thread                  thread;
         #ifdef _WIN32
         Select                  epoll;
@@ -61,9 +61,8 @@ public:
             	#endif
                 assert(thread_num_ > 0);
                 started_flag = true;
-                tg = new TaskQueuePool(thread_num_);
+                tg = new TaskQueue();
                 thread.create_thread(Task(&runEpoll, this), 1);
-                thread.create_thread(TaskQueuePool::gen_task(tg), thread_num_);
             }
         }
         void stop()
@@ -147,7 +146,7 @@ public:
     {
         Singleton<NetData>::instance().start();
         return Connector::connect(host_, &(Singleton<NetData>::instance().epoll), msg_handler_,
-                                    (Singleton<NetData>::instance().tg->rand_alloc()));
+                                    (Singleton<NetData>::instance().tg));
     }
 };
 
