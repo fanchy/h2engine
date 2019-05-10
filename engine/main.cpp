@@ -120,9 +120,8 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-#ifndef _WIN32
     SignalHelper::wait();
-#else
+#ifdef _WIN32
     if (SetConsoleCtrlHandler((PHANDLER_ROUTINE)CtrlHandler, TRUE))
 	  {
 	    printf( "\nserver is running.\n" );

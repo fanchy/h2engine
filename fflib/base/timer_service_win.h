@@ -17,10 +17,11 @@
 #include "base/thread.h"
 #include "base/lock.h"
 #include "base/task_queue.h"
+#include "base/smart_ptr.h"
 
 namespace ff {
 
-class TimerService 
+class TimerService
 {
     struct interupt_info_t
     {
@@ -67,8 +68,8 @@ class TimerService
     typedef std::list<registerfded_info_t>             registerfded_info_list_t;
     typedef std::multimap<long, registerfded_info_t>   registerfded_info_map_t;
 public:
-    TimerService(TaskQueue* tq_ = NULL, long tick = 100):
-        m_tq(tq_),
+    static TimerService& instance(){ return Singleton<TimerService>::instance(); }
+    TimerService(long tick = 100):
         m_runing(true),
         m_efd(-1),
         m_min_timeout(tick),
@@ -76,7 +77,7 @@ public:
         m_checking_list(1)
     {
         //TODO m_efd = ::epoll_create(16);
-        
+
         struct lambda_t
         {
             static void run(void* p_)
@@ -96,7 +97,7 @@ public:
         {
             m_runing = false;
             interupt();
-            
+
             //::close(m_efd);
             //printf("begin .....select exit\n");
             m_thread.join();
@@ -119,10 +120,10 @@ public:
         tv.tv_sec += ms_ / 1000;
         tv.tv_usec += ms_ % 1000;
         uint64_t   dest_ms = uint64_t(tv.tv_sec)*1000 + tv.tv_usec / 1000 ;//+ ms_;
-        
+
         LockGuard lock(m_mutex);
         m_tmp_registerfd_list.push_back(registerfded_info_t(ms_, dest_ms, func, false, tv));
-        
+
         //time_t nowTm = ::time(NULL);
         //printf("onceTimer .....nowTm=%ld,tv_sec=%ld,dest_ms=%ld\n", nowTm, tv.tv_sec, dest_ms);
     }
@@ -135,34 +136,34 @@ public:
     {
 		struct timeval tv = {0, 0};
 		struct timeval tvtmp = {0, 0};
-		tv.tv_sec  = 0;  
-		tv.tv_usec = 1000*200;  
+		tv.tv_sec  = 0;
+		tv.tv_usec = 1000*200;
 		SOCKET_TYPE tmpsock = socket(AF_INET, SOCK_STREAM, 0);
 		while (m_runing)
-		{     
-			// We only care read event 
+		{
+			// We only care read event
 			fd_set tmpset;
 			FD_ZERO(&tmpset);
 			FD_SET(tmpsock, &tmpset);
 			int ret = ::select(0, &tmpset, NULL, NULL, &tv);
 			gettimeofday(&tvtmp, NULL);
             //int64_t cur_ms = tvtmp.tv_sec*1000 + tvtmp.tv_usec / 1000;
-            
+
             add_new_timer();
             process_timerCallback(tvtmp);
             //printf("timer .....select\n");
             //time_t nowTm = ::time(NULL);
 	        //printf("onceTimer .....nowTm=%ld,tv_sec=%ld,dest_ms=%ld\n", nowTm, tvtmp.tv_sec, cur_ms);
-			if (ret == 0) 
+			if (ret == 0)
 			{
-				// Time expired 
-			 	continue; 
+				// Time expired
+			 	continue;
 			}
 			else if (ret < 0){
 				fprintf(stderr, "timer::runLoop: %d\n", WSAGetLastError());
 				break;
 			}
-		}//while  
+		}//while
 		//printf("timer .....select exit\n");
 		#ifdef _WIN32
 		::closesocket(tmpsock);
@@ -172,27 +173,27 @@ public:
     	/*
         struct epoll_event ev_set[64];
         //! interupt();
-        
+
         struct timeval tv;
-        
+
         do
         {
             ::epoll_wait(m_efd, ev_set, 64, m_min_timeout);
-            
+
             if (false == m_runing)//! cancel
             {
                 break;
             }
-            
+
             gettimeofday(&tv, NULL);
             uint64_t cur_ms = tv.tv_sec*1000 + tv.tv_usec / 1000;
-            
+
             add_new_timer();
             process_timerCallback(cur_ms);
-            
+
         }while (true) ;*/
     }
-    
+
 private:
     void add_new_timer()
     {
@@ -210,7 +211,7 @@ private:
     	/*TODO
         epoll_event ev = { 0, { 0 } };
         ev.events = EPOLLIN | EPOLLPRI | EPOLLOUT | EPOLLHUP;
-        
+
         ::epoll_ctl(m_efd, EPOLL_CTL_ADD, m_interupt_info.read_fd(), &ev);*/
     }
     void process_timerCallback(const struct timeval& now_)
@@ -227,31 +228,25 @@ private:
                 continue;
             }
             toDel.push_back(it);
-            if (m_tq){
-                m_tq->post(last.callback); //! 投递到目标线程执行
-            }
-            else{
-                last.callback.run();
-            }
-            
+            last.callback.run();
+
             if (last.is_loop)//! 如果是循环定时器，还要重新加入到定时器队列中
             {
                 loopTimer(last.timeout, last.callback);
             }
         }
-        
+
         for (size_t i = 0; i < toDel.size(); ++i){
             m_registerfded_store.erase(toDel[i]);
         }
         /*
-        if (it != it_begin)//! some timeout 
+        if (it != it_begin)//! some timeout
         {
             m_registerfded_store.erase(it_begin, it);
         }*/
     }
 
 private:
-    TaskQueue*            m_tq;
     volatile bool            m_runing;
     int                      m_efd;
     volatile long            m_min_timeout;
@@ -262,6 +257,42 @@ private:
     interupt_info_t          m_interupt_info;
     Thread                 m_thread;
     Mutex                  m_mutex;
+};
+class Timer
+{
+public:
+    struct TimerCB
+    {
+        static void callback(SharedPtr<TaskQueue> tq, Task func)
+        {
+            tq->post(func);
+        }
+    };
+    Timer(SharedPtr<TaskQueue>& tq_):
+        m_tq(tq_)
+    {
+    }
+    void setTQ(SharedPtr<TaskQueue> tq){ m_tq = tq;}
+    void loopTimer(uint64_t ms_, Task func)
+    {
+        if (m_tq){
+            TimerService::instance().loopTimer(ms_, TaskBinder::gen(&TimerCB::callback, m_tq, func));
+        }
+        else{
+            TimerService::instance().loopTimer(ms_, func);
+        }
+    }
+    void onceTimer(uint64_t ms_, Task func)
+    {
+        if (m_tq){
+            TimerService::instance().onceTimer(ms_, TaskBinder::gen(&TimerCB::callback, m_tq, func));
+        }
+        else{
+            TimerService::instance().onceTimer(ms_, func);
+        }
+    }
+private:
+    SharedPtr<TaskQueue>            m_tq;
 };
 
 }
