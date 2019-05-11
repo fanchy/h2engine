@@ -12,7 +12,7 @@
 #include <iostream>
 #include <map>
 #include <set>
-#ifndef _WIN32
+#ifdef linux
 #include <endian.h>
 #include <byteswap.h>
 #endif
@@ -35,7 +35,7 @@ namespace apache
     }
 }
 namespace ff {
-#ifdef _WIN32
+#ifndef linux
 
 #define __bswap_64(val) (((val) >> 56) |\
                     (((val) & 0x00ff000000000000ll) >> 40) |\
@@ -228,13 +228,13 @@ struct CodecTool<X>                                              \
 {                                                                   \
     static void encode(BinEncoder& en_, const X& src_val_)       \
     {                                                               \
-        X val_ = (X)hton64(src_val_);                                 \
+        X val_ = (X)(hton64(src_val_));                                 \
         en_.copy_value((const char*)(&val_), sizeof(val_));         \
     }                                                               \
     static void decode(BinDecoder& de_, X& val_)                 \
     {                                                               \
         de_.copy_value((void*)(&val_), sizeof(val_));               \
-        val_ = (X)ntoh64(val_);                                     \
+        val_ = (X)(ntoh64(val_));                                     \
     }                                                               \
 };
 

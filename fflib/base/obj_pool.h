@@ -1,7 +1,9 @@
 #ifndef _OBJ_POOL_H_
 #define _OBJ_POOL_H_
 
+#ifdef linux
 #include <malloc.h>
+#endif
 #include <string.h>
 #include <list>
 

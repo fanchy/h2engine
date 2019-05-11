@@ -1,6 +1,6 @@
 #include "base/lock.h"
 #include <sys/time.h>
-using namespace std;
+//using namespace std;
 using namespace ff;
 
 Mutex::Mutex()
@@ -21,7 +21,7 @@ bool Mutex::lock()
     }
     return true;
 }
-
+/*
 bool Mutex::time_lock(int us_)
 {
     struct timeval now;
@@ -36,7 +36,7 @@ bool Mutex::time_lock(int us_)
     }
     return true;
 }
-
+*/
 bool Mutex::unlock()
 {
     if (pthread_mutex_unlock(&m_mutex))
@@ -117,7 +117,7 @@ bool ConditionVar::broadcast()
 {
     return 0 == pthread_cond_broadcast(&m_cond);
 }
-
+#ifdef linux
 SpinLock::SpinLock()
 {
     pthread_spin_init(&spinlock, 0);
@@ -142,6 +142,7 @@ bool SpinLock::try_lock()
     }
     return true;
 }
+#endif
 
 spin_LockGuard::spin_LockGuard(SpinLock& lock_):
     lock(lock_)

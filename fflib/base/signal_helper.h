@@ -16,7 +16,7 @@ public:
     {
         sigset_t mask_sig;
 
-        ::sigfillset(&mask_sig);
+        sigfillset(&mask_sig);
         return ::pthread_sigmask(SIG_BLOCK, &mask_sig, NULL);
     }
     static int wait(std::string option_ = "")

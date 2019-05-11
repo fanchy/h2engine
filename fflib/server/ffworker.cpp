@@ -161,7 +161,7 @@ int FFWorker::processSessionReq(RPCReq<RouteLogicMsgReq, EmptyMsgRet>& req_)
     }
 
     SessionReqEvent eMsg(pWorkerClient->entity, req_.msg.cmd, req_.msg.body);
-    if (LOGOUT_CMD != req_.msg.cmd){//!如果有客户端发了错误包，忽略0xFFFF是保留协议
+    if (LOGOUT_CMD != (int)req_.msg.cmd){//!如果有客户端发了错误包，忽略0xFFFF是保留协议
         EVENT_BUS_FIRE(eMsg);
     }
     if (eMsg.isDone == false){

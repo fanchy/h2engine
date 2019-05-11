@@ -1,4 +1,4 @@
-#ifndef _WIN32
+#ifdef linux
 #include <sys/epoll.h>
 #include <errno.h>
 #include <unistd.h>

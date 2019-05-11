@@ -22,6 +22,19 @@ ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Windows")
         ${PROJECT_SOURCE_DIR}/windependency/lib
         C:/Python27/libs
     )
+ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
+	MESSAGE(STATUS "current platform: MacOSX")
+    set(EXT_LIBS 
+        dl mysqlclient
+    )
+    set(EXT_INCLUDE
+        /usr/local/opt/openssl/include
+        /usr/local/opt/mysql-client/include
+    )
+    set(EXT_LINK
+        /usr/local/opt/mysql-client/lib
+        /usr/local/opt/openssl/lib
+    )
 ELSE ()
 	MESSAGE(STATUS "other platform: ${CMAKE_SYSTEM_NAME}")
 ENDIF (CMAKE_SYSTEM_NAME MATCHES "Linux")

@@ -212,7 +212,9 @@ void SocketLinux::sendImpl(const string& buff_src, int flag)
         m_sc->handleWriteCompleted(this);
     }
 }
-
+#ifndef MSG_NOSIGNAL
+    #define MSG_NOSIGNAL 0
+#endif
 int SocketLinux::doSend(ff_str_buffer_t* buff_)
 {
     size_t nleft             = (size_t)(buff_->left_size());

@@ -11,7 +11,7 @@ public:
     Mutex();
     ~Mutex();
     bool lock();
-    bool time_lock(int us_);
+    //bool time_lock(int us_);
     bool unlock();
     bool try_lock();
 
@@ -138,7 +138,7 @@ private:
     RWMutex&      m_mutex;
 };
 
-
+#ifdef linux
 class SpinLock
 {
 public:
@@ -150,6 +150,10 @@ public:
 private:
     pthread_spinlock_t spinlock;
 };
+
+#else
+typedef Mutex SpinLock ;
+#endif
 
 class spin_LockGuard
 {

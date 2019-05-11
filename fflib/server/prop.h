@@ -116,7 +116,7 @@ public:
     int64_t getByModule(ObjType obj, const std::string& strName, const std::string& moduleName) {
         typename std::map<std::string, PropGetterSetter*>::iterator it = propName2GetterSetter.find(strName);
         if (it != propName2GetterSetter.end() && it->second.fGet && it->second.fSet){
-            int64_t ret =it->second.fGet(obj);
+            it->second.fGet(obj);
             std::map<std::string, int64_t>::iterator itMod = it->second.moduleRecord.find(moduleName);
             if (itMod != it->second.moduleRecord.end()){
                 return itMod->second;

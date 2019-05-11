@@ -277,7 +277,7 @@ void Log::log_content(int level_, const char* str_class_, const string& content_
 
 	char log_buff[512];
 	::snprintf(log_buff, sizeof(log_buff), "%02d:%02d:%02d.%03ld %s [%ld] [%s] ",
-			tm_val.tm_hour, tm_val.tm_min, tm_val.tm_sec, curtm.tv_usec/1000,
+			tm_val.tm_hour, tm_val.tm_min, tm_val.tm_sec, long(curtm.tv_usec/1000),
 			g_log_level_desp[level_], tid_, str_class_);
 
 	if (m_enable_file && check_and_create_dir(&tm_val))

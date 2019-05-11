@@ -242,7 +242,11 @@ bool MasterSharedData::timelock(int sec)
     struct timespec tout;
     ::clock_gettime(CLOCK_REALTIME, &tout);
     tout.tv_sec += sec;
+#ifdef linux
     int err = ::pthread_mutex_timedlock(&master_lock, &tout);
+#else
+    int err = pthread_mutex_lock(&master_lock);
+#endif
     if (err != 0)//!lock failed
     {
         return false;
@@ -316,7 +320,7 @@ bool wroker_shared_data_t::init()
     ::pthread_mutex_init(&(wroker_lock), &mutexAttr);
     ::pthread_cond_init(&worker_cond, NULL);
     */
-    ::sem_init(&(this->sem), 1, 0);
+    sem_init(&(this->sem), 1, 0);
     return true;
 }
 void wroker_shared_data_t::cleanup()
@@ -325,7 +329,7 @@ void wroker_shared_data_t::cleanup()
     ::pthread_mutex_destroy(&(wroker_lock));
     ::pthread_cond_destroy(&worker_cond);
     */
-    ::sem_destroy(&(this->sem));
+    sem_destroy(&(this->sem));
 }
 writelock_gurard_t::writelock_gurard_t(MasterSharedData* master):m_master_data(master), pid(0){
     m_master_data->timelock();

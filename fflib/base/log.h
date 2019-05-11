@@ -23,11 +23,13 @@
 #include "base/singleton.h"
 #include "base/arg_helper.h"
 
-#ifndef WIN32
+#ifdef linux
 #define gettid() ::syscall(SYS_gettid)
-#else
+#elif WIN32
 #include <windows.h>
 #define gettid() ::GetCurrentThreadId()
+#else
+#define gettid() 0
 #endif
 namespace ff
 {

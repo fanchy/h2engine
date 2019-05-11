@@ -1,10 +1,10 @@
-#ifdef _WIN32
-#include "base/timer_service_win.h"
-#else
 #ifndef _TIMER_SERVICE_H_
 #define _TIMER_SERVICE_H_
 
+#ifdef linux
 #include <sys/epoll.h>
+#endif
+
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/time.h>
@@ -81,12 +81,11 @@ public:
         m_runing(true),
         m_efd(-1),
         m_min_timeout(tick),
-        m_cache_list(0),
-        m_checking_list(1),
         m_nAutoIncID(0)
     {
+#ifdef linux
         m_efd = ::epoll_create(16);
-        
+#endif
         struct lambda_t
         {
             static void run(void* p_)
@@ -106,8 +105,9 @@ public:
         {
             m_runing = false;
             interupt();
-            
-            ::close(m_efd);
+            if (m_efd){
+                ::close(m_efd);
+            }
             m_thread.join();
             cleardata();
         }
@@ -142,7 +142,7 @@ public:
         LockGuard lock(m_mutex);
         m_tmpRegisterfdList.push_back(RegisterfdedInfo(ms_, dest_ms, func, false, ++m_nAutoIncID));
     }
-
+#ifdef linux
     void run()
     {
         struct epoll_event ev_set[64];
@@ -164,10 +164,24 @@ public:
             
             addNewTimer();
             processTimerCallback(cur_ms);
-            
         }while (true) ;
     }
-    
+#else
+    void run()
+    {
+        struct timeval tv;
+        do
+        {
+            usleep(m_min_timeout);
+            if (false == m_runing){
+                break;
+            }
+            gettimeofday(&tv, NULL);
+            addNewTimer();
+            processTimerCallback(tv.tv_sec*1000 + tv.tv_usec / 1000);
+        }while (true) ;
+    }
+#endif    
 private:
     void addNewTimer()
     {
@@ -182,10 +196,11 @@ private:
 
     void interupt()
     {
+#ifdef linux
         epoll_event ev = { 0, { 0 } };
         ev.events = EPOLLIN | EPOLLPRI | EPOLLOUT | EPOLLHUP;
-        
         ::epoll_ctl(m_efd, EPOLL_CTL_ADD, m_infoInterupt.read_fd(), &ev);
+#endif
     }
     void processTimerCallback(uint64_t now_)
     {
@@ -218,8 +233,6 @@ private:
     volatile bool               m_runing;
     int                         m_efd;
     volatile long               m_min_timeout;
-    int                         m_cache_list;
-    int                         m_checking_list;
     RegisterfdedInfoList        m_tmpRegisterfdList;
     RegisterfdedInfoMap         m_mapRegisterfdedStore;
     InteruptInfo                m_infoInterupt;
@@ -267,5 +280,3 @@ private:
 }
 
 #endif
-#endif
-

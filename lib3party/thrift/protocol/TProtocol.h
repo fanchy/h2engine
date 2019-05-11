@@ -14,6 +14,7 @@
 
 #  define htolell(n) (n)
 #  define letohll(n) (n)
+#ifndef htonll
 # if defined(__GNUC__) && defined(__GLIBC__)
 #  include <byteswap.h>
 #  define ntohll(n) bswap_64(n)
@@ -25,7 +26,7 @@
 #  define ntohll(n) ( (((uint64_t)ntohl(n)) << 32) + ntohl(n >> 32) )
 #  define htonll(n) ( (((uint64_t)htonl(n)) << 32) + htonl(n >> 32) )
 #endif
-
+#endif
 template <typename To, typename From>
 static inline To bitwise_cast(From from) {
     BOOST_STATIC_ASSERT(sizeof(From) == sizeof(To));
