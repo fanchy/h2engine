@@ -152,6 +152,7 @@ Log::Log(int level_, const string& all_class_, const string& path_, const string
 	{
 		m_enable_class_set->insert(vt_class[i]);
 	}
+	m_enable_class_set->insert("SERVER");
 
 	m_path 	      	= path_;
 	m_filename      = file_;
@@ -271,15 +272,24 @@ static const char* g_log_color_tail[] =
 #endif
 void Log::log_content(int level_, const char* str_class_, const string& content_, long tid_)
 {
+	if (!str_class_){
+		str_class_ = "";
+	}
 	struct timeval curtm;
 	gettimeofday(&curtm, NULL);
 	struct tm tm_val = *localtime(&(curtm.tv_sec));
 
 	char log_buff[512];
-	::snprintf(log_buff, sizeof(log_buff), "%02d:%02d:%02d.%03ld %s [%ld] [%s] ",
-			tm_val.tm_hour, tm_val.tm_min, tm_val.tm_sec, long(curtm.tv_usec/1000),
-			g_log_level_desp[level_], tid_, str_class_);
-
+	if (tid_){
+		::snprintf(log_buff, sizeof(log_buff), "%02d:%02d:%02d.%03ld %s [%ld] [%s] ",
+				tm_val.tm_hour, tm_val.tm_min, tm_val.tm_sec, long(curtm.tv_usec/1000),
+				g_log_level_desp[level_], tid_, str_class_);
+	}
+	else{
+		::snprintf(log_buff, sizeof(log_buff), "%02d:%02d:%02d.%03ld %s [%s] ",
+				tm_val.tm_hour, tm_val.tm_min, tm_val.tm_sec, long(curtm.tv_usec/1000),
+				g_log_level_desp[level_], str_class_);
+	}
 	if (m_enable_file && check_and_create_dir(&tm_val))
 	{
 		m_file << log_buff << content_ << endl;
@@ -351,7 +361,8 @@ bool Log::check_and_create_dir(struct tm* tm_val_)
 }
 
 LogService::LogService():
-	m_log(NULL)
+	m_log(NULL),
+	m_bEnableAllClass(true)
 {
 
 }

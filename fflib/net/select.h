@@ -34,8 +34,8 @@ protected:
 private:
     volatile bool            m_running;
     int                      m_efd;
-    TaskQueue*            m_task_queue;
-    int                      m_interupt_sockets[2];
+    //TaskQueue*            m_task_queue;
+    //int                      m_interupt_sockets[2];
     //! 待销毁的error socket
     std::list<Fd*>   		     m_error_fd_set;
     Mutex                  m_mutex;

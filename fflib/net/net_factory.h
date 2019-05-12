@@ -23,7 +23,7 @@ public:
         volatile bool           started_flag;
         TaskQueue*              tg;
         Thread                  thread;
-        #ifdef _WIN32
+        #ifndef linux
         Select                  epoll;
         #else
         Epoll                   epoll;

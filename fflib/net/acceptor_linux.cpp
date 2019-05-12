@@ -47,6 +47,7 @@ AcceptorLinux::~AcceptorLinux()
 
 int AcceptorLinux::open(const string& address_)
 {
+    LOGTRACE(("ACCEPTOR", "accept begin %s", address_));
     //! example tcp://192.168.1.2:8080
     vector<string> vt;
     StrTool::split(address_, vt, "://");
@@ -112,6 +113,7 @@ int AcceptorLinux::open(const string& address_)
     }
     ::freeaddrinfo(res);
     m_listen_fd = tmpfd;
+    LOGTRACE(("ACCEPTOR", "accept ok %s", address_));
     return m_epoll->registerfd(this);
 }
 

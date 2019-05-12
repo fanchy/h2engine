@@ -1,6 +1,6 @@
-#ifdef _WIN32
+
 #ifndef _WIN32
-#include <sys/epoll.h>
+#include <sys/select.h>
 #include <sys/socket.h>
 #endif
 
@@ -35,8 +35,8 @@ Select::Select():
 
 Select::~Select()
 {
-    ::close(m_interupt_sockets[0]);
-    ::close(m_interupt_sockets[1]);
+    //::close(m_interupt_sockets[0]);
+    //::close(m_interupt_sockets[1]);
     ::close(m_efd);
     m_efd = -1;
 }
@@ -52,24 +52,39 @@ int Select::runLoop()
 	{     
 		// We only care read event 
 		fd_set tmpset;
+		int nMaxFd = 0;
 		FD_ZERO(&tmpset);
 		{
 			LockGuard lock(m_mutex);
-			tmpset = m_fdread;
+			//tmpset = m_fdread;
+			for (std::map<SocketFd, Fd*>::iterator it = m_fd2ptr.begin(); it != m_fd2ptr.end(); ++it){
+				if (it->first > nMaxFd){
+					nMaxFd = it->first;
+				}
+				FD_SET(it->first, &tmpset);
+				//printf("add readfd %d\n", it->first);
+			}
 		}
-		
+		#ifdef _WIN32
+			nMaxFd = 0;
+		#else
+			nMaxFd += 1;
+		#endif
 		FD_SET(tmpsock, &tmpset);
-		int ret = ::select(0, &tmpset, NULL, NULL, &tv);
+		int ret = select(nMaxFd, &tmpset, NULL, NULL, &tv);
 		if (ret == 0) 
 		{
 			// Time expired 
 		 	continue; 
 		}
 		else if (ret < 0){
+			#ifdef _WIN32
 			fprintf(stderr, "Select::runLoop: %d\n", WSAGetLastError());
+			#endif
 			continue;
 		}
 		fd_del_callback();
+		#ifdef _WIN32
 		for (size_t i = 0; i < tmpset.fd_count; i++ )
 		{
 			if (FD_ISSET(tmpset.fd_array[i], &tmpset))
@@ -82,6 +97,20 @@ int Select::runLoop()
 			   
 		   } //if 
 		}//for 
+		#else
+		for(int fd = 0; fd < FD_SETSIZE; fd++) 
+        {
+			if(FD_ISSET(fd, &tmpset)) 
+            {
+				//printf("read event.......\n");
+				std::map<SocketFd, Fd*>::iterator it = m_fd2ptr.find(fd);
+			    if (it!= m_fd2ptr.end()){
+			   		Fd* fd_ptr = it->second;
+					fd_ptr->handleEpollRead();
+			   }
+			}
+		}
+		#endif
 	}//while  
 	SocketOp::close(tmpsock);
 	/*
@@ -146,9 +175,9 @@ int Select::close()
 int Select::registerfd(Fd* fd_ptr_)
 {
 	LockGuard lock(m_mutex);
-    FD_SET(fd_ptr_->socket(), &m_fdread);
+    //FD_SET(fd_ptr_->socket(), &m_fdread);
     m_fd2ptr[fd_ptr_->socket()] = fd_ptr_;
-    //printf("elect_t::registerfd %d\n", fd_ptr_->socket());
+    printf("select_t::registerfd %d\n", fd_ptr_->socket());
     return 0;
 }
 
@@ -158,7 +187,7 @@ int Select::unregisterfd(Fd* fd_ptr_)
 	if  (m_fd2ptr.find(fd_ptr_->socket()) == m_fd2ptr.end())
 		return 0;
 	int ret = 0;
-	FD_CLR(fd_ptr_->socket(), &m_fdread);
+	//FD_CLR(fd_ptr_->socket(), &m_fdread);
 	m_fd2ptr.erase(fd_ptr_->socket());
 	//printf("elect_t::unregisterfd %d\n", fd_ptr_->socket());
 	m_error_fd_set.push_back(fd_ptr_);
@@ -194,5 +223,4 @@ int Select::interupt_loop()//! 中断事件循环
 	*/
 	return 0;
 }
-#endif
 

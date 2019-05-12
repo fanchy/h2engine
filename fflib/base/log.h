@@ -24,10 +24,10 @@
 #include "base/arg_helper.h"
 
 #ifdef linux
-#define gettid() ::syscall(SYS_gettid)
+#define gettid() 0 // ::syscall(SYS_gettid)
 #elif WIN32
 #include <windows.h>
-#define gettid() ::GetCurrentThreadId()
+#define gettid() 0 //::GetCurrentThreadId()
 #else
 #define gettid() 0
 #endif
@@ -165,10 +165,10 @@ protected:
 		if (m_log->is_level_enabled(LOG_LEVEL))														\
 		{																							\
 			const char* class_name_str = m_log->find_class_name(class_);							\
-			if (class_name_str)																		\
+			if (m_bEnableAllClass || class_name_str)																		\
 			{																						\
 				m_task_queue.post(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
-									 class_name_str, std::string(fmt_), gettid()));								\
+									 class_name_str?class_name_str:class_, std::string(fmt_), gettid()));								\
 			}																						\
 		}																							\
 	}
@@ -180,12 +180,12 @@ protected:
 		if (m_log->is_level_enabled(LOG_LEVEL))														\
 		{																							\
 			const char* class_name_str = m_log->find_class_name(class_);							\
-			if (class_name_str)																		\
+			if (m_bEnableAllClass || class_name_str)																		\
 			{																						\
 				StrFormat dest(fmt_);															\
 				dest.append(arg1_);																	\
 				m_task_queue.post(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
-									 class_name_str, dest.genResult(), gettid()));						 	\
+									 class_name_str?class_name_str:class_, dest.genResult(), gettid()));						 	\
 			}																						\
 		}																							\
 	}
@@ -198,13 +198,13 @@ protected:
 		if (m_log->is_level_enabled(LOG_LEVEL))														\
 		{																							\
 			const char* class_name_str = m_log->find_class_name(class_);							\
-			if (class_name_str)																		\
+			if (m_bEnableAllClass || class_name_str)																		\
 			{																						\
 				StrFormat dest(fmt_);															\
 				dest.append(arg1_);																	\
 				dest.append(arg2_);																	\
 				m_task_queue.post(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
-									 class_name_str, dest.genResult(), gettid()));						 	\
+									 class_name_str?class_name_str:class_, dest.genResult(), gettid()));						 	\
 			}																						\
 		}																							\
 	}
@@ -217,14 +217,14 @@ protected:
 		if (m_log->is_level_enabled(LOG_LEVEL))														\
 		{																							\
 			const char* class_name_str = m_log->find_class_name(class_);							\
-			if (class_name_str)																		\
+			if (m_bEnableAllClass || class_name_str)																		\
 			{																						\
 				StrFormat dest(fmt_);															\
 				dest.append(arg1_);																	\
 				dest.append(arg2_);																	\
 				dest.append(arg3_);																	\
 				m_task_queue.post(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
-									 class_name_str, dest.genResult(), gettid()));						 	\
+									 class_name_str?class_name_str:class_, dest.genResult(), gettid()));						 	\
 			}																						\
 		}																							\
 	}
@@ -237,7 +237,7 @@ protected:
 		if (m_log->is_level_enabled(LOG_LEVEL))														\
 		{																							\
 			const char* class_name_str = m_log->find_class_name(class_);							\
-			if (class_name_str)																		\
+			if (m_bEnableAllClass || class_name_str)																		\
 			{																						\
 				StrFormat dest(fmt_);															\
 				dest.append(arg1_);																	\
@@ -245,7 +245,7 @@ protected:
 				dest.append(arg3_);																	\
 				dest.append(arg4_);																	\
 				m_task_queue.post(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
-									 class_name_str, dest.genResult(), gettid()));						 	\
+									 class_name_str?class_name_str:class_, dest.genResult(), gettid()));						 	\
 			}																						\
 		}																							\
 	}
@@ -258,7 +258,7 @@ protected:
 		if (m_log->is_level_enabled(LOG_LEVEL))														\
 		{																							\
 			const char* class_name_str = m_log->find_class_name(class_);							\
-			if (class_name_str)																		\
+			if (m_bEnableAllClass || class_name_str)																		\
 			{																						\
 				StrFormat dest(fmt_);															\
 				dest.append(arg1_);																	\
@@ -267,7 +267,7 @@ protected:
 				dest.append(arg4_);																	\
 				dest.append(arg5_);																	\
 				m_task_queue.post(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
-									 class_name_str, dest.genResult(), gettid()));						 	\
+									 class_name_str?class_name_str:class_, dest.genResult(), gettid()));						 	\
 			}																						\
 		}																							\
 	}
@@ -281,7 +281,7 @@ protected:
 		if (m_log->is_level_enabled(LOG_LEVEL))														\
 		{																							\
 			const char* class_name_str = m_log->find_class_name(class_);							\
-			if (class_name_str)																		\
+			if (m_bEnableAllClass || class_name_str)																		\
 			{																						\
 				StrFormat dest(fmt_);															\
 				dest.append(arg1_);																	\
@@ -291,7 +291,7 @@ protected:
 				dest.append(arg5_);																	\
 				dest.append(arg6_);																	\
 				m_task_queue.post(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
-									 class_name_str, dest.genResult(), gettid()));						 	\
+									 class_name_str?class_name_str:class_, dest.genResult(), gettid()));						 	\
 			}																						\
 		}																							\
 	}
@@ -325,9 +325,11 @@ public:
 	void setModule(const std::string& class_, bool flag_);
 	void setPrintFile(bool flag_);
 	void setPrintScreen(bool flag_);
+	void setEnableAllClass(bool f) { m_bEnableAllClass = f;}
 private:
 	Log*			m_log;
 	TaskQueue       m_task_queue;
+	bool            m_bEnableAllClass;
 };
 
 #define BROKER  "BROKER"
@@ -342,6 +344,13 @@ private:
 #define LOGWARN(content)   Singleton<LogService>::instance().asyncLogwarn  content
 #define LOGERROR(content)  Singleton<LogService>::instance().asyncLogerror content
 #define LOGFATAL(content)  Singleton<LogService>::instance().asyncLogfatal content
+
+#define logdebug(content)  LOGDEBUG(("SERVER", content)) 
+#define logtrace(content)  LOGTRACE(("SERVER", content)) 
+#define loginfo(content)   LOGINFO(("SERVER", content))  
+#define logwarn(content)   LOGWARN(("SERVER", content))  
+#define logerror(content)  LOGERROR(("SERVER", content)) 
+#define logfatal(content)  LOGFATAL(("SERVER", content)) 
 }
 
 #endif

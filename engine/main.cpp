@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        LOG.start("-log_path ./log -log_filename log -log_class DB_MGR,FFNET,BROKER,FFRPC,FFGATE,FFWORKER,FFWORKER_PYTHON,FFWORKER_LUA,FFWORKER_JS,FFNET,HHTP_MGR -log_print_screen true -log_print_file true -log_level 6");
+        LOG.start("-log_print_screen true -log_level 6");
     }
     #ifdef _WIN32
     Singleton<NetFactory::NetData>::instance().start();
@@ -102,9 +102,9 @@ int main(int argc, char* argv[])
             goto err_proc;
         }
         int port = ffbroker.getPortCfg();
-        if (Singleton<SharedSyncmemMgr>::instance().init_master(port)){
-            printf("shared mem open failed\n");
-            goto err_proc;
+        if (Singleton<SharedSyncmemMgr>::instance().init_master(100000+port)){
+            printf("sed\n");
+            //goto err_proc;
         }
 
         if (ffgate.open(brokercfg, gate_listen))
