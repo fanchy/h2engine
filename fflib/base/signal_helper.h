@@ -1,7 +1,7 @@
 
 #ifndef _SIGNAL_HELPER_H_
 #define _SIGNAL_HELPER_H_
-
+#include "base/osdef.h"
 #ifndef _WIN32
 #include <signal.h>
 

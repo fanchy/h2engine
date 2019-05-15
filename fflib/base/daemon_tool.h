@@ -1,3 +1,5 @@
+
+#include "base/osdef.h"
 #ifndef _WIN32
 #ifndef _DAEMON_TOOL_H_
 #define _DAEMON_TOOL_H_

@@ -1,6 +1,7 @@
 #ifndef _SOCKET_OP_H_
 #define _SOCKET_OP_H_
 
+#include "base/osdef.h"
 #include "base/fftype.h"
 #include <fcntl.h>
 #include <errno.h>

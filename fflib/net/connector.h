@@ -2,7 +2,7 @@
 //!  连接器
 #ifndef _CONNECTOR_H_
 #define _CONNECTOR_H_
-
+#include "base/osdef.h"
 #include <assert.h>
 #include <sys/types.h>
 #ifndef _WIN32

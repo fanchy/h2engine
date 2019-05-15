@@ -1,6 +1,6 @@
 #ifndef __FFPYTHON_H_
 #define __FFPYTHON_H_
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__MINGW32__)
 #define WIN_GCC
 #endif
 #ifdef WIN_GCC

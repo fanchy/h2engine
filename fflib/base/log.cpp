@@ -1,3 +1,5 @@
+
+#include "base/osdef.h"
 #include "base/fftype.h"
 #include "base/log.h"
 #include "base/atomic_op.h"

@@ -12,7 +12,7 @@
 #include <list>
 #include <map>
 
-
+#include "base/osdef.h"
 #include "base/fftype.h"
 #include "base/thread.h"
 #include "base/lock.h"

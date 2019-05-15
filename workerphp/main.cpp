@@ -1,5 +1,5 @@
 ﻿#include <stdio.h>
-
+#include "base/osdef.h"
 #include "base/fftype.h"
 #include "base/daemon_tool.h"
 #include "base/arg_helper.h"

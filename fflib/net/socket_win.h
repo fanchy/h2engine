@@ -1,5 +1,7 @@
 #ifndef _SOCKET_IMPL_WIN_H_
 #define _SOCKET_IMPL_WIN_H_
+
+#include "base/osdef.h"
 #ifdef _WIN32
 #include <list>
 #include <string>

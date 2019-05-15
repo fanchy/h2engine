@@ -2,6 +2,8 @@
 #ifndef _FF_TYPE_H_
 #define _FF_TYPE_H_
 
+#include "base/osdef.h"
+
 #ifndef _WIN32
 #define MKDIR(a) ::mkdir((a),0755)
 #define SOCKET_TYPE int

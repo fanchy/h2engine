@@ -2,6 +2,7 @@
 #ifndef _FF_SHARED_MEM_H_
 #define _FF_SHARED_MEM_H_
 
+#include "base/osdef.h"
 #include <stdio.h>
 
 #include "base/fftype.h"

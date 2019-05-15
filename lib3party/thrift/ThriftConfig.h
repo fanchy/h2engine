@@ -17,7 +17,7 @@
 #include <typeinfo>
 #include <algorithm>
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__MINGW32__)
 #include <winsock2.h>
 #include <Windows.h>
 #include <Windows.h>

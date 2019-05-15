@@ -1,7 +1,7 @@
 //! 二进制序列化 
 #ifndef _CODEC_H_
 #define _CODEC_H_
-
+#include "base/osdef.h"
 #ifndef _WIN32
 #include <arpa/inet.h>
 #endif

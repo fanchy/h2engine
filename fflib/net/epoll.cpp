@@ -1,3 +1,4 @@
+#include "base/osdef.h"
 #ifdef linux
 #include <sys/epoll.h>
 #include <errno.h>

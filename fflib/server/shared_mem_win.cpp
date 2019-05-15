@@ -1,3 +1,5 @@
+
+#include "base/osdef.h"
 #ifdef _WIN32
 #include <ctime>
 #include "server/shared_mem.h"
