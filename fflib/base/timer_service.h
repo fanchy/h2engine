@@ -10,7 +10,9 @@
 #include <fcntl.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#ifndef _WIN32
 #include <sys/socket.h>
+#endif // _WIN32
 #include <assert.h>
 #include <stdint.h>
 #include <unistd.h>
@@ -25,22 +27,28 @@
 
 namespace ff {
 
-class TimerService 
+class TimerService
 {
     struct InteruptInfo
     {
         int pair_fds[2];
         InteruptInfo()
         {
+            pair_fds[0] = 0;
+            pair_fds[1] = 0;
+            #ifndef _WIN32
             assert(0 == ::socketpair(AF_LOCAL, SOCK_STREAM, 0, pair_fds));
             if (write(pair_fds[1], "0", 1)){
                 //!just for warning
             }
+            #endif // _WIN32
         }
         ~InteruptInfo()
         {
-            ::close(pair_fds[0]);
-            ::close(pair_fds[1]);
+            if (pair_fds[0] && pair_fds[1]){
+                close(pair_fds[0]);
+                close(pair_fds[1]);
+            }
         }
         int read_fd() { return pair_fds[0]; }
         int write_fd() { return pair_fds[1]; }
@@ -98,7 +106,7 @@ public:
     }
     virtual ~TimerService()
     {
-        
+
     }
     void stop()
     {
@@ -139,7 +147,7 @@ public:
         struct timeval tv;
         gettimeofday(&tv, NULL);
         uint64_t   dest_ms = uint64_t(tv.tv_sec)*1000 + tv.tv_usec / 1000 + ms_;
-        
+
         LockGuard lock(m_mutex);
         m_tmpRegisterfdList.push_back(RegisterfdedInfo(ms_, dest_ms, func, false, ++m_nAutoIncID));
     }
@@ -148,21 +156,21 @@ public:
     {
         struct epoll_event ev_set[64];
         //! interupt();
-        
+
         struct timeval tv;
-        
+
         do
         {
             ::epoll_wait(m_efd, ev_set, 64, m_min_timeout);
-            
+
             if (false == m_runing)//! cancel
             {
                 break;
             }
-            
+
             gettimeofday(&tv, NULL);
             uint64_t cur_ms = tv.tv_sec*1000 + tv.tv_usec / 1000;
-            
+
             addNewTimer();
             processTimerCallback(cur_ms);
         }while (true) ;
@@ -182,7 +190,7 @@ public:
             processTimerCallback(tv.tv_sec*1000 + tv.tv_usec / 1000);
         }while (true) ;
     }
-#endif    
+#endif
 private:
     void addNewTimer()
     {
@@ -215,16 +223,16 @@ private:
             {
                 break;
             }
-            
+
             last.callback.run();
-            
+
             if (last.is_loop)//! 如果是循环定时器，还要重新加入到定时器队列中
             {
                 loopTimer(last.timeout, last.callback);
             }
         }
-        
-        if (it != it_begin)//! some timeout 
+
+        if (it != it_begin)//! some timeout
         {
             m_mapRegisterfdedStore.erase(it_begin, it);
         }

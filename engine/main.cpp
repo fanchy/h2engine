@@ -18,6 +18,8 @@
 #include "server/shared_mem.h"
 
 #include "net/wsprotocol.h"
+#include "base/func.h"
+
 using namespace ff;
 using namespace std;
 
