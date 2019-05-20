@@ -2,7 +2,6 @@
 #ifndef _FUNC_H_
 #define _FUNC_H_
 
-#include <Windows.h>
 #include <stdio.h>
 #include <stdexcept>
 #include <string>
