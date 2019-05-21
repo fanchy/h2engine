@@ -96,7 +96,7 @@ int SharedSyncmemMgr::init_worker(int shared_key, int work_index_, TaskQueue* tq
     wroker_shared_data_t* workdata = get_self_sharedmem();
     workdata->pid = ::getpid();
 
-    m_thread.create_thread(TaskBinder::gen(&SharedSyncmemMgr::workerRun, this, tq), 1);
+    m_thread.create_thread(funcbind(&SharedSyncmemMgr::workerRun, this, tq), 1);
     return 0;
 }
 
@@ -152,7 +152,7 @@ int SharedSyncmemMgr::workerRun(TaskQueue* tq){
                 m_sync_cmd_queue.push_back(cmddata);
             }
             if (tq){
-                tq->post(TaskBinder::gen(&SharedSyncmemMgr::processCmdQueue, this));
+                tq->post(funcbind(&SharedSyncmemMgr::processCmdQueue, this));
             }
             pshared_mem->cmd = 0;
             pshared_mem->len = 0;

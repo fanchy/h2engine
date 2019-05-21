@@ -74,7 +74,7 @@ public:
         static void setupTimer(void* p_)
         {
             PerfMonitor* pd = (PerfMonitor*)p_;
-            pd->getTaskQueue().post(TaskBinder::gen(&TimerLambda::exe, pd));
+            pd->getTaskQueue().post(funcbind(&TimerLambda::exe, pd));
         }
     };
 public:

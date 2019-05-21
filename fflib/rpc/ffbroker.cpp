@@ -96,10 +96,10 @@ int FFBroker::close()
         return 0;
     m_acceptor->close();
     m_acceptor = NULL;
-    getTaskQueue()->post(TaskBinder::gen(&FFBroker::docleaanup, this));
+    getTaskQueue()->post(funcbind(&FFBroker::docleaanup, this));
 
     getTaskQueue()->close();
-    
+
     //usleep(100);
     return 0;
 }
@@ -289,7 +289,7 @@ int FFBroker::sendToRPcNode(BrokerRouteMsgReq& msg_)
     if (pffrpc)
     {
         LOGTRACE((BROKER, "FFBroker::sendToRPcNode memory post"));
-        pffrpc->getTaskQueue()->post(TaskBinder::gen(&FFRpc::handleRpcCallMsg, pffrpc, msg_, SocketObjPtr(NULL)));
+        pffrpc->getTaskQueue()->post(funcbind(&FFRpc::handleRpcCallMsg, pffrpc, msg_, SocketObjPtr(NULL)));
         return 0;
     }
     LOGINFO((BROKER, "FFBroker::sendToRPcNode dest_node=%d bodylen=%d, by socket", msg_.dest_node_id, msg_.body.size()));

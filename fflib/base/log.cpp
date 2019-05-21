@@ -5,6 +5,7 @@
 #include "base/atomic_op.h"
 #include "base/str_tool.h"
 #include "base/arg_helper.h"
+#include "base/func.h"
 
 #include <errno.h>
 #include <unistd.h>
@@ -376,10 +377,10 @@ LogService::~LogService()
 int LogService::start(const string& opt_)
 {
 	ArgHelper arg(opt_);
-    return start(arg);   
-} 
+    return start(arg);
+}
 int LogService::start(ArgHelper& arg)
-{   
+{
 	if (m_log) return 0;
 
 	int level = 2;
@@ -419,18 +420,18 @@ int LogService::stop()
 
 void LogService::setLevel(int level_, bool flag_)
 {
-	m_task_queue.post(TaskBinder::gen(&Log::setLevel, m_log, level_, flag_));
+	m_task_queue.post(funcbind(&Log::setLevel, m_log, level_, flag_));
 }
 
 void LogService::setModule(const string& class_, bool flag_)
 {
-	m_task_queue.post(TaskBinder::gen(&Log::setModule, m_log, class_, flag_));
+	m_task_queue.post(funcbind(&Log::setModule, m_log, class_, flag_));
 }
 void LogService::setPrintFile(bool flag_)
 {
-	m_task_queue.post(TaskBinder::gen(&Log::setPrintFile, m_log, flag_));
+	m_task_queue.post(funcbind(&Log::setPrintFile, m_log, flag_));
 }
 void LogService::setPrintScreen(bool flag_)
 {
-	m_task_queue.post(TaskBinder::gen(&Log::setPrintScreen, m_log, flag_));
+	m_task_queue.post(funcbind(&Log::setPrintScreen, m_log, flag_));
 }

@@ -96,7 +96,7 @@ static bool py_regTimer(int mstimeout_, PyObject* pFuncSrc)
     }
 
     Singleton<FFWorkerPython>::instance().regTimer(mstimeout_,
-                TaskBinder::gen(&lambda_cb::callback, pFuncSrc));
+                funcbind(&lambda_cb::callback, pFuncSrc));
     return true;
 }
 //!数据库相关操作
@@ -409,7 +409,7 @@ static bool py_asyncHttp(const string& url_, int timeoutsec, PyObject* pFuncSrc)
             }
             HttpMgr::http_result_t* data = (HttpMgr::http_result_t*)args_;
 
-            Singleton<FFWorkerPython>::instance().getRpc().getTaskQueue()->post(TaskBinder::gen(&lambda_cb::call_python, pFunc, data->ret));
+            Singleton<FFWorkerPython>::instance().getRpc().getTaskQueue()->post(funcbind(&lambda_cb::call_python, pFunc, data->ret));
         }
         static void call_python(PyObject* pFunc, string retdata)
         {
@@ -809,7 +809,7 @@ int FFWorkerPython::scriptInit(const string& py_root)
         Mutex                    mutex;
         ConditionVar            cond(mutex);
 
-        getRpc().getTaskQueue()->post(TaskBinder::gen(&FFWorkerPython::processInit, this, &mutex, &cond, &ret));
+        getRpc().getTaskQueue()->post(funcbind(&FFWorkerPython::processInit, this, &mutex, &cond, &ret));
         LOGINFO((FFWORKER_PYTHON, "FFWorkerPython::begin init py"));
         LockGuard lock(mutex);
         if (ret == -2){
@@ -871,7 +871,7 @@ void FFWorkerPython::scriptCleanup()
 }
 int FFWorkerPython::close()
 {
-    getRpc().getTaskQueue()->post(TaskBinder::gen(&FFWorkerPython::scriptCleanup, this));
+    getRpc().getTaskQueue()->post(funcbind(&FFWorkerPython::scriptCleanup, this));
     FFWorker::close();
     if (false == m_started)
         return 0;

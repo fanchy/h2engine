@@ -54,7 +54,7 @@ struct DbCallBack: public FFSlot::FFCallBack
             pFunc(*data);
         }
         else{
-            tq->post(TaskBinder::gen(&DbCallBack<T>::tqCall, pFunc, *data));
+            tq->post(funcbind(&DbCallBack<T>::tqCall, pFunc, *data));
         }
     }
     static void tqCall(T func, QueryDBResult& data){
@@ -85,7 +85,7 @@ public:
         }
         void signal();
         int  wait();
-        
+
         SharedPtr<TaskQueue>            tq;
         SharedPtr<FFDb>                 db;
         QueryDBResult                   ret;
@@ -134,21 +134,21 @@ public:
             QueryDBResult result;
             result.errinfo = "no db cfg";
             if (tq){
-                tq->post(TaskBinder::gen(&DbCallBack<T>::tqCall, func, result));
+                tq->post(funcbind(&DbCallBack<T>::tqCall, func, result));
             }
             else{
                 func(result);
             }
-            
+
             return;
         }
         else
         {
-            varDbConnection->tq->post(TaskBinder::gen(&DbMgr::queryDBImpl, this, varDbConnection, sql_, new DbCallBack<T>(func, tq)));
+            varDbConnection->tq->post(funcbind(&DbMgr::queryDBImpl, this, varDbConnection, sql_, new DbCallBack<T>(func, tq)));
         }
     }
     void asyncQueryByName(const std::string& strName, const std::string& sql_);
-    int  queryByName(const std::string& strName, const std::string& sql_, 
+    int  queryByName(const std::string& strName, const std::string& sql_,
                      std::vector<std::vector<std::string> >* ret_data_ = NULL,
                      std::string* errinfo = NULL, int* affectedRows_ = NULL, std::vector<std::string>* col_ = NULL);
     uint64_t allocId(int nType);

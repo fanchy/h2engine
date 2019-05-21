@@ -31,7 +31,7 @@ int SocketCtrlCommon::handleOpen(SocketI* sock){
 int SocketCtrlCommon::handleError(SocketI* sp_)
 {
     if (m_msg_handler->getTaskQueue()){
-        m_msg_handler->getTaskQueue()->post(TaskBinder::gen(&MsgHandler::handleBroken, m_msg_handler, sp_->toSharedPtr()));
+        m_msg_handler->getTaskQueue()->post(funcbind(&MsgHandler::handleBroken, m_msg_handler, sp_->toSharedPtr()));
     }
     else{
         m_msg_handler->handleBroken(sp_->toSharedPtr());
@@ -127,7 +127,7 @@ int SocketCtrlCommon::handleRead(SocketI* sp_, const char* buff, size_t len)
 void SocketCtrlCommon::post_msg(SocketI* sp_)
 {
     if (m_msg_handler->getTaskQueue()){
-        m_msg_handler->getTaskQueue()->post(TaskBinder::gen(&MsgHandler::handleMsg,
+        m_msg_handler->getTaskQueue()->post(funcbind(&MsgHandler::handleMsg,
                                              m_msg_handler, m_message, sp_->toSharedPtr()));
     }
     else{

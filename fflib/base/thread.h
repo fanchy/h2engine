@@ -4,8 +4,7 @@
 #include<pthread.h>
 #include <list>
 
-
-#include "base/task.h"
+#include "base/func.h"
 
 namespace ff {
 
@@ -14,7 +13,7 @@ class Thread
     static void* thread_func(void* p_);
 
 public:
-    int create_thread(Task func, int num = 1);
+    int create_thread(Function<void()> func, int num = 1);
     int join();
 
 private:

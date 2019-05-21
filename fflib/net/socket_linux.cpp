@@ -44,7 +44,7 @@ void SocketLinux::open()
 
 void SocketLinux::close()
 {
-    m_tq->post(TaskBinder::gen(&SocketLinux::closeImpl, this));
+    m_tq->post(funcbind(&SocketLinux::closeImpl, this));
 }
 
 void SocketLinux::closeImpl()
@@ -59,7 +59,7 @@ void SocketLinux::closeImpl()
 
 int SocketLinux::handleEpollRead()
 {
-    m_tq->post(TaskBinder::gen(&SocketLinux::handleEpollRead_impl, this));
+    m_tq->post(funcbind(&SocketLinux::handleEpollRead_impl, this));
     return 0;
 }
 
@@ -124,13 +124,13 @@ int SocketLinux::handleEpollErrorImpl(){
 }
 int SocketLinux::handleEpollDel()
 {
-    m_tq->post(TaskBinder::gen(&SocketLinux::handleEpollErrorImpl, this));
+    m_tq->post(funcbind(&SocketLinux::handleEpollErrorImpl, this));
     return 0;
 }
 
 int SocketLinux::handleEpollWrite()
 {
-    m_tq->post(TaskBinder::gen(&SocketLinux::handleEpollWrite_impl, this));
+    m_tq->post(funcbind(&SocketLinux::handleEpollWrite_impl, this));
     return 0;
 }
 
@@ -169,7 +169,7 @@ int SocketLinux::handleEpollWrite_impl()
 
 void SocketLinux::asyncSend(const string& msg_)
 {
-    m_tq->post(TaskBinder::gen(&SocketLinux::sendStrImpl, this, msg_));
+    m_tq->post(funcbind(&SocketLinux::sendStrImpl, this, msg_));
 }
 
 void SocketLinux::sendStrImpl(const string& buff_)

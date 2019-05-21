@@ -28,9 +28,9 @@ int HttpMgr::stop()
 {
     #ifdef FF_ENABLE_CURL
     LOGINFO((HHTP_MGR, "HttpMgr::stop begin..."));
-    
+
     m_tq.close();
-    
+
     LOGINFO((HHTP_MGR, "HttpMgr::stop end"));
     #endif
     return 0;
@@ -38,7 +38,7 @@ int HttpMgr::stop()
 
 void HttpMgr::request(const string& url_, int timeoutsec, FFSlot::FFCallBack* callback_)
 {
-    m_tq.post(TaskBinder::gen(&HttpMgr::request_impl, this, url_, timeoutsec, callback_));
+    m_tq.post(funcbind(&HttpMgr::request_impl, this, url_, timeoutsec, callback_));
 }
 
 void HttpMgr::request_impl(const string& sql_, int timeoutsec, FFSlot::FFCallBack* callback_)
@@ -84,7 +84,7 @@ string HttpMgr::syncRequest(const string& url_, int timeoutsec)
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeoutsec);
     }
     CURLcode res = curl_easy_perform(curl);
-    /* Check for errors */ 
+    /* Check for errors */
     if(res != CURLE_OK)
     {
         ret = "#HttpError:";

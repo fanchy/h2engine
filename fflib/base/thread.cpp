@@ -2,20 +2,24 @@
 using namespace std;
 using namespace ff;
 
+struct TmpThreadData{
+    TmpThreadData(const Function<void()>& f):func(f){}
+    Function<void()> func;
+};
 void* Thread::thread_func(void* p_)
 {
-    Task* t = (Task*)p_;
-    t->run();
+    TmpThreadData* t = (TmpThreadData*)p_;
+    t->func();
     delete  t;
     return 0;
 }
 
-int Thread::create_thread(Task func, int num)
+int Thread::create_thread(Function<void()> func, int num)
 {
     for (int i = 0; i < num; ++i)
     {
         pthread_t ntid;
-        Task* t = new Task(func);
+        TmpThreadData* t = new TmpThreadData(func);
         if (0 == ::pthread_create(&ntid, NULL, thread_func, t))
         {
             m_tid_list.push_back(ntid);

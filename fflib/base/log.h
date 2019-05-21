@@ -167,7 +167,7 @@ protected:
 			const char* class_name_str = m_log->find_class_name(class_);							\
 			if (m_bEnableAllClass || class_name_str)																		\
 			{																						\
-				m_task_queue.post(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
+				m_task_queue.post(funcbind(&Log::log_content, m_log, LOG_LEVEL,		\
 									 class_name_str?class_name_str:class_, std::string(fmt_), gettid()));								\
 			}																						\
 		}																							\
@@ -184,7 +184,7 @@ protected:
 			{																						\
 				StrFormat dest(fmt_);															\
 				dest.append(arg1_);																	\
-				m_task_queue.post(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
+				m_task_queue.post(funcbind(&Log::log_content, m_log, LOG_LEVEL,		\
 									 class_name_str?class_name_str:class_, dest.genResult(), gettid()));						 	\
 			}																						\
 		}																							\
@@ -203,7 +203,7 @@ protected:
 				StrFormat dest(fmt_);															\
 				dest.append(arg1_);																	\
 				dest.append(arg2_);																	\
-				m_task_queue.post(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
+				m_task_queue.post(funcbind(&Log::log_content, m_log, LOG_LEVEL,		\
 									 class_name_str?class_name_str:class_, dest.genResult(), gettid()));						 	\
 			}																						\
 		}																							\
@@ -223,7 +223,7 @@ protected:
 				dest.append(arg1_);																	\
 				dest.append(arg2_);																	\
 				dest.append(arg3_);																	\
-				m_task_queue.post(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
+				m_task_queue.post(funcbind(&Log::log_content, m_log, LOG_LEVEL,		\
 									 class_name_str?class_name_str:class_, dest.genResult(), gettid()));						 	\
 			}																						\
 		}																							\
@@ -244,7 +244,7 @@ protected:
 				dest.append(arg2_);																	\
 				dest.append(arg3_);																	\
 				dest.append(arg4_);																	\
-				m_task_queue.post(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
+				m_task_queue.post(funcbind(&Log::log_content, m_log, LOG_LEVEL,		\
 									 class_name_str?class_name_str:class_, dest.genResult(), gettid()));						 	\
 			}																						\
 		}																							\
@@ -266,7 +266,7 @@ protected:
 				dest.append(arg3_);																	\
 				dest.append(arg4_);																	\
 				dest.append(arg5_);																	\
-				m_task_queue.post(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
+				m_task_queue.post(funcbind(&Log::log_content, m_log, LOG_LEVEL,		\
 									 class_name_str?class_name_str:class_, dest.genResult(), gettid()));						 	\
 			}																						\
 		}																							\
@@ -290,7 +290,7 @@ protected:
 				dest.append(arg4_);																	\
 				dest.append(arg5_);																	\
 				dest.append(arg6_);																	\
-				m_task_queue.post(TaskBinder::gen(&Log::log_content, m_log, LOG_LEVEL,		\
+				m_task_queue.post(funcbind(&Log::log_content, m_log, LOG_LEVEL,		\
 									 class_name_str?class_name_str:class_, dest.genResult(), gettid()));						 	\
 			}																						\
 		}																							\
@@ -345,12 +345,12 @@ private:
 #define LOGERROR(content)  Singleton<LogService>::instance().asyncLogerror content
 #define LOGFATAL(content)  Singleton<LogService>::instance().asyncLogfatal content
 
-#define logdebug(content)  LOGDEBUG(("SERVER", content)) 
-#define logtrace(content)  LOGTRACE(("SERVER", content)) 
-#define loginfo(content)   LOGINFO(("SERVER", content))  
-#define logwarn(content)   LOGWARN(("SERVER", content))  
-#define logerror(content)  LOGERROR(("SERVER", content)) 
-#define logfatal(content)  LOGFATAL(("SERVER", content)) 
+#define logdebug(content)  LOGDEBUG(("SERVER", content))
+#define logtrace(content)  LOGTRACE(("SERVER", content))
+#define loginfo(content)   LOGINFO(("SERVER", content))
+#define logwarn(content)   LOGWARN(("SERVER", content))
+#define logerror(content)  LOGERROR(("SERVER", content))
+#define logfatal(content)  LOGFATAL(("SERVER", content))
 }
 
 #endif

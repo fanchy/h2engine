@@ -24,6 +24,7 @@
 #include "base/lock.h"
 #include "base/task_queue.h"
 #include "base/smart_ptr.h"
+#include "base/func.h"
 
 namespace ff {
 
@@ -55,7 +56,7 @@ class TimerService
     };
     struct RegisterfdedInfo
     {
-        RegisterfdedInfo(int64_t ms_, uint64_t dest_ms_, const Task& t_, bool is_loop_, uint64_t id):
+        RegisterfdedInfo(int64_t ms_, uint64_t dest_ms_, const Function<void()>& t_, bool is_loop_, uint64_t id):
             timeout(ms_),
             counter_val(ms_),
             dest_tm(dest_ms_),
@@ -75,12 +76,12 @@ class TimerService
             }
             return false;
         }
-        int64_t     timeout;
-        int64_t     counter_val;
-        uint64_t    dest_tm;
-        Task        callback;
-        bool        is_loop;
-        uint64_t    timerID;
+        int64_t                 timeout;
+        int64_t                 counter_val;
+        uint64_t                dest_tm;
+        Function<void()>        callback;
+        bool                    is_loop;
+        uint64_t                timerID;
     };
     typedef std::list<RegisterfdedInfo>             RegisterfdedInfoList;
     typedef std::multimap<long, RegisterfdedInfo>   RegisterfdedInfoMap;
@@ -102,7 +103,7 @@ public:
                 ((TimerService*)p_)->run();
             }
         };
-        m_thread.create_thread(Task(&lambda_t::run, this), 1);
+        m_thread.create_thread(funcbind(&lambda_t::run, this), 1);
     }
     virtual ~TimerService()
     {
@@ -125,7 +126,7 @@ public:
         m_tmpRegisterfdList.clear();
         m_mapRegisterfdedStore.clear();
     }
-    void loopTimer(uint64_t ms_, Task func)
+    void loopTimer(uint64_t ms_, Function<void()> func)
     {
         if (!m_runing)
         {
@@ -138,7 +139,7 @@ public:
         LockGuard lock(m_mutex);
         m_tmpRegisterfdList.push_back(RegisterfdedInfo(ms_, dest_ms, func, true, ++m_nAutoIncID));
     }
-    void onceTimer(uint64_t ms_, Task func)
+    void onceTimer(uint64_t ms_, Function<void()> func)
     {
         if (!m_runing)
         {
@@ -224,7 +225,7 @@ private:
                 break;
             }
 
-            last.callback.run();
+            last.callback();
 
             if (last.is_loop)//! 如果是循环定时器，还要重新加入到定时器队列中
             {
@@ -254,7 +255,7 @@ class Timer
 public:
     struct TimerCB
     {
-        static void callback(SharedPtr<TaskQueue> tq, Task func)
+        static void callback(SharedPtr<TaskQueue> tq, Function<void()> func)
         {
             tq->post(func);
         }
@@ -264,19 +265,19 @@ public:
     {
     }
     void setTQ(SharedPtr<TaskQueue> tq){ m_tq = tq;}
-    void loopTimer(uint64_t ms_, Task func)
+    void loopTimer(uint64_t ms_, Function<void()> func)
     {
         if (m_tq){
-            TimerService::instance().loopTimer(ms_, TaskBinder::gen(&TimerCB::callback, m_tq, func));
+            TimerService::instance().loopTimer(ms_, funcbind(&TimerCB::callback, m_tq, func));
         }
         else{
             TimerService::instance().loopTimer(ms_, func);
         }
     }
-    void onceTimer(uint64_t ms_, Task func)
+    void onceTimer(uint64_t ms_, Function<void()> func)
     {
         if (m_tq){
-            TimerService::instance().onceTimer(ms_, TaskBinder::gen(&TimerCB::callback, m_tq, func));
+            TimerService::instance().onceTimer(ms_, funcbind(&TimerCB::callback, m_tq, func));
         }
         else{
             TimerService::instance().onceTimer(ms_, func);

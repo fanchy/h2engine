@@ -92,7 +92,7 @@ void DbMgr::asyncQueryByName(const std::string& strName, const std::string& sql_
     else
     {
         FFSlot::FFCallBack* callback_ = NULL;
-        varDbConnection->tq->post(TaskBinder::gen(&DbMgr::queryDBImpl, this, varDbConnection, sql_, callback_));
+        varDbConnection->tq->post(funcbind(&DbMgr::queryDBImpl, this, varDbConnection, sql_, callback_));
     }
 }
 void DbMgr::queryDBImpl(DBConnectionInfo* varDbConnection_, const string& sql_, FFSlotCallBackPtr callback_)
@@ -142,7 +142,7 @@ int  DbMgr::queryByName(const std::string& strName, const std::string& sql_,
     }
     QueryDBResult result;
     varDbConnection->result_flag = 0;//!标记开始同步查询
-    varDbConnection->tq->post(TaskBinder::gen(&DbMgr::syncQueryDBImpl, this, varDbConnection, sql_, &result));
+    varDbConnection->tq->post(funcbind(&DbMgr::syncQueryDBImpl, this, varDbConnection, sql_, &result));
     varDbConnection->wait();
     if (ret_data_){
         *ret_data_ = result.dataResult;

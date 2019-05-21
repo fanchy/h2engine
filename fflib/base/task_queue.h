@@ -7,21 +7,22 @@
 
 #include "base/lock.h"
 #include "base/fftype.h"
-#include "base/task.h"
+
 #include "base/thread.h"
+#include "base/func.h"
 
 namespace ff {
 
 class TaskQueue
 {
 public:
-    typedef std::list<Task> TaskList;
+    typedef std::list<Function<void()> > TaskList;
 public:
     TaskQueue():
         m_flag(true),
         m_cond(m_mutex)
     {
-        m_thread.create_thread(TaskBinder::gen(&TaskQueue::run, this), 1);
+        m_thread.create_thread(funcbind(&TaskQueue::run, this), 1);
     }
     ~TaskQueue()
     {
@@ -39,12 +40,12 @@ public:
             m_cond.broadcast();
             //printf( "%p %s %d\n", this, __FILE__, __LINE__);
         }
-        
+
         m_thread.join();
         //printf( "%p %s %d\n", this, __FILE__, __LINE__);
     }
 
-    void post(const Task& task_)
+    void post(Function<void()> task_)
     {
         if (!m_flag){
             return;
@@ -87,7 +88,7 @@ private:
         {
             for (TaskList::iterator it = tlist.begin(); it != tlist.end(); ++it)
             {
-                (*it).run();
+                (*it)();
             }
             tlist.clear();
         }

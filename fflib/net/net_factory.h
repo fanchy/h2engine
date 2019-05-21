@@ -62,7 +62,7 @@ public:
                 assert(thread_num_ > 0);
                 started_flag = true;
                 tg = new TaskQueue();
-                thread.create_thread(Task(&runEpoll, this), 1);
+                thread.create_thread(funcbind(&runEpoll, this), 1);
             }
         }
         void stop()

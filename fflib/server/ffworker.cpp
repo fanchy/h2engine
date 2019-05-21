@@ -368,14 +368,14 @@ int FFWorker::sessionClose(const string& gate_name_, const userid_t& session_id_
 }
 struct timer_cb
 {
-    static void callback(FFWorker* w, Task func)
+    static void callback(FFWorker* w, Function<void()> func)
     {
-        func.run();
+        func();
         w->getSharedMem().writeLockEnd();
     }
 };
-void FFWorker::regTimer(uint64_t mstimeout_, Task func){
-    getRpc().getTimer().onceTimer(mstimeout_, TaskBinder::gen(&timer_cb::callback, this, func));
+void FFWorker::regTimer(uint64_t mstimeout_, Function<void()> func){
+    getRpc().getTimer().onceTimer(mstimeout_, funcbind(&timer_cb::callback, this, func));
 }
 void FFWorker::workerRPC(int workerindex, uint16_t cmd, const std::string& data, FFSlot::FFCallBack* cb){
     WorkerCallMsgReq reqmsg;

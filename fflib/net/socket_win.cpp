@@ -42,7 +42,7 @@ void SocketWin::open()
 
 void SocketWin::close()
 {
-    m_tq->post(TaskBinder::gen(&SocketWin::close_impl, this));
+    m_tq->post(funcbind(&SocketWin::close_impl, this));
 }
 
 void SocketWin::close_impl()
@@ -82,7 +82,7 @@ int SocketWin::handleEpollRead()
             //printf("handleEpollRead_impl recv_buffer=%s\n", recv_buffer);
             string tmpdata;
             tmpdata.append(recv_buffer, nread);
-            m_tq->post(TaskBinder::gen(&SocketWin::post_recv_msg, this, tmpdata));
+            m_tq->post(funcbind(&SocketWin::post_recv_msg, this, tmpdata));
         }
     }
     return 0;
@@ -90,7 +90,7 @@ int SocketWin::handleEpollRead()
 #else
 int SocketWin::handleEpollRead()
 {
-    m_tq->post(TaskBinder::gen(&SocketWin::handleEpollRead_impl, this));
+    m_tq->post(funcbind(&SocketWin::handleEpollRead_impl, this));
     return 0;
 }
 #endif
@@ -142,13 +142,13 @@ int SocketWin::handleEpollRead_impl()
 
 int SocketWin::handleEpollDel()
 {
-    m_tq->post(TaskBinder::gen(&SocketCtrlI::handleError, this->getSocketCtrl(), this));
+    m_tq->post(funcbind(&SocketCtrlI::handleError, this->getSocketCtrl(), this));
     return 0;
 }
 
 int SocketWin::handleEpollWrite()
 {
-    m_tq->post(TaskBinder::gen(&SocketWin::handleEpollWrite_impl, this));
+    m_tq->post(funcbind(&SocketWin::handleEpollWrite_impl, this));
     return 0;
 }
 
@@ -187,7 +187,7 @@ int SocketWin::handleEpollWrite_impl()
 
 void SocketWin::asyncSend(const string& msg_)
 {
-    m_tq->post(TaskBinder::gen(&SocketWin::send_str_impl, this, msg_));
+    m_tq->post(funcbind(&SocketWin::send_str_impl, this, msg_));
 }
 
 void SocketWin::send_str_impl(const string& buff_)

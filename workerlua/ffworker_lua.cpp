@@ -120,7 +120,7 @@ static int  lua_regTimer(lua_State* ls_)
     };
 
     Singleton<FFWorkerLua>::instance().regTimer(mstimeout_,
-                TaskBinder::gen(&lambda_cb::callback, ls_, idx));
+                funcbind(&lambda_cb::callback, ls_, idx));
     return 0;
 }
 static bool  lua_writeLockGuard(){
@@ -528,7 +528,7 @@ static int lua_asyncHttp(lua_State* ls_)
             }
             HttpMgr::http_result_t* data = (HttpMgr::http_result_t*)args_;
 
-            Singleton<FFWorkerLua>::instance().getRpc().getTaskQueue()->post(TaskBinder::gen(&lambda_cb::call_lua, ls_, idx, data->ret));
+            Singleton<FFWorkerLua>::instance().getRpc().getTaskQueue()->post(funcbind(&lambda_cb::call_lua, ls_, idx, data->ret));
         }
         static void call_lua(lua_State* ls_, long idx, string retdata)
         {
@@ -848,7 +848,7 @@ int FFWorkerLua::scriptInit(const string& lua_root)
         Mutex                    mutex;
         ConditionVar            cond(mutex);
 
-        getRpc().getTaskQueue()->post(TaskBinder::gen(&FFWorkerLua::processInit, this, &mutex, &cond, &ret));
+        getRpc().getTaskQueue()->post(funcbind(&FFWorkerLua::processInit, this, &mutex, &cond, &ret));
         LockGuard lock(mutex);
         if (ret == -2){
             cond.wait();
@@ -908,7 +908,7 @@ void FFWorkerLua::scriptCleanup()
 }
 int FFWorkerLua::close()
 {
-    getRpc().getTaskQueue()->post(TaskBinder::gen(&FFWorkerLua::scriptCleanup, this));
+    getRpc().getTaskQueue()->post(funcbind(&FFWorkerLua::scriptCleanup, this));
     FFWorker::close();
     if (false == m_started)
         return 0;

@@ -59,7 +59,7 @@ int FFGate::open(const string& broker_addr, const string& gate_listen, int gate_
 int FFGate::close()
 {
     if (m_ffrpc){
-        m_ffrpc->getTaskQueue()->post(TaskBinder::gen(&FFGate::close_impl, this));
+        m_ffrpc->getTaskQueue()->post(funcbind(&FFGate::close_impl, this));
 
         m_ffrpc->close();
         for (int i = 0; i < 1000; ++i){

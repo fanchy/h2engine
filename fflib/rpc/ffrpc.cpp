@@ -128,7 +128,7 @@ static void route_call_reconnect(FFRpc* ffrpc_)
 {
     if (ffrpc_->m_runing == false)
         return;
-    ffrpc_->getTaskQueue()->post(TaskBinder::gen(&FFRpc::timerReconnectBroker, ffrpc_));
+    ffrpc_->getTaskQueue()->post(funcbind(&FFRpc::timerReconnectBroker, ffrpc_));
 }
 //! 定时重连 broker master
 void FFRpc::timerReconnectBroker()
@@ -144,7 +144,7 @@ void FFRpc::timerReconnectBroker()
         {
             LOGERROR((FFRPC, "FFRpc::timerReconnectBroker failed, can't connect to remote broker<%s>", m_host.c_str()));
             //! 设置定时器重连
-            m_timer.onceTimer(RECONNECT_TO_BROKER_TIMEOUT, TaskBinder::gen(&route_call_reconnect, this));
+            m_timer.onceTimer(RECONNECT_TO_BROKER_TIMEOUT, funcbind(&route_call_reconnect, this));
         }
         else
         {
@@ -172,7 +172,7 @@ int FFRpc::handleBroken(SocketObjPtr sock_)
 
     if (true == m_runing)
     {
-        m_timer.onceTimer(RECONNECT_TO_BROKER_TIMEOUT, TaskBinder::gen(&route_call_reconnect, this));
+        m_timer.onceTimer(RECONNECT_TO_BROKER_TIMEOUT, funcbind(&route_call_reconnect, this));
     }
     return 0;
 }
@@ -348,7 +348,7 @@ void FFRpc::sendToDestNode(const string& service_name_, const string& msg_name_,
     if (pbroker)//!如果broker和本身都在同一个进程中,那么直接内存间投递即可
     {
         LOGTRACE((FFRPC, "FFRpc::send_to_broker_by_nodeid begin dest_node_id[%u], m_bind_broker_id=%u memory post", dest_node_id_, dest_broker_id));
-        pbroker->getTaskQueue()->post(TaskBinder::gen(&FFBroker::sendToRPcNode, pbroker, dest_msg));
+        pbroker->getTaskQueue()->post(funcbind(&FFBroker::sendToRPcNode, pbroker, dest_msg));
     }
     else if (dest_broker_id == 0)
     {
@@ -374,7 +374,7 @@ bool FFRpc::isExist(const string& service_name_)
 void FFRpc::response(const string& msg_name_,  uint64_t dest_node_id_, int64_t callback_id_, const string& body_, string err_info)
 {
     static string null_str;
-    getTaskQueue()->post(TaskBinder::gen(&FFRpc::sendToDestNode, this, null_str, msg_name_, dest_node_id_, callback_id_, body_, err_info));
+    getTaskQueue()->post(funcbind(&FFRpc::sendToDestNode, this, null_str, msg_name_, dest_node_id_, callback_id_, body_, err_info));
 }
 
 //! 处理注册,

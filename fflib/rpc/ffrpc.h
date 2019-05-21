@@ -144,7 +144,7 @@ struct FFRpc::SessionData
 template <typename T>
 int FFRpc::call(const std::string& name_, T& req_, FFSlot::FFCallBack* callback_)
 {
-    getTaskQueue()->post(TaskBinder::gen(&FFRpc::docall, this, name_, TYPE_NAME(T), FFThrift::EncodeAsString(req_), callback_));
+    getTaskQueue()->post(funcbind(&FFRpc::docall, this, name_, TYPE_NAME(T), FFThrift::EncodeAsString(req_), callback_));
     return 0;
 }
 
@@ -180,7 +180,7 @@ int FFRpc::callPB(const std::string& name_, T& req_, FFSlot::FFCallBack* callbac
 {
     std::string ret;
     req_.SerializeToString(&ret);
-    getTaskQueue()->post(TaskBinder::gen(&FFRpc::docall, this, name_, TYPE_NAME(T), ret, callback_));
+    getTaskQueue()->post(funcbind(&FFRpc::docall, this, name_, TYPE_NAME(T), ret, callback_));
     return 0;
 }
 
@@ -195,7 +195,7 @@ int FFRpc::callPB(const std::string& namespace_, const std::string& name_, T& re
     else{
         std::string ret;
         req_.SerializeToString(&ret);
-        getTaskQueue()->post(TaskBinder::gen(&FFRpc::bridgeDocall, this, namespace_, name_, TYPE_NAME(T), ret, callback_));
+        getTaskQueue()->post(funcbind(&FFRpc::bridgeDocall, this, namespace_, name_, TYPE_NAME(T), ret, callback_));
     }
     return 0;
 }

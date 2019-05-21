@@ -31,7 +31,7 @@ Select::Select():
 	ee.events    = EPOLLIN | EPOLLPRI | EPOLLOUT | EPOLLHUP | EPOLLET;;
 	::epoll_ctl(m_efd, EPOLL_CTL_ADD, m_interupt_sockets[0], &ee);
 	*/
-	
+
 }
 
 Select::~Select()
@@ -46,12 +46,12 @@ int Select::runLoop()
 {
 	FD_ZERO(&m_fdread);
 	struct timeval tv = {0, 0};
-	tv.tv_sec  = 0;  
-	tv.tv_usec = 1000*200;  
+	tv.tv_sec  = 0;
+	tv.tv_usec = 1000*200;
 	SocketFd tmpsock = socket(AF_INET, SOCK_STREAM, 0);
 	while (m_running)
-	{     
-		// We only care read event 
+	{
+		// We only care read event
 		fd_set tmpset;
 		int nMaxFd = 0;
 		FD_ZERO(&tmpset);
@@ -59,7 +59,7 @@ int Select::runLoop()
 			LockGuard lock(m_mutex);
 			//tmpset = m_fdread;
 			for (std::map<SocketFd, Fd*>::iterator it = m_fd2ptr.begin(); it != m_fd2ptr.end(); ++it){
-				if (it->first > nMaxFd){
+				if ((int)it->first > nMaxFd){
 					nMaxFd = it->first;
 				}
 				FD_SET(it->first, &tmpset);
@@ -73,10 +73,10 @@ int Select::runLoop()
 		#endif
 		FD_SET(tmpsock, &tmpset);
 		int ret = select(nMaxFd, &tmpset, NULL, NULL, &tv);
-		if (ret == 0) 
+		if (ret == 0)
 		{
-			// Time expired 
-		 	continue; 
+			// Time expired
+		 	continue;
 		}
 		else if (ret < 0){
 			#ifdef _WIN32
@@ -95,13 +95,13 @@ int Select::runLoop()
 			   		Fd* fd_ptr = it->second;
 					fd_ptr->handleEpollRead();
 			   }
-			   
-		   } //if 
-		}//for 
+
+		   } //if
+		}//for
 		#else
-		for(int fd = 0; fd < FD_SETSIZE; fd++) 
+		for(int fd = 0; fd < FD_SETSIZE; fd++)
         {
-			if(FD_ISSET(fd, &tmpset)) 
+			if(FD_ISSET(fd, &tmpset))
             {
 				//printf("read event.......\n");
 				std::map<SocketFd, Fd*>::iterator it = m_fd2ptr.find(fd);
@@ -112,7 +112,7 @@ int Select::runLoop()
 			}
 		}
 		#endif
-	}//while  
+	}//while
 	SocketOp::close(tmpsock);
 	/*
     int i = 0, nfds = 0;
@@ -142,7 +142,7 @@ int Select::runLoop()
             	fd_del_callback();
             	continue;
             }
-    
+
             if (cur_ev.events & (EPOLLIN | EPOLLPRI))
             {
                 fd_ptr->handleEpollRead();
@@ -158,7 +158,7 @@ int Select::runLoop()
                 fd_ptr->close();
             }
         }
-        
+
     }while(nfds >= 0);
 	*/
     return 0;
@@ -169,7 +169,7 @@ int Select::close()
     m_running = false;
 
     interupt_loop();
-    
+
     return 0;
 }
 
