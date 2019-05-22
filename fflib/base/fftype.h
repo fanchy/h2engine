@@ -6,15 +6,13 @@
 
 #ifndef _WIN32
 #define MKDIR(a) ::mkdir((a),0755)
-#define SOCKET_TYPE int
 #else
 #include <winsock2.h>
 #include <stdio.h>
 #include <windows.h>
-#define MKDIR(a) ::mkdir((a)) 
-#define SOCKET_TYPE SOCKET
-typedef int socklen_t; 
-typedef int ssize_t; 
+#define MKDIR(a) ::mkdir((a))
+typedef int socklen_t;
+typedef int ssize_t;
 #endif
 
 #include "base/singleton.h"
@@ -68,7 +66,7 @@ private:
     T*          m_cur_data;
 };
 
-    
+
 struct TypeIdGenerator
 {
     TypeIdGenerator():m_id(0){}
@@ -106,7 +104,7 @@ struct TypeHelper
         int pos2     = tmp.find("]", pos+1);
         m_type_name = tmp.substr(pos + keystr.size(), pos2 - pos - keystr.size());
         m_type_id   = Singleton<TypeIdGenerator>::instance().allocID(m_type_name);
-        
+
         //printf("__PRETTY_FUNCTION__:%s,%s,pos:%d,pos2:%d\n", __PRETTY_FUNCTION__, m_type_name.c_str(), pos, pos2);
     }
     int id() const
@@ -164,10 +162,10 @@ public:
         {
             return;
         }
-    
+
         char tmp_buff[256] = {0};
         if(getc(fp) == EOF)
-        {           
+        {
             int n = snprintf(tmp_buff, sizeof(tmp_buff), "time,obj,num\n");
             fwrite(tmp_buff, n, 1, fp);
         }
@@ -177,7 +175,7 @@ public:
 
         time_t timep   = ::time(NULL);
         struct tm *tmp = ::localtime(&timep);
-        
+
         sprintf(tmp_buff, "%04d%02d%02d-%02d:%02d:%02d",
                         tmp->tm_year + 1900, tmp->tm_mon + 1, tmp->tm_mday,
                         tmp->tm_hour, tmp->tm_min, tmp->tm_sec);

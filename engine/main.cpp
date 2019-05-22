@@ -19,6 +19,7 @@
 
 #include "net/wsprotocol.h"
 #include "base/func.h"
+#include "net/ioevent_select.h"
 
 using namespace ff;
 using namespace std;
@@ -46,13 +47,33 @@ static bool flagok = false;
 
 int main(int argc, char* argv[])
 {
-    SignalHelper::bloack();
+    bool bTest = false;
+
 	ArgHelper arg_helper(argc, argv);
+	if (arg_helper.isEnableOption("-test"))
+    {
+        bTest = true;
+    }
+    #ifdef _WIN32
+    bTest = true;
+    #endif // _WIN32
+    if (bTest)
+    {
+        IOEventSelect IOSelect;
+        Thread thread;
+        thread.create_thread(funcbind(&IOEventSelect::runOnce, &IOSelect, -1));
+        Sleep(5000);
+        IOSelect.notify();
+        Sleep(10);
+
+        return 0;
+    }
     if (arg_helper.isEnableOption("-f"))
     {
         arg_helper.loadFromFile(arg_helper.getOptionValue("-f"));
     }
 
+    SignalHelper::bloack();
     if (arg_helper.isEnableOption("-d"))
     {
     	#ifndef _WIN32

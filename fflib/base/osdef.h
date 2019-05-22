@@ -8,4 +8,10 @@
     #endif // _WIN32
 #endif // __MINGW32__
 
+#ifdef _WIN32
+    #define SOCKET_TYPE SOCKET
+#else
+    #define SOCKET_TYPE int
+#endif // _WIN32
+
 #endif

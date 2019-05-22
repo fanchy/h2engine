@@ -17,7 +17,7 @@
 
 #include <string>
 
-
+#define  RECV_BUFFER_SIZE 8192
 namespace ff {
 
 struct SocketOp
@@ -65,6 +65,113 @@ struct SocketOp
 		#else
 		::close(sockfd);
 		#endif
+	}
+	static int readAll(SOCKET_TYPE fd, std::string& retData)//!success ret>=0 fail -1
+	{
+        int nread = 0;
+        char recv_buffer[RECV_BUFFER_SIZE] = {0};
+        do
+        {
+#ifdef _WIN32
+            nread = recv(fd, recv_buffer, sizeof(recv_buffer), 0);
+            if (nread == SOCKET_ERROR || nread == 0)
+            {
+                if  (WSAEWOULDBLOCK == WSAGetLastError()){
+                    return (int)retData.size();
+                }
+                return -1;
+            }
+#else
+            nread = read(m_fd, recv_buffer, sizeof(recv_buffer));
+            if (nread == 0)
+            {
+                return -1;
+            }
+            else if (nread <0)
+            {
+                if (errno == EINTR)
+                {
+                    continue;
+                }
+                else if (errno == EWOULDBLOCK)
+                {
+                    return (int)retData.size();
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+#endif // _WIN32
+            else
+            {
+                retData.append(recv_buffer, nread);
+            }
+        }while(nread == RECV_BUFFER_SIZE);
+
+        return (int)retData.size();
+
+        return 0;
+    }
+    static int sendAll(SOCKET_TYPE fd, const std::string& retData)//!success ret>=0 fail -1
+	{
+        int nwritten = 0;
+        while(nwritten < (int)retData.size())
+        {
+            #ifdef _WIN32
+            int nret = 0;
+            if((nret = send(fd, retData.c_str() + nwritten, (int)retData.size() - nwritten, 0)) <= 0)
+            #else
+            if((nret = send(fd, retData.c_str() + nwritten, (int)retData.size() - nwritten, MSG_NOSIGNAL)) <= 0)
+            #endif
+            {
+                if (EINTR == errno)
+                {
+                    continue;
+                }
+                else if (EWOULDBLOCK == errno)
+                {
+                    return nwritten;
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+
+            nwritten += nret;
+        }
+        return nwritten;
+    }
+    static int acceptSocket(SOCKET_TYPE fdListen)
+	{
+	    SOCKET_TYPE newfd = -1;
+
+    	#ifdef _WIN32
+        	newfd = accept(fdListen, NULL, NULL);
+    	    if (newfd == INVALID_SOCKET) {
+    	        wprintf(L"accept failed with error: %ld\n", WSAGetLastError());
+    	        return 0;
+    	    }
+    	#else
+            struct sockaddr_storage addr;
+            socklen_t addrlen = sizeof(addr);
+            if ((newfd = ::accept(fdListen, (struct sockaddr *)&addr, &addrlen)) == -1)
+            {
+                if (errno == EWOULDBLOCK)
+                {
+                    return 0;
+                }
+                else if (errno == EINTR || errno == EMFILE || errno == ECONNABORTED || errno == ENFILE ||
+                            errno == EPERM || errno == ENOBUFS || errno == ENOMEM)
+                {
+                    return 0;
+                }
+                perror("accept other error");
+                return -1;
+            }
+        #endif
+        return newfd;
 	}
 };
 
