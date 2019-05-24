@@ -1,3 +1,5 @@
+#ifdef linux
+
 #ifndef _IO_EVENT_EPOLL_H_
 #define _IO_EVENT_EPOLL_H_
 
@@ -11,8 +13,11 @@
 #include <vector>
 #include <list>
 
+#include <sys/epoll.h>
+
 namespace ff {
 
+#define EPOLL_EVENTS_SIZE  128
 class IOEventEpoll: public IOEvent
 {
 public:
@@ -54,7 +59,9 @@ protected:
     int                             m_efd;
     SOCKET_TYPE                     m_fdNotify[2];
     std::vector<FuncToRun>          m_listFuncToRun;
+    struct epoll_event              ev_set[EPOLL_EVENTS_SIZE];
 };
 
 }
+#endif
 #endif

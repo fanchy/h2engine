@@ -13,7 +13,6 @@
 
 
 #define CREATE_EPOLL_SIZE  4096
-#define EPOLL_EVENTS_SIZE  128
 
 using namespace std;
 using namespace ff;
@@ -56,10 +55,7 @@ int IOEventEpoll::run()
 }
 int IOEventEpoll::runOnce(int ms)
 {
-    int i = 0, nfds = 0;
-    struct epoll_event ev_set[EPOLL_EVENTS_SIZE];
-    
-    nfds  = ::epoll_wait(m_efd, ev_set, EPOLL_EVENTS_SIZE, ms);
+    int nfds = ::epoll_wait(m_efd, ev_set, EPOLL_EVENTS_SIZE, ms);
 
     if (nfds < 0 && EINTR == errno)
     {
@@ -74,7 +70,7 @@ int IOEventEpoll::runOnce(int ms)
         listFunc = m_listFuncToRun;
         m_listFuncToRun.clear();
         //printf("epoll nfds=%d!\n", nfds);
-        for (i = 0; i < nfds; ++i)
+        for (int i = 0; i < nfds; ++i)
         {
             epoll_event& cur_ev = ev_set[i];
             SOCKET_TYPE fd = cur_ev.data.fd;
