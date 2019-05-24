@@ -10,13 +10,14 @@
 #include <vector>
 #include <list>
 
+
 using namespace std;
 using namespace ff;
 
 IOEventSelect::IOEventSelect():m_running(false){
     m_fdNotify[0] = 0;
     m_fdNotify[1] = 0;
-#ifndef _WIN32        
+#ifndef _WIN32
     ::socketpair(AF_LOCAL, SOCK_STREAM, 0, m_fdNotify);
 #else
     m_fdNotify[0] = socket(AF_INET, SOCK_DGRAM, 0);
@@ -26,13 +27,13 @@ IOEventSelect::IOEventSelect():m_running(false){
     static int SERVER_PORT = 17000;
     SERVER_PORT += 1;
     m_serAddr.sin_port = htons(SERVER_PORT);  //端口号，需要网络序转换
-    
+
     memset(m_serAddr.sin_zero,0,8);
     int re_flag=1;
     int re_len=sizeof(int);
-    setsockopt(m_fdNotify[0],SOL_SOCKET,SO_REUSEADDR,&re_flag,re_len);
+    setsockopt(m_fdNotify[0],SOL_SOCKET,SO_REUSEADDR,(const char*)&re_flag,re_len);
     int ret = bind(m_fdNotify[0], (struct sockaddr*)&m_serAddr, sizeof(struct sockaddr));
-    
+
     if(ret < 0)
     {
         //printf("IOEventSelect socket bind fail!\n");
@@ -48,7 +49,7 @@ IOEventSelect::IOEventSelect():m_running(false){
 }
 IOEventSelect::~IOEventSelect(){
     stop();
-    
+
     if (m_fdNotify[0]){
         close(m_fdNotify[0]);
         close(m_fdNotify[1]);
@@ -147,7 +148,7 @@ int IOEventSelect::runOnce(int ms)
             IOCallBackInfo cbInfo;
             cbInfo.fd = it->first;
             cbInfo.eventHandler = it->second.eventHandler;
-            
+
             if (FD_ISSET(fd, &readset))
             {
                 if (socketInfo.bAccept){
@@ -176,7 +177,7 @@ int IOEventSelect::runOnce(int ms)
                         socketInfo.sendBuffer.clear();
                         cbInfo.eventType = IOEVENT_BROKEN;
                         listCallBack.push_back(cbInfo);
-                        
+
                         socketInfo.bBroken = true;
                         break;
                     }

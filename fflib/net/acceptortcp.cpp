@@ -1,17 +1,22 @@
 
-#include "base/osdef.h"
 #ifndef _WIN32
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #else
-#define _WIN32_WINNT 0x0501
+
+#ifndef _WIN32_WINNT
+    #define _WIN32_WINNT 0x0501
+#endif // _WIN32_WINNT
+
 #include <winsock2.h>
 #include <windows.h>
 #include <ws2tcpip.h>
 #include <stdio.h>
+
 #endif
 
+#include "base/osdef.h"
 
 #include <assert.h>
 #include <stdio.h>

@@ -9,6 +9,7 @@
 #endif // __MINGW32__
 
 #ifdef _WIN32
+    #include <winsock2.h>
     #define SOCKET_TYPE SOCKET
 #else
     #define SOCKET_TYPE int

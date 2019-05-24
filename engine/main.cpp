@@ -19,9 +19,6 @@
 
 #include "net/wsprotocol.h"
 #include "base/func.h"
-#include "net/ioevent_select.h"
-#include "net/ioevent_epoll.h"
-
 using namespace ff;
 using namespace std;
 
@@ -51,31 +48,7 @@ int main(int argc, char* argv[])
     bool bTest = false;
 
 	ArgHelper arg_helper(argc, argv);
-	if (arg_helper.isEnableOption("-test"))
-    {
-        bTest = true;
-    }
-    #ifdef _WIN32
-    bTest = true;
-    #endif // _WIN32
-    if (bTest)
-    {
-        IOEventEpoll IOSelect;
-        Thread thread;
-        thread.create_thread(funcbind(&IOEventEpoll::run, &IOSelect));
-        
-        printf("notfiy begin...\n");
-        for (int i = 0; i < 10; ++i)
-        {
-            sleep(2);
-            IOSelect.notify();
-        }
-        
-        thread.join();
-        printf("notfiy end...\n");
-        
-        return 0;
-    }
+
     if (arg_helper.isEnableOption("-f"))
     {
         arg_helper.loadFromFile(arg_helper.getOptionValue("-f"));

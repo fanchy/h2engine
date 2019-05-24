@@ -4,7 +4,9 @@
 #include <errno.h>
 #include <assert.h>
 #include <sys/types.h>
+#ifndef _WIN32
 #include <sys/socket.h>
+#endif // _WIN32
 
 #include "net/sockettcp.h"
 #include "net/socket_ctrl.h"
@@ -16,7 +18,7 @@
 using namespace std;
 using namespace ff;
 
-SocketTcp::SocketTcp(IOEvent& e_, SocketCtrlI* seh_, int fd_, TaskQueue* tq_):
+SocketTcp::SocketTcp(IOEvent& e_, SocketCtrlI* seh_, SOCKET_TYPE fd_, TaskQueue* tq_):
     m_ioevent(e_),
     m_sc(seh_),
     m_fd(fd_),
