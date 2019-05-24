@@ -1,10 +1,10 @@
 #ifndef _NET_FACTORY_H_
 #define _NET_FACTORY_H_
 #include "base/osdef.h"
-#include "net/acceptor_linux.h"
+#include "net/acceptortcp.h"
 
-#include "net/epoll.h"
-#include "net/select.h"
+#include "net/ioevent_select.h"
+#include "net/ioevent_epoll.h"
 #include "connector.h"
 #include "base/singleton.h"
 #include "base/perf_monitor.h"
@@ -23,16 +23,20 @@ public:
         volatile bool           started_flag;
         TaskQueue*              tg;
         Thread                  thread;
-        #ifndef linux
-        Select                  epoll;
-        #else
-        Epoll                   epoll;
-        #endif
+        // #ifndef linux
+        // Select                  epoll;
+        // #else
+        // Epoll                   epoll;
+        // #endif
+#ifdef linux
+        IOEventEpoll            ioevent;
+#else
+        IOEventSelect           ioevent;
+#endif
         std::vector<Acceptor*>  allAcceptor;
         NetData():
             started_flag(false),
-            tg(NULL),
-            epoll()
+            tg(NULL)//,epoll()
         {
         }
         ~ NetData()
@@ -46,10 +50,10 @@ public:
             delete tg;
             tg = NULL;
         }
-        static void runEpoll(void* e_)
+        static void runNet(void* e_)
         {
             NetData* p = (NetData*)e_;
-            p->epoll.runLoop();
+            p->ioevent.run();
         }
         void start(int thread_num_ = 2)
         {
@@ -62,7 +66,7 @@ public:
                 assert(thread_num_ > 0);
                 started_flag = true;
                 tg = new TaskQueue();
-                thread.create_thread(funcbind(&runEpoll, this), 1);
+                thread.create_thread(funcbind(&runNet, this), 1);
             }
         }
         void stop()
@@ -75,7 +79,7 @@ public:
                 }
 
                 tg->close();
-                epoll.close();
+                ioevent.stop();
                 thread.join();
 
                 started_flag = false;
@@ -99,7 +103,7 @@ public:
     static Acceptor* listen(const std::string& host_, MsgHandler* msg_handler_)
     {
         Singleton<NetData>::instance().start();
-        AcceptorLinux* ret = new AcceptorLinux(&(Singleton<NetData>::instance().epoll),
+        AcceptorTcp* ret = new AcceptorTcp(Singleton<NetData>::instance().ioevent,
                                                    msg_handler_,
                                                    (Singleton<NetData>::instance().tg));
 
@@ -114,7 +118,7 @@ public:
     static Acceptor* gatewayListen(const std::string& host_, MsgHandler* msg_handler_)
     {
         Singleton<NetData>::instance().start();
-        AcceptorLinux* ret = new AcceptorLinux(&(Singleton<NetData>::instance().epoll),
+        AcceptorTcp* ret = new AcceptorTcp(Singleton<NetData>::instance().ioevent,
                                                    msg_handler_,
                                                    (Singleton<NetData>::instance().tg));
 
@@ -129,7 +133,7 @@ public:
 	static Acceptor* gatewayListen(ArgHelper& arg_helper, MsgHandler* msg_handler_)
     {
         Singleton<NetData>::instance().start();
-        AcceptorLinux* ret = new AcceptorLinux(&(Singleton<NetData>::instance().epoll),
+        AcceptorTcp* ret = new AcceptorTcp((Singleton<NetData>::instance().ioevent),
                                                    msg_handler_,
                                                    (Singleton<NetData>::instance().tg));
 
@@ -145,8 +149,8 @@ public:
     static SocketObjPtr connect(const std::string& host_, MsgHandler* msg_handler_)
     {
         Singleton<NetData>::instance().start();
-        return Connector::connect(host_, &(Singleton<NetData>::instance().epoll), msg_handler_,
-                                    (Singleton<NetData>::instance().tg));
+        return Connector::connect(host_, (Singleton<NetData>::instance().ioevent), msg_handler_,
+                                   (Singleton<NetData>::instance().tg));
     }
 };
 

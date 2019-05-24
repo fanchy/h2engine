@@ -2,9 +2,10 @@
 #define _SOCKET_I_
 
 #include <string>
+#include <map>
 
+#include "base/fftype.h"
 #include "base/smart_ptr.h"
-#include "netbase.h"
 
 namespace ff {
 
@@ -29,7 +30,7 @@ public:
     T* getData() const { return m_pData; }
     T* m_pData;
 };
-class SocketI: public Fd
+class SocketI
 {
 public:
     SocketI() {}
@@ -42,8 +43,10 @@ public:
     }
 
     virtual void open() = 0;
+    virtual void close()= 0;
+    virtual SOCKET_TYPE socket() = 0;
     virtual void asyncSend(const std::string& buff_) = 0;
-    virtual void asyncRecv() = 0;
+    virtual void asyncRecv(){};
     template<typename T>
     T* getData() {
         SocketDataCommon<T>* pRet = NULL;

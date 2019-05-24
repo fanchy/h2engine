@@ -1,5 +1,5 @@
-#ifndef _IO_EVENT_SELECT_H_
-#define _IO_EVENT_SELECT_H_
+#ifndef _IO_EVENT_EPOLL_H_
+#define _IO_EVENT_EPOLL_H_
 
 #include "base/func.h"
 #include "base/osdef.h"
@@ -13,7 +13,7 @@
 
 namespace ff {
 
-class IOEventSelect: public IOEvent
+class IOEventEpoll: public IOEvent
 {
 public:
     struct IOInfo
@@ -32,8 +32,8 @@ public:
         std::string     data;
     };
 public:
-    IOEventSelect();
-    virtual ~IOEventSelect();
+    IOEventEpoll();
+    virtual ~IOEventEpoll();
 
     virtual int run();
     virtual int runOnce(int ms);
@@ -51,8 +51,8 @@ protected:
     volatile bool                   m_running;
     Mutex                           m_mutex;
     std::map<SOCKET_TYPE, IOInfo>   m_allIOinfo;
+    int                             m_efd;
     SOCKET_TYPE                     m_fdNotify[2];
-    struct  sockaddr_in             m_serAddr;
     std::vector<FuncToRun>          m_listFuncToRun;
 };
 

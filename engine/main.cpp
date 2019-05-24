@@ -20,6 +20,7 @@
 #include "net/wsprotocol.h"
 #include "base/func.h"
 #include "net/ioevent_select.h"
+#include "net/ioevent_epoll.h"
 
 using namespace ff;
 using namespace std;
@@ -59,13 +60,20 @@ int main(int argc, char* argv[])
     #endif // _WIN32
     if (bTest)
     {
-        IOEventSelect IOSelect;
+        IOEventEpoll IOSelect;
         Thread thread;
-        thread.create_thread(funcbind(&IOEventSelect::runOnce, &IOSelect, -1));
-        Sleep(5000);
-        IOSelect.notify();
-        Sleep(10);
-
+        thread.create_thread(funcbind(&IOEventEpoll::run, &IOSelect));
+        
+        printf("notfiy begin...\n");
+        for (int i = 0; i < 10; ++i)
+        {
+            sleep(2);
+            IOSelect.notify();
+        }
+        
+        thread.join();
+        printf("notfiy end...\n");
+        
         return 0;
     }
     if (arg_helper.isEnableOption("-f"))

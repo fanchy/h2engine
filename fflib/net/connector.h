@@ -14,8 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "net/socket_linux.h"
-#include "net/socket_win.h"
+#include "net/sockettcp.h"
 #include "base/str_tool.h"
 #include "net/msg_handler.h"
 #include "net/socket_ctrl_common.h"
@@ -25,7 +24,7 @@ namespace ff {
 class Connector
 {
 public:
-    static SocketObjPtr connect(const std::string& host_, EventLoop* e_, MsgHandler* msg_handler_, TaskQueue* tq_)
+    static SocketObjPtr connect(const std::string& host_, IOEvent& e_, MsgHandler* msg_handler_, TaskQueue* tq_)
     {
         SocketObjPtr ret = NULL;
         //! example tcp://192.168.1.1:1024
@@ -40,7 +39,7 @@ public:
         {
             vt2[0] = "127.0.0.1";
         }
-        SocketFd s;
+        SOCKET_TYPE s;
         struct sockaddr_in addr;
 
         if((s = socket(AF_INET,SOCK_STREAM,0)) < 0)
@@ -63,15 +62,9 @@ public:
             perror("connect");
             return ret;
         }
-        #ifndef _WIN32
-        SocketLinux* pret = new SocketLinux(e_, new SocketCtrlCommon(msg_handler_), s, tq_);
+        SocketTcp* pret = new SocketTcp(e_, new SocketCtrlCommon(msg_handler_), s, tq_);
         ret = pret;
         pret->refSelf(ret);
-        #else
-        SocketWin* pret = new SocketWin(e_, new SocketCtrlCommon(msg_handler_), s, tq_);
-        ret = pret;
-        pret->refSelf(ret);
-        #endif
         ret->open();
         return ret;
     }

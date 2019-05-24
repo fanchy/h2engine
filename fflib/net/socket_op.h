@@ -82,12 +82,12 @@ struct SocketOp
                 return -1;
             }
 #else
-            nread = read(m_fd, recv_buffer, sizeof(recv_buffer));
+            nread = read(fd, recv_buffer, sizeof(recv_buffer));
             if (nread == 0)
             {
                 return -1;
             }
-            else if (nread <0)
+            else if (nread < 0)
             {
                 if (errno == EINTR)
                 {
@@ -118,8 +118,8 @@ struct SocketOp
         int nwritten = 0;
         while(nwritten < (int)retData.size())
         {
-            #ifdef _WIN32
             int nret = 0;
+            #ifdef _WIN32
             if((nret = send(fd, retData.c_str() + nwritten, (int)retData.size() - nwritten, 0)) <= 0)
             #else
             if((nret = send(fd, retData.c_str() + nwritten, (int)retData.size() - nwritten, MSG_NOSIGNAL)) <= 0)
