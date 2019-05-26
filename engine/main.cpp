@@ -45,8 +45,6 @@ static bool flagok = false;
 
 int main(int argc, char* argv[])
 {
-    bool bTest = false;
-
 	ArgHelper arg_helper(argc, argv);
 
     if (arg_helper.isEnableOption("-f"))

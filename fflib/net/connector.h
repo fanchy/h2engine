@@ -17,7 +17,7 @@
 #include "net/sockettcp.h"
 #include "base/str_tool.h"
 #include "net/msg_handler.h"
-#include "net/socket_ctrl_common.h"
+#include "net/socket_protocol.h"
 
 namespace ff {
 
@@ -39,7 +39,7 @@ public:
         {
             vt2[0] = "127.0.0.1";
         }
-        SOCKET_TYPE s;
+        Socketfd s;
         struct sockaddr_in addr;
 
         if((s = socket(AF_INET,SOCK_STREAM,0)) < 0)
@@ -62,7 +62,8 @@ public:
             perror("connect");
             return ret;
         }
-        SocketTcp* pret = new SocketTcp(e_, new SocketCtrlCommon(msg_handler_), s, tq_);
+        SocketProtocolPtr prot = new SocketProtocol(msg_handler_);
+        SocketTcp* pret = new SocketTcp(e_, funcbind(&SocketProtocol::handleSocketEvent, prot), s);
         ret = pret;
         pret->refSelf(ret);
         ret->open();

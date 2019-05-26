@@ -31,7 +31,7 @@ public:
     };
     struct IOCallBackInfo
     {
-        SOCKET_TYPE     fd;
+        Socketfd     fd;
         IOEVENT_TYPE    eventType;
         IOEventFunc     eventHandler;
         std::string     data;
@@ -43,21 +43,21 @@ public:
     virtual int run();
     virtual int runOnce(int ms);
     virtual int stop();
-    virtual int regfd(SOCKET_TYPE fd, IOEventFunc eventHandler);
-    virtual int regfdAccept(SOCKET_TYPE fd, IOEventFunc eventHandler);
-    virtual int unregfd(SOCKET_TYPE fd);
-    virtual void asyncSend(SOCKET_TYPE fd, const char* data, size_t len);
+    virtual int regfd(Socketfd fd, IOEventFunc eventHandler);
+    virtual int regfdAccept(Socketfd fd, IOEventFunc eventHandler);
+    virtual int unregfd(Socketfd fd);
+    virtual void asyncSend(Socketfd fd, const char* data, size_t len);
 
     void notify();
     virtual void post(FuncToRun func);
 private:
-    void safeClosefd(SOCKET_TYPE fd);
+    void safeClosefd(Socketfd fd);
 protected:
     volatile bool                   m_running;
     Mutex                           m_mutex;
-    std::map<SOCKET_TYPE, IOInfo>   m_allIOinfo;
+    std::map<Socketfd, IOInfo>   m_allIOinfo;
     int                             m_efd;
-    SOCKET_TYPE                     m_fdNotify[2];
+    Socketfd                     m_fdNotify[2];
     std::vector<FuncToRun>          m_listFuncToRun;
     struct epoll_event              ev_set[EPOLL_EVENTS_SIZE];
 };

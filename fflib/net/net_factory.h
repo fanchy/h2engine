@@ -9,7 +9,6 @@
 #include "base/singleton.h"
 #include "base/perf_monitor.h"
 #include "base/thread.h"
-#include "net/codec.h"
 #include "net/msg_sender.h"
 #include "base/log.h"
 

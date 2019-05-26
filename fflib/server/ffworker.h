@@ -7,7 +7,6 @@
 
 #include "base/ffslot.h"
 #include "base/fftype.h"
-#include "net/codec.h"
 #include "rpc/ffrpc.h"
 #include "base/arg_helper.h"
 #include "server/shared_mem.h"

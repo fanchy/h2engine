@@ -87,38 +87,38 @@ TaskQueue* FFGate::getTaskQueue()
 }
 
 void FFGate::cleanup_session(client_info_t& client_info, SocketObjPtr sock_, bool closesend){
-    SessionData* session_data = sock_->getData<SessionData>();
+    SessionData& session_data = sock_->getData<SessionData>();
 
     if (client_info.sock == sock_)
     {
         if (closesend)
         {
             SessionOfflineReq msg;
-            msg.session_id  = session_data->id();
+            msg.session_id  = session_data.id();
             m_ffrpc->call(client_info.alloc_worker, msg);
         }
 
-        m_client_set.erase(session_data->id());
+        m_client_set.erase(session_data.id());
     }
 }
 //! 处理连接断开
 int FFGate::handleBroken(SocketObjPtr sock_)
 {
-    SessionData* session_data = sock_->getData<SessionData>();
-    if (0 == session_data->id())
+    SessionData& session_data = sock_->getData<SessionData>();
+    if (0 == session_data.id())
     {
         LOGTRACE((FFGATE, "FFGate::broken ignore %u", m_client_set.size()));
         return 0;
     }
 
-    cleanup_session(m_client_set[session_data->id()], sock_);
+    cleanup_session(m_client_set[session_data.id()], sock_);
     return 0;
 }
 //! 处理消息
 int FFGate::handleMsg(const Message& msg_, SocketObjPtr sock_)
 {
-    SessionData* session_data = sock_->getData<SessionData>();
-    if (0 == session_data->id())//! 还未验证sessionid
+    SessionData& session_data = sock_->getData<SessionData>();
+    if (0 == session_data.id())//! 还未验证sessionid
     {
         //!随机一个worker
         vector<string> allwoker = m_ffrpc->getServicesLike("worker#");
@@ -128,12 +128,12 @@ int FFGate::handleMsg(const Message& msg_, SocketObjPtr sock_)
             //sock_->close();
             return 0;
         }
-        session_data->session_id = this->allocID();
-        client_info_t& client_info = m_client_set[session_data->id()];
+        session_data.session_id = this->allocID();
+        client_info_t& client_info = m_client_set[session_data.id()];
         client_info.sock           = sock_;
 
-        client_info.alloc_worker = allwoker[session_data->id() % allwoker.size()];
-        LOGTRACE((FFGATE, "id:%d, client_info.alloc_worker:%s", session_data->id(), client_info.alloc_worker));
+        client_info.alloc_worker = allwoker[session_data.id() % allwoker.size()];
+        LOGTRACE((FFGATE, "id:%d, client_info.alloc_worker:%s", session_data.id(), client_info.alloc_worker));
         return routeLogicMsg(msg_, sock_, true);
     }
     return routeLogicMsg(msg_, sock_, false);
@@ -151,20 +151,20 @@ int FFGate::enterWorkerCallback(RPCReq<EmptyMsgRet>& req_, const userid_t& sessi
 //! 逻辑处理,转发消息到logic service
 int FFGate::routeLogicMsg(const Message& msg_, SocketObjPtr sock_, bool first)
 {
-    SessionData* session_data = sock_->getData<SessionData>();
-    LOGTRACE((FFGATE, "FFGate::routeLogicMsg session_id[%ld]", session_data->id()));
+    SessionData& session_data = sock_->getData<SessionData>();
+    LOGTRACE((FFGATE, "FFGate::routeLogicMsg session_id[%ld]", session_data.id()));
 
-    client_info_t& client_info   = m_client_set[session_data->id()];
+    client_info_t& client_info   = m_client_set[session_data.id()];
 
     RouteLogicMsgReq msg;
-    msg.session_id = session_data->id();
+    msg.session_id = session_data.id();
     msg.cmd        = msg_.getCmd();
     msg.body       = msg_.getBody();
     if (first)
     {
-        msg.session_ip = SocketOp::getpeername(sock_->socket());
+        msg.session_ip = SocketOp::getpeername(sock_->getRawSocket());
         LOGTRACE((FFGATE, "FFGate::handleMsg new session_id[%ld] ip[%s] alloc[%s]",
-                    session_data->id(), msg.session_ip, client_info.alloc_worker));
+                    session_data.id(), msg.session_ip, client_info.alloc_worker));
     }
     m_ffrpc->call(client_info.group_name, client_info.alloc_worker, msg);
     LOGTRACE((FFGATE, "FFGate::routeLogicMsg end ok alloc_worker[%s] bodysize=%u", client_info.alloc_worker, msg.body.size()));
@@ -193,7 +193,7 @@ int FFGate::changeSessionLogic(RPCReq<GateChangeLogicNodeReq, EmptyMsgRet>& req_
 
     enter_msg.session_id = req_.msg.session_id;
     enter_msg.from_gate = m_gate_name;
-    enter_msg.session_ip = SocketOp::getpeername(it->second.sock->socket());
+    enter_msg.session_ip = SocketOp::getpeername(it->second.sock->getRawSocket());
 
     enter_msg.to_worker = req_.msg.alloc_worker;
     enter_msg.extra_data = req_.msg.extra_data;

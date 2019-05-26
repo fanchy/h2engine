@@ -73,7 +73,7 @@ int IOEventEpoll::runOnce(int ms)
         for (int i = 0; i < nfds; ++i)
         {
             epoll_event& cur_ev = ev_set[i];
-            SOCKET_TYPE fd = cur_ev.data.fd;
+            Socketfd fd = cur_ev.data.fd;
 
             if (cur_ev.data.fd == m_fdNotify[0])//! iterupte event
             {
@@ -86,7 +86,7 @@ int IOEventEpoll::runOnce(int ms)
             }
             //printf("epoll fd=%d!\n", fd);
             
-            std::map<SOCKET_TYPE, IOInfo>::iterator it = m_allIOinfo.find(fd);
+            std::map<Socketfd, IOInfo>::iterator it = m_allIOinfo.find(fd);
             if (it == m_allIOinfo.end()){
                 continue;
             }
@@ -170,7 +170,7 @@ int IOEventEpoll::stop()
 
     return 0;
 }
-int IOEventEpoll::regfd(SOCKET_TYPE fd, IOEventFunc eventHandler)
+int IOEventEpoll::regfd(Socketfd fd, IOEventFunc eventHandler)
 {
     if (!eventHandler){
         return -1;
@@ -190,7 +190,7 @@ int IOEventEpoll::regfd(SOCKET_TYPE fd, IOEventFunc eventHandler)
     //printf("IOEventEpoll::regfd fd=%d\n", fd);
     return ::epoll_ctl(m_efd, EPOLL_CTL_ADD, fd, &ee);
 }
-int IOEventEpoll::regfdAccept(SOCKET_TYPE fd, IOEventFunc eventHandler)
+int IOEventEpoll::regfdAccept(Socketfd fd, IOEventFunc eventHandler)
 {
     if (!eventHandler){
         return -1;
@@ -209,11 +209,11 @@ int IOEventEpoll::regfdAccept(SOCKET_TYPE fd, IOEventFunc eventHandler)
     //printf("IOEventEpoll::regfd2 fd=%d\n", fd);
     return ::epoll_ctl(m_efd, EPOLL_CTL_ADD, fd, &ee);
 }
-int IOEventEpoll::unregfd(SOCKET_TYPE fd)
+int IOEventEpoll::unregfd(Socketfd fd)
 {
     {
         LockGuard lock(m_mutex);
-        std::map<SOCKET_TYPE, IOInfo>::iterator it = m_allIOinfo.find(fd);
+        std::map<Socketfd, IOInfo>::iterator it = m_allIOinfo.find(fd);
         if (it == m_allIOinfo.end())
         {
             return 0;
@@ -225,11 +225,11 @@ int IOEventEpoll::unregfd(SOCKET_TYPE fd)
     notify();
     return 0;
 }
-void IOEventEpoll::asyncSend(SOCKET_TYPE fd, const char* data, size_t len)
+void IOEventEpoll::asyncSend(Socketfd fd, const char* data, size_t len)
 {
     {
         LockGuard lock(m_mutex);
-        std::map<SOCKET_TYPE, IOInfo>::iterator it = m_allIOinfo.find(fd);
+        std::map<Socketfd, IOInfo>::iterator it = m_allIOinfo.find(fd);
         if (it == m_allIOinfo.end())
         {
             return;
@@ -263,7 +263,7 @@ void IOEventEpoll::notify(){
     //printf("IOEventEpoll::notify end!\n");
 }
 
-void IOEventEpoll::safeClosefd(SOCKET_TYPE fd){
+void IOEventEpoll::safeClosefd(Socketfd fd){
     struct epoll_event ee;
     ee.data.ptr  = (void*)0;
     ::epoll_ctl(m_efd, EPOLL_CTL_DEL, fd, &ee);

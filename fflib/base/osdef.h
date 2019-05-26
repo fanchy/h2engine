@@ -10,9 +10,9 @@
 
 #ifdef _WIN32
     #include <winsock2.h>
-    #define SOCKET_TYPE SOCKET
+    #define Socketfd SOCKET
 #else
-    #define SOCKET_TYPE int
+    #define Socketfd int
 #endif // _WIN32
 
 #endif

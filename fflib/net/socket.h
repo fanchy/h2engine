@@ -6,73 +6,52 @@
 
 #include "base/fftype.h"
 #include "base/smart_ptr.h"
+#include "base/anytype.h"
+#include "base/func.h"
 
 namespace ff {
 
-class SocketCtrlI;
-
-class SocketPrivateData{
-public:
-    virtual ~SocketPrivateData(){}
-    virtual void* data() const = 0 ;
+enum SocketTypeDef{
+    SOCKET_BIN = 1,
+    SOCKET_WS  = 2,
 };
-template<typename T>
-class SocketDataCommon: public SocketPrivateData{
-public:
-    SocketDataCommon(){
-        m_pData = new T();
-    }
-    ~SocketDataCommon(){
-        delete m_pData;
-        m_pData = NULL;
-    }
-    virtual void* data() const { return m_pData; }
-    T* getData() const { return m_pData; }
-    T* m_pData;
-};
-class SocketI
+class SocketObj
 {
 public:
-    SocketI() {}
-    virtual ~SocketI(){
-        for (std::map<std::string, SocketPrivateData*>::iterator it = m_dataPrivate.begin(); it != m_dataPrivate.end(); ++it)
-        {
-            delete it->second;
-        }
-        m_dataPrivate.clear();
-    }
+    SocketObj():protocolType(0) {}
+    virtual ~SocketObj(){}
+
+    virtual Socketfd getRawSocket() = 0;
 
     virtual void open() = 0;
     virtual void close()= 0;
-    virtual SOCKET_TYPE socket() = 0;
-    virtual void asyncSend(const std::string& buff_) = 0;
-    virtual void asyncRecv(){};
-    template<typename T>
-    T* getData() {
-        SocketDataCommon<T>* pRet = NULL;
-        std::map<std::string, SocketPrivateData*>::iterator it = m_dataPrivate.find(TYPE_NAME(T));
-        if (it == m_dataPrivate.end()){
-            pRet = new SocketDataCommon<T>();
-            m_dataPrivate[TYPE_NAME(T)] = pRet;
+
+    virtual void sendRaw(const std::string& data) = 0;
+    virtual void asyncSend(const std::string& data){
+        if (funcBuildPkg){
+            sendRaw(funcBuildPkg(data));
         }
         else{
-            pRet = (SocketDataCommon<T>*)(it->second);
+            sendRaw(data);
         }
-        return pRet->getData();
     }
 
-    virtual SocketCtrlI* getSocketCtrl() = 0;
+    template<typename T>
+    T& getData() {
+        return data.getData<T>();
+    }
 
-    virtual void sendRaw(const std::string& buff_) = 0;
-    virtual SharedPtr<SocketI> toSharedPtr() = 0;
-    virtual void refSelf(SharedPtr<SocketI> p) = 0;
-private:
-    std::map<std::string, SocketPrivateData*>    m_dataPrivate;
+    virtual SharedPtr<SocketObj> toSharedPtr() = 0;
+    virtual void refSelf(SharedPtr<SocketObj> p) = 0;
+public:
+    int                                             protocolType;
+    AnyType                                         data;
+    Function<std::string(const std::string& data)>  funcBuildPkg; 
 };
 
-typedef SharedPtr<SocketI>  SocketObjPtr;
-typedef SocketI*  SocketPtr;
+typedef SharedPtr<SocketObj>  SocketObjPtr;
 
+typedef Function<void(SocketObjPtr, int, const char*, size_t)> SocketEventFunc;
 }
 
 #endif

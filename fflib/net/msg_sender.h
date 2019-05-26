@@ -3,11 +3,9 @@
 #ifndef _MSG_SENDER_H_
 #define _MSG_SENDER_H_
 
-
 #include "net/socket.h"
 #include "net/socket_ctrl.h"
 #include "net/message.h"
-#include "net/codec.h"
 
 namespace ff {
 
@@ -20,7 +18,7 @@ public:
     {
         if (pSocket)
         {
-            if (0 == pSocket->getSocketCtrl()->get_type())
+            if (SOCKET_WS != pSocket->protocolType)
             {
                 MessageHead h(cmd_);
                 h.size = str_.size();
@@ -39,49 +37,11 @@ public:
             }
         }
     }
-    static void send(SocketObjPtr& pSocket, uint16_t cmd_, Codec& msg_)
-    {
-        if (pSocket)
-        {
-            if (0 == pSocket->getSocketCtrl()->get_type())
-            {
-                std::string body = msg_.encode_data();
-                MessageHead h(cmd_);
-                h.size = body.size();
-                h.hton();
-                std::string dest((const char*)&h, sizeof(h));
-                dest += body;
-
-                pSocket->asyncSend(dest);
-            }
-            else
-            {
-                char msg[128] = {0};
-                snprintf(msg, sizeof(msg), "cmd:%u\n", (uint32_t)cmd_);
-                std::string dest(msg);
-                dest += msg_.encode_data();
-                pSocket->asyncSend(dest);
-            }
-        }
-    }
     static void send(SocketObjPtr& pSocket, const std::string& str_)
     {
         if (pSocket)
         {
             pSocket->asyncSend(str_);
-        }
-    }
-    static void sendToClient(SocketObjPtr& pSocket, Codec& msg_)
-    {
-        if (pSocket)
-        {
-            std::string body = msg_.encode_data();
-            MessageHead h(0);
-            h.size = body.size();
-            h.hton();
-            std::string dest((const char*)&h, sizeof(h));
-            dest += body;
-            pSocket->asyncSend(body);
         }
     }
 };

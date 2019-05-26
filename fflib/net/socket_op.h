@@ -22,7 +22,7 @@ namespace ff {
 
 struct SocketOp
 {
-    static int set_nonblock(SOCKET_TYPE fd_)
+    static int set_nonblock(Socketfd fd_)
     {
     	#ifdef WIN32
 		    DWORD nMode = 1;
@@ -40,7 +40,7 @@ struct SocketOp
     	#endif
         return 0;
     }
-    static std::string getpeername(SOCKET_TYPE sockfd)
+    static std::string getpeername(Socketfd sockfd)
     {
         std::string ret;
         struct sockaddr_in sa;
@@ -52,13 +52,13 @@ struct SocketOp
         return ret;
     }
 
-    static int set_no_delay(SOCKET_TYPE sockfd, bool flag_ = true)
+    static int set_no_delay(Socketfd sockfd, bool flag_ = true)
     {
         int on = flag_? 1: 0;
         return ::setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY,(const char*)&on,sizeof(on));
     }
 
-	static void close(SOCKET_TYPE sockfd)
+	static void close(Socketfd sockfd)
 	{
 		#ifdef _WIN32
 		::closesocket(sockfd);
@@ -66,7 +66,7 @@ struct SocketOp
 		::close(sockfd);
 		#endif
 	}
-	static int readAll(SOCKET_TYPE fd, std::string& retData)//!success ret>=0 fail -1
+	static int readAll(Socketfd fd, std::string& retData)//!success ret>=0 fail -1
 	{
         int nread = 0;
         char recv_buffer[RECV_BUFFER_SIZE] = {0};
@@ -113,7 +113,7 @@ struct SocketOp
 
         return 0;
     }
-    static int sendAll(SOCKET_TYPE fd, const std::string& retData)//!success ret>=0 fail -1
+    static int sendAll(Socketfd fd, const std::string& retData)//!success ret>=0 fail -1
 	{
         int nwritten = 0;
         while(nwritten < (int)retData.size())
@@ -143,9 +143,9 @@ struct SocketOp
         }
         return nwritten;
     }
-    static int acceptSocket(SOCKET_TYPE fdListen)
+    static int acceptSocket(Socketfd fdListen)
 	{
-	    SOCKET_TYPE newfd = -1;
+	    Socketfd newfd = -1;
 
     	#ifdef _WIN32
         	newfd = accept(fdListen, NULL, NULL);

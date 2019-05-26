@@ -12,7 +12,6 @@
 #include "net/msg_handler.h"
 #include "base/task_queue.h"
 #include "base/ffslot.h"
-#include "net/codec.h"
 #include "base/thread.h"
 #include "rpc/ffrpc.h"
 #include "net/msg_sender.h"

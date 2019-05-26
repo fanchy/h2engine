@@ -18,17 +18,15 @@
 using namespace std;
 using namespace ff;
 
-SocketTcp::SocketTcp(IOEvent& e_, SocketCtrlI* seh_, SOCKET_TYPE fd_, TaskQueue* tq_):
+SocketTcp::SocketTcp(IOEvent& e_, SocketEventFunc func, Socketfd fd_):
     m_ioevent(e_),
-    m_sc(seh_),
-    m_fd(fd_),
-    m_tq(tq_)
+    m_funcSocketEvent(func),
+    m_fd(fd_)
 {
 }
 
 SocketTcp::~SocketTcp()
 {
-    delete m_sc;
     LOGTRACE((FFNET, "SocketTcp::~SocketTcp  %x", (long)this));
 }
 
@@ -36,13 +34,13 @@ void SocketTcp::open()
 {
     m_ioevent.regfd(m_fd, funcbind(&SocketTcp::handleEvent, this));
 }
-void SocketTcp::handleEvent(SOCKET_TYPE fdEvent, int eventType, const char* data, size_t len)
+void SocketTcp::handleEvent(Socketfd fdEvent, int eventType, const char* data, size_t len)
 {
     LOGTRACE((FFNET, "SocketTcp::handleEvent event=%s len=%u", eventType == IOEVENT_RECV? "IOEVENT_RECV": "IOEVENT_BROKEN", (unsigned int)len));
     switch (eventType){
         case IOEVENT_RECV:
         {
-            m_sc->handleRead(this, data, len);
+            m_funcSocketEvent(m_refSocket, eventType, data, len);
         }break;
         case IOEVENT_BROKEN:
         {
@@ -58,7 +56,7 @@ void SocketTcp::close()
     {
         m_ioevent.unregfd(m_fd);
         m_fd = -1;
-        this->getSocketCtrl()->handleError(this);
+        m_funcSocketEvent(m_refSocket, IOEVENT_BROKEN, "", 0);
     }
     if (m_refSocket){
         LOGTRACE((FFNET, "SocketTcp::close  %x", (long)this));
@@ -70,17 +68,11 @@ void SocketTcp::sendRaw(const string& msg_)
 {
     m_ioevent.asyncSend(m_fd, msg_.c_str(), msg_.size());
 }
-void SocketTcp::asyncSend(const string& msg_)
-{
-    string buff_ = msg_;
-    m_sc->checkPreSend(this, buff_, 0);
-    m_ioevent.asyncSend(m_fd, buff_.c_str(), buff_.size());
-}
 
-SharedPtr<SocketI> SocketTcp::toSharedPtr(){
+SharedPtr<SocketObj> SocketTcp::toSharedPtr(){
     return m_refSocket;
 }
 
-void SocketTcp::refSelf(SharedPtr<SocketI> p){
+void SocketTcp::refSelf(SharedPtr<SocketObj> p){
     m_refSocket = p;
 }

@@ -79,13 +79,13 @@ int IOEventSelect::runOnce(int ms)
     fd_set writeset;
     FD_ZERO(&readset);
     FD_ZERO(&writeset);
-    SOCKET_TYPE nMaxFd = m_fdNotify[0] + 1;
+    Socketfd nMaxFd = m_fdNotify[0] + 1;
 
     int nwritefds = 0;
     FD_SET(m_fdNotify[0], &readset);
     {
         LockGuard lock(m_mutex);
-        for (std::map<SOCKET_TYPE, IOInfo>::iterator it = m_allIOinfo.begin(); it != m_allIOinfo.end(); ++it){
+        for (std::map<Socketfd, IOInfo>::iterator it = m_allIOinfo.begin(); it != m_allIOinfo.end(); ++it){
             if (it->second.bBroken){
                 continue;
             }
@@ -128,9 +128,9 @@ int IOEventSelect::runOnce(int ms)
         #ifdef _WIN32
         for (size_t i = 0; i < readset.fd_count; i++ )
         {
-            SOCKET_TYPE fd = readset.fd_array[i];
+            Socketfd fd = readset.fd_array[i];
         #else
-        for(SOCKET_TYPE fd = 0; fd < FD_SETSIZE; fd++)
+        for(Socketfd fd = 0; fd < FD_SETSIZE; fd++)
         {
         #endif // _WIN32
             if (m_fdNotify[0] == fd)
@@ -140,7 +140,7 @@ int IOEventSelect::runOnce(int ms)
                 //printf("select weakup recv=%s\n", data.c_str());
                 continue;
             }
-            std::map<SOCKET_TYPE, IOInfo>::iterator it = m_allIOinfo.find(fd);
+            std::map<Socketfd, IOInfo>::iterator it = m_allIOinfo.find(fd);
             if (it == m_allIOinfo.end()){
                 continue;
             }
@@ -218,7 +218,7 @@ int IOEventSelect::stop()
 
     return 0;
 }
-int IOEventSelect::regfd(SOCKET_TYPE fd, IOEventFunc eventHandler)
+int IOEventSelect::regfd(Socketfd fd, IOEventFunc eventHandler)
 {
     if (!eventHandler){
         return -1;
@@ -233,7 +233,7 @@ int IOEventSelect::regfd(SOCKET_TYPE fd, IOEventFunc eventHandler)
     notify();
     return 0;
 }
-int IOEventSelect::regfdAccept(SOCKET_TYPE fd, IOEventFunc eventHandler)
+int IOEventSelect::regfdAccept(Socketfd fd, IOEventFunc eventHandler)
 {
     if (!eventHandler){
         return -1;
@@ -249,11 +249,11 @@ int IOEventSelect::regfdAccept(SOCKET_TYPE fd, IOEventFunc eventHandler)
     notify();
     return 0;
 }
-int IOEventSelect::unregfd(SOCKET_TYPE fd)
+int IOEventSelect::unregfd(Socketfd fd)
 {
     {
         LockGuard lock(m_mutex);
-        std::map<SOCKET_TYPE, IOInfo>::iterator it = m_allIOinfo.find(fd);
+        std::map<Socketfd, IOInfo>::iterator it = m_allIOinfo.find(fd);
         if (it == m_allIOinfo.end())
         {
             return 0;
@@ -264,11 +264,11 @@ int IOEventSelect::unregfd(SOCKET_TYPE fd)
     notify();
     return 0;
 }
-void IOEventSelect::asyncSend(SOCKET_TYPE fd, const char* data, size_t len)
+void IOEventSelect::asyncSend(Socketfd fd, const char* data, size_t len)
 {
     {
         LockGuard lock(m_mutex);
-        std::map<SOCKET_TYPE, IOInfo>::iterator it = m_allIOinfo.find(fd);
+        std::map<Socketfd, IOInfo>::iterator it = m_allIOinfo.find(fd);
         if (it == m_allIOinfo.end())
         {
             return;
@@ -296,7 +296,7 @@ void IOEventSelect::notify(){
     SocketOp::sendAll(m_fdNotify[1], "12345678");
     //printf("IOEventSelect::notify end!\n");
 }
-void IOEventSelect::safeClosefd(SOCKET_TYPE fd){
+void IOEventSelect::safeClosefd(Socketfd fd){
     SocketOp::close(fd);
 }
 void IOEventSelect::post(FuncToRun func)

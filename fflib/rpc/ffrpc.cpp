@@ -110,8 +110,8 @@ SocketObjPtr FFRpc::connectToBroker(const string& host_, uint32_t node_id_)
         LOGERROR((FFRPC, "FFRpc::registerfd_to_broker_master failed, can't connect to remote broker<%s>", host_.c_str()));
         return sock;
     }
-    SessionData* psession = sock->getData<SessionData>();
-    psession->node_id = node_id_;
+    SessionData& psession = sock->getData<SessionData>();
+    psession.node_id = node_id_;
 
     //!新版发送注册消息
     RegisterToBrokerReq reg_msg;

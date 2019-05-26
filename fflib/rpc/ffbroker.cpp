@@ -112,17 +112,17 @@ TaskQueue* FFBroker::getTaskQueue()
 int FFBroker::handleBroken(SocketObjPtr sock_)
 {
     LOGTRACE((BROKER, "FFBroker::handleBroken_impl begin"));
-    SessionData* psession = sock_->getData<SessionData>();
-    if (0 == psession->node_id)
+    SessionData& psession = sock_->getData<SessionData>();
+    if (0 == psession.node_id)
     {
         LOGTRACE((BROKER, "FFBroker::handleBroken_impl no session"));
         return 0;
     }
 
     {
-        m_all_registerfded_info.node_sockets.erase(psession->node_id);
-        LOGTRACE((BROKER, "FFBroker::handleBroken_impl node_id<%u> close %u", psession->node_id, m_all_registerfded_info.node_sockets.size()));
-        m_all_registerfded_info.broker_data.service2node_id.erase(psession->service_name);
+        m_all_registerfded_info.node_sockets.erase(psession.node_id);
+        LOGTRACE((BROKER, "FFBroker::handleBroken_impl node_id<%u> close %u", psession.node_id, m_all_registerfded_info.node_sockets.size()));
+        m_all_registerfded_info.broker_data.service2node_id.erase(psession.service_name);
     }
 
     //!广播给所有的子节点
@@ -168,8 +168,8 @@ int FFBroker::handleRegisterToBroker(RegisterToBrokerReq& msg_, SocketObjPtr soc
 {
     LOGINFO((BROKER, "FFBroker::handleRegisterToBroker begin service_name=%s", msg_.service_name));
 
-    SessionData* psession = sock_->getData<SessionData>();
-    if (0 != psession->node_id)
+    SessionData& psession = sock_->getData<SessionData>();
+    if (0 != psession.node_id)
     {
         sock_->close();
         return 0;
@@ -189,16 +189,16 @@ int FFBroker::handleRegisterToBroker(RegisterToBrokerReq& msg_, SocketObjPtr soc
 
         uint64_t node_id = allocNodeId(sock_);
         //SessionData* psession = new SessionData(msg_.node_type, node_id);
-        //psession->node_id = node_id;
-        psession->node_type = msg_.node_type;
-        psession->node_id = node_id;
+        //psession.node_id = node_id;
+        psession.node_type = msg_.node_type;
+        psession.node_id = node_id;
         //sock_->set_data(psession);
 
         m_all_registerfded_info.node_sockets[node_id] = sock_;
 
         if (msg_.service_name.empty() == false)
         {
-            psession->service_name = msg_.service_name;
+            psession.service_name = msg_.service_name;
             m_all_registerfded_info.broker_data.service2node_id[msg_.service_name] = node_id;
         }
         ret_msg = m_all_registerfded_info.broker_data;
@@ -240,9 +240,9 @@ int FFBroker::syncNodeInfo(RegisterToBrokerRet& ret_msg, SocketObjPtr sock_)
 int FFBroker::handleBrokerRouteMsg(BrokerRouteMsgReq& msg_, SocketObjPtr sock_)
 {
     LOGTRACE((BROKER, "FFBroker::handleBrokerRouteMsg begin"));
-    SessionData* psession = sock_->getData<SessionData>();
+    SessionData& psession = sock_->getData<SessionData>();
 
-    if (RPC_NODE == psession->getType())
+    if (RPC_NODE == psession.getType())
     {
         //!如果找到对应的节点，那么发给对应的节点
         sendToRPcNode(msg_);
@@ -255,16 +255,16 @@ int FFBroker::handleBrokerRouteMsg(BrokerRouteMsgReq& msg_, SocketObjPtr sock_)
 int FFBroker::processSyncClientReq(BrokerRouteMsgReq& msg_, SocketObjPtr sock_)
 {
     LOGTRACE((BROKER, "FFBroker::processSyncClientReq begin"));
-    SessionData* psession = sock_->getData<SessionData>();
-    if (0 == psession->node_type)
+    SessionData& psession = sock_->getData<SessionData>();
+    if (0 == psession.node_type)
     {
         //psession = new SessionData(SYNC_CLIENT_NODE, allocNodeId(sock_));
-        psession->node_type = SYNC_CLIENT_NODE;
-        psession->node_id   = allocNodeId(sock_);
+        psession.node_type = SYNC_CLIENT_NODE;
+        psession.node_id   = allocNodeId(sock_);
         //sock_->set_data(psession);
-        m_all_registerfded_info.node_sockets[psession->getNodeId()] = sock_;
+        m_all_registerfded_info.node_sockets[psession.getNodeId()] = sock_;
     }
-    msg_.from_node_id = psession->getNodeId();
+    msg_.from_node_id = psession.getNodeId();
     map<string, int64_t>::iterator it = m_all_registerfded_info.broker_data.service2node_id.find(msg_.dest_service_name);
     if (it == m_all_registerfded_info.broker_data.service2node_id.end())
     {

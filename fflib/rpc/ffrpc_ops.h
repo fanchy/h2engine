@@ -9,7 +9,6 @@
 #include "base/ffslot.h"
 #include "net/socket.h"
 #include "base/fftype.h"
-#include "net/codec.h"
 #include "base/singleton.h"
 
 #ifdef FF_ENABLE_PROTOCOLBUF //! 如果需要开启对protobuf的支持，需要开启这个宏
@@ -64,10 +63,6 @@ public:
 
 struct MsgTool
 {
-    static std::string encode(msg_i& msg_)
-    {
-        return msg_.encode_data();
-    }
     template<typename T>
     static int decode(T& msg_, const std::string& data_, std::string* err_ = NULL)
     {
@@ -132,7 +127,7 @@ public:
 
 
 
-class null_type_t: public FFMsg<null_type_t>
+class null_type_t//: public FFMsg<null_type_t>
 {
     void encode(){}
     void decode(){}

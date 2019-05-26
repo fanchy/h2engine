@@ -11,7 +11,7 @@ namespace ff {
 #define LISTEN_BACKLOG 5
 
 class IOEvent;
-class SocketI;
+class SocketObj;
 class MsgHandler;
 class TaskQueue;
 
@@ -23,9 +23,9 @@ public:
     int   open(const std::string& address_);
     void  close();
 
-    virtual SOCKET_TYPE socket(){ return m_fdListen; }
+    virtual Socketfd getRawSocket(){ return m_fdListen; }
 protected:
-    void handleEvent(SOCKET_TYPE fdEvent, int eventType, const char* data, size_t len);
+    void handleEvent(Socketfd fdEvent, int eventType, const char* data, size_t len);
 protected:
     int                 m_fdListen;
     IOEvent&            m_ioevent;

@@ -3,7 +3,6 @@
 
 #include <string>
 
-
 namespace ff {
 
 class Acceptor
@@ -11,7 +10,9 @@ class Acceptor
 public:
     virtual ~Acceptor(){}
     virtual int   open(const std::string& address_) = 0;
-    virtual void close()= 0;
+    virtual void  close()= 0;
+
+    virtual Socketfd getRawSocket() = 0;
 };
 
 }

@@ -34,7 +34,7 @@ using namespace std;
 #include "net/msg_handler.h"
 #include "base/task_queue.h"
 #include "base/log.h"
-#include "net/socket_ctrl_common.h"
+#include "net/socket_protocol.h"
 
 using namespace ff;
 
@@ -89,8 +89,8 @@ int AcceptorTcp::open(const string& address_)
         return -1;
     }
 
-    SOCKET_TYPE tmpfd = -1;
-    SOCKET_TYPE nInvalid = -1;
+    Socketfd tmpfd = -1;
+    Socketfd nInvalid = -1;
     #ifdef _WIN32
         nInvalid = INVALID_SOCKET;
     #endif
@@ -122,14 +122,15 @@ int AcceptorTcp::open(const string& address_)
     LOGTRACE(("ACCEPTOR", "accept ok %s", address_));
     return m_ioevent.regfdAccept(m_fdListen, funcbind(&AcceptorTcp::handleEvent, this));
 }
-void AcceptorTcp::handleEvent(SOCKET_TYPE fdEvent, int eventType, const char* data, size_t len)
+void AcceptorTcp::handleEvent(Socketfd fdEvent, int eventType, const char* data, size_t len)
 {
     LOGTRACE(("ACCEPTOR", "AcceptorTcp::handleEvent eventType=%d", eventType));
     if (eventType != IOEVENT_ACCEPT){
         return;
     }
-    SOCKET_TYPE newFd = *((SOCKET_TYPE*)data);
-    SocketObjPtr socket = new SocketTcp(m_ioevent, new SocketCtrlCommon(m_msgHandler), newFd, m_tq);
+    Socketfd newFd = *((Socketfd*)data);
+    SocketProtocolPtr prot = new SocketProtocol(m_msgHandler);
+    SocketObjPtr socket = new SocketTcp(m_ioevent, funcbind(&SocketProtocol::handleSocketEvent, prot), newFd);
     socket->refSelf(socket);
     socket->open();
 }
