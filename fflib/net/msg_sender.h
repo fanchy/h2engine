@@ -4,7 +4,6 @@
 #define _MSG_SENDER_H_
 
 #include "net/socket.h"
-#include "net/socket_ctrl.h"
 #include "net/message.h"
 
 namespace ff {

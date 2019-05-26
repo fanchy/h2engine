@@ -9,7 +9,6 @@
 #endif // _WIN32
 
 #include "net/sockettcp.h"
-#include "net/socket_ctrl.h"
 #include "net/socket_op.h"
 #include "base/task_queue.h"
 #include "base/log.h"
@@ -54,8 +53,9 @@ void SocketTcp::close()
     LOGTRACE((FFNET, "SocketTcp::close %p", (long)this));
     if (m_fd > 0)
     {
-        m_ioevent.unregfd(m_fd);
+        Socketfd fd = m_fd;
         m_fd = -1;
+        m_ioevent.unregfd(fd);
         m_funcSocketEvent(m_refSocket, IOEVENT_BROKEN, "", 0);
     }
     if (m_refSocket){

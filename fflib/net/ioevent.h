@@ -11,7 +11,6 @@ enum IOEVENT_TYPE
     IOEVENT_ACCEPT     = 0x1,
     IOEVENT_RECV       = 0x2,
     IOEVENT_BROKEN     = 0x4,
-    IOEVENT_BUILD_PKG  = 0x8//!socket before send,data may be needed to be build a header pkg 
 };
 class IOEvent
 {

@@ -33,6 +33,7 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Unit filename="../fflib/base/anytype.h" />
 		<Unit filename="../fflib/base/arg_helper.h" />
 		<Unit filename="../fflib/base/atomic_op.h" />
 		<Unit filename="../fflib/base/daemon_tool.h" />
@@ -74,8 +75,6 @@
 		<Unit filename="../fflib/net/acceptor.h" />
 		<Unit filename="../fflib/net/acceptortcp.cpp" />
 		<Unit filename="../fflib/net/acceptortcp.h" />
-		<Unit filename="../fflib/net/codec.cpp" />
-		<Unit filename="../fflib/net/codec.h" />
 		<Unit filename="../fflib/net/connector.h" />
 		<Unit filename="../fflib/net/ioevent_select.cpp" />
 		<Unit filename="../fflib/net/ioevent_select.h" />
@@ -83,9 +82,6 @@
 		<Unit filename="../fflib/net/msg_handler.h" />
 		<Unit filename="../fflib/net/msg_sender.h" />
 		<Unit filename="../fflib/net/net_factory.h" />
-		<Unit filename="../fflib/net/socket_ctrl.h" />
-		<Unit filename="../fflib/net/socket_ctrl_common.cpp" />
-		<Unit filename="../fflib/net/socket_ctrl_common.h" />
 		<Unit filename="../fflib/net/socket_op.h" />
 		<Unit filename="../fflib/net/sockettcp.cpp" />
 		<Unit filename="../fflib/net/sockettcp.h" />

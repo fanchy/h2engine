@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1558702190 source:d:\code\h2engine\engine\main.cpp
+1558861769 source:d:\code\h2engine\engine\main.cpp
 	"base/osdef.h"
 	"base/fftype.h"
 	"base/daemon_tool.h"
@@ -158,7 +158,7 @@
 	"base/task_queue.h"
 	"base/smart_ptr.h"
 
-1558404980 d:\code\h2engine\fflib\rpc\ffrpc.h
+1558861769 d:\code\h2engine\fflib\rpc\ffrpc.h
 	<string>
 	<map>
 	<vector>
@@ -166,7 +166,6 @@
 	"net/msg_handler.h"
 	"base/task_queue.h"
 	"base/ffslot.h"
-	"net/codec.h"
 	"base/thread.h"
 	"rpc/ffrpc_ops.h"
 	"net/msg_sender.h"
@@ -177,11 +176,13 @@
 	"net/socket.h"
 	"net/message.h"
 
-1558702161 d:\code\h2engine\fflib\net\socket.h
+1558861769 d:\code\h2engine\fflib\net\socket.h
 	<string>
 	<map>
 	"base/fftype.h"
 	"base/smart_ptr.h"
+	"base/anytype.h"
+	"base/func.h"
 
 1557839060 d:\code\h2engine\fflib\net\netbase.h
 	"base/fftype.h"
@@ -217,13 +218,12 @@
 	"base/fftype.h"
 	"base/smart_ptr.h"
 
-1557839060 d:\code\h2engine\fflib\rpc\ffrpc_ops.h
+1558861769 d:\code\h2engine\fflib\rpc\ffrpc_ops.h
 	<assert.h>
 	<string>
 	"base/ffslot.h"
 	"net/socket.h"
 	"base/fftype.h"
-	"net/codec.h"
 	"base/singleton.h"
 	<google/protobuf/message.h>
 	<thrift/FFThrift.h>
@@ -316,11 +316,9 @@
 1557839060 d:\code\h2engine\fflib\rpc\msg_def\ffrpc_msg_constants.h
 	"ffrpc_msg_types.h"
 
-1557839060 d:\code\h2engine\fflib\net\msg_sender.h
+1558861870 d:\code\h2engine\fflib\net\msg_sender.h
 	"net/socket.h"
-	"net/socket_ctrl.h"
 	"net/message.h"
-	"net/codec.h"
 
 1557839060 d:\code\h2engine\fflib\net\socket_ctrl.h
 	<string>
@@ -339,7 +337,7 @@
 	"rpc/ffrpc_ops.h"
 	"base/arg_helper.h"
 
-1558702161 d:\code\h2engine\fflib\net\net_factory.h
+1558861769 d:\code\h2engine\fflib\net\net_factory.h
 	"base/osdef.h"
 	"net/acceptortcp.h"
 	"net/ioevent_select.h"
@@ -348,14 +346,13 @@
 	"base/singleton.h"
 	"base/perf_monitor.h"
 	"base/thread.h"
-	"net/codec.h"
 	"net/msg_sender.h"
 	"base/log.h"
 
 1550371997 d:\code\h2engine\fflib\net\acceptorimpl\acceptor_linux.h
 	"net/acceptor.h"
 
-1558702161 d:\code\h2engine\fflib\net\acceptor.h
+1558861769 d:\code\h2engine\fflib\net\acceptor.h
 	<string>
 
 1555984120 d:\code\h2engine\fflib\net\acceptorimpl\acceptor_linux_gate.h
@@ -403,7 +400,7 @@
 	"base/task_queue.h"
 	"base/lock.h"
 
-1558702161 d:\code\h2engine\fflib\net\connector.h
+1558861769 d:\code\h2engine\fflib\net\connector.h
 	"base/osdef.h"
 	<assert.h>
 	<sys/types.h>
@@ -416,7 +413,7 @@
 	"net/sockettcp.h"
 	"base/str_tool.h"
 	"net/msg_handler.h"
-	"net/socket_ctrl_common.h"
+	"net/socket_protocol.h"
 
 1550371997 d:\code\h2engine\fflib\net\socketimpl\socket_linux.h
 	<list>
@@ -435,7 +432,7 @@
 	"net/socket.h"
 	"base/obj_pool.h"
 
-1557839060 d:\code\h2engine\fflib\server\ffgate.h
+1558861769 d:\code\h2engine\fflib\server\ffgate.h
 	<string>
 	<map>
 	<vector>
@@ -444,7 +441,6 @@
 	"net/msg_handler.h"
 	"base/task_queue.h"
 	"base/ffslot.h"
-	"net/codec.h"
 	"base/thread.h"
 	"rpc/ffrpc.h"
 	"net/msg_sender.h"
@@ -697,7 +693,7 @@
 	"base/task_queue.h"
 	"base/log.h"
 
-1558702161 d:\code\h2engine\fflib\net\socket_op.h
+1558861769 d:\code\h2engine\fflib\net\socket_op.h
 	"base/osdef.h"
 	"base/fftype.h"
 	<fcntl.h>
@@ -904,13 +900,13 @@
 	"base/task_queue.h"
 	"base/log.h"
 
-1558404771 source:d:\code\h2engine\fflib\rpc\ffbroker.cpp
+1558861769 source:d:\code\h2engine\fflib\rpc\ffbroker.cpp
 	"rpc/ffbroker.h"
 	"base/log.h"
 	"base/arg_helper.h"
 	"rpc/ffrpc.h"
 
-1558405729 source:d:\code\h2engine\fflib\rpc\ffrpc.cpp
+1558861769 source:d:\code\h2engine\fflib\rpc\ffrpc.cpp
 	"rpc/ffrpc.h"
 	"rpc/ffrpc_ops.h"
 	"base/log.h"
@@ -969,11 +965,10 @@
 	"base/fftype.h"
 	"base/singleton.h"
 
-1558407260 d:\code\h2engine\fflib\server\ffworker.h
+1558861769 d:\code\h2engine\fflib\server\ffworker.h
 	<string>
 	"base/ffslot.h"
 	"base/fftype.h"
-	"net/codec.h"
 	"rpc/ffrpc.h"
 	"base/arg_helper.h"
 	"server/shared_mem.h"
@@ -1005,7 +1000,7 @@
 	"server/script.h"
 	"server/prop.h"
 
-1558404857 source:d:\code\h2engine\fflib\server\ffgate.cpp
+1558861769 source:d:\code\h2engine\fflib\server\ffgate.cpp
 	"server/ffgate.h"
 	"net/net_factory.h"
 	"base/log.h"
@@ -1440,7 +1435,7 @@
 	"base/task_queue.h"
 	"base/log.h"
 
-1558702904 d:\code\h2engine\fflib\base\osdef.h
+1558861769 d:\code\h2engine\fflib\base\osdef.h
 	<winsock2.h>
 
 1558406688 d:\code\h2engine\fflib\base\func.h
@@ -1448,7 +1443,7 @@
 	<stdexcept>
 	<string>
 
-1558702161 d:\code\h2engine\fflib\net\ioevent_select.h
+1558861769 d:\code\h2engine\fflib\net\ioevent_select.h
 	"base/func.h"
 	"base/osdef.h"
 	"net/ioevent.h"
@@ -1458,17 +1453,17 @@
 	<vector>
 	<list>
 
-1558702161 d:\code\h2engine\fflib\net\ioevent.h
+1558862323 d:\code\h2engine\fflib\net\ioevent.h
 	"base/func.h"
 	"base/osdef.h"
 
-1558702161 d:\code\h2engine\fflib\net\acceptortcp.h
+1558861769 d:\code\h2engine\fflib\net\acceptortcp.h
 	<string>
 	"base/osdef.h"
 	"net/ioevent.h"
 	"net/acceptor.h"
 
-1558702161 d:\code\h2engine\fflib\net\ioevent_epoll.h
+1558861769 d:\code\h2engine\fflib\net\ioevent_epoll.h
 	"base/func.h"
 	"base/osdef.h"
 	"net/ioevent.h"
@@ -1479,27 +1474,27 @@
 	<list>
 	<sys/epoll.h>
 
-1558702161 d:\code\h2engine\fflib\net\sockettcp.h
+1558861769 d:\code\h2engine\fflib\net\sockettcp.h
 	<list>
 	<string>
 	"net/socket.h"
 	"base/obj_pool.h"
 	"net/socket_op.h"
 	"net/ioevent.h"
+	"base/func.h"
 
-1558702368 source:d:\code\h2engine\fflib\net\sockettcp.cpp
+1558862217 source:d:\code\h2engine\fflib\net\sockettcp.cpp
 	"base/osdef.h"
 	<errno.h>
 	<assert.h>
 	<sys/types.h>
 	<sys/socket.h>
 	"net/sockettcp.h"
-	"net/socket_ctrl.h"
 	"net/socket_op.h"
 	"base/task_queue.h"
 	"base/log.h"
 
-1558702772 source:d:\code\h2engine\fflib\net\ioevent_select.cpp
+1558861769 source:d:\code\h2engine\fflib\net\ioevent_select.cpp
 	"base/func.h"
 	"base/osdef.h"
 	"net/ioevent.h"
@@ -1509,4 +1504,41 @@
 	<map>
 	<vector>
 	<list>
+
+1558861769 d:\code\h2engine\fflib\base\anytype.h
+	<string>
+	"base/fftype.h"
+	"base/smart_ptr.h"
+
+1558862464 d:\code\h2engine\fflib\net\socket_protocol.h
+	<string>
+	<vector>
+	"net/socket.h"
+	"net/wsprotocol.h"
+	"net/msg_handler.h"
+	"base/log.h"
+
+1558861769 source:d:\code\h2engine\fflib\net\acceptortcp.cpp
+	<sys/types.h>
+	<sys/socket.h>
+	<netdb.h>
+	<winsock2.h>
+	<windows.h>
+	<ws2tcpip.h>
+	<stdio.h>
+	"base/osdef.h"
+	<assert.h>
+	<stdio.h>
+	<string.h>
+	<errno.h>
+	<vector>
+	"net/ioevent.h"
+	"net/acceptortcp.h"
+	"net/sockettcp.h"
+	"base/str_tool.h"
+	"net/socket_op.h"
+	"net/msg_handler.h"
+	"base/task_queue.h"
+	"base/log.h"
+	"net/socket_protocol.h"
 

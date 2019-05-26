@@ -28,6 +28,18 @@ public:
     }
     void handleSocketEvent(SocketObjPtr sp_, int eventType, const char* buff, size_t len)
     {
+        if (eventType == IOEVENT_BROKEN){
+            if (m_msgHandler->getTaskQueue()){
+                m_msgHandler->getTaskQueue()->post(funcbind(&MsgHandler::handleBroken, m_msgHandler, sp_));
+            }
+            else{
+                m_msgHandler->handleBroken(sp_);
+            }
+            return;
+        }
+        if (eventType != IOEVENT_RECV){
+            return;
+        }
         //LOGTRACE(("FFNET", "handleSocketEvent event=%s len=%u", eventType == IOEVENT_RECV? "IOEVENT_RECV": "IOEVENT_BROKEN", (unsigned int)len));
         if (m_oWSProtocol.handleRecv(buff, len))
         {
