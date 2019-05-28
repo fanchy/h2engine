@@ -893,6 +893,7 @@ int FFWorkerLua::processInit(Mutex* mutex, ConditionVar* var, int* ret)
 }
 void FFWorkerLua::scriptCleanup()
 {
+    LOGTRACE((FFWORKER_LUA, "scriptCleanup begin"));
     try
     {
         lua_args_t luaarg;
@@ -903,13 +904,18 @@ void FFWorkerLua::scriptCleanup()
         LOGERROR((FFWORKER_LUA, "scriptCleanup failed er=<%s>", e_.what()));
     }
     this->cleanupModule();
+    LOGTRACE((FFWORKER_LUA, "scriptCleanup trace 1"));
     m_enable_call = false;
     DB_MGR.stop();
+    LOGTRACE((FFWORKER_LUA, "scriptCleanup end ok"));
 }
 int FFWorkerLua::close()
 {
+    LOGTRACE((FFWORKER_LUA, "close begin"));
     getRpc().getTaskQueue()->post(funcbind(&FFWorkerLua::scriptCleanup, this));
+    LOGTRACE((FFWORKER_LUA, "close trace 1"));
     FFWorker::close();
+    LOGTRACE((FFWORKER_LUA, "close trace 2"));
     if (false == m_started)
         return 0;
     m_started = false;

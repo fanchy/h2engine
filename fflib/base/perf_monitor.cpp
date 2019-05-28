@@ -13,6 +13,7 @@ m_timeout_sec(3600),
 m_task_queue(new TaskQueue()),
 m_timer(m_task_queue)
 {
+    //printf( "PerfMonitor %p %s %d\n", m_task_queue.get(), __FILE__, __LINE__);
 }
 
 PerfMonitor::~PerfMonitor()

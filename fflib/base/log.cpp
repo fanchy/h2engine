@@ -404,6 +404,7 @@ int LogService::start(ArgHelper& arg)
 
 	m_log = new Log(level, arg.getOptionValue("-log_class"), path, filename, print_file, print_screen);
 
+    //printf( "logservice %p %s %d\n", &m_task_queue, __FILE__, __LINE__);
 	return 0;
 }
 

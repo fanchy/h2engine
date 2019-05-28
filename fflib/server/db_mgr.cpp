@@ -19,6 +19,7 @@ int DbMgr::start()
     for (size_t i = 0; i < DB_THREAD_NUM; ++i)
     {
         m_tq.push_back(new TaskQueue());
+        //printf( "DbMgr %p %s %d\n", m_tq[i].get(), __FILE__, __LINE__);
     }
     return 0;
 }

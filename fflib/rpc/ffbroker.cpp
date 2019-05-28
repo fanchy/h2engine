@@ -12,6 +12,7 @@ FFBroker::FFBroker():
     m_tq(new TaskQueue()),
     m_timer(m_tq)
 {
+    //printf( "FFBroker %p %s %d\n", m_tq.get(), __FILE__, __LINE__);
 }
 FFBroker::~FFBroker()
 {

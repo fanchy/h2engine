@@ -69,8 +69,8 @@ testRpc()
     -- h2ext.regTimer(1000, timerTest)
 -- end
 function timerSync()
-    h2ext.writeLockGuard();
-    h2ext.syncSharedData(100, "helloworld")
+    -- h2ext.writeLockGuard();
+    -- h2ext.syncSharedData(100, "helloworld")
     print('timerSync ...............')
 end
 
@@ -121,7 +121,7 @@ print("cacheRet", cacheRet)
 cacheRet = h2ext.callFunc("Cache.get", "")
 var_dump(cacheRet)
 print("cacheRet", h2ext.callFunc("Cache.size", "m"), h2ext.callFunc("Cache.size", "m.n"))
-    
+print("escape", h2ext.callFunc("escape", "haha\"ok"))
 function sayhi(arg)
     print('sayhi *************')
 end

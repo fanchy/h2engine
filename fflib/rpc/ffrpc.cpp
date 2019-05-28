@@ -16,6 +16,7 @@ FFRpc::FFRpc(string service_name_):
     m_timer(m_tq),
     m_master_broker_sock(NULL)
 {
+    //printf( "FFRpc %p %s %d\n", m_tq.get(), __FILE__, __LINE__);
 }
 
 FFRpc::~FFRpc()
@@ -92,7 +93,7 @@ int FFRpc::close()
     volatile int status = 0;
     getTaskQueue()->post(funcbind(&CheckBrokenEnd, (int*)&status));
 
-    for (int i = 0; i < 2; ++i){
+    for (int i = 0; i < 5; ++i){
         if (1 == status)
             break;
         LOGTRACE((FFRPC, "FFRpc::close wait socket close"));

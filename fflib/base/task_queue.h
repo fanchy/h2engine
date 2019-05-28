@@ -22,6 +22,7 @@ public:
         m_flag(true),
         m_cond(m_mutex)
     {
+        //printf( "%p %s %d\n", this, __FILE__, __LINE__);
         m_thread.create_thread(funcbind(&TaskQueue::run, this), 1);
     }
     ~TaskQueue()
@@ -84,11 +85,13 @@ private:
     int run()
     {
         TaskList tlist;
-        while (0 == consume(tlist))
+        while (m_flag && 0 == consume(tlist))
         {
             for (TaskList::iterator it = tlist.begin(); it != tlist.end(); ++it)
             {
+                //printf( "%p %s %d\n", this, __FILE__, __LINE__);
                 (*it)();
+                //printf( "%p %s %d\n", this, __FILE__, __LINE__);
             }
             tlist.clear();
         }

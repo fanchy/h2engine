@@ -63,6 +63,7 @@ public:
             #endif
             flagStarted = true;
             tg = new TaskQueue();
+            printf( "ffnet %p %s %d\n", tg, __FILE__, __LINE__);
             thread.create_thread(funcbind(&runNet, this), 1);
         }
     }

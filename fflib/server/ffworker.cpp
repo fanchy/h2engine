@@ -108,6 +108,9 @@ int FFWorker::open(const string& brokercfg, int worker_index)
     DB_MGR.setDefaultTaskQueue(this->getRpc().getTaskQueue());
     EntityModule::init();
     CmdModule::init();
+
+    SCRIPT_UTIL.reg("escape", &FFDb::escape);
+    SCRIPT_UTIL.reg("escape", &FFDb::escape);
     return 0;
 }
 int FFWorker::close()
@@ -263,14 +266,14 @@ const string& FFWorker::getSessionIp(const userid_t& session_id_)
 }
 int FFWorker::sessionSendMsg(const userid_t& session_id_, uint16_t cmd_, const string& data_)
 {
-    return sessionSendMsg(getSessionGate(session_id_), session_id_, cmd_, data_);
+    return sessionSendMsgToGate(getSessionGate(session_id_), session_id_, cmd_, data_);
 }
 int FFWorker::gateBroadcastMsg(uint16_t cmd_, const string& data_)
 {
     vector<string> gates = m_ffrpc->getServicesLike("gate#");
     for (size_t i = 0; i < gates.size(); ++i)
     {
-        gateBroadcastMsg(gates[i], cmd_, data_);
+        gateBroadcastMsgToGate(gates[i], cmd_, data_);
     }
     return 0;
 }
@@ -284,13 +287,13 @@ int FFWorker::sessionMulticastMsg(const vector<userid_t>& session_id_, uint16_t 
     map<string, vector<userid_t> >::iterator it = datas.begin();
     for (; it != datas.end(); ++it)
     {
-        sessionMulticastMsg(it->first, it->second, cmd_, data_);
+        sessionMulticastMsgToGate(it->first, it->second, cmd_, data_);
     }
     return 0;
 }
 int FFWorker::sessionClose(const userid_t& session_id_)
 {
-    return sessionClose(getSessionGate(session_id_), session_id_);
+    return sessionCloseToGate(getSessionGate(session_id_), session_id_);
 }
 int FFWorker::sessionChangeWorker(const userid_t& session_id_, int to_worker_index_, string extra_data)
 {
@@ -309,7 +312,7 @@ int FFWorker::sessionChangeWorker(const userid_t& session_id_, int to_worker_ind
     return 0;
 }
 //! 发送消息给特定的client
-int FFWorker::sessionSendMsg(const string& gate_name, const userid_t& session_id_, uint16_t cmd_, const string& data_)
+int FFWorker::sessionSendMsgToGate(const string& gate_name, const userid_t& session_id_, uint16_t cmd_, const string& data_)
 {
     if (gate_name.empty())
         return -1;
@@ -323,7 +326,7 @@ int FFWorker::sessionSendMsg(const string& gate_name, const userid_t& session_id
     LOGTRACE((FFWORKER_LOG, "FFWorker::send_msg_session end ok gate[%s]", gate_name));
     return 0;
 }
-int FFWorker::sessionMulticastMsg(const string& gate_name, const vector<userid_t>& session_id_, uint16_t cmd_, const string& data_)
+int FFWorker::sessionMulticastMsgToGate(const string& gate_name, const vector<userid_t>& session_id_, uint16_t cmd_, const string& data_)
 {
     LOGTRACE((FFWORKER_LOG, "FFWorker::multicast_msg_session begin session_id_<%u>", session_id_.size()));
 
@@ -335,22 +338,9 @@ int FFWorker::sessionMulticastMsg(const string& gate_name, const vector<userid_t
     LOGTRACE((FFWORKER_LOG, "FFWorker::multicast_msg_session end ok gate[%s]", gate_name));
     return 0;
 }
-int FFWorker::sessionKFSendMsg(const string& group_name, const string& gate_name,
-                                   const userid_t& session_id_,
-                                   uint16_t cmd_, const string& data_)
-{
-    LOGTRACE((FFWORKER_LOG, "FFWorker::send_msg_session begin session_id_<%ld>", session_id_));
 
-    GateRouteMsgToSessionReq msg;
-    msg.session_id.push_back(session_id_);
-    msg.cmd  = cmd_;
-    msg.body = data_;
-    m_ffrpc->call(group_name, gate_name, msg);
-    LOGTRACE((FFWORKER_LOG, "FFWorker::send_msg_session end ok gate[%s]", gate_name));
-    return 0;
-}
 //! 广播 整个gate
-int FFWorker::gateBroadcastMsg(const string& gate_name_, uint16_t cmd_, const string& data_)
+int FFWorker::gateBroadcastMsgToGate(const string& gate_name_, uint16_t cmd_, const string& data_)
 {
     GateBroadcastMsgToSessionReq msg;
     msg.cmd = cmd_;
@@ -359,7 +349,7 @@ int FFWorker::gateBroadcastMsg(const string& gate_name_, uint16_t cmd_, const st
     return 0;
 }
 //! 关闭某个session
-int FFWorker::sessionClose(const string& gate_name_, const userid_t& session_id_)
+int FFWorker::sessionCloseToGate(const string& gate_name_, const userid_t& session_id_)
 {
     GateCloseSessionReq msg;
     msg.session_id = session_id_;
@@ -375,7 +365,8 @@ struct timer_cb
     }
 };
 void FFWorker::regTimer(uint64_t mstimeout_, Function<void()> func){
-    getRpc().getTimer().onceTimer(mstimeout_, funcbind(&timer_cb::callback, this, func));
+    //getRpc().getTimer().onceTimer(mstimeout_, funcbind(&timer_cb::callback, this, func));
+    getRpc().getTimer().onceTimer(mstimeout_, func);
 }
 void FFWorker::workerRPC(int workerindex, uint16_t cmd, const std::string& data, FFSlot::FFCallBack* cb){
     WorkerCallMsgReq reqmsg;

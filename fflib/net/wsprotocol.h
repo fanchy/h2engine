@@ -13,6 +13,9 @@
 #include <openssl/buffer.h>
 #include <openssl/md5.h>
 
+#ifdef linux 
+#include <arpa/inet.h>
+#endif
 namespace ff {
 
 #define ops_bswap_64(val) (((val) >> 56) |\

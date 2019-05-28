@@ -257,7 +257,9 @@ public:
     {
         static void callback(SharedPtr<TaskQueue> tq, Function<void()> func)
         {
+            //printf( "TimerCB %p %s %d\n", tq.get(), __FILE__, __LINE__);
             tq->post(func);
+            //printf( "TimerCB %p %s %d\n", tq.get(), __FILE__, __LINE__);
         }
     };
     Timer(SharedPtr<TaskQueue>& tq_):

@@ -123,17 +123,15 @@ public:
     callback_info_t& callback_info();
 
     //! 发送消息给特定的client
-    int sessionSendMsg(const std::string& gate_name, const userid_t& session_id_, uint16_t cmd_, const std::string& data_);
-    int sessionKFSendMsg(const std::string& group_name, const std::string& gate_name, const userid_t& session_id_,
-                            uint16_t cmd_, const std::string& data_);
+    int sessionSendMsgToGate(const std::string& gate_name, const userid_t& session_id_, uint16_t cmd_, const std::string& data_);
     //! 多播
-    int sessionMulticastMsg(const std::string& gate_name, const std::vector<userid_t>& session_id_, uint16_t cmd_, const std::string& data_);
+    int sessionMulticastMsgToGate(const std::string& gate_name, const std::vector<userid_t>& session_id_, uint16_t cmd_, const std::string& data_);
     //! 广播 整个gate
-    int gateBroadcastMsg(const std::string& gate_name_, uint16_t cmd_, const std::string& data_);
+    int gateBroadcastMsgToGate(const std::string& gate_name_, uint16_t cmd_, const std::string& data_);
     //! 关闭某个session
-    int sessionClose(const std::string& gate_name_, const userid_t& session_id_);
+    int sessionCloseToGate(const std::string& gate_name_, const userid_t& session_id_);
     //! 切换worker
-    int sessionChangeWorker(const std::string& gate_name_, const userid_t& session_id_, const std::string& to_worker_, const std::string& extra_data);
+    int sessionChangeWorkerToGate(const std::string& gate_name_, const userid_t& session_id_, const std::string& to_worker_, const std::string& extra_data);
 
     FFRpc& getRpc() { return *m_ffrpc; }
 
