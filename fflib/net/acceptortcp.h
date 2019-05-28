@@ -5,6 +5,8 @@
 #include "base/osdef.h"
 #include "net/ioevent.h"
 #include "net/acceptor.h"
+#include "net/socket_protocol.h"
+
 
 namespace ff {
 
@@ -12,13 +14,12 @@ namespace ff {
 
 class IOEvent;
 class SocketObj;
-class MsgHandler;
 class TaskQueue;
 
 class AcceptorTcp:public Acceptor
 {
 public:
-    AcceptorTcp(IOEvent&, MsgHandler*, TaskQueue* tq_);
+    AcceptorTcp(IOEvent&, SocketProtocolFunc);
     ~AcceptorTcp();
     int   open(const std::string& address_);
     void  close();
@@ -29,8 +30,7 @@ protected:
 protected:
     int                 m_fdListen;
     IOEvent&            m_ioevent;
-    MsgHandler*         m_msgHandler;
-    TaskQueue*          m_tq;
+    SocketProtocolFunc  m_funcProtocol;
 };
 }
 #endif

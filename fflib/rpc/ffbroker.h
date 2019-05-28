@@ -8,19 +8,19 @@
 #include <set>
 
 
-#include "net/msg_handler.h"
 #include "base/task_queue.h"
 #include "base/ffslot.h"
 #include "base/thread.h"
 #include "base/smart_ptr.h"
-#include "net/net_factory.h"
 #include "rpc/ffrpc_ops.h"
 #include "base/arg_helper.h"
+#include "base/timer_service.h"
+#include "net/message.h"
 
 namespace ff
 {
-
-class FFBroker: public MsgHandler
+class Acceptor;
+class FFBroker
 {
     //! 每个连接都要分配一个session，用于记录该socket，对应的信息s
     struct SessionData;
@@ -38,7 +38,7 @@ class FFBroker: public MsgHandler
 public:
     FFBroker();
     virtual ~FFBroker();
-
+    void handleSocketProtocol(SocketObjPtr sock_, int eventType, const Message& msg_);
     //! 当有连接断开，则被回调
     int handleBroken(SocketObjPtr sock_);
     //! 当有消息到来，被回调

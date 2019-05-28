@@ -1,8 +1,8 @@
 #include "rpc/ffrpc.h"
 #include "rpc/ffrpc_ops.h"
 #include "base/log.h"
-#include "net/net_factory.h"
 #include "rpc/ffbroker.h"
+#include "net/ffnet.h"
 using namespace std;
 using namespace ff;
 
@@ -34,7 +34,6 @@ int FFRpc::open(ArgHelper& arg_helper)
 }
 int FFRpc::open(const string& broker_addr)
 {
-    NetFactory::start(1);
     m_host = broker_addr;
 
     //!新版本
@@ -74,6 +73,9 @@ int FFRpc::open(const string& broker_addr)
     LOGTRACE((FFRPC, "FFRpc::open end ok m_node_id[%u]", m_node_id));
     return 0;
 }
+static void CheckBrokenEnd(int* status){
+    *status = 1;
+}
 int FFRpc::close()
 {
     if (false == m_runing)
@@ -81,30 +83,44 @@ int FFRpc::close()
         return 0;
     }
     LOGTRACE((FFRPC, "FFRpc::close 11"));
+
     if (m_master_broker_sock)
     {
         m_master_broker_sock->close();
     }
-    for (int i = 0; i < 1000; ++i){
-        if (!m_master_broker_sock)
+    
+    volatile int status = 0;
+    getTaskQueue()->post(funcbind(&CheckBrokenEnd, (int*)&status));
+
+    for (int i = 0; i < 2; ++i){
+        if (1 == status)
             break;
+        LOGTRACE((FFRPC, "FFRpc::close wait socket close"));
         usleep(1000);
     }
+    m_runing = false;
     LOGTRACE((FFRPC, "FFRpc::close 22"));
     m_master_broker_sock = NULL;
     getTaskQueue()->close();
 
-    m_runing = false;
     LOGINFO((FFRPC, "FFRpc::close end ok"));
     //usleep(100);
     return 0;
 }
-
+void FFRpc::handleSocketProtocol(SocketObjPtr sock_, int eventType, const Message& msg_)
+{
+    if (eventType == IOEVENT_RECV){
+        getTaskQueue()->post(funcbind(&FFRpc::handleMsg, this, msg_, sock_));
+    }
+    else if (eventType == IOEVENT_BROKEN){
+        getTaskQueue()->post(funcbind(&FFRpc::handleBroken, this, sock_));
+    }
+}
 //! 连接到broker master
 SocketObjPtr FFRpc::connectToBroker(const string& host_, uint32_t node_id_)
 {
     LOGINFO((FFRPC, "FFRpc::connectToBroker begin...host_<%s>,node_id_[%u]", host_.c_str(), node_id_));
-    SocketObjPtr sock = NetFactory::connect(host_, this);
+    SocketObjPtr sock = FFNet::instance().connect(host_, funcbind(&FFRpc::handleSocketProtocol, this));
     if (!sock)
     {
         LOGERROR((FFRPC, "FFRpc::registerfd_to_broker_master failed, can't connect to remote broker<%s>", host_.c_str()));
@@ -164,16 +180,12 @@ TaskQueue* FFRpc::getTaskQueue()
 int FFRpc::handleBroken(SocketObjPtr sock_)
 {
     LOGTRACE((FFRPC, "FFRpc::handleBroken"));
-    //! 设置定时器重练
-    if (m_master_broker_sock == sock_)
-    {
-        m_master_broker_sock = NULL;
-    }
 
     if (true == m_runing)
     {
         m_timer.onceTimer(RECONNECT_TO_BROKER_TIMEOUT, funcbind(&route_call_reconnect, this));
     }
+    LOGTRACE((FFRPC, "FFRpc::handleBroken end"));
     return 0;
 }
 

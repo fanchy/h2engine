@@ -41,8 +41,6 @@ public:
         return data.getData<T>();
     }
 
-    virtual SharedPtr<SocketObj> toSharedPtr() = 0;
-    virtual void refSelf(SharedPtr<SocketObj> p) = 0;
 public:
     int                                             protocolType;
     AnyType                                         data;

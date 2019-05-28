@@ -32,29 +32,29 @@ struct CallUtil
     template <typename CLASS_TYPE, typename FUNC>                          
     static RET callMethod(FUNC f, CLASS_TYPE* p){ return (p->*(f))(); }          
     template <typename FUNC, typename ARG1>                          
-    static RET call(FUNC f, ARG1 arg1){ return f(arg1); }          
+    static RET call(FUNC f, ARG1 &arg1){ return f(arg1); }          
     template <typename CLASS_TYPE, typename FUNC, typename ARG1>                          
-    static RET callMethod(FUNC f, CLASS_TYPE* p, ARG1 arg1){ return (p->*(f))(arg1); }          
+    static RET callMethod(FUNC f, CLASS_TYPE* p, ARG1 &arg1){ return (p->*(f))(arg1); }          
     template <typename FUNC, typename ARG1, typename ARG2>                          
-    static RET call(FUNC f, ARG1 arg1, ARG2 arg2){ return f(arg1, arg2); }          
+    static RET call(FUNC f, ARG1 &arg1, ARG2 &arg2){ return f(arg1, arg2); }          
     template <typename CLASS_TYPE, typename FUNC, typename ARG1, typename ARG2>                          
-    static RET callMethod(FUNC f, CLASS_TYPE* p, ARG1 arg1, ARG2 arg2){ return (p->*(f))(arg1, arg2); }          
+    static RET callMethod(FUNC f, CLASS_TYPE* p, ARG1 &arg1, ARG2 &arg2){ return (p->*(f))(arg1, arg2); }          
     template <typename FUNC, typename ARG1, typename ARG2, typename ARG3>                          
-    static RET call(FUNC f, ARG1 arg1, ARG2 arg2, ARG3 arg3){ return f(arg1, arg2, arg3); }          
+    static RET call(FUNC f, ARG1 &arg1, ARG2 &arg2, ARG3 &arg3){ return f(arg1, arg2, arg3); }          
     template <typename CLASS_TYPE, typename FUNC, typename ARG1, typename ARG2, typename ARG3>                          
-    static RET callMethod(FUNC f, CLASS_TYPE* p, ARG1 arg1, ARG2 arg2, ARG3 arg3){ return (p->*(f))(arg1, arg2, arg3); }          
+    static RET callMethod(FUNC f, CLASS_TYPE* p, ARG1 &arg1, ARG2 &arg2, ARG3 &arg3){ return (p->*(f))(arg1, arg2, arg3); }          
     template <typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4>                          
-    static RET call(FUNC f, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4){ return f(arg1, arg2, arg3, arg4); }          
+    static RET call(FUNC f, ARG1 &arg1, ARG2 &arg2, ARG3 &arg3, ARG4 &arg4){ return f(arg1, arg2, arg3, arg4); }          
     template <typename CLASS_TYPE, typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4>                          
-    static RET callMethod(FUNC f, CLASS_TYPE* p, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4){ return (p->*(f))(arg1, arg2, arg3, arg4); }          
+    static RET callMethod(FUNC f, CLASS_TYPE* p, ARG1 &arg1, ARG2 &arg2, ARG3 &arg3, ARG4 &arg4){ return (p->*(f))(arg1, arg2, arg3, arg4); }          
     template <typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>                          
-    static RET call(FUNC f, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4, ARG5 arg5){ return f(arg1, arg2, arg3, arg4, arg5); }          
+    static RET call(FUNC f, ARG1 &arg1, ARG2 &arg2, ARG3 &arg3, ARG4 &arg4, ARG5 &arg5){ return f(arg1, arg2, arg3, arg4, arg5); }          
     template <typename CLASS_TYPE, typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>                          
-    static RET callMethod(FUNC f, CLASS_TYPE* p, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4, ARG5 arg5){ return (p->*(f))(arg1, arg2, arg3, arg4, arg5); }          
+    static RET callMethod(FUNC f, CLASS_TYPE* p, ARG1 &arg1, ARG2 &arg2, ARG3 &arg3, ARG4 &arg4, ARG5 &arg5){ return (p->*(f))(arg1, arg2, arg3, arg4, arg5); }          
     template <typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5, typename ARG6>                          
-    static RET call(FUNC f, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4, ARG5 arg5, ARG6 arg6){ return f(arg1, arg2, arg3, arg4, arg5, arg6); }          
+    static RET call(FUNC f, ARG1 &arg1, ARG2 &arg2, ARG3 &arg3, ARG4 &arg4, ARG5 &arg5, ARG6 &arg6){ return f(arg1, arg2, arg3, arg4, arg5, arg6); }          
     template <typename CLASS_TYPE, typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5, typename ARG6>                          
-    static RET callMethod(FUNC f, CLASS_TYPE* p, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4, ARG5 arg5, ARG6 arg6){ return (p->*(f))(arg1, arg2, arg3, arg4, arg5, arg6); }          
+    static RET callMethod(FUNC f, CLASS_TYPE* p, ARG1 &arg1, ARG2 &arg2, ARG3 &arg3, ARG4 &arg4, ARG5 &arg5, ARG6 &arg6){ return (p->*(f))(arg1, arg2, arg3, arg4, arg5, arg6); }          
 };                                                          
 template <>                                                 
 struct CallUtil<void>                                       
@@ -64,29 +64,29 @@ struct CallUtil<void>
     template <typename CLASS_TYPE, typename FUNC>                          
     static int callMethod(FUNC f, CLASS_TYPE* p){ (p->*(f))();return 0; }          
     template <typename FUNC, typename ARG1>                          
-    static int call(FUNC f, ARG1 arg1){ f(arg1); return 0;}        
+    static int call(FUNC f, ARG1 &arg1){ f(arg1); return 0;}        
     template <typename CLASS_TYPE, typename FUNC, typename ARG1>                          
-    static int callMethod(FUNC f, CLASS_TYPE* p, ARG1 arg1){ (p->*(f))(arg1);return 0; }          
+    static int callMethod(FUNC f, CLASS_TYPE* p, ARG1 &arg1){ (p->*(f))(arg1);return 0; }          
     template <typename FUNC, typename ARG1, typename ARG2>                          
-    static int call(FUNC f, ARG1 arg1, ARG2 arg2){ f(arg1, arg2); return 0;}        
+    static int call(FUNC f, ARG1 &arg1, ARG2 &arg2){ f(arg1, arg2); return 0;}        
     template <typename CLASS_TYPE, typename FUNC, typename ARG1, typename ARG2>                          
-    static int callMethod(FUNC f, CLASS_TYPE* p, ARG1 arg1, ARG2 arg2){ (p->*(f))(arg1, arg2);return 0; }          
+    static int callMethod(FUNC f, CLASS_TYPE* p, ARG1 &arg1, ARG2 &arg2){ (p->*(f))(arg1, arg2);return 0; }          
     template <typename FUNC, typename ARG1, typename ARG2, typename ARG3>                          
-    static int call(FUNC f, ARG1 arg1, ARG2 arg2, ARG3 arg3){ f(arg1, arg2, arg3); return 0;}        
+    static int call(FUNC f, ARG1 &arg1, ARG2 &arg2, ARG3 &arg3){ f(arg1, arg2, arg3); return 0;}        
     template <typename CLASS_TYPE, typename FUNC, typename ARG1, typename ARG2, typename ARG3>                          
-    static int callMethod(FUNC f, CLASS_TYPE* p, ARG1 arg1, ARG2 arg2, ARG3 arg3){ (p->*(f))(arg1, arg2, arg3);return 0; }          
+    static int callMethod(FUNC f, CLASS_TYPE* p, ARG1 &arg1, ARG2 &arg2, ARG3 &arg3){ (p->*(f))(arg1, arg2, arg3);return 0; }          
     template <typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4>                          
-    static int call(FUNC f, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4){ f(arg1, arg2, arg3, arg4); return 0;}        
+    static int call(FUNC f, ARG1 &arg1, ARG2 &arg2, ARG3 &arg3, ARG4 &arg4){ f(arg1, arg2, arg3, arg4); return 0;}        
     template <typename CLASS_TYPE, typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4>                          
-    static int callMethod(FUNC f, CLASS_TYPE* p, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4){ (p->*(f))(arg1, arg2, arg3, arg4);return 0; }          
+    static int callMethod(FUNC f, CLASS_TYPE* p, ARG1 &arg1, ARG2 &arg2, ARG3 &arg3, ARG4 &arg4){ (p->*(f))(arg1, arg2, arg3, arg4);return 0; }          
     template <typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>                          
-    static int call(FUNC f, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4, ARG5 arg5){ f(arg1, arg2, arg3, arg4, arg5); return 0;}        
+    static int call(FUNC f, ARG1 &arg1, ARG2 &arg2, ARG3 &arg3, ARG4 &arg4, ARG5 &arg5){ f(arg1, arg2, arg3, arg4, arg5); return 0;}        
     template <typename CLASS_TYPE, typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>                          
-    static int callMethod(FUNC f, CLASS_TYPE* p, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4, ARG5 arg5){ (p->*(f))(arg1, arg2, arg3, arg4, arg5);return 0; }          
+    static int callMethod(FUNC f, CLASS_TYPE* p, ARG1 &arg1, ARG2 &arg2, ARG3 &arg3, ARG4 &arg4, ARG5 &arg5){ (p->*(f))(arg1, arg2, arg3, arg4, arg5);return 0; }          
     template <typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5, typename ARG6>                          
-    static int call(FUNC f, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4, ARG5 arg5, ARG6 arg6){ f(arg1, arg2, arg3, arg4, arg5, arg6); return 0;}        
+    static int call(FUNC f, ARG1 &arg1, ARG2 &arg2, ARG3 &arg3, ARG4 &arg4, ARG5 &arg5, ARG6 &arg6){ f(arg1, arg2, arg3, arg4, arg5, arg6); return 0;}        
     template <typename CLASS_TYPE, typename FUNC, typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5, typename ARG6>                          
-    static int callMethod(FUNC f, CLASS_TYPE* p, ARG1 arg1, ARG2 arg2, ARG3 arg3, ARG4 arg4, ARG5 arg5, ARG6 arg6){ (p->*(f))(arg1, arg2, arg3, arg4, arg5, arg6);return 0; }          
+    static int callMethod(FUNC f, CLASS_TYPE* p, ARG1 &arg1, ARG2 &arg2, ARG3 &arg3, ARG4 &arg4, ARG5 &arg5, ARG6 &arg6){ (p->*(f))(arg1, arg2, arg3, arg4, arg5, arg6);return 0; }          
 };                                                          
 template<typename RET>                                                               
 class IFuncArg0                                                                       

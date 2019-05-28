@@ -11,6 +11,8 @@
 #include "base/daemon_tool.h"
 #include "base/perf_monitor.h"
 #include "base/os_tool.h"
+
+#include "net/ffnet.h"
 #include "rpc/ffrpc.h"
 #include "rpc/ffbroker.h"
 #include "server/ffworker.h"
@@ -70,7 +72,7 @@ int main(int argc, char* argv[])
         #endif
     }
     #ifdef _WIN32
-    Singleton<NetFactory::NetData>::instance().start();
+    FFNet::instance().start();
     #endif
 
     //! ��������־�����shell����ǲ�ɫ�Σ���
@@ -165,7 +167,7 @@ err_proc:
     Singleton<FFWorkerLua>::instance().close();
     PERF_MONITOR.stop();
     usleep(100);
-    NetFactory::stop();
+    FFNet::instance().stop();
     usleep(200);
 
     Singleton<SharedSyncmemMgr>::instance().cleanup();

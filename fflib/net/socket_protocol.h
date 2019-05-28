@@ -5,18 +5,19 @@
 #include <vector>
 #include "net/socket.h"
 #include "net/wsprotocol.h"
-#include "net/msg_handler.h"
-#include "base/log.h"
+#include "base/func.h"
+#include "net/message.h"
 
 namespace ff {
 
+typedef Function<void(SocketObjPtr, int, const Message&)> SocketProtocolFunc;
 class SocketProtocol
 {
 public:
     virtual ~SocketProtocol(){
         //printf("~SocketProtocol...\n");
     }
-    SocketProtocol(MsgHandler* mh):m_msgHandler(mh), m_nGotSize(0){}
+    SocketProtocol(SocketProtocolFunc f):m_nGotSize(0), m_funcProtocol(f){}
 
     std::string buildPkg(const std::string& buff)
     {
@@ -29,11 +30,9 @@ public:
     void handleSocketEvent(SocketObjPtr sp_, int eventType, const char* buff, size_t len)
     {
         if (eventType == IOEVENT_BROKEN){
-            if (m_msgHandler->getTaskQueue()){
-                m_msgHandler->getTaskQueue()->post(funcbind(&MsgHandler::handleBroken, m_msgHandler, sp_));
-            }
-            else{
-                m_msgHandler->handleBroken(sp_);
+            if (m_funcProtocol){
+                m_funcProtocol(sp_, IOEVENT_BROKEN, m_message);
+                return;
             }
             return;
         }
@@ -131,20 +130,17 @@ public:
     }
     void postMsg(SocketObjPtr& sp_)
     {
-        if (m_msgHandler->getTaskQueue()){
-            m_msgHandler->getTaskQueue()->post(funcbind(&MsgHandler::handleMsg,
-                                                 m_msgHandler, m_message, sp_));
-        }
-        else{
-            m_msgHandler->handleMsg(m_message, sp_);
+        if (m_funcProtocol){
+            m_funcProtocol(sp_, IOEVENT_RECV, m_message);
+            return;
         }
         m_message.clear();
     }
 public:
-    MsgHandlerPtr       m_msgHandler;
     size_t              m_nGotSize;
     Message             m_message;
     WSProtocol          m_oWSProtocol;
+    SocketProtocolFunc  m_funcProtocol;
 };
 
 typedef SharedPtr<SocketProtocol>  SocketProtocolPtr;

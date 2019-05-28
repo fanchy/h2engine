@@ -8,19 +8,16 @@
 #include <set>
 #include <queue>
 
-
-#include "net/msg_handler.h"
 #include "base/task_queue.h"
 #include "base/ffslot.h"
 #include "base/thread.h"
 #include "rpc/ffrpc.h"
-#include "net/msg_sender.h"
 #include "base/timer_service.h"
 #include "base/arg_helper.h"
 
 namespace ff {
 
-class FFGate: public MsgHandler
+class FFGate
 {
     enum limite_e
     {
@@ -41,6 +38,7 @@ public:
     int handleMsg(const Message& msg_, SocketObjPtr sock_);
 
     TaskQueue* getTaskQueue();
+    void handleSocketProtocol(SocketObjPtr sock_, int eventType, const Message& msg_);
 public:
     int close_impl();
     //! 逻辑处理,转发消息到logic service

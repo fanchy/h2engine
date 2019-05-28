@@ -7,8 +7,6 @@
 #include <vector>
 #include <set>
 
-
-#include "net/msg_handler.h"
 #include "base/task_queue.h"
 #include "base/ffslot.h"
 #include "base/thread.h"
@@ -18,7 +16,7 @@
 #include "base/arg_helper.h"
 
 namespace ff {
-class FFRpc: public MsgHandler, RPCResponser
+class FFRpc: public RPCResponser
 {
     struct SessionData;
 public:
@@ -33,6 +31,7 @@ public:
     int handleBroken(SocketObjPtr sock_);
     //! 处理消息
     int handleMsg(const Message& msg_, SocketObjPtr sock_);
+    void handleSocketProtocol(SocketObjPtr sock_, int eventType, const Message& msg_);
     TaskQueue* getTaskQueue();
 
     //! 注册接口

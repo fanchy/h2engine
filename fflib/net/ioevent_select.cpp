@@ -258,8 +258,8 @@ int IOEventSelect::unregfd(Socketfd fd)
         {
             return 0;
         }
+        m_listFuncToRun.push_back(funcbind(&IOEventSelect::safeClosefd, this, fd, it->second.eventHandler));
         m_allIOinfo.erase(it);
-        m_listFuncToRun.push_back(funcbind(&IOEventSelect::safeClosefd, this, fd));
     }
     notify();
     return 0;
@@ -296,7 +296,7 @@ void IOEventSelect::notify(){
     SocketOp::sendAll(m_fdNotify[1], "12345678");
     //printf("IOEventSelect::notify end!\n");
 }
-void IOEventSelect::safeClosefd(Socketfd fd){
+void IOEventSelect::safeClosefd(Socketfd fd, IOEventFunc eventHandler){
     SocketOp::close(fd);
 }
 void IOEventSelect::post(FuncToRun func)

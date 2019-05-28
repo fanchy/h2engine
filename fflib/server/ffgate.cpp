@@ -1,8 +1,8 @@
 #include "server/ffgate.h"
-#include "net/net_factory.h"
 #include "base/log.h"
 #include "net/socket_op.h"
 #include "server/shared_mem.h"
+#include "net/ffnet.h"
 using namespace std;
 using namespace ff;
 
@@ -27,6 +27,15 @@ userid_t FFGate::allocID()
     userid_t ret = (m_allocID * 100) + m_gate_index + (m_allocID % 100);
     return ret;
 }
+void FFGate::handleSocketProtocol(SocketObjPtr sock_, int eventType, const Message& msg_)
+{
+    if (eventType == IOEVENT_RECV){
+        getTaskQueue()->post(funcbind(&FFGate::handleMsg, this, msg_, sock_));
+    }
+    else if (eventType == IOEVENT_BROKEN){
+        getTaskQueue()->post(funcbind(&FFGate::handleBroken, this, sock_));
+    }
+}
 int FFGate::open(const string& broker_addr, const string& gate_listen, int gate_index)
 {
     LOGINFO((FFGATE, "FFGate::open begin gate_listen<%s>", gate_listen));
@@ -47,7 +56,7 @@ int FFGate::open(const string& broker_addr, const string& gate_listen, int gate_
         return -1;
     }
 
-    if (NULL == NetFactory::gatewayListen(gate_listen, this))
+    if (NULL == FFNet::instance().listen(gate_listen, funcbind(&FFGate::handleSocketProtocol, this)))
     {
         LOGERROR((FFGATE, "FFGate::open failed  -gate_listen %s", gate_listen));
         return -1;

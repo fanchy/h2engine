@@ -46,12 +46,12 @@ public:
     void notify();
     virtual void post(FuncToRun func);
 private:
-    void safeClosefd(Socketfd fd);
+    void safeClosefd(Socketfd fd, IOEventFunc eventHandler);
 protected:
     volatile bool                   m_running;
     Mutex                           m_mutex;
-    std::map<Socketfd, IOInfo>   m_allIOinfo;
-    Socketfd                     m_fdNotify[2];
+    std::map<Socketfd, IOInfo>      m_allIOinfo;
+    Socketfd                        m_fdNotify[2];
     struct  sockaddr_in             m_serAddr;
     std::vector<FuncToRun>          m_listFuncToRun;
 };

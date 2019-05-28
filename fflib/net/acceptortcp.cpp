@@ -31,18 +31,16 @@ using namespace std;
 #include "net/sockettcp.h"
 #include "base/str_tool.h"
 #include "net/socket_op.h"
-#include "net/msg_handler.h"
 #include "base/task_queue.h"
 #include "base/log.h"
 #include "net/socket_protocol.h"
 
 using namespace ff;
 
-AcceptorTcp::AcceptorTcp(IOEvent& e_, MsgHandler* msg_handler_, TaskQueue* tq_):
+AcceptorTcp::AcceptorTcp(IOEvent& e_, SocketProtocolFunc f):
     m_fdListen(-1),
     m_ioevent(e_),
-    m_msgHandler(msg_handler_),
-    m_tq(tq_)
+    m_funcProtocol(f)
 {
 }
 
@@ -129,10 +127,10 @@ void AcceptorTcp::handleEvent(Socketfd fdEvent, int eventType, const char* data,
         return;
     }
     Socketfd newFd = *((Socketfd*)data);
-    SocketProtocolPtr prot = new SocketProtocol(m_msgHandler);
-    SocketObjPtr socket = new SocketTcp(m_ioevent, funcbind(&SocketProtocol::handleSocketEvent, prot), newFd);
-    socket->refSelf(socket);
-    socket->open();
+    SocketProtocolPtr prot = new SocketProtocol(m_funcProtocol);
+    SharedPtr<SocketTcp> skt = new SocketTcp(m_ioevent, funcbind(&SocketProtocol::handleSocketEvent, prot), newFd);
+    skt->refSelf(skt);
+    skt->open();
 }
 void AcceptorTcp::close()
 {

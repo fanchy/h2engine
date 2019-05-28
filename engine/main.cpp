@@ -17,7 +17,8 @@
 #include "server/ffgate.h"
 #include "server/shared_mem.h"
 
-#include "net/wsprotocol.h"
+#include "net/ffnet.h"
+
 #include "base/func.h"
 using namespace ff;
 using namespace std;
@@ -70,7 +71,7 @@ int main(int argc, char* argv[])
         LOG.start("-log_print_screen true -log_level 6");
     }
     #ifdef _WIN32
-    Singleton<NetFactory::NetData>::instance().start();
+    FFNet::instance().start();
     #endif
 
     std::string perf_path = "./perf";
@@ -147,7 +148,7 @@ err_proc:
     //printf( "%s %d\n", __FILE__, __LINE__);
     usleep(100);
     //printf( "%s %d\n", __FILE__, __LINE__);
-    NetFactory::stop();
+    FFNet::instance().stop();
     //printf( "%s %d\n", __FILE__, __LINE__);
     usleep(200);
     //printf( "%s %d\n", __FILE__, __LINE__);

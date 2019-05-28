@@ -11,6 +11,7 @@
 #include "base/daemon_tool.h"
 #include "base/perf_monitor.h"
 
+#include "net/ffnet.h"
 #include "rpc/ffrpc.h"
 #include "rpc/ffbroker.h"
 #include "server/ffworker.h"
@@ -62,7 +63,7 @@ int main(int argc, char* argv[])
         #endif
     }
     #ifdef _WIN32
-    Singleton<NetFactory::NetData>::instance().start();
+    FFNet::instance().start();
     #endif
     
     //! 美丽的日志组件，shell输出是彩色滴！！
@@ -154,7 +155,7 @@ err_proc:
     Singleton<FFWorkerPhp>::instance().close();
     PERF_MONITOR.stop();
     usleep(100);
-    NetFactory::stop();
+    FFNet::instance().stop();
     usleep(200);
     
     Singleton<SharedSyncmemMgr>::instance().cleanup();

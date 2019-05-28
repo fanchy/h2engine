@@ -31,10 +31,14 @@ SocketTcp::~SocketTcp()
 
 void SocketTcp::open()
 {
-    m_ioevent.regfd(m_fd, funcbind(&SocketTcp::handleEvent, this));
+    m_ioevent.regfd(m_fd, funcbind(&SocketTcp::handleEvent, m_refSocket));
 }
 void SocketTcp::handleEvent(Socketfd fdEvent, int eventType, const char* data, size_t len)
 {
+    if (m_fd <= 0)
+    {
+        return;
+    }
     LOGTRACE((FFNET, "SocketTcp::handleEvent event=%s len=%u", eventType == IOEVENT_RECV? "IOEVENT_RECV": "IOEVENT_BROKEN", (unsigned int)len));
     switch (eventType){
         case IOEVENT_RECV:
@@ -50,16 +54,13 @@ void SocketTcp::handleEvent(Socketfd fdEvent, int eventType, const char* data, s
 }
 void SocketTcp::close()
 {
-    LOGTRACE((FFNET, "SocketTcp::close %p", (long)this));
+    LOGTRACE((FFNET, "SocketTcp::close %x", (long)this));
     if (m_fd > 0)
     {
         Socketfd fd = m_fd;
         m_fd = -1;
         m_ioevent.unregfd(fd);
         m_funcSocketEvent(m_refSocket, IOEVENT_BROKEN, "", 0);
-    }
-    if (m_refSocket){
-        LOGTRACE((FFNET, "SocketTcp::close  %x", (long)this));
         m_refSocket = NULL;
     }
 }
@@ -69,10 +70,6 @@ void SocketTcp::sendRaw(const string& msg_)
     m_ioevent.asyncSend(m_fd, msg_.c_str(), msg_.size());
 }
 
-SharedPtr<SocketObj> SocketTcp::toSharedPtr(){
-    return m_refSocket;
-}
-
-void SocketTcp::refSelf(SharedPtr<SocketObj> p){
+void SocketTcp::refSelf(SharedPtr<SocketTcp> p){
     m_refSocket = p;
 }

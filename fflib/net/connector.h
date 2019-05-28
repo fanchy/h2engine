@@ -16,7 +16,6 @@
 
 #include "net/sockettcp.h"
 #include "base/str_tool.h"
-#include "net/msg_handler.h"
 #include "net/socket_protocol.h"
 
 namespace ff {
@@ -24,7 +23,7 @@ namespace ff {
 class Connector
 {
 public:
-    static SocketObjPtr connect(const std::string& host_, IOEvent& e_, MsgHandler* msg_handler_, TaskQueue* tq_)
+    static SocketObjPtr connect(const std::string& host_, IOEvent& e_, SocketProtocolFunc f)
     {
         SocketObjPtr ret = NULL;
         //! example tcp://192.168.1.1:1024
@@ -62,10 +61,10 @@ public:
             perror("connect");
             return ret;
         }
-        SocketProtocolPtr prot = new SocketProtocol(msg_handler_);
-        SocketTcp* pret = new SocketTcp(e_, funcbind(&SocketProtocol::handleSocketEvent, prot), s);
-        ret = pret;
-        pret->refSelf(ret);
+        SocketProtocolPtr prot = new SocketProtocol(f);
+        SharedPtr<SocketTcp> skt = new SocketTcp(e_, funcbind(&SocketProtocol::handleSocketEvent, prot), s);
+        ret = skt;
+        skt->refSelf(skt);
         ret->open();
         return ret;
     }

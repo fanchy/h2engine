@@ -2,6 +2,7 @@
 #include "base/log.h"
 #include "base/arg_helper.h"
 #include "rpc/ffrpc.h"
+#include "net/ffnet.h"
 using namespace std;
 using namespace ff;
 
@@ -33,9 +34,17 @@ int FFBroker::getPortCfg(){
     }
     return ::atoi(vt[2].c_str());
 }
+void FFBroker::handleSocketProtocol(SocketObjPtr sock_, int eventType, const Message& msg_)
+{
+    if (eventType == IOEVENT_RECV){
+        getTaskQueue()->post(funcbind(&FFBroker::handleMsg, this, msg_, sock_));
+    }
+    else if (eventType == IOEVENT_BROKEN){
+        getTaskQueue()->post(funcbind(&FFBroker::handleBroken, this, sock_));
+    }
+}
 int FFBroker::open(const string& listen, string bridge_broker, string master_broker)
 {
-    NetFactory::start(1);
     vector<string> vt;
     StrTool::split(listen, vt, ":");//!tcp://127.0.0.1:43210
     if (vt.size() < 3){
@@ -49,7 +58,7 @@ int FFBroker::open(const string& listen, string bridge_broker, string master_bro
         snprintf(buff, sizeof(buff), "tcp:%s:%d", vt[1].c_str(), port);
 
         LOGTRACE((BROKER, "FFBroker::open try<%s>", buff));
-        m_acceptor = NetFactory::listen(buff, this);
+        m_acceptor = FFNet::instance().listen(buff, funcbind(&FFBroker::handleSocketProtocol, this));
         if (NULL != m_acceptor)
         {
             m_listen_host = buff;

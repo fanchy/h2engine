@@ -30,8 +30,7 @@ public:
 
     virtual void sendRaw(const std::string& buff_);
     
-    virtual SharedPtr<SocketObj> toSharedPtr();
-    void refSelf(SharedPtr<SocketObj> p);
+    void refSelf(SharedPtr<SocketTcp> p);
 private:
     void handleEvent(Socketfd fdEvent, int eventType, const char* buff, size_t len);
 
@@ -39,7 +38,7 @@ private:
     IOEvent&                         m_ioevent;
     SocketEventFunc                  m_funcSocketEvent;
     Socketfd                         m_fd;
-    SocketObjPtr                     m_refSocket;//control socket life
+    SharedPtr<SocketTcp>             m_refSocket;//control socket life
 
 };
 

@@ -218,9 +218,8 @@ int IOEventEpoll::unregfd(Socketfd fd)
         {
             return 0;
         }
+        m_listFuncToRun.push_back(funcbind(&IOEventEpoll::safeClosefd, this, fd, it->second.eventHandler));
         m_allIOinfo.erase(it);
-
-        m_listFuncToRun.push_back(funcbind(&IOEventEpoll::safeClosefd, this, fd));
     }
     notify();
     return 0;
@@ -263,7 +262,7 @@ void IOEventEpoll::notify(){
     //printf("IOEventEpoll::notify end!\n");
 }
 
-void IOEventEpoll::safeClosefd(Socketfd fd){
+void IOEventEpoll::safeClosefd(Socketfd fd, IOEventFunc eventHandler){
     struct epoll_event ee;
     ee.data.ptr  = (void*)0;
     ::epoll_ctl(m_efd, EPOLL_CTL_DEL, fd, &ee);
