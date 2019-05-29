@@ -29,10 +29,10 @@ userid_t FFGate::allocID()
 void FFGate::handleSocketProtocol(SocketObjPtr sock_, int eventType, const Message& msg_)
 {
     if (eventType == IOEVENT_RECV){
-        getTaskQueue()->post(funcbind(&FFGate::handleMsg, this, msg_, sock_));
+        getTaskQueue().post(funcbind(&FFGate::handleMsg, this, msg_, sock_));
     }
     else if (eventType == IOEVENT_BROKEN){
-        getTaskQueue()->post(funcbind(&FFGate::handleBroken, this, sock_));
+        getTaskQueue().post(funcbind(&FFGate::handleBroken, this, sock_));
     }
 }
 int FFGate::open(const string& broker_addr, const string& gate_listen, int gate_index)
@@ -67,7 +67,7 @@ int FFGate::open(const string& broker_addr, const string& gate_listen, int gate_
 int FFGate::close()
 {
     if (m_ffrpc){
-        m_ffrpc->getTaskQueue()->post(funcbind(&FFGate::close_impl, this));
+        m_ffrpc->getTaskQueue().post(funcbind(&FFGate::close_impl, this));
 
         m_ffrpc->close();
         for (int i = 0; i < 1000; ++i){
@@ -89,7 +89,7 @@ int FFGate::close_impl()
     return 0;
 }
 
-TaskQueue* FFGate::getTaskQueue()
+TaskQueue& FFGate::getTaskQueue()
 {
     return m_ffrpc->getTaskQueue();
 }

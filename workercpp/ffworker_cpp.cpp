@@ -46,7 +46,7 @@ int FFWorkerCpp::cppInit()
         Mutex                    mutex;
         ConditionVar            cond(mutex);
         
-        getRpc().getTaskQueue()->post(funcbind(&FFWorkerCpp::processInit, this, &mutex, &cond, &ret));
+        getRpc().getTaskQueue().post(funcbind(&FFWorkerCpp::processInit, this, &mutex, &cond, &ret));
         LOGINFO((FFWORKER_CPP, "FFWorkerCpp::begin init py"));
         LockGuard lock(mutex);
         if (ret == -2){

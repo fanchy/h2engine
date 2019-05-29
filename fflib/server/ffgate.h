@@ -37,7 +37,7 @@ public:
     //! 处理消息
     int handleMsg(const Message& msg_, SocketObjPtr sock_);
 
-    TaskQueue* getTaskQueue();
+    TaskQueue& getTaskQueue();
     void handleSocketProtocol(SocketObjPtr sock_, int eventType, const Message& msg_);
 public:
     int close_impl();

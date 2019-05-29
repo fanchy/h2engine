@@ -103,7 +103,7 @@ int FFWorker::open(const string& brokercfg, int worker_index)
     LOGTRACE((FFWORKER_LOG, "FFWorker::open end ok"));
 
     SCRIPT_CACHE.init();
-    DB_MGR.setDefaultTaskQueue(this->getRpc().getTaskQueue());
+    DB_MGR.setDefaultTaskQueue((TaskQueue*)&(this->getRpc().getTaskQueue()));
     EntityModule::init();
     CmdModule::init();
 
@@ -263,23 +263,21 @@ int FFWorker::processWorkerCall(RPCReq<WorkerCallMsgReq, WorkerCallMsgRet>& req_
     return 0;
 }
 
-const string& FFWorker::getSessionGate(const userid_t& session_id_)
+string FFWorker::getSessionGate(const userid_t& session_id_)
 {
     std::map<userid_t, WorkerClient>::iterator it = m_worker_client.find(session_id_);
     if (it != m_worker_client.end()){
         return it->second.from_gate;
     }
-    static string nothing;
-    return nothing;
+    return "";
 }
-const string& FFWorker::getSessionIp(const userid_t& session_id_)
+string FFWorker::getSessionIp(const userid_t& session_id_)
 {
     std::map<userid_t, WorkerClient>::iterator it = m_worker_client.find(session_id_);
     if (it != m_worker_client.end()){
         return it->second.session_ip;
     }
-    static string nothing;
-    return nothing;
+    return "";
 }
 int FFWorker::sessionSendMsg(const userid_t& session_id_, uint16_t cmd_, const string& data_)
 {

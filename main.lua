@@ -43,8 +43,9 @@ end
 
 function onSessionReq(sessionid, cmd, body)
     print('onSessionReq', sessionid, cmd, body)
-    -- ip = h2ext.call('getSessionIp', sessionid)
     ip = ''
+    ip = h2ext.call('getSessionIp', sessionid)
+    
     -- h2ext.gateBroadcastMsg(cmd, string.format('服务器收到消息，sessionid:%d,ip:%s,cmd:%d,data:%s', sessionid, ip, cmd, body))
     h2ext.call('gateBroadcastMsg',cmd, string.format('服务器收到消息，sessionid:%d,ip:%s,cmd:%d,data:%s', sessionid, ip, cmd, body))
     return

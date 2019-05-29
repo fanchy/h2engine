@@ -114,8 +114,8 @@ public:
     int sessionClose(const userid_t& session_id_);
     //! 切换worker
     int sessionChangeWorker(const userid_t& session_id_, int to_worker_index_, std::string extra_data = "");
-    const std::string& getSessionGate(const userid_t& session_id_);
-    const std::string& getSessionIp(const userid_t& session_id_);
+    std::string getSessionGate(const userid_t& session_id_);
+    std::string getSessionIp(const userid_t& session_id_);
 
 
     //*********************************************************操作client 内部高级接口***********************************************************************

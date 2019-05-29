@@ -38,10 +38,10 @@ int FFBroker::getPortCfg(){
 void FFBroker::handleSocketProtocol(SocketObjPtr sock_, int eventType, const Message& msg_)
 {
     if (eventType == IOEVENT_RECV){
-        getTaskQueue()->post(funcbind(&FFBroker::handleMsg, this, msg_, sock_));
+        getTaskQueue().post(funcbind(&FFBroker::handleMsg, this, msg_, sock_));
     }
     else if (eventType == IOEVENT_BROKEN){
-        getTaskQueue()->post(funcbind(&FFBroker::handleBroken, this, sock_));
+        getTaskQueue().post(funcbind(&FFBroker::handleBroken, this, sock_));
     }
 }
 int FFBroker::open(const string& listen, string bridge_broker, string master_broker)
@@ -106,16 +106,16 @@ int FFBroker::close()
         return 0;
     m_acceptor->close();
     m_acceptor = NULL;
-    getTaskQueue()->post(funcbind(&FFBroker::docleaanup, this));
+    getTaskQueue().post(funcbind(&FFBroker::docleaanup, this));
 
-    getTaskQueue()->close();
+    getTaskQueue().close();
 
     //usleep(100);
     return 0;
 }
-TaskQueue* FFBroker::getTaskQueue()
+TaskQueue& FFBroker::getTaskQueue()
 {
-    return m_tq.get();
+    return *m_tq;
 }
 
 //! 当有连接断开，则被回调
@@ -299,7 +299,7 @@ int FFBroker::sendToRPcNode(BrokerRouteMsgReq& msg_)
     if (pffrpc)
     {
         LOGTRACE((BROKER, "FFBroker::sendToRPcNode memory post"));
-        pffrpc->getTaskQueue()->post(funcbind(&FFRpc::handleRpcCallMsg, pffrpc, msg_, SocketObjPtr(NULL)));
+        pffrpc->getTaskQueue().post(funcbind(&FFRpc::handleRpcCallMsg, pffrpc, msg_, SocketObjPtr(NULL)));
         return 0;
     }
     LOGINFO((BROKER, "FFBroker::sendToRPcNode dest_node=%d bodylen=%d, by socket", msg_.dest_node_id, msg_.body.size()));

@@ -45,7 +45,7 @@ int FFRpc::open(const string& broker_addr)
 
     if (!m_master_broker_sock)
     {
-        getTaskQueue()->close();
+        getTaskQueue().close();
         LOGERROR((FFRPC, "FFRpc::open failed, can't connect to remote broker<%s>", m_host.c_str()));
         return -1;
     }
@@ -91,7 +91,7 @@ int FFRpc::close()
     }
     
     volatile int status = 0;
-    getTaskQueue()->post(funcbind(&CheckBrokenEnd, (int*)&status));
+    getTaskQueue().post(funcbind(&CheckBrokenEnd, (int*)&status));
 
     for (int i = 0; i < 5; ++i){
         if (1 == status)
@@ -102,7 +102,7 @@ int FFRpc::close()
     m_runing = false;
     LOGTRACE((FFRPC, "FFRpc::close 22"));
     m_master_broker_sock = NULL;
-    getTaskQueue()->close();
+    getTaskQueue().close();
 
     LOGINFO((FFRPC, "FFRpc::close end ok"));
     //usleep(100);
@@ -111,10 +111,10 @@ int FFRpc::close()
 void FFRpc::handleSocketProtocol(SocketObjPtr sock_, int eventType, const Message& msg_)
 {
     if (eventType == IOEVENT_RECV){
-        getTaskQueue()->post(funcbind(&FFRpc::handleMsg, this, msg_, sock_));
+        getTaskQueue().post(funcbind(&FFRpc::handleMsg, this, msg_, sock_));
     }
     else if (eventType == IOEVENT_BROKEN){
-        getTaskQueue()->post(funcbind(&FFRpc::handleBroken, this, sock_));
+        getTaskQueue().post(funcbind(&FFRpc::handleBroken, this, sock_));
     }
 }
 //! 连接到broker master
@@ -145,7 +145,7 @@ static void route_call_reconnect(FFRpc* ffrpc_)
 {
     if (ffrpc_->m_runing == false)
         return;
-    ffrpc_->getTaskQueue()->post(funcbind(&FFRpc::timerReconnectBroker, ffrpc_));
+    ffrpc_->getTaskQueue().post(funcbind(&FFRpc::timerReconnectBroker, ffrpc_));
 }
 //! 定时重连 broker master
 void FFRpc::timerReconnectBroker()
@@ -173,9 +173,9 @@ void FFRpc::timerReconnectBroker()
 }
 
 //! 获取任务队列对象
-TaskQueue* FFRpc::getTaskQueue()
+TaskQueue& FFRpc::getTaskQueue()
 {
-    return m_tq.get();
+    return *m_tq;
 }
 
 int FFRpc::handleBroken(SocketObjPtr sock_)
@@ -361,7 +361,7 @@ void FFRpc::sendToDestNode(const string& service_name_, const string& msg_name_,
     if (pbroker)//!如果broker和本身都在同一个进程中,那么直接内存间投递即可
     {
         LOGTRACE((FFRPC, "FFRpc::send_to_broker_by_nodeid begin dest_node_id[%u], m_bind_broker_id=%u memory post", dest_node_id_, dest_broker_id));
-        pbroker->getTaskQueue()->post(funcbind(&FFBroker::sendToRPcNode, pbroker, dest_msg));
+        pbroker->getTaskQueue().post(funcbind(&FFBroker::sendToRPcNode, pbroker, dest_msg));
     }
     else if (dest_broker_id == 0)
     {
@@ -387,7 +387,7 @@ bool FFRpc::isExist(const string& service_name_)
 void FFRpc::response(const string& msg_name_,  uint64_t dest_node_id_, int64_t callback_id_, const string& body_, string err_info)
 {
     static string null_str;
-    getTaskQueue()->post(funcbind(&FFRpc::sendToDestNode, this, null_str, msg_name_, dest_node_id_, callback_id_, body_, err_info));
+    getTaskQueue().post(funcbind(&FFRpc::sendToDestNode, this, null_str, msg_name_, dest_node_id_, callback_id_, body_, err_info));
 }
 
 //! 处理注册,

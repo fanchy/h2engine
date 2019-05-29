@@ -32,7 +32,7 @@ public:
     //! 处理消息
     int handleMsg(const Message& msg_, SocketObjPtr sock_);
     void handleSocketProtocol(SocketObjPtr sock_, int eventType, const Message& msg_);
-    TaskQueue* getTaskQueue();
+    TaskQueue& getTaskQueue();
 
     //! 注册接口
     template <typename R, typename IN_T, typename OUT_T>
@@ -142,7 +142,7 @@ struct FFRpc::SessionData
 template <typename T>
 int FFRpc::call(const std::string& name_, T& req_, FFSlot::FFCallBack* callback_)
 {
-    getTaskQueue()->post(funcbind(&FFRpc::docall, this, name_, TYPE_NAME(T), FFThrift::EncodeAsString(req_), callback_));
+    getTaskQueue().post(funcbind(&FFRpc::docall, this, name_, TYPE_NAME(T), FFThrift::EncodeAsString(req_), callback_));
     return 0;
 }
 
@@ -178,7 +178,7 @@ int FFRpc::callPB(const std::string& name_, T& req_, FFSlot::FFCallBack* callbac
 {
     std::string ret;
     req_.SerializeToString(&ret);
-    getTaskQueue()->post(funcbind(&FFRpc::docall, this, name_, TYPE_NAME(T), ret, callback_));
+    getTaskQueue().post(funcbind(&FFRpc::docall, this, name_, TYPE_NAME(T), ret, callback_));
     return 0;
 }
 
@@ -193,7 +193,7 @@ int FFRpc::callPB(const std::string& namespace_, const std::string& name_, T& re
     else{
         std::string ret;
         req_.SerializeToString(&ret);
-        getTaskQueue()->post(funcbind(&FFRpc::bridgeDocall, this, namespace_, name_, TYPE_NAME(T), ret, callback_));
+        getTaskQueue().post(funcbind(&FFRpc::bridgeDocall, this, namespace_, name_, TYPE_NAME(T), ret, callback_));
     }
     return 0;
 }

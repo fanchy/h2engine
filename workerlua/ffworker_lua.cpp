@@ -259,7 +259,7 @@ int FFWorkerLua::scriptInit(const string& lua_root)
         Mutex                    mutex;
         ConditionVar            cond(mutex);
 
-        getRpc().getTaskQueue()->post(funcbind(&FFWorkerLua::processInit, this, &mutex, &cond, &ret));
+        getRpc().getTaskQueue().post(funcbind(&FFWorkerLua::processInit, this, &mutex, &cond, &ret));
         LockGuard lock(mutex);
         if (ret == -2){
             cond.wait();
@@ -323,7 +323,7 @@ void FFWorkerLua::scriptCleanup()
 int FFWorkerLua::close()
 {
     LOGTRACE((FFWORKER_LUA, "close begin"));
-    getRpc().getTaskQueue()->post(funcbind(&FFWorkerLua::scriptCleanup, this));
+    getRpc().getTaskQueue().post(funcbind(&FFWorkerLua::scriptCleanup, this));
     LOGTRACE((FFWORKER_LUA, "close trace 1"));
     FFWorker::close();
     LOGTRACE((FFWORKER_LUA, "close trace 2"));
