@@ -18,7 +18,6 @@
 #include "rpc/ffbroker.h"
 #include "server/ffworker.h"
 #include "server/ffgate.h"
-#include "server/shared_mem.h"
 #include "server/http_mgr.h"
 #include "server/db_mgr.h"
 
@@ -167,7 +166,7 @@ err_proc:
     usleep(100);
     FFNet::instance().stop();
     usleep(200);
-    Singleton<SharedSyncmemMgr>::instance().cleanup();
+
     Singleton<HttpMgr>::instance().stop();
 #ifdef _WIN32
     if  (!flagok)

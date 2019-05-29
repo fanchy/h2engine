@@ -68,7 +68,6 @@ static void py_log(int level, const string& mod_, const string& content_)
     Singleton<FFWorkerPython>::instance().pylog(level, mod_, content_);
 }
 static void py_writeLockGuard(){
-    Singleton<FFWorkerPython>::instance().getSharedMem().writeLockGuard();
 }
 static bool py_regTimer(int mstimeout_, PyObject* pFuncSrc)
 {
@@ -390,7 +389,6 @@ static void py_workerRPC(int workerindex, uint16_t cmd, const string& argdata, P
 }
 static void py_syncSharedData(int cmd, const string& data)
 {
-    Singleton<FFWorkerPython>::instance().getSharedMem().syncSharedData(cmd, data);
 }
 static bool py_asyncHttp(const string& url_, int timeoutsec, PyObject* pFuncSrc)
 {
@@ -752,8 +750,6 @@ int FFWorkerPython::scriptInit(const string& py_root)
     m_ext_name = m_ext_name.substr(0, pos);
 
     LOGTRACE((FFWORKER_PYTHON, "FFWorkerPython::scriptInit begin path:%s, m_ext_name:%s", path, m_ext_name));
-
-    getSharedMem().setNotifyFunc(onSyncSharedData);
 
     (*m_ffpython).reg(&FFDb::escape, "escape")
                  .reg(&py_send_msg_session, "sessionSendMsg")

@@ -9,7 +9,6 @@
 #include "base/fftype.h"
 #include "rpc/ffrpc.h"
 #include "base/arg_helper.h"
-#include "server/shared_mem.h"
 #include "base/event_bus.h"
 #include "server/entity.h"
 #include "server/prop.h"
@@ -137,7 +136,6 @@ public:
 
     const std::string& getWorkerName() const { return m_logic_name;}
 
-    SharedSyncmemMgr& getSharedMem(){ return m_shared_mem_mgr; }
     void regTimer(uint64_t mstimeout_, Function<void()> func);
 
     void workerRPC(int workerindex, uint16_t cmd, const std::string& data, FFSlot::FFCallBack* cb);
@@ -175,7 +173,6 @@ protected:
     std::string                                 m_logic_name;
     SharedPtr<FFRpc>                            m_ffrpc;
     std::map<userid_t, WorkerClient>            m_worker_client;
-    SharedSyncmemMgr                            m_shared_mem_mgr;
 };
 
 class FFWorkerMgr

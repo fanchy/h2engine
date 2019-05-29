@@ -64,7 +64,6 @@ FFWorker::FFWorker():m_nWorkerIndex(0), m_allocID(0),m_ffrpc(NULL)
 FFWorker::~FFWorker()
 {
     LOGTRACE((FFWORKER_LOG, "FFWorker::~FFWorker begin"));
-    m_shared_mem_mgr.cleanup();
     LOGTRACE((FFWORKER_LOG, "FFWorker::~FFWorker begin2"));
     m_ffrpc = NULL;
     LOGTRACE((FFWORKER_LOG, "FFWorker::~FFWorker end"));
@@ -97,9 +96,8 @@ int FFWorker::open(const string& brokercfg, int worker_index)
     //!tcp://127.0.0.1:43210
     vector<string> args;
     StrTool::split(host, args, ":");
-    int port = ::atoi(args[2].c_str());
+    //int port = ::atoi(args[2].c_str());
 
-    m_shared_mem_mgr.init_worker(port, worker_index, m_ffrpc->getTaskQueue());
     Singleton<FFWorkerMgr>::instance().add(m_logic_name, this);
 
     LOGTRACE((FFWORKER_LOG, "FFWorker::open end ok"));
@@ -110,7 +108,26 @@ int FFWorker::open(const string& brokercfg, int worker_index)
     CmdModule::init();
 
     SCRIPT_UTIL.reg("escape", &FFDb::escape);
-    SCRIPT_UTIL.reg("escape", &FFDb::escape);
+    SCRIPT_UTIL.reg("sessionSendMsg", &FFWorker::sessionSendMsg, this);
+    SCRIPT_UTIL.reg("gateBroadcastMsg", &FFWorker::gateBroadcastMsg, this);
+    SCRIPT_UTIL.reg("sessionMulticastMsg", &FFWorker::sessionMulticastMsg, this);
+    SCRIPT_UTIL.reg("sessionClose", &FFWorker::sessionClose, this);
+    SCRIPT_UTIL.reg("sessionChangeWorker", &FFWorker::sessionChangeWorker, this);
+    SCRIPT_UTIL.reg("getSessionGate", &FFWorker::getSessionGate, this);
+    SCRIPT_UTIL.reg("getSessionIp", &FFWorker::getSessionIp, this);
+    SCRIPT_UTIL.reg("isExist", &FFRpc::isExist, (FFRpc*)(&this->getRpc()));
+    //SCRIPT_UTIL.reg("reload", &FFWorker::reload, this);
+    //SCRIPT_UTIL.reg("log", &FFWorker::log, this);
+    //SCRIPT_UTIL.reg("regTimer", &FFWorker::regTimer, this);
+    SCRIPT_UTIL.reg("connectDB", &DbMgr::connectDB, (DbMgr*)(&DB_MGR));
+    //SCRIPT_UTIL.reg("asyncQuery", &FFWorker::asyncQuery, this);
+    //SCRIPT_UTIL.reg("query", &FFWorker::query, this);
+    //SCRIPT_UTIL.reg("asyncQueryByName", &FFWorker::asyncQueryByName, this);
+    //SCRIPT_UTIL.reg("queryByName", &FFWorker::queryByName, this);
+    //SCRIPT_UTIL.reg("workerRPC", &FFWorker::workerRPC, this);
+    //SCRIPT_UTIL.reg("asyncHttp", &FFWorker::asyncHttp, this);
+    //SCRIPT_UTIL.reg("syncHttp", &FFWorker::syncHttp, this);
+
     return 0;
 }
 int FFWorker::close()
@@ -176,7 +193,7 @@ int FFWorker::processSessionReq(RPCReq<RouteLogicMsgReq, EmptyMsgRet>& req_)
         EmptyMsgRet out;
         req_.response(out);
     }
-    getSharedMem().writeLockEnd();
+    
     LOGTRACE((FFWORKER_LOG, "FFWorker::processSessionReq end ok"));
     return 0;
 }
@@ -196,7 +213,7 @@ int FFWorker::processSessionOffline(RPCReq<SessionOfflineReq, EmptyMsgRet>& req_
     EmptyMsgRet out;
     req_.response(out);
     m_worker_client.erase(req_.msg.session_id);
-    getSharedMem().writeLockEnd();
+    
     return 0;
 }
 
@@ -218,7 +235,7 @@ int FFWorker::processSessionEnter(RPCReq<SessionEnterWorkerReq, EmptyMsgRet>& re
         onSessionEnter(req_.msg.session_id, req_.msg.extra_data);
     }
 
-    getSharedMem().writeLockEnd();
+    
     LOGTRACE((FFWORKER_LOG, "FFWorker::processSessionEnter end ok"));
 
     return 0;
@@ -241,7 +258,7 @@ int FFWorker::processWorkerCall(RPCReq<WorkerCallMsgReq, WorkerCallMsgRet>& req_
     }
     req_.response(out);
 
-    getSharedMem().writeLockEnd();
+    
     LOGTRACE((FFWORKER_LOG, "FFWorker::processWorkerCall end ok"));
     return 0;
 }
@@ -361,7 +378,6 @@ struct timer_cb
     static void callback(FFWorker* w, Function<void()> func)
     {
         func();
-        w->getSharedMem().writeLockEnd();
     }
 };
 void FFWorker::regTimer(uint64_t mstimeout_, Function<void()> func){

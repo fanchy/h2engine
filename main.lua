@@ -43,8 +43,10 @@ end
 
 function onSessionReq(sessionid, cmd, body)
     print('onSessionReq', sessionid, cmd, body)
-    ip = h2ext.getSessionIp(sessionid)
-    h2ext.gateBroadcastMsg(cmd, string.format('服务器收到消息，sessionid:%d,ip:%s,cmd:%d,data:%s', sessionid, ip, cmd, body))
+    -- ip = h2ext.call('getSessionIp', sessionid)
+    ip = ''
+    -- h2ext.gateBroadcastMsg(cmd, string.format('服务器收到消息，sessionid:%d,ip:%s,cmd:%d,data:%s', sessionid, ip, cmd, body))
+    h2ext.call('gateBroadcastMsg',cmd, string.format('服务器收到消息，sessionid:%d,ip:%s,cmd:%d,data:%s', sessionid, ip, cmd, body))
     return
 end
 function onSessionOffline(sessionid)
@@ -60,7 +62,7 @@ function testRpc()
     end
     h2ext.workerRPC(0, 101, "hello", rpc_cb)
 end
-testRpc()
+-- testRpc()
 -- function timerTest()
     -- function timer_cb()
         -- print('timer_cb')
@@ -69,14 +71,12 @@ testRpc()
     -- h2ext.regTimer(1000, timerTest)
 -- end
 function timerSync()
-    -- h2ext.writeLockGuard();
-    -- h2ext.syncSharedData(100, "helloworld")
     print('timerSync ...............')
 end
 
-h2ext.regTimer(1000, timerSync)
-h2ext.regTimer(2000, timerSync)
-h2ext.regTimer(3000, timerSync)
+-- h2ext.regTimer(1000, timerSync)
+-- h2ext.regTimer(2000, timerSync)
+-- h2ext.regTimer(3000, timerSync)
 function dbTest()
     sql = 'create table IF NOT EXISTS foo (num integer);';
     h2ext.query(sql)
@@ -103,11 +103,9 @@ print("main.lua................................")
 function httpcb(retdata)
     print('httpcb', retdata)
 end
--- h2ext.asyncHttp("http://www.baidu.com", 1, httpcb)
--- ret = h2ext.syncHttp("http://www.baidu.com", 1)
--- httpcb(ret)
-h2ext.sessionMulticastMsg({1,2,3}, 101, 'ok')
--- ret = h2ext.callFunc("Server.foo", 1, 2.2, 3, 'ddd', {1,2,3,'fff'}, {['a']='b', [111]=222})
+
+-- h2ext.sessionMulticastMsg({1,2,3}, 101, 'ok')
+-- ret = h2ext.call("Server.foo", 1, 2.2, 3, 'ddd', {1,2,3,'fff'}, {['a']='b', [111]=222})
 -- print(ret)
 -- vd(ret)
 function testScriptCall(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
@@ -115,13 +113,13 @@ function testScriptCall(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
     return 1122334
 end
 
-h2ext.callFunc("Cache.set", "m.n[10]", "mmm1")
-cacheRet = h2ext.callFunc("Cache.get", "m.n[10]")
-print("cacheRet", cacheRet)
-cacheRet = h2ext.callFunc("Cache.get", "")
-var_dump(cacheRet)
-print("cacheRet", h2ext.callFunc("Cache.size", "m"), h2ext.callFunc("Cache.size", "m.n"))
-print("escape", h2ext.callFunc("escape", "haha\"ok"))
+-- h2ext.call("Cache.set", "m.n[10]", "mmm1")
+-- cacheRet = h2ext.call("Cache.get", "m.n[10]")
+-- print("cacheRet", cacheRet)
+-- cacheRet = h2ext.call("Cache.get", "")
+-- var_dump(cacheRet)
+-- print("cacheRet", h2ext.call("Cache.size", "m"), h2ext.call("Cache.size", "m.n"))
+-- print("escape", h2ext.call("escape", "haha\"ok"))
 function sayhi(arg)
     print('sayhi *************')
 end

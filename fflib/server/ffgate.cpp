@@ -1,7 +1,6 @@
 #include "server/ffgate.h"
 #include "base/log.h"
 #include "net/socket_op.h"
-#include "server/shared_mem.h"
 #include "net/ffnet.h"
 using namespace std;
 using namespace ff;

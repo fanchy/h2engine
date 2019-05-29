@@ -15,7 +15,6 @@
 #include "rpc/ffrpc.h"
 #include "rpc/ffbroker.h"
 #include "server/ffgate.h"
-#include "server/shared_mem.h"
 
 #include "net/ffnet.h"
 
@@ -105,11 +104,6 @@ int main(int argc, char* argv[])
             printf("broker open failed\n");
             goto err_proc;
         }
-        int port = ffbroker.getPortCfg();
-        if (Singleton<SharedSyncmemMgr>::instance().init_master(100000+port)){
-            printf("sed\n");
-            //goto err_proc;
-        }
 
         if (ffgate.open(brokercfg, gate_listen))
         {
@@ -152,7 +146,6 @@ err_proc:
     //printf( "%s %d\n", __FILE__, __LINE__);
     usleep(200);
     //printf( "%s %d\n", __FILE__, __LINE__);
-    Singleton<SharedSyncmemMgr>::instance().cleanup();
 
 #ifdef _WIN32
     if  (!flagok)

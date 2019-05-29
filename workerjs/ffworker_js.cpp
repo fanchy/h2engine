@@ -353,7 +353,6 @@ static BIND_FUNC_RET_TYPE js_log_impl(const Arguments& args)
 }
 static BIND_FUNC_RET_TYPE js_writeLockGuard(const Arguments& args){
     CHECK_ARG_NUM(args, 0);
-    Singleton<FFWorkerJs>::instance().getSharedMem().writeLockGuard();
     BIND_FUNC_RET_TRUE;
 }
 static BIND_FUNC_RET_TYPE js_regTimer(const Arguments& args)
@@ -724,7 +723,6 @@ static BIND_FUNC_RET_TYPE js_syncSharedData(const Arguments& args)
     CHECK_ARG_NUM(args, 2);
     int cmd = (int)js2num(args[0]);
     string data = js2string(args[1]);
-    Singleton<FFWorkerJs>::instance().getSharedMem().syncSharedData(cmd, data);
     BIND_FUNC_RET_TRUE;
 }
 

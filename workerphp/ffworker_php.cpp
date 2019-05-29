@@ -513,7 +513,6 @@ PHP_METHOD(h2ext, regTimer)
 }
 PHP_METHOD(h2ext, writeLockGuard)
 {
-    Singleton<FFWorkerPhp>::instance().getSharedMem().writeLockGuard();
     RETURN_TRUE;
 }
 PHP_METHOD(h2ext, connectDB)
@@ -857,7 +856,6 @@ PHP_METHOD(h2ext, syncSharedData)
 	}
     
     std::string data_(strarg, strlen);
-    Singleton<FFWorkerPhp>::instance().getSharedMem().syncSharedData(cmd_, data_);
     RETURN_TRUE;
 }
 PHP_METHOD(h2ext, asyncHttp)
@@ -1211,8 +1209,6 @@ int FFWorkerPhp::scriptInit(const std::string& root)
     }
     
     LOGTRACE((FFWORKER_PHP, "FFWorkerPhp::scriptInit begin path:%s, m_ext_name:%s", path, m_ext_name));
-
-    getSharedMem().setNotifyFunc(onSyncSharedData);
 
     DB_MGR.start();
     ArgHelper& arg_helper = Singleton<ArgHelper>::instance();
