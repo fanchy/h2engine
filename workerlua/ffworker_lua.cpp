@@ -204,13 +204,9 @@ static bool callScriptImpl(const std::string& funcName, ScriptArgs& varScript){
     return true;
 }
 
-struct ffext_t{};
-
 static bool  lua_reg(lua_State* ls)
-{                 ;
-    lua_reg_func_t(ls, EXT_NAME)
-                 .def(&lua_callFunc, "call")
-                 ;
+{
+    lua_reg_func_t(ls, EXT_NAME).def(&lua_callFunc, "call");
     return true;
 }
 

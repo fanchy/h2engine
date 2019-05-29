@@ -11,11 +11,14 @@
 #include "base/singleton.h"
 #include "base/smart_ptr.h"
 #include "base/fftype.h"
+#include "base/func.h"
 
 namespace ff
 {
+
 #define SCRIPT_UTIL Singleton<ScriptUtil>::instance()
 struct ScriptArgObj{
+    typedef Function<SharedPtr<ScriptArgObj>(SharedPtr<ScriptArgObj>)> ScriptFunction;
     enum ArgType{
         ARG_NULL,
         ARG_INT,
@@ -23,6 +26,7 @@ struct ScriptArgObj{
         ARG_STRING,
         ARG_LIST,
         ARG_DICT,
+        ARG_FUNC,
     };
     ScriptArgObj():nType(ARG_NULL), nVal(0), fVal(0.0){}
     ScriptArgObj(int64_t v):nType(ARG_INT), nVal(v), fVal(0.0){}
@@ -35,6 +39,7 @@ struct ScriptArgObj{
     ScriptArgObj(bool v):nType(ARG_INT), nVal(0), fVal(0.0){if (v) nVal = 1;}
     ScriptArgObj(double v):nType(ARG_FLOAT), nVal(0), fVal(v){}
     ScriptArgObj(const std::string& v):nType(ARG_STRING), nVal(0), fVal(0.0), sVal(v){}
+    ScriptArgObj(ScriptFunction f):nType(ARG_FUNC), nVal(0), fVal(0.0),func(f){}
 
     template<typename T>
     ScriptArgObj(T* v):nType(ARG_INT), nVal((int64_t)v), fVal(0.0){}
@@ -42,6 +47,10 @@ struct ScriptArgObj{
     ScriptArgObj(const T* v):nType(ARG_INT), nVal((int64_t)v), fVal(0.0){}
     template<typename T>
     ScriptArgObj(SharedPtr<T> v):nType(ARG_INT), nVal((int64_t)(SMART_PTR_RAW(v))), fVal(0.0){}
+
+    static SharedPtr<ScriptArgObj> create() { return new ScriptArgObj(); }
+    template<typename T>
+    static SharedPtr<ScriptArgObj> create(T v) { return new ScriptArgObj(v); }
 
     void toNull(){
         nType = ARG_NULL;
@@ -69,6 +78,10 @@ struct ScriptArgObj{
         if (pVal){
             dictVal = *pVal;
         }
+    }
+    void toFunc(ScriptFunction f){
+        nType = ARG_FUNC;
+        func = f;
     }
     void dump(int depth = 0){
         char buff[64] = {0};
@@ -116,6 +129,7 @@ struct ScriptArgObj{
     bool isString() const       { return nType == ARG_STRING; }
     bool isList() const         { return nType == ARG_LIST; }
     bool isDict() const         { return nType == ARG_DICT; }
+    bool isFunc() const         { return nType == ARG_FUNC; }
 
     int64_t             getInt()           {
         if (isString()){
@@ -149,15 +163,18 @@ struct ScriptArgObj{
         sVal    = src->sVal;
         listVal = src->listVal;
         dictVal = src->dictVal;
+        func    = src->func;
     }
-    int                                             nType;
-    int64_t                                         nVal;
-    double                                          fVal;
-    std::string                                     sVal;
-    std::vector<SharedPtr<ScriptArgObj> >           listVal;
-    std::map<std::string, SharedPtr<ScriptArgObj> > dictVal;
+    int                                                      nType;
+    int64_t                                                  nVal;
+    double                                                   fVal;
+    std::string                                              sVal;
+    std::vector<SharedPtr<ScriptArgObj> >                    listVal;
+    std::map<std::string, SharedPtr<ScriptArgObj> >          dictVal;
+    ScriptFunction                                           func;
 };
 typedef SharedPtr<ScriptArgObj> ScriptArgObjPtr;
+
 struct ScriptArgs{
     ScriptArgs(){
         ret = new ScriptArgObj();
