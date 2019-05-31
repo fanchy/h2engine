@@ -75,9 +75,10 @@ function timerSync()
     print('timerSync ...............')
 end
 
--- h2ext.regTimer(1000, timerSync)
--- h2ext.regTimer(2000, timerSync)
--- h2ext.regTimer(3000, timerSync)
+h2ext.call('regTimer', 1000, timerSync)
+h2ext.call('regTimer', 2000, timerSync)
+h2ext.call('regTimer', 3000, timerSync)
+
 function dbTest()
     sql = 'create table IF NOT EXISTS foo (num integer);';
     h2ext.query(sql)

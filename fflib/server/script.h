@@ -18,7 +18,7 @@ namespace ff
 
 #define SCRIPT_UTIL Singleton<ScriptUtil>::instance()
 struct ScriptArgObj{
-    typedef Function<SharedPtr<ScriptArgObj>(SharedPtr<ScriptArgObj>)> ScriptFunction;
+    typedef Function<void(SharedPtr<ScriptArgObj>)> ScriptFunction;
     enum ArgType{
         ARG_NULL,
         ARG_INT,
@@ -156,6 +156,7 @@ struct ScriptArgObj{
     }
     const std::vector<SharedPtr<ScriptArgObj> >& getList() const         { return listVal; }
     const std::map<std::string, SharedPtr<ScriptArgObj> >& getDict() const         { return dictVal; }
+    ScriptFunction& getFunc(){ return func; }
     void copy(SharedPtr<ScriptArgObj>& src){
         nType   = src->nType;
         nVal    = src->nVal;

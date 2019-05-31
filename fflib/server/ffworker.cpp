@@ -68,6 +68,18 @@ FFWorker::~FFWorker()
     m_ffrpc = NULL;
     LOGTRACE((FFWORKER_LOG, "FFWorker::~FFWorker end"));
 }
+
+struct ScriptTimerTool{
+    static void doTimer(ScriptArgObjPtr funcOBj){
+        if (funcOBj && funcOBj->isFunc()){
+            funcOBj->getFunc()(ScriptArgObj::create());
+        }
+    }
+};
+void FFWorker::regTimerForScirpt(uint64_t mstimeout_, ScriptArgObjPtr func){
+    regTimer(mstimeout_, funcbind(&ScriptTimerTool::doTimer, func));
+}
+
 FFWorker* FFWorker::gSingletonWorker = NULL;
 int FFWorker::open(const string& brokercfg, int worker_index)
 {
@@ -118,7 +130,7 @@ int FFWorker::open(const string& brokercfg, int worker_index)
     SCRIPT_UTIL.reg("isExist", &FFRpc::isExist, (FFRpc*)(&this->getRpc()));
     //SCRIPT_UTIL.reg("reload", &FFWorker::reload, this);
     //SCRIPT_UTIL.reg("log", &FFWorker::log, this);
-    //SCRIPT_UTIL.reg("regTimer", &FFWorker::regTimer, this);
+    SCRIPT_UTIL.reg("regTimer", &FFWorker::regTimerForScirpt, this);
     SCRIPT_UTIL.reg("connectDB", &DbMgr::connectDB, (DbMgr*)(&DB_MGR));
     //SCRIPT_UTIL.reg("asyncQuery", &FFWorker::asyncQuery, this);
     //SCRIPT_UTIL.reg("query", &FFWorker::query, this);

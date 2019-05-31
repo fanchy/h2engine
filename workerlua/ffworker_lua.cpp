@@ -22,6 +22,36 @@ FFWorkerLua::~FFWorkerLua()
     delete m_fflua;
     m_fflua = NULL;
 }
+static int64_t gScriptLambdaIdx = 0;
+static void lambdaCallBack(lua_State* ls_, long idx, ScriptArgObjPtr funcArg)
+{
+    char fieldname[256] = {0};
+    snprintf(fieldname, sizeof(fieldname), "h2cb#%ld", idx);
+
+    lua_getglobal(ls_, EXT_NAME);
+    lua_pushstring(ls_, fieldname);
+    lua_gettable (ls_, -2);
+    try
+    {
+        if (::lua_pcall(ls_, 0, 0, 0) != 0)
+        {
+            string err = lua_err_handler_t::luatraceback(ls_, "lua_pcall faled func_name<%s>", fieldname);
+            ::lua_pop(ls_, 1);
+            throw lua_err_t(err);
+        }
+        //Singleton<FFWorkerLua>::instance().getFFlua().call_lambda<void>(pFunc);
+    }
+    catch(exception& e_)
+    {
+        LOGERROR((FFWORKER_LUA, "FFWorkerLua::lambdaCallBack exception<%s>", e_.what()));
+    }
+
+    lua_pushstring(ls_, fieldname);
+    lua_pushnil(ls_);
+    lua_settable(ls_, -3);
+    lua_pop(ls_, 1);
+}
+
 static ScriptArgObjPtr toScriptArg(lua_State* ls_, int pos_){
     ScriptArgObjPtr ret = new ScriptArgObj();
     if (lua_isnumber(ls_, pos_)){
@@ -96,6 +126,19 @@ static ScriptArgObjPtr toScriptArg(lua_State* ls_, int pos_){
 
 			lua_pop(ls_, 1);
 		}
+    }
+    else if (lua_isfunction(ls_, pos_)){
+        char fieldname[256] = {0};
+        ++gScriptLambdaIdx;
+        long idx = long(gScriptLambdaIdx);
+        snprintf(fieldname, sizeof(fieldname), "h2cb#%ld", idx);
+
+        lua_getglobal(ls_, EXT_NAME);
+        lua_pushstring(ls_, fieldname);
+        lua_pushvalue(ls_, pos_);
+        lua_settable(ls_, -3);
+        lua_pop(ls_, 1);
+        ret->toFunc(funcbind(&lambdaCallBack, ls_, idx));
     }
     return ret;
 }
@@ -277,6 +320,7 @@ int FFWorkerLua::scriptInit(const string& lua_root)
 //!!处理初始化逻辑
 int FFWorkerLua::processInit(Mutex* mutex, ConditionVar* var, int* ret)
 {
+    logtrace("FFWorkerLua::processInit begin!!!");
     try{
         (*m_fflua).do_file(m_ext_name);
         SCRIPT_UTIL.setCallScriptFunc(callScriptImpl);

@@ -345,12 +345,12 @@ private:
 #define LOGERROR(content)  Singleton<LogService>::instance().asyncLogerror content
 #define LOGFATAL(content)  Singleton<LogService>::instance().asyncLogfatal content
 
-#define logdebug(content)  LOGDEBUG(("SERVER", content))
-#define logtrace(content)  LOGTRACE(("SERVER", content))
-#define loginfo(content)   LOGINFO(("SERVER", content))
-#define logwarn(content)   LOGWARN(("SERVER", content))
-#define logerror(content)  LOGERROR(("SERVER", content))
-#define logfatal(content)  LOGFATAL(("SERVER", content))
+#define logdebug(content)  Singleton<LogService>::instance().asyncLogdebug("SERVER", content)
+#define logtrace(content)  Singleton<LogService>::instance().asyncLogtrace("SERVER", content)
+#define loginfo(content)   Singleton<LogService>::instance().asyncLoginfo("SERVER", content)
+#define logwarn(content)   Singleton<LogService>::instance().asyncLogwarn("SERVER", content)
+#define logerror(content)  Singleton<LogService>::instance().asyncLogerror("SERVER", content)
+#define logfatal(content)  Singleton<LogService>::instance().asyncLogfatal("SERVER", content)
 }
 
 #endif

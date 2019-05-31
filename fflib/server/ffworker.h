@@ -137,6 +137,7 @@ public:
     const std::string& getWorkerName() const { return m_logic_name;}
 
     void regTimer(uint64_t mstimeout_, Function<void()> func);
+    void regTimerForScirpt(uint64_t mstimeout_, ScriptArgObjPtr func);
 
     void workerRPC(int workerindex, uint16_t cmd, const std::string& data, FFSlot::FFCallBack* cb);
     void asyncHttp(const std::string& url_, int timeoutsec, FFSlot::FFCallBack* cb);

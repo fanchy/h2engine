@@ -126,9 +126,19 @@ int IOEventSelect::runOnce(int ms)
         listFunc = m_listFuncToRun;
         m_listFuncToRun.clear();
         #ifdef _WIN32
+        std::vector<int> allfd;
         for (size_t i = 0; i < readset.fd_count; i++ )
         {
-            Socketfd fd = readset.fd_array[i];
+            allfd.push_back(readset.fd_array[i]);
+        }
+        if (pwriteset)
+        {
+            for (size_t i = 0; i < pwriteset->fd_count; i++ )
+            {
+                allfd.push_back(pwriteset->fd_array[i]);
+            }
+        }
+        
         #else
         for(Socketfd fd = 0; fd < FD_SETSIZE; fd++)
         {
