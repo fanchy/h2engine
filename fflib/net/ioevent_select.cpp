@@ -138,7 +138,9 @@ int IOEventSelect::runOnce(int ms)
                 allfd.push_back(pwriteset->fd_array[i]);
             }
         }
-        
+        for (size_t i = 0; i < allfd.size(); ++i)
+        {
+            Socketfd fd = allfd[i];
         #else
         for(Socketfd fd = 0; fd < FD_SETSIZE; fd++)
         {
@@ -183,6 +185,7 @@ int IOEventSelect::runOnce(int ms)
                 {
                     std::string& toSend = socketInfo.sendBuffer.front();
                     int nsend = SocketOp::sendAll(fd, toSend);
+                    //printf("IOEventSelect::send event nsend=%d!\n", nsend);
                     if (nsend < 0){
                         socketInfo.sendBuffer.clear();
                         cbInfo.eventType = IOEVENT_BROKEN;
