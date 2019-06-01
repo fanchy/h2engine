@@ -35,8 +35,8 @@ uint32_t SessionOfflineReq::read(::apache::thrift::protocol::TProtocol* iprot) {
     {
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I64) {
-          xfer += iprot->readI64(this->session_id);
-          this->__isset.session_id = true;
+          xfer += iprot->readI64(this->sessionId);
+          this->__isset.sessionId = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -57,8 +57,8 @@ uint32_t SessionOfflineReq::write(::apache::thrift::protocol::TProtocol* oprot) 
   uint32_t xfer = 0;
   xfer += oprot->writeStructBegin("SessionOfflineReq");
 
-  xfer += oprot->writeFieldBegin("session_id", ::apache::thrift::protocol::T_I64, 2);
-  xfer += oprot->writeI64(this->session_id);
+  xfer += oprot->writeFieldBegin("sessionId", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->sessionId);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -68,7 +68,7 @@ uint32_t SessionOfflineReq::write(::apache::thrift::protocol::TProtocol* oprot) 
 
 void swap(SessionOfflineReq &a, SessionOfflineReq &b) {
   using ::std::swap;
-  swap(a.session_id, b.session_id);
+  swap(a.sessionId, b.sessionId);
   swap(a.__isset, b.__isset);
 }
 
@@ -97,8 +97,8 @@ uint32_t RouteLogicMsgReq::read(::apache::thrift::protocol::TProtocol* iprot) {
     {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_I64) {
-          xfer += iprot->readI64(this->session_id);
-          this->__isset.session_id = true;
+          xfer += iprot->readI64(this->sessionId);
+          this->__isset.sessionId = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -121,8 +121,8 @@ uint32_t RouteLogicMsgReq::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 4:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->session_ip);
-          this->__isset.session_ip = true;
+          xfer += iprot->readString(this->sessionIp);
+          this->__isset.sessionIp = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -143,8 +143,8 @@ uint32_t RouteLogicMsgReq::write(::apache::thrift::protocol::TProtocol* oprot) c
   uint32_t xfer = 0;
   xfer += oprot->writeStructBegin("RouteLogicMsgReq");
 
-  xfer += oprot->writeFieldBegin("session_id", ::apache::thrift::protocol::T_I64, 1);
-  xfer += oprot->writeI64(this->session_id);
+  xfer += oprot->writeFieldBegin("sessionId", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->sessionId);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("cmd", ::apache::thrift::protocol::T_I16, 2);
@@ -155,8 +155,8 @@ uint32_t RouteLogicMsgReq::write(::apache::thrift::protocol::TProtocol* oprot) c
   xfer += oprot->writeString(this->body);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("session_ip", ::apache::thrift::protocol::T_STRING, 4);
-  xfer += oprot->writeString(this->session_ip);
+  xfer += oprot->writeFieldBegin("sessionIp", ::apache::thrift::protocol::T_STRING, 4);
+  xfer += oprot->writeString(this->sessionIp);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -166,15 +166,15 @@ uint32_t RouteLogicMsgReq::write(::apache::thrift::protocol::TProtocol* oprot) c
 
 void swap(RouteLogicMsgReq &a, RouteLogicMsgReq &b) {
   using ::std::swap;
-  swap(a.session_id, b.session_id);
+  swap(a.sessionId, b.sessionId);
   swap(a.cmd, b.cmd);
   swap(a.body, b.body);
-  swap(a.session_ip, b.session_ip);
+  swap(a.sessionIp, b.sessionIp);
   swap(a.__isset, b.__isset);
 }
 
-const char* GateChangeLogicNodeReq::ascii_fingerprint = "3CC2C885F5B9D03E96907F8376BF80E9";
-const uint8_t GateChangeLogicNodeReq::binary_fingerprint[16] = {0x3C,0xC2,0xC8,0x85,0xF5,0xB9,0xD0,0x3E,0x96,0x90,0x7F,0x83,0x76,0xBF,0x80,0xE9};
+const char* GateChangeLogicNodeReq::ascii_fingerprint = "BC9C141275D96A1BDFC4A1F500B2DCBE";
+const uint8_t GateChangeLogicNodeReq::binary_fingerprint[16] = {0xBC,0x9C,0x14,0x12,0x75,0xD9,0x6A,0x1B,0xDF,0xC4,0xA1,0xF5,0x00,0xB2,0xDC,0xBE};
 
 uint32_t GateChangeLogicNodeReq::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -198,40 +198,24 @@ uint32_t GateChangeLogicNodeReq::read(::apache::thrift::protocol::TProtocol* ipr
     {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_I64) {
-          xfer += iprot->readI64(this->session_id);
-          this->__isset.session_id = true;
+          xfer += iprot->readI64(this->sessionId);
+          this->__isset.sessionId = true;
         } else {
           xfer += iprot->skip(ftype);
         }
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->alloc_worker);
-          this->__isset.alloc_worker = true;
+          xfer += iprot->readString(this->allocWorker);
+          this->__isset.allocWorker = true;
         } else {
           xfer += iprot->skip(ftype);
         }
         break;
       case 3:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->cur_group_name);
-          this->__isset.cur_group_name = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 4:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->dest_group_name);
-          this->__isset.dest_group_name = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 5:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->extra_data);
-          this->__isset.extra_data = true;
+          xfer += iprot->readString(this->extraData);
+          this->__isset.extraData = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -252,24 +236,16 @@ uint32_t GateChangeLogicNodeReq::write(::apache::thrift::protocol::TProtocol* op
   uint32_t xfer = 0;
   xfer += oprot->writeStructBegin("GateChangeLogicNodeReq");
 
-  xfer += oprot->writeFieldBegin("session_id", ::apache::thrift::protocol::T_I64, 1);
-  xfer += oprot->writeI64(this->session_id);
+  xfer += oprot->writeFieldBegin("sessionId", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->sessionId);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("alloc_worker", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString(this->alloc_worker);
+  xfer += oprot->writeFieldBegin("allocWorker", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->allocWorker);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("cur_group_name", ::apache::thrift::protocol::T_STRING, 3);
-  xfer += oprot->writeString(this->cur_group_name);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("dest_group_name", ::apache::thrift::protocol::T_STRING, 4);
-  xfer += oprot->writeString(this->dest_group_name);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("extra_data", ::apache::thrift::protocol::T_STRING, 5);
-  xfer += oprot->writeString(this->extra_data);
+  xfer += oprot->writeFieldBegin("extraData", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->extraData);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -279,11 +255,9 @@ uint32_t GateChangeLogicNodeReq::write(::apache::thrift::protocol::TProtocol* op
 
 void swap(GateChangeLogicNodeReq &a, GateChangeLogicNodeReq &b) {
   using ::std::swap;
-  swap(a.session_id, b.session_id);
-  swap(a.alloc_worker, b.alloc_worker);
-  swap(a.cur_group_name, b.cur_group_name);
-  swap(a.dest_group_name, b.dest_group_name);
-  swap(a.extra_data, b.extra_data);
+  swap(a.sessionId, b.sessionId);
+  swap(a.allocWorker, b.allocWorker);
+  swap(a.extraData, b.extraData);
   swap(a.__isset, b.__isset);
 }
 
@@ -312,8 +286,8 @@ uint32_t GateCloseSessionReq::read(::apache::thrift::protocol::TProtocol* iprot)
     {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_I64) {
-          xfer += iprot->readI64(this->session_id);
-          this->__isset.session_id = true;
+          xfer += iprot->readI64(this->sessionId);
+          this->__isset.sessionId = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -334,8 +308,8 @@ uint32_t GateCloseSessionReq::write(::apache::thrift::protocol::TProtocol* oprot
   uint32_t xfer = 0;
   xfer += oprot->writeStructBegin("GateCloseSessionReq");
 
-  xfer += oprot->writeFieldBegin("session_id", ::apache::thrift::protocol::T_I64, 1);
-  xfer += oprot->writeI64(this->session_id);
+  xfer += oprot->writeFieldBegin("sessionId", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->sessionId);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -345,7 +319,7 @@ uint32_t GateCloseSessionReq::write(::apache::thrift::protocol::TProtocol* oprot
 
 void swap(GateCloseSessionReq &a, GateCloseSessionReq &b) {
   using ::std::swap;
-  swap(a.session_id, b.session_id);
+  swap(a.sessionId, b.sessionId);
   swap(a.__isset, b.__isset);
 }
 
@@ -375,19 +349,19 @@ uint32_t GateRouteMsgToSessionReq::read(::apache::thrift::protocol::TProtocol* i
       case 1:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
-            this->session_id.clear();
+            this->sessionId.clear();
             uint32_t _size0;
             ::apache::thrift::protocol::TType _etype3;
             xfer += iprot->readListBegin(_etype3, _size0);
-            this->session_id.resize(_size0);
+            this->sessionId.resize(_size0);
             uint32_t _i4;
             for (_i4 = 0; _i4 < _size0; ++_i4)
             {
-              xfer += iprot->readI64(this->session_id[_i4]);
+              xfer += iprot->readI64(this->sessionId[_i4]);
             }
             xfer += iprot->readListEnd();
           }
-          this->__isset.session_id = true;
+          this->__isset.sessionId = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -424,11 +398,11 @@ uint32_t GateRouteMsgToSessionReq::write(::apache::thrift::protocol::TProtocol* 
   uint32_t xfer = 0;
   xfer += oprot->writeStructBegin("GateRouteMsgToSessionReq");
 
-  xfer += oprot->writeFieldBegin("session_id", ::apache::thrift::protocol::T_LIST, 1);
+  xfer += oprot->writeFieldBegin("sessionId", ::apache::thrift::protocol::T_LIST, 1);
   {
-    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->session_id.size()));
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->sessionId.size()));
     std::vector<int64_t> ::const_iterator _iter5;
-    for (_iter5 = this->session_id.begin(); _iter5 != this->session_id.end(); ++_iter5)
+    for (_iter5 = this->sessionId.begin(); _iter5 != this->sessionId.end(); ++_iter5)
     {
       xfer += oprot->writeI64((*_iter5));
     }
@@ -451,7 +425,7 @@ uint32_t GateRouteMsgToSessionReq::write(::apache::thrift::protocol::TProtocol* 
 
 void swap(GateRouteMsgToSessionReq &a, GateRouteMsgToSessionReq &b) {
   using ::std::swap;
-  swap(a.session_id, b.session_id);
+  swap(a.sessionId, b.sessionId);
   swap(a.cmd, b.cmd);
   swap(a.body, b.body);
   swap(a.__isset, b.__isset);
@@ -640,8 +614,8 @@ uint32_t WorkerCallMsgRet::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->msg_type);
-          this->__isset.msg_type = true;
+          xfer += iprot->readString(this->msgType);
+          this->__isset.msgType = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -674,8 +648,8 @@ uint32_t WorkerCallMsgRet::write(::apache::thrift::protocol::TProtocol* oprot) c
   xfer += oprot->writeString(this->err);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("msg_type", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString(this->msg_type);
+  xfer += oprot->writeFieldBegin("msgType", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->msgType);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("body", ::apache::thrift::protocol::T_STRING, 3);
@@ -690,7 +664,7 @@ uint32_t WorkerCallMsgRet::write(::apache::thrift::protocol::TProtocol* oprot) c
 void swap(WorkerCallMsgRet &a, WorkerCallMsgRet &b) {
   using ::std::swap;
   swap(a.err, b.err);
-  swap(a.msg_type, b.msg_type);
+  swap(a.msgType, b.msgType);
   swap(a.body, b.body);
   swap(a.__isset, b.__isset);
 }
@@ -720,40 +694,40 @@ uint32_t BrokerRouteMsgReq::read(::apache::thrift::protocol::TProtocol* iprot) {
     {
       case 2:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->dest_service_name);
-          this->__isset.dest_service_name = true;
+          xfer += iprot->readString(this->destServiceName);
+          this->__isset.destServiceName = true;
         } else {
           xfer += iprot->skip(ftype);
         }
         break;
       case 3:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->dest_msg_name);
-          this->__isset.dest_msg_name = true;
+          xfer += iprot->readString(this->destMsgName);
+          this->__isset.destMsgName = true;
         } else {
           xfer += iprot->skip(ftype);
         }
         break;
       case 4:
         if (ftype == ::apache::thrift::protocol::T_I64) {
-          xfer += iprot->readI64(this->dest_node_id);
-          this->__isset.dest_node_id = true;
+          xfer += iprot->readI64(this->destNodeId);
+          this->__isset.destNodeId = true;
         } else {
           xfer += iprot->skip(ftype);
         }
         break;
       case 6:
         if (ftype == ::apache::thrift::protocol::T_I64) {
-          xfer += iprot->readI64(this->from_node_id);
-          this->__isset.from_node_id = true;
+          xfer += iprot->readI64(this->fromNodeId);
+          this->__isset.fromNodeId = true;
         } else {
           xfer += iprot->skip(ftype);
         }
         break;
       case 7:
         if (ftype == ::apache::thrift::protocol::T_I64) {
-          xfer += iprot->readI64(this->callback_id);
-          this->__isset.callback_id = true;
+          xfer += iprot->readI64(this->callbackId);
+          this->__isset.callbackId = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -768,8 +742,8 @@ uint32_t BrokerRouteMsgReq::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 9:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->err_info);
-          this->__isset.err_info = true;
+          xfer += iprot->readString(this->errinfo);
+          this->__isset.errinfo = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -790,32 +764,32 @@ uint32_t BrokerRouteMsgReq::write(::apache::thrift::protocol::TProtocol* oprot) 
   uint32_t xfer = 0;
   xfer += oprot->writeStructBegin("BrokerRouteMsgReq");
 
-  xfer += oprot->writeFieldBegin("dest_service_name", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString(this->dest_service_name);
+  xfer += oprot->writeFieldBegin("destServiceName", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->destServiceName);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("dest_msg_name", ::apache::thrift::protocol::T_STRING, 3);
-  xfer += oprot->writeString(this->dest_msg_name);
+  xfer += oprot->writeFieldBegin("destMsgName", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->destMsgName);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("dest_node_id", ::apache::thrift::protocol::T_I64, 4);
-  xfer += oprot->writeI64(this->dest_node_id);
+  xfer += oprot->writeFieldBegin("destNodeId", ::apache::thrift::protocol::T_I64, 4);
+  xfer += oprot->writeI64(this->destNodeId);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("from_node_id", ::apache::thrift::protocol::T_I64, 6);
-  xfer += oprot->writeI64(this->from_node_id);
+  xfer += oprot->writeFieldBegin("fromNodeId", ::apache::thrift::protocol::T_I64, 6);
+  xfer += oprot->writeI64(this->fromNodeId);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("callback_id", ::apache::thrift::protocol::T_I64, 7);
-  xfer += oprot->writeI64(this->callback_id);
+  xfer += oprot->writeFieldBegin("callbackId", ::apache::thrift::protocol::T_I64, 7);
+  xfer += oprot->writeI64(this->callbackId);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("body", ::apache::thrift::protocol::T_STRING, 8);
   xfer += oprot->writeString(this->body);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("err_info", ::apache::thrift::protocol::T_STRING, 9);
-  xfer += oprot->writeString(this->err_info);
+  xfer += oprot->writeFieldBegin("errinfo", ::apache::thrift::protocol::T_STRING, 9);
+  xfer += oprot->writeString(this->errinfo);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -825,13 +799,13 @@ uint32_t BrokerRouteMsgReq::write(::apache::thrift::protocol::TProtocol* oprot) 
 
 void swap(BrokerRouteMsgReq &a, BrokerRouteMsgReq &b) {
   using ::std::swap;
-  swap(a.dest_service_name, b.dest_service_name);
-  swap(a.dest_msg_name, b.dest_msg_name);
-  swap(a.dest_node_id, b.dest_node_id);
-  swap(a.from_node_id, b.from_node_id);
-  swap(a.callback_id, b.callback_id);
+  swap(a.destServiceName, b.destServiceName);
+  swap(a.destMsgName, b.destMsgName);
+  swap(a.destNodeId, b.destNodeId);
+  swap(a.fromNodeId, b.fromNodeId);
+  swap(a.callbackId, b.callbackId);
   swap(a.body, b.body);
-  swap(a.err_info, b.err_info);
+  swap(a.errinfo, b.errinfo);
   swap(a.__isset, b.__isset);
 }
 
@@ -860,16 +834,16 @@ uint32_t RegisterToBrokerReq::read(::apache::thrift::protocol::TProtocol* iprot)
     {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          xfer += iprot->readI32(this->node_type);
-          this->__isset.node_type = true;
+          xfer += iprot->readI32(this->nodeType);
+          this->__isset.nodeType = true;
         } else {
           xfer += iprot->skip(ftype);
         }
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->service_name);
-          this->__isset.service_name = true;
+          xfer += iprot->readString(this->strServiceName);
+          this->__isset.strServiceName = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -890,12 +864,12 @@ uint32_t RegisterToBrokerReq::write(::apache::thrift::protocol::TProtocol* oprot
   uint32_t xfer = 0;
   xfer += oprot->writeStructBegin("RegisterToBrokerReq");
 
-  xfer += oprot->writeFieldBegin("node_type", ::apache::thrift::protocol::T_I32, 1);
-  xfer += oprot->writeI32(this->node_type);
+  xfer += oprot->writeFieldBegin("nodeType", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32(this->nodeType);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("service_name", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString(this->service_name);
+  xfer += oprot->writeFieldBegin("strServiceName", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->strServiceName);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -905,8 +879,8 @@ uint32_t RegisterToBrokerReq::write(::apache::thrift::protocol::TProtocol* oprot
 
 void swap(RegisterToBrokerReq &a, RegisterToBrokerReq &b) {
   using ::std::swap;
-  swap(a.node_type, b.node_type);
-  swap(a.service_name, b.service_name);
+  swap(a.nodeType, b.nodeType);
+  swap(a.strServiceName, b.strServiceName);
   swap(a.__isset, b.__isset);
 }
 
@@ -935,16 +909,16 @@ uint32_t RegisterToBrokerRet::read(::apache::thrift::protocol::TProtocol* iprot)
     {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_I16) {
-          xfer += iprot->readI16(this->register_flag);
-          this->__isset.register_flag = true;
+          xfer += iprot->readI16(this->registerFlag);
+          this->__isset.registerFlag = true;
         } else {
           xfer += iprot->skip(ftype);
         }
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I64) {
-          xfer += iprot->readI64(this->node_id);
-          this->__isset.node_id = true;
+          xfer += iprot->readI64(this->nodeId);
+          this->__isset.nodeId = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -952,7 +926,7 @@ uint32_t RegisterToBrokerRet::read(::apache::thrift::protocol::TProtocol* iprot)
       case 3:
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
-            this->service2node_id.clear();
+            this->service2nodeId.clear();
             uint32_t _size6;
             ::apache::thrift::protocol::TType _ktype7;
             ::apache::thrift::protocol::TType _vtype8;
@@ -962,12 +936,12 @@ uint32_t RegisterToBrokerRet::read(::apache::thrift::protocol::TProtocol* iprot)
             {
               std::string _key11;
               xfer += iprot->readString(_key11);
-              int64_t& _val12 = this->service2node_id[_key11];
+              int64_t& _val12 = this->service2nodeId[_key11];
               xfer += iprot->readI64(_val12);
             }
             xfer += iprot->readMapEnd();
           }
-          this->__isset.service2node_id = true;
+          this->__isset.service2nodeId = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -988,19 +962,19 @@ uint32_t RegisterToBrokerRet::write(::apache::thrift::protocol::TProtocol* oprot
   uint32_t xfer = 0;
   xfer += oprot->writeStructBegin("RegisterToBrokerRet");
 
-  xfer += oprot->writeFieldBegin("register_flag", ::apache::thrift::protocol::T_I16, 1);
-  xfer += oprot->writeI16(this->register_flag);
+  xfer += oprot->writeFieldBegin("registerFlag", ::apache::thrift::protocol::T_I16, 1);
+  xfer += oprot->writeI16(this->registerFlag);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("node_id", ::apache::thrift::protocol::T_I64, 2);
-  xfer += oprot->writeI64(this->node_id);
+  xfer += oprot->writeFieldBegin("nodeId", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->nodeId);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("service2node_id", ::apache::thrift::protocol::T_MAP, 3);
+  xfer += oprot->writeFieldBegin("service2nodeId", ::apache::thrift::protocol::T_MAP, 3);
   {
-    xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->service2node_id.size()));
+    xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->service2nodeId.size()));
     std::map<std::string, int64_t> ::const_iterator _iter13;
-    for (_iter13 = this->service2node_id.begin(); _iter13 != this->service2node_id.end(); ++_iter13)
+    for (_iter13 = this->service2nodeId.begin(); _iter13 != this->service2nodeId.end(); ++_iter13)
     {
       xfer += oprot->writeString(_iter13->first);
       xfer += oprot->writeI64(_iter13->second);
@@ -1016,9 +990,9 @@ uint32_t RegisterToBrokerRet::write(::apache::thrift::protocol::TProtocol* oprot
 
 void swap(RegisterToBrokerRet &a, RegisterToBrokerRet &b) {
   using ::std::swap;
-  swap(a.register_flag, b.register_flag);
-  swap(a.node_id, b.node_id);
-  swap(a.service2node_id, b.service2node_id);
+  swap(a.registerFlag, b.registerFlag);
+  swap(a.nodeId, b.nodeId);
+  swap(a.service2nodeId, b.service2nodeId);
   swap(a.__isset, b.__isset);
 }
 
@@ -1092,48 +1066,48 @@ uint32_t SessionEnterWorkerReq::read(::apache::thrift::protocol::TProtocol* ipro
     {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_I64) {
-          xfer += iprot->readI64(this->session_id);
-          this->__isset.session_id = true;
+          xfer += iprot->readI64(this->sessionId);
+          this->__isset.sessionId = true;
         } else {
           xfer += iprot->skip(ftype);
         }
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->session_ip);
-          this->__isset.session_ip = true;
+          xfer += iprot->readString(this->sessionIp);
+          this->__isset.sessionIp = true;
         } else {
           xfer += iprot->skip(ftype);
         }
         break;
       case 3:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->from_gate);
-          this->__isset.from_gate = true;
+          xfer += iprot->readString(this->fromGate);
+          this->__isset.fromGate = true;
         } else {
           xfer += iprot->skip(ftype);
         }
         break;
       case 4:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->from_worker);
-          this->__isset.from_worker = true;
+          xfer += iprot->readString(this->fromWorker);
+          this->__isset.fromWorker = true;
         } else {
           xfer += iprot->skip(ftype);
         }
         break;
       case 5:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->to_worker);
-          this->__isset.to_worker = true;
+          xfer += iprot->readString(this->toWorker);
+          this->__isset.toWorker = true;
         } else {
           xfer += iprot->skip(ftype);
         }
         break;
       case 6:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->extra_data);
-          this->__isset.extra_data = true;
+          xfer += iprot->readString(this->extraData);
+          this->__isset.extraData = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -1154,28 +1128,28 @@ uint32_t SessionEnterWorkerReq::write(::apache::thrift::protocol::TProtocol* opr
   uint32_t xfer = 0;
   xfer += oprot->writeStructBegin("SessionEnterWorkerReq");
 
-  xfer += oprot->writeFieldBegin("session_id", ::apache::thrift::protocol::T_I64, 1);
-  xfer += oprot->writeI64(this->session_id);
+  xfer += oprot->writeFieldBegin("sessionId", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->sessionId);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("session_ip", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString(this->session_ip);
+  xfer += oprot->writeFieldBegin("sessionIp", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->sessionIp);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("from_gate", ::apache::thrift::protocol::T_STRING, 3);
-  xfer += oprot->writeString(this->from_gate);
+  xfer += oprot->writeFieldBegin("fromGate", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->fromGate);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("from_worker", ::apache::thrift::protocol::T_STRING, 4);
-  xfer += oprot->writeString(this->from_worker);
+  xfer += oprot->writeFieldBegin("fromWorker", ::apache::thrift::protocol::T_STRING, 4);
+  xfer += oprot->writeString(this->fromWorker);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("to_worker", ::apache::thrift::protocol::T_STRING, 5);
-  xfer += oprot->writeString(this->to_worker);
+  xfer += oprot->writeFieldBegin("toWorker", ::apache::thrift::protocol::T_STRING, 5);
+  xfer += oprot->writeString(this->toWorker);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("extra_data", ::apache::thrift::protocol::T_STRING, 6);
-  xfer += oprot->writeString(this->extra_data);
+  xfer += oprot->writeFieldBegin("extraData", ::apache::thrift::protocol::T_STRING, 6);
+  xfer += oprot->writeString(this->extraData);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -1185,12 +1159,12 @@ uint32_t SessionEnterWorkerReq::write(::apache::thrift::protocol::TProtocol* opr
 
 void swap(SessionEnterWorkerReq &a, SessionEnterWorkerReq &b) {
   using ::std::swap;
-  swap(a.session_id, b.session_id);
-  swap(a.session_ip, b.session_ip);
-  swap(a.from_gate, b.from_gate);
-  swap(a.from_worker, b.from_worker);
-  swap(a.to_worker, b.to_worker);
-  swap(a.extra_data, b.extra_data);
+  swap(a.sessionId, b.sessionId);
+  swap(a.sessionIp, b.sessionIp);
+  swap(a.fromGate, b.fromGate);
+  swap(a.fromWorker, b.fromWorker);
+  swap(a.toWorker, b.toWorker);
+  swap(a.extraData, b.extraData);
   swap(a.__isset, b.__isset);
 }
 

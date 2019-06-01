@@ -102,8 +102,8 @@ void FFGate::cleanup_session(client_info_t& client_info, SocketObjPtr sock_, boo
         if (closesend)
         {
             SessionOfflineReq msg;
-            msg.session_id  = session_data.id();
-            m_ffrpc->call(client_info.alloc_worker, msg);
+            msg.sessionId  = session_data.id();
+            m_ffrpc->call(client_info.allocWorker, msg);
         }
 
         m_client_set.erase(session_data.id());
@@ -136,54 +136,45 @@ int FFGate::handleMsg(const Message& msg_, SocketObjPtr sock_)
             //sock_->close();
             return 0;
         }
-        session_data.session_id = this->allocID();
+        session_data.sessionId = this->allocID();
         client_info_t& client_info = m_client_set[session_data.id()];
         client_info.sock           = sock_;
 
-        client_info.alloc_worker = allwoker[session_data.id() % allwoker.size()];
-        LOGTRACE((FFGATE, "id:%d, client_info.alloc_worker:%s", session_data.id(), client_info.alloc_worker));
+        client_info.allocWorker = allwoker[session_data.id() % allwoker.size()];
+        LOGTRACE((FFGATE, "id:%d, client_info.allocWorker:%s", session_data.id(), client_info.allocWorker));
         return routeLogicMsg(msg_, sock_, true);
     }
     return routeLogicMsg(msg_, sock_, false);
-}
-
-
-//! enter scene 回调函数
-int FFGate::enterWorkerCallback(RPCReq<EmptyMsgRet>& req_, const userid_t& session_id_)
-{
-    LOGTRACE((FFGATE, "FFGate::enterWorkerCallback session_id[%ld]", session_id_));
-    LOGTRACE((FFGATE, "FFGate::enterWorkerCallback end ok"));
-    return 0;
 }
 
 //! 逻辑处理,转发消息到logic service
 int FFGate::routeLogicMsg(const Message& msg_, SocketObjPtr sock_, bool first)
 {
     SessionData& session_data = sock_->getData<SessionData>();
-    LOGTRACE((FFGATE, "FFGate::routeLogicMsg session_id[%ld]", session_data.id()));
+    LOGTRACE((FFGATE, "FFGate::routeLogicMsg sessionId[%ld]", session_data.id()));
 
     client_info_t& client_info   = m_client_set[session_data.id()];
 
     RouteLogicMsgReq msg;
-    msg.session_id = session_data.id();
+    msg.sessionId = session_data.id();
     msg.cmd        = msg_.getCmd();
     msg.body       = msg_.getBody();
     if (first)
     {
-        msg.session_ip = SocketOp::getpeername(sock_->getRawSocket());
-        LOGTRACE((FFGATE, "FFGate::handleMsg new session_id[%ld] ip[%s] alloc[%s]",
-                    session_data.id(), msg.session_ip, client_info.alloc_worker));
+        msg.sessionIp = SocketOp::getpeername(sock_->getRawSocket());
+        LOGTRACE((FFGATE, "FFGate::handleMsg new sessionId[%ld] ip[%s] alloc[%s]",
+                    session_data.id(), msg.sessionIp, client_info.allocWorker));
     }
-    m_ffrpc->call(client_info.group_name, client_info.alloc_worker, msg);
-    LOGTRACE((FFGATE, "FFGate::routeLogicMsg end ok alloc_worker[%s] bodysize=%u", client_info.alloc_worker, msg.body.size()));
+    m_ffrpc->call(client_info.allocWorker, msg);
+    LOGTRACE((FFGATE, "FFGate::routeLogicMsg end ok allocWorker[%s] bodysize=%u", client_info.allocWorker, msg.body.size()));
     return 0;
 }
 
 //! 改变处理client 逻辑的对应的节点
 int FFGate::changeSessionLogic(RPCReq<GateChangeLogicNodeReq, EmptyMsgRet>& req_)
 {
-    LOGTRACE((FFGATE, "FFGate::changeSessionLogic session_id[%ld]", req_.msg.session_id));
-    map<userid_t/*sessionid*/, client_info_t>::iterator it = m_client_set.find(req_.msg.session_id);
+    LOGTRACE((FFGATE, "FFGate::changeSessionLogic sessionId[%ld]", req_.msg.sessionId));
+    map<userid_t/*sessionid*/, client_info_t>::iterator it = m_client_set.find(req_.msg.sessionId);
     if (it == m_client_set.end())
     {
         return 0;
@@ -193,20 +184,17 @@ int FFGate::changeSessionLogic(RPCReq<GateChangeLogicNodeReq, EmptyMsgRet>& req_
     req_.response(out);
 
     SessionEnterWorkerReq enter_msg;
-    it->second.group_name = req_.msg.dest_group_name;
-    //enter_msg.from_group = req_.msg.cur_group_name;
-    enter_msg.from_worker = it->second.alloc_worker;
+    enter_msg.fromWorker = it->second.allocWorker;
 
-    it->second.alloc_worker = req_.msg.alloc_worker;
+    it->second.allocWorker = req_.msg.allocWorker;
 
-    enter_msg.session_id = req_.msg.session_id;
-    enter_msg.from_gate = m_gate_name;
-    enter_msg.session_ip = SocketOp::getpeername(it->second.sock->getRawSocket());
+    enter_msg.sessionId = req_.msg.sessionId;
+    enter_msg.fromGate = m_gate_name;
+    enter_msg.sessionIp = SocketOp::getpeername(it->second.sock->getRawSocket());
 
-    enter_msg.to_worker = req_.msg.alloc_worker;
-    enter_msg.extra_data = req_.msg.extra_data;
-    m_ffrpc->call(it->second.group_name, req_.msg.alloc_worker, enter_msg,
-                  FFRpcOps::genCallBack(&FFGate::enterWorkerCallback, this, req_.msg.session_id));
+    enter_msg.toWorker = req_.msg.allocWorker;
+    enter_msg.extraData = req_.msg.extraData;
+    m_ffrpc->call(req_.msg.allocWorker, enter_msg);
 
 
     LOGTRACE((FFGATE, "FFGate::changeSessionLogic end ok"));
@@ -216,11 +204,11 @@ int FFGate::changeSessionLogic(RPCReq<GateChangeLogicNodeReq, EmptyMsgRet>& req_
 //! 关闭某个session socket
 int FFGate::closeSession(RPCReq<GateCloseSessionReq, EmptyMsgRet>& req_)
 {
-    LOGTRACE((FFGATE, "FFGate::closeSession session_id[%ld]", req_.msg.session_id));
+    LOGTRACE((FFGATE, "FFGate::closeSession sessionId[%ld]", req_.msg.sessionId));
 
     EmptyMsgRet out;
     req_.response(out);
-    map<userid_t/*sessionid*/, client_info_t>::iterator it = m_client_set.find(req_.msg.session_id);
+    map<userid_t/*sessionid*/, client_info_t>::iterator it = m_client_set.find(req_.msg.sessionId);
     if (it == m_client_set.end())
     {
         return 0;
@@ -235,14 +223,14 @@ int FFGate::closeSession(RPCReq<GateCloseSessionReq, EmptyMsgRet>& req_)
 //! 转发消息给client
 int FFGate::routeMsgToSession(RPCReq<GateRouteMsgToSessionReq, EmptyMsgRet>& req_)
 {
-    LOGTRACE((FFGATE, "FFGate::routeMsgToSession begin num[%d]", req_.msg.session_id.size()));
+    LOGTRACE((FFGATE, "FFGate::routeMsgToSession begin num[%d]", req_.msg.sessionId.size()));
 
-    for (size_t i = 0; i < req_.msg.session_id.size(); ++i)
+    for (size_t i = 0; i < req_.msg.sessionId.size(); ++i)
     {
-        userid_t& session_id = req_.msg.session_id[i];
-        LOGTRACE((FFGATE, "FFGate::routeMsgToSession session_id[%ld]", session_id));
+        userid_t& sessionId = req_.msg.sessionId[i];
+        LOGTRACE((FFGATE, "FFGate::routeMsgToSession sessionId[%ld]", sessionId));
 
-        map<userid_t/*sessionid*/, client_info_t>::iterator it = m_client_set.find(session_id);
+        map<userid_t/*sessionid*/, client_info_t>::iterator it = m_client_set.find(sessionId);
         if (it == m_client_set.end())
         {
             continue;

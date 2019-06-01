@@ -18,8 +18,8 @@
 namespace ff {
 
 typedef struct _SessionOfflineReq__isset {
-  _SessionOfflineReq__isset() : session_id(true) {}
-  bool session_id;
+  _SessionOfflineReq__isset() : sessionId(true) {}
+  bool sessionId;
 } _SessionOfflineReq__isset;
 
 class SessionOfflineReq {
@@ -28,22 +28,22 @@ class SessionOfflineReq {
   static const char* ascii_fingerprint; // = "7CBAC864381682B525334E49955F454B";
   static const uint8_t binary_fingerprint[16]; // = {0x7C,0xBA,0xC8,0x64,0x38,0x16,0x82,0xB5,0x25,0x33,0x4E,0x49,0x95,0x5F,0x45,0x4B};
 
-  SessionOfflineReq() : session_id(0LL) {
+  SessionOfflineReq() : sessionId(0LL) {
   }
 
   virtual ~SessionOfflineReq() throw() {}
 
-  int64_t session_id;
+  int64_t sessionId;
 
   _SessionOfflineReq__isset __isset;
 
-  void __set_session_id(const int64_t val) {
-    session_id = val;
+  void __set_sessionId(const int64_t val) {
+    sessionId = val;
   }
 
   bool operator == (const SessionOfflineReq & rhs) const
   {
-    if (!(session_id == rhs.session_id))
+    if (!(sessionId == rhs.sessionId))
       return false;
     return true;
   }
@@ -61,11 +61,11 @@ class SessionOfflineReq {
 void swap(SessionOfflineReq &a, SessionOfflineReq &b);
 
 typedef struct _RouteLogicMsgReq__isset {
-  _RouteLogicMsgReq__isset() : session_id(true), cmd(true), body(false), session_ip(false) {}
-  bool session_id;
+  _RouteLogicMsgReq__isset() : sessionId(true), cmd(true), body(false), sessionIp(false) {}
+  bool sessionId;
   bool cmd;
   bool body;
-  bool session_ip;
+  bool sessionIp;
 } _RouteLogicMsgReq__isset;
 
 class RouteLogicMsgReq {
@@ -74,20 +74,20 @@ class RouteLogicMsgReq {
   static const char* ascii_fingerprint; // = "EADC45C9A213F80E462BAA7CE9FA080F";
   static const uint8_t binary_fingerprint[16]; // = {0xEA,0xDC,0x45,0xC9,0xA2,0x13,0xF8,0x0E,0x46,0x2B,0xAA,0x7C,0xE9,0xFA,0x08,0x0F};
 
-  RouteLogicMsgReq() : session_id(0LL), cmd(0), body(), session_ip() {
+  RouteLogicMsgReq() : sessionId(0LL), cmd(0), body(), sessionIp() {
   }
 
   virtual ~RouteLogicMsgReq() throw() {}
 
-  int64_t session_id;
+  int64_t sessionId;
   int16_t cmd;
   std::string body;
-  std::string session_ip;
+  std::string sessionIp;
 
   _RouteLogicMsgReq__isset __isset;
 
-  void __set_session_id(const int64_t val) {
-    session_id = val;
+  void __set_sessionId(const int64_t val) {
+    sessionId = val;
   }
 
   void __set_cmd(const int16_t val) {
@@ -98,19 +98,19 @@ class RouteLogicMsgReq {
     body = val;
   }
 
-  void __set_session_ip(const std::string& val) {
-    session_ip = val;
+  void __set_sessionIp(const std::string& val) {
+    sessionIp = val;
   }
 
   bool operator == (const RouteLogicMsgReq & rhs) const
   {
-    if (!(session_id == rhs.session_id))
+    if (!(sessionId == rhs.sessionId))
       return false;
     if (!(cmd == rhs.cmd))
       return false;
     if (!(body == rhs.body))
       return false;
-    if (!(session_ip == rhs.session_ip))
+    if (!(sessionIp == rhs.sessionIp))
       return false;
     return true;
   }
@@ -128,64 +128,48 @@ class RouteLogicMsgReq {
 void swap(RouteLogicMsgReq &a, RouteLogicMsgReq &b);
 
 typedef struct _GateChangeLogicNodeReq__isset {
-  _GateChangeLogicNodeReq__isset() : session_id(true), alloc_worker(false), cur_group_name(false), dest_group_name(false), extra_data(false) {}
-  bool session_id;
-  bool alloc_worker;
-  bool cur_group_name;
-  bool dest_group_name;
-  bool extra_data;
+  _GateChangeLogicNodeReq__isset() : sessionId(true), allocWorker(false), extraData(false) {}
+  bool sessionId;
+  bool allocWorker;
+  bool extraData;
 } _GateChangeLogicNodeReq__isset;
 
 class GateChangeLogicNodeReq {
  public:
 
-  static const char* ascii_fingerprint; // = "3CC2C885F5B9D03E96907F8376BF80E9";
-  static const uint8_t binary_fingerprint[16]; // = {0x3C,0xC2,0xC8,0x85,0xF5,0xB9,0xD0,0x3E,0x96,0x90,0x7F,0x83,0x76,0xBF,0x80,0xE9};
+  static const char* ascii_fingerprint; // = "BC9C141275D96A1BDFC4A1F500B2DCBE";
+  static const uint8_t binary_fingerprint[16]; // = {0xBC,0x9C,0x14,0x12,0x75,0xD9,0x6A,0x1B,0xDF,0xC4,0xA1,0xF5,0x00,0xB2,0xDC,0xBE};
 
-  GateChangeLogicNodeReq() : session_id(0LL), alloc_worker(), cur_group_name(), dest_group_name(), extra_data() {
+  GateChangeLogicNodeReq() : sessionId(0LL), allocWorker(), extraData() {
   }
 
   virtual ~GateChangeLogicNodeReq() throw() {}
 
-  int64_t session_id;
-  std::string alloc_worker;
-  std::string cur_group_name;
-  std::string dest_group_name;
-  std::string extra_data;
+  int64_t sessionId;
+  std::string allocWorker;
+  std::string extraData;
 
   _GateChangeLogicNodeReq__isset __isset;
 
-  void __set_session_id(const int64_t val) {
-    session_id = val;
+  void __set_sessionId(const int64_t val) {
+    sessionId = val;
   }
 
-  void __set_alloc_worker(const std::string& val) {
-    alloc_worker = val;
+  void __set_allocWorker(const std::string& val) {
+    allocWorker = val;
   }
 
-  void __set_cur_group_name(const std::string& val) {
-    cur_group_name = val;
-  }
-
-  void __set_dest_group_name(const std::string& val) {
-    dest_group_name = val;
-  }
-
-  void __set_extra_data(const std::string& val) {
-    extra_data = val;
+  void __set_extraData(const std::string& val) {
+    extraData = val;
   }
 
   bool operator == (const GateChangeLogicNodeReq & rhs) const
   {
-    if (!(session_id == rhs.session_id))
+    if (!(sessionId == rhs.sessionId))
       return false;
-    if (!(alloc_worker == rhs.alloc_worker))
+    if (!(allocWorker == rhs.allocWorker))
       return false;
-    if (!(cur_group_name == rhs.cur_group_name))
-      return false;
-    if (!(dest_group_name == rhs.dest_group_name))
-      return false;
-    if (!(extra_data == rhs.extra_data))
+    if (!(extraData == rhs.extraData))
       return false;
     return true;
   }
@@ -203,8 +187,8 @@ class GateChangeLogicNodeReq {
 void swap(GateChangeLogicNodeReq &a, GateChangeLogicNodeReq &b);
 
 typedef struct _GateCloseSessionReq__isset {
-  _GateCloseSessionReq__isset() : session_id(true) {}
-  bool session_id;
+  _GateCloseSessionReq__isset() : sessionId(true) {}
+  bool sessionId;
 } _GateCloseSessionReq__isset;
 
 class GateCloseSessionReq {
@@ -213,22 +197,22 @@ class GateCloseSessionReq {
   static const char* ascii_fingerprint; // = "56A59CE7FFAF82BCA8A19FAACDE4FB75";
   static const uint8_t binary_fingerprint[16]; // = {0x56,0xA5,0x9C,0xE7,0xFF,0xAF,0x82,0xBC,0xA8,0xA1,0x9F,0xAA,0xCD,0xE4,0xFB,0x75};
 
-  GateCloseSessionReq() : session_id(0LL) {
+  GateCloseSessionReq() : sessionId(0LL) {
   }
 
   virtual ~GateCloseSessionReq() throw() {}
 
-  int64_t session_id;
+  int64_t sessionId;
 
   _GateCloseSessionReq__isset __isset;
 
-  void __set_session_id(const int64_t val) {
-    session_id = val;
+  void __set_sessionId(const int64_t val) {
+    sessionId = val;
   }
 
   bool operator == (const GateCloseSessionReq & rhs) const
   {
-    if (!(session_id == rhs.session_id))
+    if (!(sessionId == rhs.sessionId))
       return false;
     return true;
   }
@@ -246,8 +230,8 @@ class GateCloseSessionReq {
 void swap(GateCloseSessionReq &a, GateCloseSessionReq &b);
 
 typedef struct _GateRouteMsgToSessionReq__isset {
-  _GateRouteMsgToSessionReq__isset() : session_id(true), cmd(true), body(false) {}
-  bool session_id;
+  _GateRouteMsgToSessionReq__isset() : sessionId(true), cmd(true), body(false) {}
+  bool sessionId;
   bool cmd;
   bool body;
 } _GateRouteMsgToSessionReq__isset;
@@ -264,14 +248,14 @@ class GateRouteMsgToSessionReq {
 
   virtual ~GateRouteMsgToSessionReq() throw() {}
 
-  std::vector<int64_t>  session_id;
+  std::vector<int64_t>  sessionId;
   int16_t cmd;
   std::string body;
 
   _GateRouteMsgToSessionReq__isset __isset;
 
-  void __set_session_id(const std::vector<int64_t> & val) {
-    session_id = val;
+  void __set_sessionId(const std::vector<int64_t> & val) {
+    sessionId = val;
   }
 
   void __set_cmd(const int16_t val) {
@@ -284,7 +268,7 @@ class GateRouteMsgToSessionReq {
 
   bool operator == (const GateRouteMsgToSessionReq & rhs) const
   {
-    if (!(session_id == rhs.session_id))
+    if (!(sessionId == rhs.sessionId))
       return false;
     if (!(cmd == rhs.cmd))
       return false;
@@ -408,9 +392,9 @@ class WorkerCallMsgReq {
 void swap(WorkerCallMsgReq &a, WorkerCallMsgReq &b);
 
 typedef struct _WorkerCallMsgRet__isset {
-  _WorkerCallMsgRet__isset() : err(false), msg_type(false), body(false) {}
+  _WorkerCallMsgRet__isset() : err(false), msgType(false), body(false) {}
   bool err;
-  bool msg_type;
+  bool msgType;
   bool body;
 } _WorkerCallMsgRet__isset;
 
@@ -420,13 +404,13 @@ class WorkerCallMsgRet {
   static const char* ascii_fingerprint; // = "AB879940BD15B6B25691265F7384B271";
   static const uint8_t binary_fingerprint[16]; // = {0xAB,0x87,0x99,0x40,0xBD,0x15,0xB6,0xB2,0x56,0x91,0x26,0x5F,0x73,0x84,0xB2,0x71};
 
-  WorkerCallMsgRet() : err(), msg_type(), body() {
+  WorkerCallMsgRet() : err(), msgType(), body() {
   }
 
   virtual ~WorkerCallMsgRet() throw() {}
 
   std::string err;
-  std::string msg_type;
+  std::string msgType;
   std::string body;
 
   _WorkerCallMsgRet__isset __isset;
@@ -435,8 +419,8 @@ class WorkerCallMsgRet {
     err = val;
   }
 
-  void __set_msg_type(const std::string& val) {
-    msg_type = val;
+  void __set_msgType(const std::string& val) {
+    msgType = val;
   }
 
   void __set_body(const std::string& val) {
@@ -447,7 +431,7 @@ class WorkerCallMsgRet {
   {
     if (!(err == rhs.err))
       return false;
-    if (!(msg_type == rhs.msg_type))
+    if (!(msgType == rhs.msgType))
       return false;
     if (!(body == rhs.body))
       return false;
@@ -467,14 +451,14 @@ class WorkerCallMsgRet {
 void swap(WorkerCallMsgRet &a, WorkerCallMsgRet &b);
 
 typedef struct _BrokerRouteMsgReq__isset {
-  _BrokerRouteMsgReq__isset() : dest_service_name(false), dest_msg_name(false), dest_node_id(false), from_node_id(false), callback_id(false), body(false), err_info(false) {}
-  bool dest_service_name;
-  bool dest_msg_name;
-  bool dest_node_id;
-  bool from_node_id;
-  bool callback_id;
+  _BrokerRouteMsgReq__isset() : destServiceName(false), destMsgName(false), destNodeId(false), fromNodeId(false), callbackId(false), body(false), errinfo(false) {}
+  bool destServiceName;
+  bool destMsgName;
+  bool destNodeId;
+  bool fromNodeId;
+  bool callbackId;
   bool body;
-  bool err_info;
+  bool errinfo;
 } _BrokerRouteMsgReq__isset;
 
 class BrokerRouteMsgReq {
@@ -483,64 +467,64 @@ class BrokerRouteMsgReq {
   static const char* ascii_fingerprint; // = "C07CD6450B7CF81ECAF7242A818797B7";
   static const uint8_t binary_fingerprint[16]; // = {0xC0,0x7C,0xD6,0x45,0x0B,0x7C,0xF8,0x1E,0xCA,0xF7,0x24,0x2A,0x81,0x87,0x97,0xB7};
 
-  BrokerRouteMsgReq() : dest_service_name(), dest_msg_name(), dest_node_id(0), from_node_id(0), callback_id(0), body(), err_info() {
+  BrokerRouteMsgReq() : destServiceName(), destMsgName(), destNodeId(0), fromNodeId(0), callbackId(0), body(), errinfo() {
   }
 
   virtual ~BrokerRouteMsgReq() throw() {}
 
-  std::string dest_service_name;
-  std::string dest_msg_name;
-  int64_t dest_node_id;
-  int64_t from_node_id;
-  int64_t callback_id;
+  std::string destServiceName;
+  std::string destMsgName;
+  int64_t destNodeId;
+  int64_t fromNodeId;
+  int64_t callbackId;
   std::string body;
-  std::string err_info;
+  std::string errinfo;
 
   _BrokerRouteMsgReq__isset __isset;
 
-  void __set_dest_service_name(const std::string& val) {
-    dest_service_name = val;
+  void __set_destServiceName(const std::string& val) {
+    destServiceName = val;
   }
 
-  void __set_dest_msg_name(const std::string& val) {
-    dest_msg_name = val;
+  void __set_destMsgName(const std::string& val) {
+    destMsgName = val;
   }
 
-  void __set_dest_node_id(const int64_t val) {
-    dest_node_id = val;
+  void __set_destNodeId(const int64_t val) {
+    destNodeId = val;
   }
 
-  void __set_from_node_id(const int64_t val) {
-    from_node_id = val;
+  void __set_fromNodeId(const int64_t val) {
+    fromNodeId = val;
   }
 
-  void __set_callback_id(const int64_t val) {
-    callback_id = val;
+  void __set_callbackId(const int64_t val) {
+    callbackId = val;
   }
 
   void __set_body(const std::string& val) {
     body = val;
   }
 
-  void __set_err_info(const std::string& val) {
-    err_info = val;
+  void __set_errinfo(const std::string& val) {
+    errinfo = val;
   }
 
   bool operator == (const BrokerRouteMsgReq & rhs) const
   {
-    if (!(dest_service_name == rhs.dest_service_name))
+    if (!(destServiceName == rhs.destServiceName))
       return false;
-    if (!(dest_msg_name == rhs.dest_msg_name))
+    if (!(destMsgName == rhs.destMsgName))
       return false;
-    if (!(dest_node_id == rhs.dest_node_id))
+    if (!(destNodeId == rhs.destNodeId))
       return false;
-    if (!(from_node_id == rhs.from_node_id))
+    if (!(fromNodeId == rhs.fromNodeId))
       return false;
-    if (!(callback_id == rhs.callback_id))
+    if (!(callbackId == rhs.callbackId))
       return false;
     if (!(body == rhs.body))
       return false;
-    if (!(err_info == rhs.err_info))
+    if (!(errinfo == rhs.errinfo))
       return false;
     return true;
   }
@@ -558,9 +542,9 @@ class BrokerRouteMsgReq {
 void swap(BrokerRouteMsgReq &a, BrokerRouteMsgReq &b);
 
 typedef struct _RegisterToBrokerReq__isset {
-  _RegisterToBrokerReq__isset() : node_type(false), service_name(false) {}
-  bool node_type;
-  bool service_name;
+  _RegisterToBrokerReq__isset() : nodeType(false), strServiceName(false) {}
+  bool nodeType;
+  bool strServiceName;
 } _RegisterToBrokerReq__isset;
 
 class RegisterToBrokerReq {
@@ -569,29 +553,29 @@ class RegisterToBrokerReq {
   static const char* ascii_fingerprint; // = "3F5FC93B338687BC7235B1AB103F47B3";
   static const uint8_t binary_fingerprint[16]; // = {0x3F,0x5F,0xC9,0x3B,0x33,0x86,0x87,0xBC,0x72,0x35,0xB1,0xAB,0x10,0x3F,0x47,0xB3};
 
-  RegisterToBrokerReq() : node_type(0), service_name() {
+  RegisterToBrokerReq() : nodeType(0), strServiceName() {
   }
 
   virtual ~RegisterToBrokerReq() throw() {}
 
-  int32_t node_type;
-  std::string service_name;
+  int32_t nodeType;
+  std::string strServiceName;
 
   _RegisterToBrokerReq__isset __isset;
 
-  void __set_node_type(const int32_t val) {
-    node_type = val;
+  void __set_nodeType(const int32_t val) {
+    nodeType = val;
   }
 
-  void __set_service_name(const std::string& val) {
-    service_name = val;
+  void __set_strServiceName(const std::string& val) {
+    strServiceName = val;
   }
 
   bool operator == (const RegisterToBrokerReq & rhs) const
   {
-    if (!(node_type == rhs.node_type))
+    if (!(nodeType == rhs.nodeType))
       return false;
-    if (!(service_name == rhs.service_name))
+    if (!(strServiceName == rhs.strServiceName))
       return false;
     return true;
   }
@@ -609,10 +593,10 @@ class RegisterToBrokerReq {
 void swap(RegisterToBrokerReq &a, RegisterToBrokerReq &b);
 
 typedef struct _RegisterToBrokerRet__isset {
-  _RegisterToBrokerRet__isset() : register_flag(false), node_id(false), service2node_id(false) {}
-  bool register_flag;
-  bool node_id;
-  bool service2node_id;
+  _RegisterToBrokerRet__isset() : registerFlag(false), nodeId(false), service2nodeId(false) {}
+  bool registerFlag;
+  bool nodeId;
+  bool service2nodeId;
 } _RegisterToBrokerRet__isset;
 
 class RegisterToBrokerRet {
@@ -621,36 +605,36 @@ class RegisterToBrokerRet {
   static const char* ascii_fingerprint; // = "1F41639F8135007E546B5DA3F7363917";
   static const uint8_t binary_fingerprint[16]; // = {0x1F,0x41,0x63,0x9F,0x81,0x35,0x00,0x7E,0x54,0x6B,0x5D,0xA3,0xF7,0x36,0x39,0x17};
 
-  RegisterToBrokerRet() : register_flag(0), node_id(0) {
+  RegisterToBrokerRet() : registerFlag(0), nodeId(0) {
   }
 
   virtual ~RegisterToBrokerRet() throw() {}
 
-  int16_t register_flag;
-  int64_t node_id;
-  std::map<std::string, int64_t>  service2node_id;
+  int16_t registerFlag;
+  int64_t nodeId;
+  std::map<std::string, int64_t>  service2nodeId;
 
   _RegisterToBrokerRet__isset __isset;
 
-  void __set_register_flag(const int16_t val) {
-    register_flag = val;
+  void __set_registerFlag(const int16_t val) {
+    registerFlag = val;
   }
 
-  void __set_node_id(const int64_t val) {
-    node_id = val;
+  void __set_nodeId(const int64_t val) {
+    nodeId = val;
   }
 
-  void __set_service2node_id(const std::map<std::string, int64_t> & val) {
-    service2node_id = val;
+  void __set_service2nodeId(const std::map<std::string, int64_t> & val) {
+    service2nodeId = val;
   }
 
   bool operator == (const RegisterToBrokerRet & rhs) const
   {
-    if (!(register_flag == rhs.register_flag))
+    if (!(registerFlag == rhs.registerFlag))
       return false;
-    if (!(node_id == rhs.node_id))
+    if (!(nodeId == rhs.nodeId))
       return false;
-    if (!(service2node_id == rhs.service2node_id))
+    if (!(service2nodeId == rhs.service2nodeId))
       return false;
     return true;
   }
@@ -698,13 +682,13 @@ class EmptyMsgRet {
 void swap(EmptyMsgRet &a, EmptyMsgRet &b);
 
 typedef struct _SessionEnterWorkerReq__isset {
-  _SessionEnterWorkerReq__isset() : session_id(false), session_ip(false), from_gate(false), from_worker(false), to_worker(false), extra_data(false) {}
-  bool session_id;
-  bool session_ip;
-  bool from_gate;
-  bool from_worker;
-  bool to_worker;
-  bool extra_data;
+  _SessionEnterWorkerReq__isset() : sessionId(false), sessionIp(false), fromGate(false), fromWorker(false), toWorker(false), extraData(false) {}
+  bool sessionId;
+  bool sessionIp;
+  bool fromGate;
+  bool fromWorker;
+  bool toWorker;
+  bool extraData;
 } _SessionEnterWorkerReq__isset;
 
 class SessionEnterWorkerReq {
@@ -713,57 +697,57 @@ class SessionEnterWorkerReq {
   static const char* ascii_fingerprint; // = "1F10F993631B3ABD721D79EE58C2056E";
   static const uint8_t binary_fingerprint[16]; // = {0x1F,0x10,0xF9,0x93,0x63,0x1B,0x3A,0xBD,0x72,0x1D,0x79,0xEE,0x58,0xC2,0x05,0x6E};
 
-  SessionEnterWorkerReq() : session_id(0), session_ip(), from_gate(), from_worker(), to_worker(), extra_data() {
+  SessionEnterWorkerReq() : sessionId(0), sessionIp(), fromGate(), fromWorker(), toWorker(), extraData() {
   }
 
   virtual ~SessionEnterWorkerReq() throw() {}
 
-  int64_t session_id;
-  std::string session_ip;
-  std::string from_gate;
-  std::string from_worker;
-  std::string to_worker;
-  std::string extra_data;
+  int64_t sessionId;
+  std::string sessionIp;
+  std::string fromGate;
+  std::string fromWorker;
+  std::string toWorker;
+  std::string extraData;
 
   _SessionEnterWorkerReq__isset __isset;
 
-  void __set_session_id(const int64_t val) {
-    session_id = val;
+  void __set_sessionId(const int64_t val) {
+    sessionId = val;
   }
 
-  void __set_session_ip(const std::string& val) {
-    session_ip = val;
+  void __set_sessionIp(const std::string& val) {
+    sessionIp = val;
   }
 
-  void __set_from_gate(const std::string& val) {
-    from_gate = val;
+  void __set_fromGate(const std::string& val) {
+    fromGate = val;
   }
 
-  void __set_from_worker(const std::string& val) {
-    from_worker = val;
+  void __set_fromWorker(const std::string& val) {
+    fromWorker = val;
   }
 
-  void __set_to_worker(const std::string& val) {
-    to_worker = val;
+  void __set_toWorker(const std::string& val) {
+    toWorker = val;
   }
 
-  void __set_extra_data(const std::string& val) {
-    extra_data = val;
+  void __set_extraData(const std::string& val) {
+    extraData = val;
   }
 
   bool operator == (const SessionEnterWorkerReq & rhs) const
   {
-    if (!(session_id == rhs.session_id))
+    if (!(sessionId == rhs.sessionId))
       return false;
-    if (!(session_ip == rhs.session_ip))
+    if (!(sessionIp == rhs.sessionIp))
       return false;
-    if (!(from_gate == rhs.from_gate))
+    if (!(fromGate == rhs.fromGate))
       return false;
-    if (!(from_worker == rhs.from_worker))
+    if (!(fromWorker == rhs.fromWorker))
       return false;
-    if (!(to_worker == rhs.to_worker))
+    if (!(toWorker == rhs.toWorker))
       return false;
-    if (!(extra_data == rhs.extra_data))
+    if (!(extraData == rhs.extraData))
       return false;
     return true;
   }

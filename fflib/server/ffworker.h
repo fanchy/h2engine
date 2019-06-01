@@ -27,9 +27,9 @@ class WorkerClient
 public:
     WorkerClient(){}
     WorkerClient(const WorkerClient& src):
-        session_id(src.session_id),
-        session_ip(src.session_ip),
-        from_gate(src.from_gate),
+        sessionId(src.sessionId),
+        sessionIp(src.sessionIp),
+        fromGate(src.fromGate),
         client_data(src.client_data)
     {
     }
@@ -43,9 +43,9 @@ public:
         client_data = sp;
     }
 public:
-    userid_t                             session_id;
-    std::string                          session_ip;
-    std::string                          from_gate;
+    userid_t                             sessionId;
+    std::string                          sessionIp;
+    std::string                          fromGate;
     SharedPtr<ClientData>                client_data;
     EntityPtr                            entity;
 };
@@ -107,30 +107,30 @@ public:
     virtual int open(const std::string& brokercfg, int worker_index);
     virtual int close();
     //**************************************************操作client 常用的接口******************************************************************************
-    int sessionSendMsg(const userid_t& session_id_, uint16_t cmd_, const std::string& data_);
+    int sessionSendMsg(const userid_t& sessionId_, uint16_t cmd_, const std::string& data_);
     int gateBroadcastMsg(uint16_t cmd_, const std::string& data_);
-    int sessionMulticastMsg(const std::vector<userid_t>& session_id_, uint16_t cmd_, const std::string& data_);
+    int sessionMulticastMsg(const std::vector<userid_t>& sessionId_, uint16_t cmd_, const std::string& data_);
     //! 关闭某个session
-    int sessionClose(const userid_t& session_id_);
+    int sessionClose(const userid_t& sessionId_);
     //! 切换worker
-    int sessionChangeWorker(const userid_t& session_id_, int to_worker_index_, std::string extra_data = "");
-    std::string getSessionGate(const userid_t& session_id_);
-    std::string getSessionIp(const userid_t& session_id_);
+    int sessionChangeWorker(const userid_t& sessionId_, int toWorker_index_, std::string extraData = "");
+    std::string getSessionGate(const userid_t& sessionId_);
+    std::string getSessionIp(const userid_t& sessionId_);
 
 
     //*********************************************************操作client 内部高级接口***********************************************************************
     callback_info_t& callback_info();
 
     //! 发送消息给特定的client
-    int sessionSendMsgToGate(const std::string& gate_name, const userid_t& session_id_, uint16_t cmd_, const std::string& data_);
+    int sessionSendMsgToGate(const std::string& gate_name, const userid_t& sessionId_, uint16_t cmd_, const std::string& data_);
     //! 多播
-    int sessionMulticastMsgToGate(const std::string& gate_name, const std::vector<userid_t>& session_id_, uint16_t cmd_, const std::string& data_);
+    int sessionMulticastMsgToGate(const std::string& gate_name, const std::vector<userid_t>& sessionId_, uint16_t cmd_, const std::string& data_);
     //! 广播 整个gate
     int gateBroadcastMsgToGate(const std::string& gate_name_, uint16_t cmd_, const std::string& data_);
     //! 关闭某个session
-    int sessionCloseToGate(const std::string& gate_name_, const userid_t& session_id_);
+    int sessionCloseToGate(const std::string& gate_name_, const userid_t& sessionId_);
     //! 切换worker
-    int sessionChangeWorkerToGate(const std::string& gate_name_, const userid_t& session_id_, const std::string& to_worker_, const std::string& extra_data);
+    int sessionChangeWorkerToGate(const std::string& gate_name_, const userid_t& sessionId_, const std::string& toWorker_, const std::string& extraData);
 
     FFRpc& getRpc() { return *m_ffrpc; }
 
@@ -139,7 +139,7 @@ public:
     void regTimer(uint64_t mstimeout_, Function<void()> func);
     void regTimerForScirpt(uint64_t mstimeout_, ScriptArgObjPtr func);
 
-    void workerRPC(int workerindex, uint16_t cmd, const std::string& data, FFSlot::FFCallBack* cb);
+    void workerRPC(int workerindex, uint16_t cmd, const std::string& data, ScriptArgObjPtr func);
     void asyncHttp(const std::string& url_, int timeoutsec, FFSlot::FFCallBack* cb);
     std::string syncHttp(const std::string& url_, int timeoutsec);
 
@@ -159,11 +159,11 @@ public:
     ScriptArgObjPtr queryByName(const std::string& name_, const std::string& sql_);
 public:
     //! 转发client消息
-    virtual int onSessionReq(userid_t session_id_, uint16_t cmd_, const std::string& data_) {return 0;}
+    virtual int onSessionReq(userid_t sessionId_, uint16_t cmd_, const std::string& data_) {return 0;}
     //! 处理client 下线
-    virtual int onSessionOffline(userid_t session_id){return 0;}
+    virtual int onSessionOffline(userid_t sessionId){return 0;}
     //! 处理client 跳转
-    virtual int onSessionEnter(userid_t session_id, const std::string& extra_data){ return 0;}
+    virtual int onSessionEnter(userid_t sessionId, const std::string& extraData){ return 0;}
     //! scene 之间的互调用
     virtual std::string onWorkerCall(uint16_t cmd, const std::string& body) { return "!invalid";}
 
@@ -236,43 +236,43 @@ private:
 class FFWorker::session_enter_arg: public FFSlot::CallBackArg
 {
 public:
-    session_enter_arg(const std::string& session_ip_, const std::string& gate_, const userid_t& s_,
+    session_enter_arg(const std::string& sessionIp_, const std::string& gate_, const userid_t& s_,
                       const std::string& from_, const std::string& to_, const std::string& data_):
-        session_ip(session_ip_),
+        sessionIp(sessionIp_),
         gate_name(gate_),
-        session_id(s_),
-        from_worker(from_),
-        to_worker(to_),
-        extra_data(data_)
+        sessionId(s_),
+        fromWorker(from_),
+        toWorker(to_),
+        extraData(data_)
     {}
     virtual int type()
     {
         return TYPEID(session_enter_arg);
     }
-    std::string    session_ip;
+    std::string    sessionIp;
     std::string    gate_name;
-    userid_t       session_id;//! 包含用户id
-    std::string    from_worker;//! 从哪个scene跳转过来,若是第一次上线，from_worker为空
-    std::string    to_worker;//! 跳到哪个scene上面去,若是下线，to_worker为空
-    std::string    extra_data;//! 附带数据
+    userid_t       sessionId;//! 包含用户id
+    std::string    fromWorker;//! 从哪个scene跳转过来,若是第一次上线，fromWorker为空
+    std::string    toWorker;//! 跳到哪个scene上面去,若是下线，toWorker为空
+    std::string    extraData;//! 附带数据
 };
 class FFWorker::session_offline_arg: public FFSlot::CallBackArg
 {
 public:
     session_offline_arg(const userid_t& s_):
-        session_id(s_)
+        sessionId(s_)
     {}
     virtual int type()
     {
         return TYPEID(session_offline_arg);
     }
-    userid_t          session_id;
+    userid_t          sessionId;
 };
 class FFWorker::logic_msg_arg: public FFSlot::CallBackArg
 {
 public:
     logic_msg_arg(const userid_t& s_, uint16_t cmd_, const std::string& t_):
-        session_id(s_),
+        sessionId(s_),
         cmd(cmd_),
         body(t_)
     {}
@@ -280,7 +280,7 @@ public:
     {
         return TYPEID(logic_msg_arg);
     }
-    userid_t                session_id;
+    userid_t                sessionId;
     uint16_t                cmd;
     std::string             body;
 };
@@ -288,11 +288,11 @@ public:
 class FFWorker::worker_call_msg_arg: public FFSlot::CallBackArg
 {
 public:
-    worker_call_msg_arg(uint16_t cmd_, const std::string& t_, std::string& err_, std::string& msg_type_, std::string& ret_):
+    worker_call_msg_arg(uint16_t cmd_, const std::string& t_, std::string& err_, std::string& msgType_, std::string& ret_):
         cmd(cmd_),
         body(t_),
         err(err_),
-        msg_type(msg_type_),
+        msgType(msgType_),
         ret(ret_)
     {}
     virtual int type()
@@ -303,7 +303,7 @@ public:
     const std::string&   body;
 
     std::string&         err;
-    std::string&         msg_type;
+    std::string&         msgType;
     std::string&         ret;
 };
 
@@ -323,9 +323,9 @@ class OnSessionEnterEvent:public Event<OnSessionEnterEvent>
 {
 public:
     OnSessionEnterEvent(userid_t id, const std::string& data)
-        :session_id(id), extra_data(data), isDone(false){}
-    userid_t            session_id;
-    const std::string&  extra_data;
+        :sessionId(id), extraData(data), isDone(false){}
+    userid_t            sessionId;
+    const std::string&  extraData;
     bool                isDone;
 };
 class OnWorkerCallEvent:public Event<OnWorkerCallEvent>

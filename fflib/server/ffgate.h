@@ -43,8 +43,6 @@ public:
     int close_impl();
     //! 逻辑处理,转发消息到logic service
     int routeLogicMsg(const Message& msg_, SocketObjPtr sock_, bool first);
-    //! enter scene 回调函数
-    int enterWorkerCallback(RPCReq<EmptyMsgRet>& req_, const userid_t& session_id_);
 
     //! 改变处理client 逻辑的对应的节点
     int changeSessionLogic(RPCReq<GateChangeLogicNodeReq, EmptyMsgRet>& req_);
@@ -74,13 +72,13 @@ struct FFGate::SessionData
     SessionData(userid_t new_id_ = 0)
     {
         ::time(&online_time);
-        session_id = new_id_;
+        sessionId = new_id_;
     }
 
-    const userid_t& id() const        { return session_id;    }
-    void set_id(const userid_t& s_)   { session_id = s_;      }
+    const userid_t& id() const        { return sessionId;    }
+    void set_id(const userid_t& s_)   { sessionId = s_;      }
 
-    userid_t session_id;
+    userid_t sessionId;
     time_t online_time;
 };
 
@@ -91,8 +89,7 @@ struct FFGate::client_info_t
         sock(NULL)
     {}
     SocketObjPtr          sock;
-    std::string           alloc_worker;
-    std::string           group_name;
+    std::string           allocWorker;
 };
 
 }

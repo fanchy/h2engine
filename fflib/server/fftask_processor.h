@@ -63,8 +63,8 @@ public:
     virtual ~task_processor_i(){}
     //! 线程间传递消息
     virtual    void post(const std::string& task_name, const ffjson_tool_t& task_args,
-                         const std::string& from_name, long callback_id) {}
-    virtual    void callback(const ffjson_tool_t& task_args, long callback_id) {}
+                         const std::string& from_name, long callbackId) {}
+    virtual    void callback(const ffjson_tool_t& task_args, long callbackId) {}
 };
 
 

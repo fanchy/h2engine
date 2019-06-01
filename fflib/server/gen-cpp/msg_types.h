@@ -4,8 +4,8 @@
  * DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
  *  @generated
  */
-#ifndef msg_TYPES_H
-#define msg_TYPES_H
+#ifndef msgTypeS_H
+#define msgTypeS_H
 
 #include <thrift/Thrift.h>
 #include <thrift/TApplicationException.h>

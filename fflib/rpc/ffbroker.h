@@ -81,7 +81,7 @@ private:
     //!工具类
     SharedPtr<TaskQueue>                                    m_tq;
     //! 用于绑定回调函数
-    FFSlot                                                  m_ffslot;
+    FFSlot                                                  m_msgHandleFunc;
 
     //! 本 broker的监听信息
     std::string                                             m_listen_host;
@@ -93,18 +93,18 @@ private:
 struct FFBroker::SessionData
 {
     SessionData(int type_ = 0, uint64_t node_ = 0, std::string s_ = ""):
-        node_type(type_),
-        node_id(node_),
-        service_name(s_)
+        nodeType(type_),
+        nodeId(node_),
+        strServiceName(s_)
     {}
-    uint64_t getNodeId()    const { return node_id; }
-    int      getType()      const { return node_type;}
+    uint64_t getNodeId()    const { return nodeId; }
+    int      getType()      const { return nodeType;}
     //!节点的类型
-    int                     node_type;
+    int                     nodeType;
     //! 被分配的唯一的节点id
-    uint64_t                node_id;
+    uint64_t                nodeId;
     //! 服务名
-    std::string             service_name;
+    std::string             strServiceName;
 };
 
 }
