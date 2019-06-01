@@ -73,33 +73,37 @@ end
 -- end
 function timerSync()
     print('timerSync ...............')
+    dbTest()
 end
 
 h2ext.call('regTimer', 1000, timerSync)
-h2ext.call('regTimer', 2000, timerSync)
-h2ext.call('regTimer', 3000, timerSync)
-
+-- h2ext.call('regTimer', 2000, timerSync)
+-- h2ext.call('regTimer', 3000, timerSync)
+h2ext.call('connectDB', "sqlite://./test.db", "")
 function dbTest()
+    
     sql = 'create table IF NOT EXISTS foo (num integer);';
-    h2ext.query(sql)
+    h2ext.call('query', sql)
     sql = "insert into foo (num) values ('100');";
-    ret = h2ext.query(sql)
+    ret = h2ext.call('query', sql)
     print('dbTest', ret)
-    ret = h2ext.query('select * from foo limit 1')       -- sync
-    print('dbTest', ret)
+    
+    ret = h2ext.call('query', 'select * from foo limit 1')       -- sync
+    var_dump(ret)
+    if 1 then return end
     function dbTestCb(ret)
         print('dbTest asyncQuery')
         var_dump(ret)
     end
-    h2ext.asyncQuery(0, 'select * from foo limit 1', dbTestCb)   -- async
+    h2ext.call('asyncQuery', 0, 'select * from foo limit 1', dbTestCb)   -- async
     dbname = 'myDB'
-    h2ext.connectDB("sqlite://./test.db", dbname)
-    ret = h2ext.queryByName(dbname, 'select * from foo limit 1')
+    h2ext.call('connectDB', "sqlite://./test.db", dbname)
+    ret = h2ext.call('queryByName', dbname, 'select * from foo limit 1')
     print('dbTest queryByName')
     var_dump(ret)
-    h2ext.asyncQueryByName(dbname, 'select * from foo limit 2', dbTestCb)
+    h2ext.call('asyncQueryByName', dbname, 'select * from foo limit 2', dbTestCb)
 end
---dbTest()
+
 print("main.lua................................")
 
 function httpcb(retdata)

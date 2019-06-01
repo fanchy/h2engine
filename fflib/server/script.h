@@ -175,6 +175,68 @@ struct ScriptArgObj{
     ScriptFunction                                           func;
 };
 typedef SharedPtr<ScriptArgObj> ScriptArgObjPtr;
+template<typename T>
+struct ScriptArgUtil{
+    static ScriptArgObjPtr toValue(T v){
+        return ScriptArgObj::create(v);
+    }
+};
+template<>
+struct ScriptArgUtil<ScriptArgObjPtr>{
+    static ScriptArgObjPtr toValue(ScriptArgObjPtr v){
+        return v;
+    }
+};
+template<typename T>
+struct ScriptArgUtil<std::vector<T> >{
+    static ScriptArgObjPtr toValue(const std::vector<T>& v){
+        ScriptArgObjPtr ret = ScriptArgObj::create();
+        std::vector<ScriptArgObjPtr> listValue;
+        for (size_t i = 0; i < v.size(); ++i){
+            listValue.push_back(ScriptArgUtil<T>::toValue(v[i]));
+        }
+        ret->toList(&listValue);
+        return ret;
+    }
+};
+template<typename T>
+struct ScriptArgUtil<std::list<T> >{
+    static ScriptArgObjPtr toValue(const std::list<T>& v){
+        ScriptArgObjPtr ret = ScriptArgObj::create();
+        std::vector<ScriptArgObjPtr> listValue;
+        for (typename std::list<T>::iterator it = v.begin(); it != v.end(); ++it){
+            listValue.push_back(ScriptArgUtil<T>::toValue(*it));
+        }
+        ret->toList(&listValue);
+        return ret;
+    }
+};
+template<typename T>
+struct ScriptArgUtil<std::set<T> >{
+    static ScriptArgObjPtr toValue(const std::set<T>& v){
+        ScriptArgObjPtr ret = ScriptArgObj::create();
+        std::vector<ScriptArgObjPtr> listValue;
+        for (typename std::set<T>::iterator it = v.begin(); it != v.end(); ++it){
+            listValue.push_back(ScriptArgUtil<T>::toValue(*it));
+        }
+        ret->toList(&listValue);
+        return ret;
+    }
+};
+template<typename K, typename V>
+struct ScriptArgUtil<std::map<K, V> >{
+    static ScriptArgObjPtr toValue(const std::map<K, V>& v){
+        ScriptArgObjPtr ret = ScriptArgObj::create();
+        std::map<std::string, ScriptArgObjPtr> mapValue;
+        for (typename std::map<K, V>::iterator it = v.begin(); it != v.end(); ++it){
+            ScriptArgObjPtr key = ScriptArgUtil<K>::toValue(it->first);
+            mapValue[key->getString()] = ScriptArgUtil<V>::toValue(it->second);
+        }
+        ret->toDict(&mapValue);
+        return ret;
+    }
+};
+
 
 struct ScriptArgs{
     ScriptArgs(){

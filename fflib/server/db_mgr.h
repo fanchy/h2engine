@@ -22,7 +22,7 @@ class QueryDBResult: public FFSlot::CallBackArg
 {
 public:
     QueryDBResult():
-        ok(false)
+        ok(false), affectedRows(0)
     {}
     virtual ~QueryDBResult(){}
     virtual int type()
@@ -97,7 +97,7 @@ public:
         ConditionVar                    cond;
         std::string                     host_cfg;
     };
-    typedef QueryDBResult queryDBResult_t;
+    //typedef QueryDBResult queryDBResult_t;
 public:
     DbMgr();
     ~DbMgr();
@@ -107,7 +107,7 @@ public:
     long connectDB(const std::string& host_, const std::string& name);
 
     template<typename T>
-    void asyncQueryModId(long mod, const std::string& sql_, T& func, TaskQueue* tq = NULL){
+    void asyncQueryModId(long mod, const std::string& sql_, T func, TaskQueue* tq = NULL){
         if (!tq){
             tq = m_tqWorkerDefault;
         }
@@ -122,7 +122,7 @@ public:
                      std::string* errinfo = NULL, int* affectedRows_ = NULL, std::vector<std::string>* col_ = NULL);
 
     template<typename T>
-    void asyncQueryByName(const std::string& strName, const std::string& sql_, T& func, TaskQueue* tq){
+    void asyncQueryByName(const std::string& strName, const std::string& sql_, T func, TaskQueue* tq){
         DBConnectionInfo* varDbConnection = NULL;
         {
             LockGuard lock(m_mutex);

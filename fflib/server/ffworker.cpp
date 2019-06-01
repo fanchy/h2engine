@@ -79,6 +79,52 @@ struct ScriptTimerTool{
 void FFWorker::regTimerForScirpt(uint64_t mstimeout_, ScriptArgObjPtr func){
     regTimer(mstimeout_, funcbind(&ScriptTimerTool::doTimer, func));
 }
+void FFWorker::logdebugForScirpt(const std::string& content_) {LOGDEBUG((FFWORKER_LOG, "%s", content_));}
+void FFWorker::logtraceForScirpt(const std::string& content_) {LOGTRACE((FFWORKER_LOG, "%s", content_));}
+void FFWorker::loginfoForScirpt (const std::string& content_) { LOGINFO((FFWORKER_LOG, "%s", content_));}
+void FFWorker::logwarnForScirpt (const std::string& content_) { LOGWARN((FFWORKER_LOG, "%s", content_));}
+void FFWorker::logerrorForScirpt(const std::string& content_) {LOGERROR((FFWORKER_LOG, "%s", content_));}
+void FFWorker::logfatalForScirpt(const std::string& content_) {LOGFATAL((FFWORKER_LOG, "%s", content_));}
+
+static ScriptArgObjPtr queryResultToScriptArg(QueryDBResult& result)
+{
+    map<string, ScriptArgObjPtr> retval;
+    retval["datas"] = ScriptArgUtil<vector<vector<string> > >::toValue(result.dataResult);
+    retval["fieldNames"] = ScriptArgUtil<vector<string> >::toValue(result.fieldNames);
+    retval["errinfo"] = ScriptArgUtil<string>::toValue(result.errinfo);
+    retval["affectedRows"] = ScriptArgUtil<int>::toValue(result.affectedRows);
+
+    ScriptArgObjPtr funcArg = ScriptArgObj::create();
+    funcArg->toDict(&retval);
+    LOGTRACE((FFWORKER_LOG, "FFWorker::datas=%d", result.dataResult.size()));
+    return funcArg;
+}
+
+static void asyncQueryCB(ScriptArgObjPtr funcOBj, QueryDBResult& result){
+    if (funcOBj && funcOBj->isFunc()){
+        funcOBj->getFunc()(queryResultToScriptArg(result));
+    }
+}
+void FFWorker::asyncQuery(long modid, const std::string& sql_, ScriptArgObjPtr func)
+{
+    DB_MGR.asyncQueryModId(modid, sql_, funcbind(&asyncQueryCB, func), &(getRpc().getTaskQueue()));
+}
+void FFWorker::asyncQueryByName(const string& name_, const string& sql_, ScriptArgObjPtr func)
+{
+    DB_MGR.asyncQueryByName(name_, sql_, funcbind(&asyncQueryCB, func), &(getRpc().getTaskQueue()));
+}
+ScriptArgObjPtr FFWorker::query(const string& sql_)
+{
+    QueryDBResult result;
+    DB_MGR.query(sql_, &result.dataResult, &result.errinfo, &result.affectedRows, &result.fieldNames);
+    return queryResultToScriptArg(result);
+}
+ScriptArgObjPtr FFWorker::queryByName(const string& name_, const string& sql_)
+{
+    QueryDBResult result;
+    DB_MGR.queryByName(name_, sql_, &result.dataResult, &result.errinfo, &result.affectedRows, &result.fieldNames);
+    return queryResultToScriptArg(result);
+}
 
 FFWorker* FFWorker::gSingletonWorker = NULL;
 int FFWorker::open(const string& brokercfg, int worker_index)
@@ -129,17 +175,23 @@ int FFWorker::open(const string& brokercfg, int worker_index)
     SCRIPT_UTIL.reg("getSessionIp", &FFWorker::getSessionIp, this);
     SCRIPT_UTIL.reg("isExist", &FFRpc::isExist, (FFRpc*)(&this->getRpc()));
     //SCRIPT_UTIL.reg("reload", &FFWorker::reload, this);
-    //SCRIPT_UTIL.reg("log", &FFWorker::log, this);
+    
+    SCRIPT_UTIL.reg("logdebug", &FFWorker::logdebugForScirpt, this);
+    SCRIPT_UTIL.reg("logtrace", &FFWorker::logtraceForScirpt, this);
+    SCRIPT_UTIL.reg("loginfo",  &FFWorker::loginfoForScirpt , this);
+    SCRIPT_UTIL.reg("logwarn",  &FFWorker::logwarnForScirpt , this);
+    SCRIPT_UTIL.reg("logerror", &FFWorker::logerrorForScirpt, this);
+    SCRIPT_UTIL.reg("logfatal", &FFWorker::logfatalForScirpt, this);
+
     SCRIPT_UTIL.reg("regTimer", &FFWorker::regTimerForScirpt, this);
     SCRIPT_UTIL.reg("connectDB", &DbMgr::connectDB, (DbMgr*)(&DB_MGR));
-    //SCRIPT_UTIL.reg("asyncQuery", &FFWorker::asyncQuery, this);
-    //SCRIPT_UTIL.reg("query", &FFWorker::query, this);
-    //SCRIPT_UTIL.reg("asyncQueryByName", &FFWorker::asyncQueryByName, this);
-    //SCRIPT_UTIL.reg("queryByName", &FFWorker::queryByName, this);
+    SCRIPT_UTIL.reg("asyncQuery", &FFWorker::asyncQuery, this);
+    SCRIPT_UTIL.reg("query", &FFWorker::query, this);
+    SCRIPT_UTIL.reg("asyncQueryByName", &FFWorker::asyncQueryByName, this);
+    SCRIPT_UTIL.reg("queryByName", &FFWorker::queryByName, this);
     //SCRIPT_UTIL.reg("workerRPC", &FFWorker::workerRPC, this);
     //SCRIPT_UTIL.reg("asyncHttp", &FFWorker::asyncHttp, this);
     //SCRIPT_UTIL.reg("syncHttp", &FFWorker::syncHttp, this);
-
     return 0;
 }
 int FFWorker::close()
@@ -398,10 +450,10 @@ void FFWorker::workerRPC(int workerindex, uint16_t cmd, const std::string& data,
     WorkerCallMsgReq reqmsg;
     reqmsg.cmd = cmd;
     reqmsg.body= data;
-    char service_name[128] = {0};
-    snprintf(service_name, sizeof(service_name), "worker#%d", workerindex);
+    char strServiceName[128] = {0};
+    snprintf(strServiceName, sizeof(strServiceName), "worker#%d", workerindex);
 
-    getRpc().call(service_name, reqmsg, cb);
+    getRpc().call(strServiceName, reqmsg, cb);
 }
 void FFWorker::asyncHttp(const std::string& url_, int timeoutsec, FFSlot::FFCallBack* cb){
     Singleton<HttpMgr>::instance().request(url_, timeoutsec, cb);

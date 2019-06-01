@@ -145,6 +145,18 @@ public:
 
     bool initModule();
     bool cleanupModule();
+
+    void logdebugForScirpt(const std::string& content_);
+    void logtraceForScirpt(const std::string& content_);
+    void loginfoForScirpt (const std::string& content_);
+    void logwarnForScirpt (const std::string& content_);
+    void logerrorForScirpt(const std::string& content_);
+    void logfatalForScirpt(const std::string& content_);
+
+    void asyncQuery(long modid, const std::string& sql_, ScriptArgObjPtr func);
+    void asyncQueryByName(const std::string& name_, const std::string& sql_, ScriptArgObjPtr func);
+    ScriptArgObjPtr query(const std::string& sql_);
+    ScriptArgObjPtr queryByName(const std::string& name_, const std::string& sql_);
 public:
     //! 转发client消息
     virtual int onSessionReq(userid_t session_id_, uint16_t cmd_, const std::string& data_) {return 0;}

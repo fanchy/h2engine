@@ -407,10 +407,10 @@ static BIND_FUNC_RET_TYPE js_connectDB(const Arguments& args)
 struct AsyncQueryCB
 {
     AsyncQueryCB(persistent_lambda_ptr_t f):funcptr(f){}
-    void operator()(DbMgr::queryDBResult_t& result)
+    void operator()(QueryDBResult& result)
     {
         LOGINFO((FFWORKER_JS, "FFWorkerJs::call_js **********"));
-        DbMgr::queryDBResult_t* data = (DbMgr::queryDBResult_t*)(&result);
+        QueryDBResult* data = (QueryDBResult*)(&result);
         call_js(funcptr, data->errinfo, data->dataResult, data->fieldNames, data->affectedRows);
     }
     void call_js(persistent_lambda_ptr_t funcptr, string errinfo, vector<vector<string> > ret_, 
@@ -486,9 +486,9 @@ static BIND_FUNC_RET_TYPE js_asyncQuery(const Arguments& args)
 struct AsyncQueryNameCB
 {
     AsyncQueryNameCB(persistent_lambda_ptr_t f):funcptr(f){}
-    void operator()(DbMgr::queryDBResult_t& result)
+    void operator()(QueryDBResult& result)
     {
-        DbMgr::queryDBResult_t* data = (DbMgr::queryDBResult_t*)(&result);
+        QueryDBResult* data = (QueryDBResult*)(&result);
 
         call_js(funcptr, data->errinfo, data->dataResult, data->fieldNames, data->affectedRows);
     }

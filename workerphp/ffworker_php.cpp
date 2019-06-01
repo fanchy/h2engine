@@ -535,9 +535,9 @@ PHP_METHOD(h2ext, connectDB)
 struct AsyncQueryCB
 {
     AsyncQueryCB(long idxarg):idx(idxarg){}
-    void operator()(DbMgr::queryDBResult_t& result)
+    void operator()(QueryDBResult& result)
     {
-        DbMgr::queryDBResult_t* data = (DbMgr::queryDBResult_t*)(&result);
+        QueryDBResult* data = (QueryDBResult*)(&result);
         call_php(idx, data->errinfo, data->dataResult, data->fieldNames, data->affectedRows);
     }
     void call_php(long idx, std::string errinfo, std::vector<std::vector<std::string> > ret_, std::vector<std::string> col_, int affectedRows)
@@ -611,9 +611,9 @@ PHP_METHOD(h2ext, asyncQuery)
 struct AsyncQueryNameCB
 {
     AsyncQueryNameCB(long idxarg):idx(idxarg){}
-    void operator()(DbMgr::queryDBResult_t& result)
+    void operator()(QueryDBResult& result)
     {
-        DbMgr::queryDBResult_t* data = (DbMgr::queryDBResult_t*)(&result);
+        QueryDBResult* data = (QueryDBResult*)(&result);
         call_php(idx, data->errinfo, data->dataResult, data->fieldNames, data->affectedRows);
     }
     void call_php(long idx, std::string errinfo, std::vector<std::vector<std::string> > ret_, std::vector<std::string> col_, int affectedRows)

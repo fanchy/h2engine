@@ -111,7 +111,7 @@ struct PyQueryCallBack
             Py_INCREF(pFunc);
         }
     }
-    void operator()(DbMgr::queryDBResult_t& result){
+    void operator()(QueryDBResult& result){
         call_python(pFunc, result.errinfo, result.dataResult, result.fieldNames, result.affectedRows);
     }
     void call_python(PyObject* pFuncSrc, string errinfo, vector<vector<string> > ret_, vector<string> col_, int affectedRows)

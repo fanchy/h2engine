@@ -56,7 +56,7 @@ long DbMgr::connectDB(const string& host_, const std::string& name)
         varDbConnection.tq = m_tq[m_db_index++ % m_tq.size()];
         varDbConnection.host_cfg = host_;
 
-        if (name == DB_DEFAULT_NAME){
+        if (name == DB_DEFAULT_NAME || name.empty()){
             ++m_defaultDbNum;
             char buff[256] = {0};
             ::snprintf(buff, sizeof(buff), "%s#%d", DB_DEFAULT_NAME, m_defaultDbNum);
@@ -129,7 +129,7 @@ int  DbMgr::queryByName(const std::string& strName, const std::string& sql_,
                      std::vector<std::vector<std::string> >* ret_data_,
                      std::string* errinfo, int* affectedRows_, std::vector<std::string>* col_)
 {
-    LOGTRACE((DB_MGR_LOG, "DbMgr::queryByName name<%s>, while sql<%s>", strName, sql_));
+    //LOGTRACE((DB_MGR_LOG, "DbMgr::queryByName name<%s>, begin sql<%s>", strName, sql_));
     AUTO_PERF();
     DBConnectionInfo* varDbConnection = NULL;
     {
@@ -139,6 +139,7 @@ int  DbMgr::queryByName(const std::string& strName, const std::string& sql_,
 
     if (NULL == varDbConnection)
     {
+        LOGERROR((DB_MGR_LOG, "DbMgr::queryByName name<%s> sql<%s> no dbconnection", strName, sql_));
         return -1;
     }
     QueryDBResult result;
@@ -157,6 +158,7 @@ int  DbMgr::queryByName(const std::string& strName, const std::string& sql_,
     if (col_){
         *col_ = result.fieldNames;
     }
+    LOGTRACE((DB_MGR_LOG, "DbMgr::queryByName name<%s> sql<%s> end datasize=%d", strName, sql_, result.dataResult.size()));
     return 0;
 }
 void DbMgr::syncQueryDBImpl(DBConnectionInfo* varDbConnection, const string& sql_,  QueryDBResult* result)
