@@ -11,9 +11,6 @@
 #include <list>
 #include <sys/epoll.h>
 
-
-#define CREATE_EPOLL_SIZE  4096
-
 using namespace std;
 using namespace ff;
 
@@ -23,7 +20,7 @@ IOEventEpoll::IOEventEpoll():m_running(false){
     
     ::socketpair(AF_LOCAL, SOCK_STREAM, 0, m_fdNotify);
     
-    m_efd = ::epoll_create(CREATE_EPOLL_SIZE);
+    m_efd = ::epoll_create1(0);
     
     struct epoll_event ee = { 0, { 0 } };
     ee.data.fd  = m_fdNotify[0];

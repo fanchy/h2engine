@@ -126,23 +126,23 @@ int IOEventSelect::runOnce(int ms)
         listFunc = m_listFuncToRun;
         m_listFuncToRun.clear();
         #ifdef _WIN32
-        std::vector<int> allfd;
+        std::set<int> allfd;
         for (size_t i = 0; i < readset.fd_count; i++ )
         {
-            allfd.push_back(readset.fd_array[i]);
+            allfd.insert(readset.fd_array[i]);
         }
         if (pwriteset)
         {
             for (size_t i = 0; i < pwriteset->fd_count; i++ )
             {
-                allfd.push_back(pwriteset->fd_array[i]);
+                allfd.insert(pwriteset->fd_array[i]);
             }
         }
-        for (size_t i = 0; i < allfd.size(); ++i)
+        for (std::set<int>::iterator itset = allfd.begin(); itset != allfd.end(); ++itset)
         {
-            Socketfd fd = allfd[i];
+            Socketfd fd = *itset;
         #else
-        for(Socketfd fd = 0; fd < FD_SETSIZE; fd++)
+        for(Socketfd fd = 0; fd < nMaxFd; fd++)
         {
         #endif // _WIN32
             if (m_fdNotify[0] == fd)
@@ -180,7 +180,7 @@ int IOEventSelect::runOnce(int ms)
                 }
                 listCallBack.push_back(cbInfo);
             } //if
-            else if (FD_ISSET(fd, &writeset)){
+            if (FD_ISSET(fd, &writeset)){
                 while (socketInfo.sendBuffer.empty() == false)
                 {
                     std::string& toSend = socketInfo.sendBuffer.front();

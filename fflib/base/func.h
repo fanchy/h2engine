@@ -147,6 +147,12 @@ public:
     void operator=(const T& t) {                                                       
         this->assign(t);                                                               
     }                                                                                  
+    void assign(int t) {                                                              
+        if (pFunc) {                                                                   
+            delete  pFunc;                                                             
+            pFunc = NULL;                                                              
+        }                                                                              
+    }                                                                                  
     void assign(long t) {                                                              
         if (pFunc) {                                                                   
             delete  pFunc;                                                             
@@ -231,6 +237,12 @@ public:
     template<typename T>                                                               
     void operator=(const T& t) {                                                       
         this->assign(t);                                                               
+    }                                                                                  
+    void assign(int t) {                                                              
+        if (pFunc) {                                                                   
+            delete  pFunc;                                                             
+            pFunc = NULL;                                                              
+        }                                                                              
     }                                                                                  
     void assign(long t) {                                                              
         if (pFunc) {                                                                   
@@ -317,6 +329,12 @@ public:
     void operator=(const T& t) {                                                       
         this->assign(t);                                                               
     }                                                                                  
+    void assign(int t) {                                                              
+        if (pFunc) {                                                                   
+            delete  pFunc;                                                             
+            pFunc = NULL;                                                              
+        }                                                                              
+    }                                                                                  
     void assign(long t) {                                                              
         if (pFunc) {                                                                   
             delete  pFunc;                                                             
@@ -401,6 +419,12 @@ public:
     template<typename T>                                                               
     void operator=(const T& t) {                                                       
         this->assign(t);                                                               
+    }                                                                                  
+    void assign(int t) {                                                              
+        if (pFunc) {                                                                   
+            delete  pFunc;                                                             
+            pFunc = NULL;                                                              
+        }                                                                              
     }                                                                                  
     void assign(long t) {                                                              
         if (pFunc) {                                                                   
@@ -487,6 +511,12 @@ public:
     void operator=(const T& t) {                                                       
         this->assign(t);                                                               
     }                                                                                  
+    void assign(int t) {                                                              
+        if (pFunc) {                                                                   
+            delete  pFunc;                                                             
+            pFunc = NULL;                                                              
+        }                                                                              
+    }                                                                                  
     void assign(long t) {                                                              
         if (pFunc) {                                                                   
             delete  pFunc;                                                             
@@ -572,6 +602,12 @@ public:
     void operator=(const T& t) {                                                       
         this->assign(t);                                                               
     }                                                                                  
+    void assign(int t) {                                                              
+        if (pFunc) {                                                                   
+            delete  pFunc;                                                             
+            pFunc = NULL;                                                              
+        }                                                                              
+    }                                                                                  
     void assign(long t) {                                                              
         if (pFunc) {                                                                   
             delete  pFunc;                                                             
@@ -656,6 +692,12 @@ public:
     template<typename T>                                                               
     void operator=(const T& t) {                                                       
         this->assign(t);                                                               
+    }                                                                                  
+    void assign(int t) {                                                              
+        if (pFunc) {                                                                   
+            delete  pFunc;                                                             
+            pFunc = NULL;                                                              
+        }                                                                              
     }                                                                                  
     void assign(long t) {                                                              
         if (pFunc) {                                                                   
