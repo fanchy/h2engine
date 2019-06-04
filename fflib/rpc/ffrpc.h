@@ -151,8 +151,14 @@ int FFRpc::call(const std::string& name_, T& req_, FFRpcCallBack callback_)
 template <typename T>
 std::string FFRpc::callSync(const std::string& name_, T& req_)
 {
-    docall(name_, TYPE_NAME(T), FFThrift::EncodeAsString(req_), NULL);
-    return 0;
+    LockGuard lock(m_dataSyncCallInfo.mutex);
+
+    m_dataSyncCallInfo.nSyncCallBackId = docall(name_, TYPE_NAME(T), FFThrift::EncodeAsString(req_), NULL);
+    m_rpcTmpCallBack.erase(m_dataSyncCallInfo.nSyncCallBackId);
+    m_dataSyncCallInfo.cond.wait();
+    std::string ret = m_dataSyncCallInfo.strResult;
+    m_dataSyncCallInfo.strResult.clear();
+    return ret;
 }
 
 }

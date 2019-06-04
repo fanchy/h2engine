@@ -139,6 +139,7 @@ void FFRpc::handleSocketProtocol(SocketObjPtr sock_, int eventType, const Messag
                 LockGuard lock(m_dataSyncCallInfo.mutex);
 
                 m_dataSyncCallInfo.nSyncCallBackId = 0;
+                m_dataSyncCallInfo.strResult = msg.body;
                 m_dataSyncCallInfo.cond.signal();
                 return;
             }
