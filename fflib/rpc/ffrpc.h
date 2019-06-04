@@ -14,11 +14,21 @@
 #include "net/msg_sender.h"
 #include "base/timer_service.h"
 #include "base/arg_helper.h"
+#include "base/lock.h"
 
 namespace ff {
 
 typedef Function<void(const std::string&)> FFRpcCallBack;
 
+struct SyncCallInfo
+{
+    SyncCallInfo():nSyncCallBackId(0), cond(mutex){}
+    long            nSyncCallBackId;
+    std::string     strResult;
+
+    Mutex           mutex;
+    ConditionVar    cond;
+};
 class FFRpc: public RPCResponser
 {
     struct SessionData;
@@ -48,9 +58,12 @@ public:
     //! 调用远程的接口
     template <typename T>
     int call(const std::string& name_, T& req_, FFRpcCallBack callback_ = NULL);
+    //! 同步调用远程的接口
+    template <typename T>
+    std::string callSync(const std::string& name_, T& req_);
 
     //! call 接口的实现函数，call会将请求投递到该线程，保证所有请求有序
-    int docall(const std::string& strServiceName_, const std::string& msg_name_, const std::string& body_, FFRpcCallBack callback_);
+    long docall(const std::string& strServiceName_, const std::string& msg_name_, const std::string& body_, FFRpcCallBack callback_);
     //! 调用接口后，需要回调消息给请求者
     virtual void response(const std::string& msg_name_,  uint64_t destNodeId_,
                           int64_t callbackId_, const std::string& body_, std::string errinfo = "");
@@ -77,17 +90,17 @@ public:
     //!获取某一类型的service
     std::vector<std::string> getServicesLike(const std::string& token);
     std::string getServicesById(uint64_t destNodeId_);
-    bool isOK() {return m_runing;}
+    bool isRunning() {return m_runing;}
 private:
     SocketObjPtr connectToBroker(const std::string& host_, uint32_t nodeId_);
 
     //! 新版实现
     //! 处理注册,
     int handleBrokerRegResponse(SocketObjPtr sock_, RegisterToBrokerRet& msg_);
-
 public:
-    bool                                            m_runing;
+    SyncCallInfo                                    m_dataSyncCallInfo;
 private:
+    bool                                            m_runing;
     std::string                                     m_host;
     std::string                                     m_strServiceName;//! 注册的服务名称
     uint64_t                                        m_nodeId;     //! 通过注册broker，分配的node id
@@ -132,6 +145,13 @@ template <typename T>
 int FFRpc::call(const std::string& name_, T& req_, FFRpcCallBack callback_)
 {
     getTaskQueue().post(funcbind(&FFRpc::docall, this, name_, TYPE_NAME(T), FFThrift::EncodeAsString(req_), callback_));
+    return 0;
+}
+//! 同步调用远程的接口
+template <typename T>
+std::string FFRpc::callSync(const std::string& name_, T& req_)
+{
+    docall(name_, TYPE_NAME(T), FFThrift::EncodeAsString(req_), NULL);
     return 0;
 }
 

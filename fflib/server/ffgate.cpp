@@ -71,7 +71,7 @@ int FFGate::close()
 
         m_ffrpc->close();
         for (int i = 0; i < 1000; ++i){
-            if (m_ffrpc->isOK() == false)
+            if (m_ffrpc->isRunning() == false)
                 break;
             usleep(1000);
         }

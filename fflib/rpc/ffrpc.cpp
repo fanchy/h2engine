@@ -108,7 +108,7 @@ int FFRpc::close()
     {
         m_master_broker_sock->close();
     }
-    
+
     volatile int status = 0;
     getTaskQueue().post(funcbind(&CheckBrokenEnd, (int*)&status));
 
@@ -130,6 +130,19 @@ int FFRpc::close()
 void FFRpc::handleSocketProtocol(SocketObjPtr sock_, int eventType, const Message& msg_)
 {
     if (eventType == IOEVENT_RECV){
+        if (m_dataSyncCallInfo.nSyncCallBackId && BROKER_TO_CLIENT_MSG == (int)msg_.getCmd())
+        {
+            BrokerRouteMsgReq msg;
+            FFThrift::DecodeFromString(msg, msg_.getBody());
+            if (msg.callbackId == m_dataSyncCallInfo.nSyncCallBackId)
+            {
+                LockGuard lock(m_dataSyncCallInfo.mutex);
+
+                m_dataSyncCallInfo.nSyncCallBackId = 0;
+                m_dataSyncCallInfo.cond.signal();
+                return;
+            }
+        }
         getTaskQueue().post(funcbind(&FFRpc::handleMsg, this, msg_, sock_));
     }
     else if (eventType == IOEVENT_BROKEN){
@@ -162,7 +175,7 @@ SocketObjPtr FFRpc::connectToBroker(const string& host_, uint32_t nodeId_)
 //! 投递到ffrpc 特定的线程
 static void route_call_reconnect(FFRpc* ffrpc_)
 {
-    if (ffrpc_->m_runing == false)
+    if (ffrpc_->isRunning() == false)
         return;
     ffrpc_->getTaskQueue().post(funcbind(&FFRpc::timerReconnectBroker, ffrpc_));
 }
@@ -330,7 +343,7 @@ string FFRpc::getServicesById(uint64_t destNodeId_)
     }
     return "";
 }
-int FFRpc::docall(const string& strServiceName_, const string& msg_name_, const string& body_, FFRpcCallBack callback_)
+long FFRpc::docall(const string& strServiceName_, const string& msg_name_, const string& body_, FFRpcCallBack callback_)
 {
     //!调用远程消息
     LOGTRACE((FFRPC, "FFRpc::docall begin strServiceName_<%s>, msg_name_<%s> body_size=%u", strServiceName_.c_str(), msg_name_.c_str(), body_.size()));
@@ -351,7 +364,8 @@ int FFRpc::docall(const string& strServiceName_, const string& msg_name_, const 
         }
         return -1;
     }
-    int64_t callbackId  = int64_t(callback_);
+    static long gCallBackIDGen = 0;
+    long callbackId  = ++gCallBackIDGen;
     if (callback_)
     {
         m_rpcTmpCallBack[callbackId] = callback_;
@@ -361,7 +375,7 @@ int FFRpc::docall(const string& strServiceName_, const string& msg_name_, const 
 
     sendToDestNode(strServiceName_, msg_name_, it->second, callbackId, body_);
 
-    return 0;
+    return callbackId;
 }
 
 //! 通过node id 发送消息给broker
