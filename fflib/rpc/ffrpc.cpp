@@ -130,10 +130,11 @@ int FFRpc::close()
 void FFRpc::handleSocketProtocol(SocketObjPtr sock_, int eventType, const Message& msg_)
 {
     if (eventType == IOEVENT_RECV){
-        if (m_dataSyncCallInfo.nSyncCallBackId && BROKER_TO_CLIENT_MSG == (int)msg_.getCmd())
+        if (BROKER_TO_CLIENT_MSG == (int)msg_.getCmd())//m_dataSyncCallInfo.nSyncCallBackId && 
         {
             BrokerRouteMsgReq msg;
             FFThrift::DecodeFromString(msg, msg_.getBody());
+            LOGTRACE((FFRPC, "FFRpc::handleSocketProtocol begin..msg.callbackId=%ld -> %ld", m_dataSyncCallInfo.nSyncCallBackId, msg.callbackId));
             if (msg.callbackId == m_dataSyncCallInfo.nSyncCallBackId)
             {
                 LockGuard lock(m_dataSyncCallInfo.mutex);

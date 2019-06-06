@@ -97,6 +97,7 @@ private:
     //! 新版实现
     //! 处理注册,
     int handleBrokerRegResponse(SocketObjPtr sock_, RegisterToBrokerRet& msg_);
+    void donothing(const std::string&){}
 public:
     SyncCallInfo                                    m_dataSyncCallInfo;
 private:
@@ -153,7 +154,7 @@ std::string FFRpc::callSync(const std::string& name_, T& req_)
 {
     LockGuard lock(m_dataSyncCallInfo.mutex);
 
-    m_dataSyncCallInfo.nSyncCallBackId = docall(name_, TYPE_NAME(T), FFThrift::EncodeAsString(req_), NULL);
+    m_dataSyncCallInfo.nSyncCallBackId = docall(name_, TYPE_NAME(T), FFThrift::EncodeAsString(req_), funcbind(&FFRpc::donothing, this));
     m_rpcTmpCallBack.erase(m_dataSyncCallInfo.nSyncCallBackId);
     m_dataSyncCallInfo.cond.wait();
     std::string ret = m_dataSyncCallInfo.strResult;

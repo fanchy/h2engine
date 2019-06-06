@@ -165,7 +165,12 @@ int FFGate::routeLogicMsg(const Message& msg_, SocketObjPtr sock_, bool first)
         LOGTRACE((FFGATE, "FFGate::handleMsg new sessionId[%ld] ip[%s] alloc[%s]",
                     session_data.id(), msg.sessionIp, client_info.allocWorker));
     }
-    m_ffrpc->call(client_info.allocWorker, msg);
+    try{
+        m_ffrpc->callSync(client_info.allocWorker, msg);//m_ffrpc->call(client_info.allocWorker, msg);
+    }
+    catch(exception& e){
+        LOGTRACE((FFGATE, "except:%s", e.what()));
+    }
     LOGTRACE((FFGATE, "FFGate::routeLogicMsg end ok allocWorker[%s] bodysize=%u", client_info.allocWorker, msg.body.size()));
     return 0;
 }

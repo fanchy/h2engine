@@ -299,7 +299,11 @@ int FFBroker::sendToRPcNode(BrokerRouteMsgReq& msg_)
     if (pffrpc)
     {
         LOGTRACE((BROKER, "FFBroker::sendToRPcNode memory post"));
-        pffrpc->getTaskQueue().post(funcbind(&FFRpc::handleRpcCallMsg, pffrpc, SocketObjPtr(NULL), msg_));
+        Message msgData;
+        msgData.getHead().cmd = BROKER_TO_CLIENT_MSG;
+        string stmp = FFThrift::EncodeAsString(msg_);
+        msgData.appendToBody(stmp.c_str(), stmp.size());
+        pffrpc->handleSocketProtocol(NULL, IOEVENT_RECV, msgData);
         return 0;
     }
     LOGINFO((BROKER, "FFBroker::sendToRPcNode dest_node=%d bodylen=%d, by socket", msg_.destNodeId, msg_.body.size()));
