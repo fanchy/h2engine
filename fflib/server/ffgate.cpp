@@ -166,7 +166,8 @@ int FFGate::routeLogicMsg(const Message& msg_, SocketObjPtr sock_, bool first)
                     session_data.id(), msg.sessionIp, client_info.allocWorker));
     }
     try{
-        m_ffrpc->callSync(client_info.allocWorker, msg);//m_ffrpc->call(client_info.allocWorker, msg);
+        //m_ffrpc->callSync(client_info.allocWorker, msg);
+        m_ffrpc->call(client_info.allocWorker, msg);
     }
     catch(exception& e){
         LOGTRACE((FFGATE, "except:%s", e.what()));

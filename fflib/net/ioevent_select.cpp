@@ -126,7 +126,7 @@ int IOEventSelect::runOnce(int ms)
         LockGuard lock(m_mutex);
         listFunc = m_listFuncToRun;
         m_listFuncToRun.clear();
-        #ifdef _WIN32
+#ifdef _WIN32
         std::set<int> allfd;
         for (size_t i = 0; i < readset.fd_count; i++ )
         {
@@ -142,15 +142,14 @@ int IOEventSelect::runOnce(int ms)
         for (std::set<int>::iterator itset = allfd.begin(); itset != allfd.end(); ++itset)
         {
             Socketfd fd = *itset;
-        #else
+#else
         for(Socketfd fd = 0; fd < nMaxFd; fd++)
         {
-        #endif // _WIN32
-            if (m_fdNotify[0] == fd)
+#endif // _WIN32
+            if (m_fdNotify[0] == fd && FD_ISSET(fd, &readset))
             {
                 std::string data;
                 SocketOp::readAll(fd, data);
-                //printf("select weakup recv=%s\n", data.c_str());
                 continue;
             }
             std::map<Socketfd, IOInfo>::iterator it = m_allIOinfo.find(fd);
@@ -186,7 +185,6 @@ int IOEventSelect::runOnce(int ms)
                 {
                     std::string& toSend = socketInfo.sendBuffer.front();
                     int nsend = SocketOp::sendAll(fd, toSend);
-                    //printf("IOEventSelect::send event nsend=%d!\n", nsend);
                     if (nsend < 0){
                         socketInfo.sendBuffer.clear();
                         cbInfo.eventType = IOEVENT_BROKEN;
@@ -226,7 +224,6 @@ int IOEventSelect::stop()
     if (m_running)
     {
         m_running = false;
-        //printf("IOEventSelect::stop begin!\n");
         notify();
     }
 
@@ -244,6 +241,7 @@ int IOEventSelect::regfd(Socketfd fd, IOEventFunc eventHandler)
         IOInfo& info = m_allIOinfo[fd];
         info.eventHandler = eventHandler;
     }
+
     notify();
     return 0;
 }

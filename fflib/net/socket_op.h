@@ -119,7 +119,7 @@ struct SocketOp
         while(nwritten < (int)retData.size())
         {
             int nret = 0;
-            #ifdef _WIN32
+            #ifndef linux
             if((nret = send(fd, retData.c_str() + nwritten, (int)retData.size() - nwritten, 0)) <= 0)
             #else
             if((nret = send(fd, retData.c_str() + nwritten, (int)retData.size() - nwritten, MSG_NOSIGNAL)) <= 0)
