@@ -46,14 +46,14 @@ public:
     TaskQueue& getTaskQueue();
 
     //! 处理其他broker或者client注册到此server
-    int handleRegisterToBroker(RegisterToBrokerReq& msg_, SocketObjPtr sock_);
+    int handleRegisterToBroker(SocketObjPtr sock_, RegisterToBrokerReq& msg_);
     //! 处理转发消息的操作
-    int handleBrokerRouteMsg(BrokerRouteMsgReq& msg_, SocketObjPtr sock_);
+    int handleBrokerRouteMsg(SocketObjPtr sock_, BrokerRouteMsgReq& msg_);
 
     //!ff 获取节点信息
     uint64_t allocNodeId(SocketObjPtr sock_);
     //! 处理同步客户端的调用请求
-    int processSyncClientReq(BrokerRouteMsgReq& msg_, SocketObjPtr sock_);
+    int processSyncClientReq(SocketObjPtr sock_, BrokerRouteMsgReq& msg_);
 public:
     int open(const std::string& listen, std::string bridge_broker = "", std::string master_broker = "");
     int close();
@@ -81,7 +81,7 @@ private:
     //!工具类
     SharedPtr<TaskQueue>                                    m_tq;
     //! 用于绑定回调函数
-    FFSlot                                                  m_msgHandleFunc;
+    std::map<uint16_t, MsgCallBack>                         m_msgHandleFunc;
 
     //! 本 broker的监听信息
     std::string                                             m_listen_host;

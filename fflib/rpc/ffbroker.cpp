@@ -76,9 +76,9 @@ int FFBroker::open(const string& listen, string bridge_broker, string master_bro
     //! 绑定cmd 对应的回调函数
     //!新版本
     //! 处理其他broker或者client注册到此server
-    m_msgHandleFunc.bind(REGISTER_TO_BROKER_REQ, FFRpcOps::genCallBack(&FFBroker::handleRegisterToBroker, this))
-            .bind(BROKER_ROUTE_MSG, FFRpcOps::genCallBack(&FFBroker::handleBrokerRouteMsg, this))
-            .bind(SYNC_CLIENT_REQ, FFRpcOps::genCallBack(&FFBroker::processSyncClientReq, this));//! 处理同步客户端的调用请求
+    m_msgHandleFunc[REGISTER_TO_BROKER_REQ] = MsgHandleUtil<FFBroker, RegisterToBrokerReq>::bind(&FFBroker::handleRegisterToBroker, this);
+    m_msgHandleFunc[BROKER_ROUTE_MSG]   = MsgHandleUtil<FFBroker, BrokerRouteMsgReq>::bind(&FFBroker::handleBrokerRouteMsg, this);
+    m_msgHandleFunc[SYNC_CLIENT_REQ]   = MsgHandleUtil<FFBroker, BrokerRouteMsgReq>::bind(&FFBroker::processSyncClientReq, this);
 
 
     Singleton<FFRpcMemoryRoute>::instance().addNode(BROKER_MASTER_nodeId, this);
@@ -146,27 +146,25 @@ int FFBroker::handleBroken(SocketObjPtr sock_)
 int FFBroker::handleMsg(const Message& msg_, SocketObjPtr sock_)
 {
     uint16_t cmd = msg_.getCmd();
-    LOGTRACE((BROKER, "FFBroker::handleMsg_impl cmd<%u> ,len:%u begin", cmd, msg_.getBody().size()));
+    LOGTRACE((BROKER, "FFBroker::handleMsg cmd<%u> ,len:%u begin", cmd, msg_.getBody().size()));
 
-    FFSlot::FFCallBack* cb = m_msgHandleFunc.get_callback(cmd);
-    if (cb)
+    map<uint16_t, MsgCallBack>::iterator cb = m_msgHandleFunc.find(cmd);
+    if (cb != m_msgHandleFunc.end())
     {
         try
         {
-            SlotMsgArg arg(msg_.getBody(), sock_);
-            cb->exe(&arg);
-            LOGTRACE((BROKER, "FFBroker::handleMsg_impl cmd<%u> end ok", cmd));
+            cb->second(sock_, msg_.getBody());
             return 0;
         }
         catch(exception& e_)
         {
-            LOGERROR((BROKER, "FFBroker::handleMsg_impl exception<%s>", e_.what()));
+            LOGERROR((BROKER, "FFBroker::handleMsg exception<%s>", e_.what()));
             return -1;
         }
     }
     else
     {
-        LOGERROR((BROKER, "FFBroker::handleMsg_impl cmd<%u> not supported", cmd));
+        LOGERROR((BROKER, "FFBroker::handleMsg cmd<%u> not supported", cmd));
         return -1;
     }
     return -1;
@@ -174,7 +172,7 @@ int FFBroker::handleMsg(const Message& msg_, SocketObjPtr sock_)
 
 
 //! 处理其他broker或者client注册到此server
-int FFBroker::handleRegisterToBroker(RegisterToBrokerReq& msg_, SocketObjPtr sock_)
+int FFBroker::handleRegisterToBroker(SocketObjPtr sock_, RegisterToBrokerReq& msg_)
 {
     LOGINFO((BROKER, "FFBroker::handleRegisterToBroker begin strServiceName=%s", msg_.strServiceName));
 
@@ -247,7 +245,7 @@ int FFBroker::syncNodeInfo(RegisterToBrokerRet& ret_msg, SocketObjPtr sock_)
 }
 
 //! 处理转发消息的操作
-int FFBroker::handleBrokerRouteMsg(BrokerRouteMsgReq& msg_, SocketObjPtr sock_)
+int FFBroker::handleBrokerRouteMsg(SocketObjPtr sock_, BrokerRouteMsgReq& msg_)
 {
     LOGTRACE((BROKER, "FFBroker::handleBrokerRouteMsg begin"));
     SessionData& psession = sock_->getData<SessionData>();
@@ -262,7 +260,7 @@ int FFBroker::handleBrokerRouteMsg(BrokerRouteMsgReq& msg_, SocketObjPtr sock_)
 }
 
 //! 处理同步客户端的调用请求
-int FFBroker::processSyncClientReq(BrokerRouteMsgReq& msg_, SocketObjPtr sock_)
+int FFBroker::processSyncClientReq(SocketObjPtr sock_, BrokerRouteMsgReq& msg_)
 {
     LOGTRACE((BROKER, "FFBroker::processSyncClientReq begin"));
     SessionData& psession = sock_->getData<SessionData>();
@@ -306,7 +304,7 @@ int FFBroker::sendToRPcNode(BrokerRouteMsgReq& msg_)
         pffrpc->handleSocketProtocol(NULL, IOEVENT_RECV, msgData);
         return 0;
     }
-    LOGINFO((BROKER, "FFBroker::sendToRPcNode dest_node=%d bodylen=%d, by socket", msg_.destNodeId, msg_.body.size()));
+    LOGTRACE((BROKER, "FFBroker::sendToRPcNode dest_node=%d bodylen=%d, by socket", msg_.destNodeId, msg_.body.size()));
     map<uint64_t/* node id*/, SocketObjPtr>::iterator it = m_all_registerfded_info.node_sockets.find(msg_.destNodeId);
     if (it != m_all_registerfded_info.node_sockets.end())
     {

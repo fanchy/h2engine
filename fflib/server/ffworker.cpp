@@ -424,6 +424,7 @@ int FFWorker::gateBroadcastMsgToGate(const string& gate_name_, uint16_t cmd_, co
     GateBroadcastMsgToSessionReq msg;
     msg.cmd = cmd_;
     msg.body = data_;
+    //m_ffrpc->callSync(gate_name_, msg);
     m_ffrpc->call(gate_name_, msg);
     return 0;
 }

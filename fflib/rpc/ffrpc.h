@@ -38,7 +38,6 @@ class FFRpc: public RPCResponser
 {
     struct SessionData;
 public:
-    typedef Function<void(SocketObjPtr, const std::string&)> MsgCallBack;
 
     FFRpc(std::string strServiceName_ = "");
     virtual ~FFRpc();

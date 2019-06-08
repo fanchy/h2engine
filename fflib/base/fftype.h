@@ -113,7 +113,7 @@ struct TypeHelper
         }
         m_type_id   = Singleton<TypeIdGenerator>::instance().allocID(m_type_name);
 
-        printf("__PRETTY_FUNCTION__:%s,%s,pos:%d,pos2:%d\n", __PRETTY_FUNCTION__, m_type_name.c_str(), pos, pos2);
+        //printf("__PRETTY_FUNCTION__:%s,%s,pos:%d,pos2:%d\n", __PRETTY_FUNCTION__, m_type_name.c_str(), pos, pos2);
     }
     int id() const
     {

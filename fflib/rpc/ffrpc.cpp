@@ -6,6 +6,7 @@
 using namespace std;
 using namespace ff;
 
+#define RECONNECT_TO_BROKER_TIMEOUT       1000//! ms
 #define FFRPC                   "FFRPC"
 
 FFRpc::FFRpc(string strServiceName_):
@@ -33,22 +34,7 @@ int FFRpc::open(ArgHelper& arg_helper)
     }
     return open(arg);
 }
-template<typename CLASS_TYPE, typename MSG_TYPE>
-struct MsgHandleUtil
-{
-    static MsgHandleUtil<CLASS_TYPE, MSG_TYPE>  bind(int(CLASS_TYPE::*f)(SocketObjPtr, MSG_TYPE&), CLASS_TYPE* p){
-        MsgHandleUtil<CLASS_TYPE, MSG_TYPE> ret(f, p);
-        return ret;
-    }
-    MsgHandleUtil(int(CLASS_TYPE::*f)(SocketObjPtr, MSG_TYPE&), CLASS_TYPE* p):obj(p), func(f){}
-    void operator()(SocketObjPtr s, const string& data){
-        MSG_TYPE msg;
-        FFThrift::DecodeFromString(msg, data);
-        (obj->*(func))(s, msg);
-    }
-    CLASS_TYPE* obj;
-    int (CLASS_TYPE::*func)(SocketObjPtr, MSG_TYPE&);
-};
+
 
 int FFRpc::open(const string& broker_addr)
 {
@@ -130,12 +116,12 @@ int FFRpc::close()
 void FFRpc::handleSocketProtocol(SocketObjPtr sock_, int eventType, const Message& msg_)
 {
     if (eventType == IOEVENT_RECV){
-        if (BROKER_TO_CLIENT_MSG == (int)msg_.getCmd())//m_dataSyncCallInfo.nSyncCallBackId && 
+        if (BROKER_TO_CLIENT_MSG == (int)msg_.getCmd() && m_dataSyncCallInfo.nSyncCallBackId)
         {
             BrokerRouteMsgReq msg;
             FFThrift::DecodeFromString(msg, msg_.getBody());
             LOGTRACE((FFRPC, "FFRpc::handleSocketProtocol begin..msg.callbackId=%ld -> %ld", m_dataSyncCallInfo.nSyncCallBackId, msg.callbackId));
-            if (msg.callbackId == m_dataSyncCallInfo.nSyncCallBackId)
+            if (msg.callbackId != 0 && msg.callbackId == m_dataSyncCallInfo.nSyncCallBackId)
             {
                 LockGuard lock(m_dataSyncCallInfo.mutex);
 
@@ -340,9 +326,10 @@ long FFRpc::docall(const string& strServiceName_, const string& msg_name_, const
         return -1;
     }
     static long gCallBackIDGen = 0;
-    long callbackId  = ++gCallBackIDGen;
+    long callbackId  = 0;
     if (callback_)
     {
+        callbackId = ++gCallBackIDGen;
         m_rpcTmpCallBack[callbackId] = callback_;
     }
 
