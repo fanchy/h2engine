@@ -35,8 +35,8 @@ class TimerService
         int pair_fds[2];
         InteruptInfo()
         {
-            pair_fds[0] = 0;
-            pair_fds[1] = 0;
+            pair_fds[0] = -1;
+            pair_fds[1] = -1;
             #ifndef _WIN32
             assert(0 == ::socketpair(AF_LOCAL, SOCK_STREAM, 0, pair_fds));
             if (write(pair_fds[1], "0", 1)){
@@ -49,6 +49,8 @@ class TimerService
             if (pair_fds[0] && pair_fds[1]){
                 close(pair_fds[0]);
                 close(pair_fds[1]);
+                pair_fds[0] = -1;
+                pair_fds[1] = -1;
             }
         }
         int read_fd() { return pair_fds[0]; }
@@ -56,32 +58,29 @@ class TimerService
     };
     struct RegisterfdedInfo
     {
-        RegisterfdedInfo(int64_t ms_, uint64_t dest_ms_, const Function<void()>& t_, bool is_loop_, uint64_t id):
-            timeout(ms_),
-            counter_val(ms_),
-            dest_tm(dest_ms_),
+        RegisterfdedInfo(int64_t nowtm, int64_t dest_ms_, const Function<void()>& t_, bool is_loop_, int64_t id):
+            tmStart(nowtm),
+            tmEnd(dest_ms_),
             callback(t_),
             is_loop(is_loop_),
             timerID(id)
         {}
-        bool is_timeout(uint64_t cur_ms_, long min_timeout)
+        bool checkTimeout(int64_t curms, long min_timeout)
         {
-            if (cur_ms_ >= dest_tm){
+            if (curms >= tmEnd){
                 return true;
             }
-            counter_val -= min_timeout;//!减到0也表示结束，避免修改系统时间，导致一直不能触发cur_ms_ >= dest_tm
-            if (counter_val <= 0)
-            {
-                return true;
+            if (curms < tmStart){
+                tmEnd = (tmEnd - tmStart) + curms;
+                tmStart = curms;
             }
             return false;
         }
-        int64_t                 timeout;
-        int64_t                 counter_val;
-        uint64_t                dest_tm;
+        int64_t                tmStart;//!记录开始时间，这样可以正取处理测试环境改服务器时间的场景
+        int64_t                tmEnd;
         Function<void()>        callback;
         bool                    is_loop;
-        uint64_t                timerID;
+        int64_t                timerID;
     };
     typedef std::list<RegisterfdedInfo>             RegisterfdedInfoList;
     typedef std::multimap<long, RegisterfdedInfo>   RegisterfdedInfoMap;
@@ -126,7 +125,7 @@ public:
         m_tmpRegisterfdList.clear();
         m_mapRegisterfdedStore.clear();
     }
-    void loopTimer(uint64_t ms_, Function<void()> func)
+    void loopTimer(int64_t ms_, Function<void()> func)
     {
         if (!m_runing)
         {
@@ -134,12 +133,13 @@ public:
         }
         struct timeval tv;
         gettimeofday(&tv, NULL);
-        uint64_t   dest_ms = uint64_t(tv.tv_sec)*1000 + tv.tv_usec / 1000 + ms_;
+        int64_t nowtm = int64_t(tv.tv_sec)*1000 + tv.tv_usec / 1000;;
+        int64_t   dest_ms = nowtm + ms_;
 
         LockGuard lock(m_mutex);
-        m_tmpRegisterfdList.push_back(RegisterfdedInfo(ms_, dest_ms, func, true, ++m_nAutoIncID));
+        m_tmpRegisterfdList.push_back(RegisterfdedInfo(nowtm, dest_ms, func, true, ++m_nAutoIncID));
     }
-    void onceTimer(uint64_t ms_, Function<void()> func)
+    void onceTimer(int64_t ms_, Function<void()> func)
     {
         if (!m_runing)
         {
@@ -147,10 +147,11 @@ public:
         }
         struct timeval tv;
         gettimeofday(&tv, NULL);
-        uint64_t   dest_ms = uint64_t(tv.tv_sec)*1000 + tv.tv_usec / 1000 + ms_;
+        int64_t nowtm = int64_t(tv.tv_sec)*1000 + tv.tv_usec / 1000;;
+        int64_t   dest_ms = nowtm + ms_;
 
         LockGuard lock(m_mutex);
-        m_tmpRegisterfdList.push_back(RegisterfdedInfo(ms_, dest_ms, func, false, ++m_nAutoIncID));
+        m_tmpRegisterfdList.push_back(RegisterfdedInfo(nowtm, dest_ms, func, false, ++m_nAutoIncID));
     }
 #ifdef linux
     void run()
@@ -170,10 +171,10 @@ public:
             }
 
             gettimeofday(&tv, NULL);
-            uint64_t cur_ms = tv.tv_sec*1000 + tv.tv_usec / 1000;
+            int64_t curms = tv.tv_sec*1000 + tv.tv_usec / 1000;
 
             addNewTimer();
-            processTimerCallback(cur_ms);
+            processTimerCallback(curms);
         }while (true) ;
     }
 #else
@@ -182,7 +183,7 @@ public:
         struct timeval tv;
         do
         {
-            usleep(m_min_timeout);
+            usleep(m_min_timeout*1000);
             if (false == m_runing){
                 break;
             }
@@ -199,7 +200,7 @@ private:
         RegisterfdedInfoList::iterator it = m_tmpRegisterfdList.begin();
         for (; it != m_tmpRegisterfdList.end(); ++it)
         {
-            m_mapRegisterfdedStore.insert(std::make_pair(it->dest_tm, *it));
+            m_mapRegisterfdedStore.insert(std::make_pair(it->tmEnd, *it));
         }
         m_tmpRegisterfdList.clear();
     }
@@ -212,7 +213,7 @@ private:
         ::epoll_ctl(m_efd, EPOLL_CTL_ADD, m_infoInterupt.read_fd(), &ev);
 #endif
     }
-    void processTimerCallback(uint64_t now_)
+    void processTimerCallback(int64_t now_)
     {
         RegisterfdedInfoMap::iterator it_begin = m_mapRegisterfdedStore.begin();
         RegisterfdedInfoMap::iterator it       = it_begin;
@@ -220,7 +221,7 @@ private:
         for (; it != m_mapRegisterfdedStore.end(); ++it)
         {
             RegisterfdedInfo& last = it->second;
-            if (false == last.is_timeout(now_, m_min_timeout))
+            if (false == last.checkTimeout(now_, m_min_timeout))
             {
                 break;
             }
@@ -229,7 +230,7 @@ private:
 
             if (last.is_loop)//! 如果是循环定时器，还要重新加入到定时器队列中
             {
-                loopTimer(last.timeout, last.callback);
+                loopTimer(last.tmEnd - last.tmStart, last.callback);
             }
         }
 
@@ -248,7 +249,7 @@ private:
     InteruptInfo                m_infoInterupt;
     Thread                      m_thread;
     Mutex                       m_mutex;
-    uint64_t                    m_nAutoIncID;
+    int64_t                    m_nAutoIncID;
 };
 class Timer
 {
@@ -267,7 +268,7 @@ public:
     {
     }
     void setTQ(SharedPtr<TaskQueue> tq){ m_tq = tq;}
-    void loopTimer(uint64_t ms_, Function<void()> func)
+    void loopTimer(int64_t ms_, Function<void()> func)
     {
         if (m_tq){
             TimerService::instance().loopTimer(ms_, funcbind(&TimerCB::callback, m_tq, func));
@@ -276,7 +277,7 @@ public:
             TimerService::instance().loopTimer(ms_, func);
         }
     }
-    void onceTimer(uint64_t ms_, Function<void()> func)
+    void onceTimer(int64_t ms_, Function<void()> func)
     {
         if (m_tq){
             TimerService::instance().onceTimer(ms_, funcbind(&TimerCB::callback, m_tq, func));

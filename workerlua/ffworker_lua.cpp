@@ -57,7 +57,7 @@ static ScriptArgObjPtr toScriptArg(lua_State* ls_, int pos_){
     if (lua_isnumber(ls_, pos_)){
         double d  = lua_tonumber(ls_, pos_);
         int64_t n = (int64_t)d;
-        if (::abs(d - n) > 0){
+        if (abs((int64_t)d - n) > 0){
             ret->toFloat(d);
         }
         else{

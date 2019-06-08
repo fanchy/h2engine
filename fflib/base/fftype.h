@@ -101,11 +101,19 @@ struct TypeHelper
         std::string tmp  = __PRETTY_FUNCTION__;
         std::string keystr = "TypeHelper() [with T = ";
         int pos     = tmp.find(keystr);
+        if (pos == std::string::npos){
+            keystr = "TypeHelper() [T = ";
+            pos     = tmp.find(keystr);
+        }
         int pos2     = tmp.find("]", pos+1);
         m_type_name = tmp.substr(pos + keystr.size(), pos2 - pos - keystr.size());
+        int npos3 = m_type_name.find_last_of("::");
+        if (npos3 != std::string::npos){
+            m_type_name = m_type_name.substr(npos3+1);
+        }
         m_type_id   = Singleton<TypeIdGenerator>::instance().allocID(m_type_name);
 
-        //printf("__PRETTY_FUNCTION__:%s,%s,pos:%d,pos2:%d\n", __PRETTY_FUNCTION__, m_type_name.c_str(), pos, pos2);
+        printf("__PRETTY_FUNCTION__:%s,%s,pos:%d,pos2:%d\n", __PRETTY_FUNCTION__, m_type_name.c_str(), pos, pos2);
     }
     int id() const
     {

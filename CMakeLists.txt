@@ -24,16 +24,19 @@ ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Windows")
     )
 ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
 	MESSAGE(STATUS "current platform: MacOSX")
+    set(LUAVER "lua")
     set(EXT_LIBS 
         dl mysqlclient
     )
     set(EXT_INCLUDE
         /usr/local/opt/openssl/include
         /usr/local/opt/mysql-client/include
+	/usr/local/Cellar/lua/5.3.5_1/include/lua
     )
     set(EXT_LINK
         /usr/local/opt/mysql-client/lib
         /usr/local/opt/openssl/lib
+	/usr/local/Cellar/lua/5.3.5_1/lib
     )
 ELSE ()
 	MESSAGE(STATUS "other platform: ${CMAKE_SYSTEM_NAME}")

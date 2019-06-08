@@ -13,7 +13,7 @@
 namespace ff
 {
 #define FFWORKER_LUA "FFWORKER_LUA"
-class luaops_t;
+struct luaops_t;
 class FFWorkerLua: public FFWorker, task_processor_i
 {
 public:

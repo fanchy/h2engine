@@ -29,6 +29,11 @@ struct SyncCallInfo
     Mutex           mutex;
     ConditionVar    cond;
 };
+class RpcInterface{
+public:
+    virtual ~RpcInterface(){}
+    virtual void handleMsg(BrokerRouteMsgReq& msg_) = 0;
+};
 class FFRpc: public RPCResponser
 {
     struct SessionData;
@@ -84,7 +89,7 @@ public:
     //! 新版 调用消息对应的回调函数
     int handleRpcCallMsg(SocketObjPtr sock_, BrokerRouteMsgReq& msg_);
     //! 注册接口【支持动态的增加接口】
-    void reg(const std::string& name_, FFSlot::FFCallBack* func_);
+    void reg(const std::string& name_, SharedPtr<RpcInterface> func_);
 
     const std::string& getHostCfg(){ return m_host; }
     //!获取某一类型的service
@@ -110,7 +115,7 @@ private:
     Timer                                           m_timer;
 
     std::map<uint16_t, MsgCallBack>                 m_msgHandleFunc;//! 注册broker 消息的回调函数
-    FFSlot                                          m_regInterface;//! 通过reg 注册的接口会暂时的存放在这里
+    std::map<std::string, SharedPtr<RpcInterface> > m_regInterface;//! 通过reg 注册的接口会暂时的存放在这里
     std::map<long, FFRpcCallBack>                   m_rpcTmpCallBack;//!
     SocketObjPtr                                    m_master_broker_sock;
 
@@ -118,17 +123,76 @@ private:
     RegisterToBrokerRet                             m_broker_data;
 };
 
+template<typename R, typename IN_T, typename OUT_T>
+class RpcInterfaceStaticFunc: public RpcInterface{
+public:
+    RpcInterfaceStaticFunc(R (*func_)(RPCReq<IN_T, OUT_T>&), FFRpc* rpc):func(func_), ffrpcObj(rpc){}
+    virtual void handleMsg(BrokerRouteMsgReq& msg_){
+        RPCReq<IN_T, OUT_T> req;
+        if (msg_.errinfo.empty())
+        {
+            try{
+                FFThrift::DecodeFromString(req.msg, msg_.body);
+            }
+            catch(std::exception& e)
+            {
+                req.errinfo = e.what();
+            }
+        }
+        else
+        {
+            req.errinfo = msg_.errinfo;
+        }
+        req.destNodeId = msg_.destNodeId;
+        req.callbackId = msg_.callbackId;
+        req.responser  = ffrpcObj;
+        (*func)(req);
+    }
+public:
+    R (*func)(RPCReq<IN_T, OUT_T>&);
+    FFRpc* ffrpcObj;
+};
+template<typename R, typename IN_T, typename OUT_T, typename CLASS_TYPE>
+class RpcInterfaceStaticMethod: public RpcInterface{
+public:
+    RpcInterfaceStaticMethod(R (CLASS_TYPE::*func_)(RPCReq<IN_T, OUT_T>&), CLASS_TYPE* obj_, FFRpc* rpc):func(func_), obj(obj_), ffrpcObj(rpc){}
+    virtual void handleMsg(BrokerRouteMsgReq& msg_){
+        RPCReq<IN_T, OUT_T> req;
+        if (msg_.errinfo.empty())
+        {
+            try{
+                FFThrift::DecodeFromString(req.msg, msg_.body);
+            }
+            catch(std::exception& e)
+            {
+                req.errinfo = e.what();
+            }
+        }
+        else
+        {
+            req.errinfo = msg_.errinfo;
+        }
+        req.destNodeId = msg_.destNodeId;
+        req.callbackId = msg_.callbackId;
+        req.responser  = ffrpcObj;
+        (obj->*func)(req);
+    }
+public:
+    R (CLASS_TYPE::*func)(RPCReq<IN_T, OUT_T>&);
+    CLASS_TYPE* obj;
+    FFRpc* ffrpcObj;
+};
 //! 注册接口
 template <typename R, typename IN_T, typename OUT_T>
 FFRpc& FFRpc::reg(R (*func_)(RPCReq<IN_T, OUT_T>&))
 {
-    m_regInterface.bind(TYPE_NAME(IN_T), FFRpcOps::genCallBack(func_));
+    m_regInterface[TYPE_NAME(IN_T)] = new RpcInterfaceStaticFunc<R, IN_T, OUT_T>(func_, this);
     return *this;
 }
 template <typename R, typename CLASS_TYPE, typename IN_T, typename OUT_T>
-FFRpc& FFRpc::reg(R (CLASS_TYPE::*func_)(RPCReq<IN_T, OUT_T>&), CLASS_TYPE* obj)
+FFRpc& FFRpc::reg(R (CLASS_TYPE::*func_)(RPCReq<IN_T, OUT_T>&), CLASS_TYPE* obj_)
 {
-    m_regInterface.bind(TYPE_NAME(IN_T), FFRpcOps::genCallBack(func_, obj));
+    m_regInterface[TYPE_NAME(IN_T)] = new RpcInterfaceStaticMethod<R, IN_T, OUT_T, CLASS_TYPE>(func_, obj_, this);
     return *this;
 }
 
