@@ -11,7 +11,7 @@
 #include "base/task_queue.h"
 #include "base/thread.h"
 #include "base/smart_ptr.h"
-#include "rpc/ffrpc_ops.h"
+#include "rpc/rpcbase.h"
 #include "base/arg_helper.h"
 #include "base/timer_service.h"
 #include "net/message.h"
@@ -35,6 +35,8 @@ class FFBroker
     };
 
 public:
+    static FFBroker& instance() { return Singleton<FFBroker>::instance(); }
+    static FFBroker* instancePtr() { return Singleton<FFBroker>::instancePtr(); }
     FFBroker();
     virtual ~FFBroker();
     void handleSocketProtocol(SocketObjPtr sock_, int eventType, const Message& msg_);

@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    FFBroker              ffbroker;
+    
     FFGate ffgate;
     try
     {
@@ -99,7 +99,7 @@ int main(int argc, char* argv[])
             gate_listen = arg_helper.getOptionValue("-gate_listen");
         }
         std::string brokercfg = "tcp://127.0.0.1:43210";
-        if (ffbroker.open(brokercfg))
+        if (FFBroker::instance().open(brokercfg))
         {
             printf("broker open failed\n");
             goto err_proc;

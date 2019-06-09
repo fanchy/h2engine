@@ -384,7 +384,7 @@ int FFWorker::sessionChangeWorker(const userid_t& sessionId_, int toWorker_index
         msg.sessionId = sessionId_;
         msg.allocWorker = buff;
         msg.extraData = extraData;
-        m_ffrpc->call(it->second.fromGate, msg);
+        m_ffrpc->asyncCall(it->second.fromGate, msg);
         m_worker_client.erase(it);
     }
     return 0;
@@ -400,7 +400,7 @@ int FFWorker::sessionSendMsgToGate(const string& gate_name, const userid_t& sess
     msg.sessionId.push_back(sessionId_);
     msg.cmd  = cmd_;
     msg.body = data_;
-    m_ffrpc->call(gate_name, msg);
+    m_ffrpc->asyncCall(gate_name, msg);
     LOGTRACE((FFWORKER_LOG, "FFWorker::send_msg_session end ok gate[%s]", gate_name));
     return 0;
 }
@@ -412,7 +412,7 @@ int FFWorker::sessionMulticastMsgToGate(const string& gate_name, const vector<us
     msg.sessionId = sessionId_;
     msg.cmd  = cmd_;
     msg.body = data_;
-    m_ffrpc->call(gate_name, msg);
+    m_ffrpc->asyncCall(gate_name, msg);
     LOGTRACE((FFWORKER_LOG, "FFWorker::multicast_msg_session end ok gate[%s]", gate_name));
     return 0;
 }
@@ -424,8 +424,8 @@ int FFWorker::gateBroadcastMsgToGate(const string& gate_name_, uint16_t cmd_, co
     msg.cmd = cmd_;
     msg.body = data_;
     LOGTRACE((FFWORKER_LOG, "FFWorker::gateBroadcastMsgToGate begin[%s]", gate_name_));
-    m_ffrpc->callSync(gate_name_, msg);
     //m_ffrpc->call(gate_name_, msg);
+    m_ffrpc->asyncCall(gate_name_, msg);
     return 0;
 }
 //! 关闭某个session
@@ -433,7 +433,7 @@ int FFWorker::sessionCloseToGate(const string& gate_name_, const userid_t& sessi
 {
     GateCloseSessionReq msg;
     msg.sessionId = sessionId_;
-    m_ffrpc->call(gate_name_, msg);
+    m_ffrpc->asyncCall(gate_name_, msg);
     return 0;
 }
 
@@ -460,7 +460,7 @@ void FFWorker::workerRPC(int workerindex, uint16_t cmd, const std::string& data,
     char strServiceName[128] = {0};
     snprintf(strServiceName, sizeof(strServiceName), "worker#%d", workerindex);
 
-    getRpc().call(strServiceName, reqmsg, funcbind(&RpcCallBack, func));
+    getRpc().asyncCall(strServiceName, reqmsg, funcbind(&RpcCallBack, func));
 }
 static void HttpCallBack(ScriptArgObjPtr funcOBj, const string& data){
     if (funcOBj && funcOBj->isFunc()){

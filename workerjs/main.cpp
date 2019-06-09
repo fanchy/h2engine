@@ -13,7 +13,6 @@
 
 #include "net/ffnet.h"
 #include "rpc/ffrpc.h"
-#include "rpc/ffbroker.h"
 #include "server/ffworker.h"
 #include "server/ffgate.h"
 #include "server/http_mgr.h"

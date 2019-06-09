@@ -9,7 +9,7 @@
 
 #include "base/task_queue.h"
 #include "base/thread.h"
-#include "rpc/ffrpc_ops.h"
+#include "rpc/rpcbase.h"
 #include "net/msg_sender.h"
 #include "base/timer_service.h"
 #include "base/arg_helper.h"
@@ -33,7 +33,23 @@ public:
     virtual ~RpcInterface(){}
     virtual void handleMsg(BrokerRouteMsgReq& msg_) = 0;
 };
-class FFRpc: public RPCResponser
+
+class FFRpc;
+template<typename IN_T, typename OUT_T>
+struct RPCReq
+{
+    RPCReq():destNodeId(0), callbackId(0), ffrpc(NULL){}
+    const std::string& errorMsg() const { return errinfo; }
+    void response(OUT_T& out_);
+
+    IN_T                 msg;
+    uint64_t             destNodeId;
+    int64_t              callbackId;
+    FFRpc*               ffrpc;
+    std::string          errinfo;
+};
+
+class FFRpc
 {
     struct SessionData;
 public:
@@ -60,16 +76,14 @@ public:
 
     //! 调用远程的接口
     template <typename T>
-    int call(const std::string& name_, T& req_, FFRpcCallBack callback_ = NULL);
+    int asyncCall(const std::string& name_, T& req_, FFRpcCallBack callback_ = NULL);
     //! 同步调用远程的接口
     template <typename T>
-    std::string callSync(const std::string& name_, T& req_);
+    std::string call(const std::string& name_, T& req_);
 
     //! call 接口的实现函数，call会将请求投递到该线程，保证所有请求有序
     long docall(const std::string& strServiceName_, const std::string& msg_name_, const std::string& body_, FFRpcCallBack callback_);
-    //! 调用接口后，需要回调消息给请求者
-    virtual void response(const std::string& msg_name_,  uint64_t destNodeId_,
-                          int64_t callbackId_, const std::string& body_, std::string errinfo = "");
+
     //! 通过node id 发送消息给broker
     void sendToDestNode(const std::string& strServiceName_, const std::string& msg_name_,
                            uint64_t destNodeId_, int64_t callbackId_, const std::string& body_, std::string error_info = "");
@@ -143,7 +157,7 @@ public:
         }
         req.destNodeId = msg_.destNodeId;
         req.callbackId = msg_.callbackId;
-        req.responser  = ffrpcObj;
+        req.ffrpc  = ffrpcObj;
         (*func)(req);
     }
 public:
@@ -170,9 +184,9 @@ public:
         {
             req.errinfo = msg_.errinfo;
         }
-        req.destNodeId = msg_.destNodeId;
+        req.destNodeId = msg_.fromNodeId;
         req.callbackId = msg_.callbackId;
-        req.responser  = ffrpcObj;
+        req.ffrpc  = ffrpcObj;
         (obj->*func)(req);
     }
 public:
@@ -205,14 +219,14 @@ struct FFRpc::SessionData
 
 //! 调用远程的接口
 template <typename T>
-int FFRpc::call(const std::string& name_, T& req_, FFRpcCallBack callback_)
+int FFRpc::asyncCall(const std::string& name_, T& req_, FFRpcCallBack callback_)
 {
     getTaskQueue().post(funcbind(&FFRpc::docall, this, name_, TYPE_NAME(T), FFThrift::EncodeAsString(req_), callback_));
     return 0;
 }
 //! 同步调用远程的接口
 template <typename T>
-std::string FFRpc::callSync(const std::string& name_, T& req_)
+std::string FFRpc::call(const std::string& name_, T& req_)
 {
     LockGuard lock(m_dataSyncCallInfo.mutex);
 
@@ -222,6 +236,17 @@ std::string FFRpc::callSync(const std::string& name_, T& req_)
     std::string ret = m_dataSyncCallInfo.strResult;
     m_dataSyncCallInfo.strResult.clear();
     return ret;
+}
+
+template<typename IN_T, typename OUT_T>
+void RPCReq<IN_T, OUT_T>::response(OUT_T& out_)
+{
+    if (0 != callbackId)
+    {
+        ffrpc->sendToDestNode("", TYPE_NAME(OUT_T), destNodeId, callbackId, FFThrift::EncodeAsString(out_));
+        //ffrpc->response(TYPE_NAME(OUT_T), destNodeId, callbackId, FFThrift::EncodeAsString(out_));
+        callbackId = 0;
+    }
 }
 
 }

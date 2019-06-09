@@ -1,5 +1,4 @@
 #include "rpc/ffrpc.h"
-#include "rpc/ffrpc_ops.h"
 #include "base/log.h"
 #include "rpc/ffbroker.h"
 #include "net/ffnet.h"
@@ -213,7 +212,6 @@ int FFRpc::handleMsg(const Message& msg_, SocketObjPtr sock_)
         try
         {
             cb->second(sock_, msg_.getBody());
-            LOGTRACE((FFRPC, "FFRpc::handleMsg_impl cmd[%u] call end ok", cmd));
             return 0;
         }
         catch(exception& e_)
@@ -255,7 +253,8 @@ int FFRpc::handleRpcCallMsg(SocketObjPtr sock_, BrokerRouteMsgReq& msg_)
             msg_.errinfo = "interface named " + msg_.destMsgName + " not found in rpc";
             msg_.destNodeId = msg_.fromNodeId;
             msg_.destServiceName.clear();
-            this->response("", msg_.fromNodeId, msg_.callbackId, FFThrift::EncodeAsString(msg_), msg_.errinfo);
+            //this->response("", msg_.fromNodeId, msg_.callbackId, FFThrift::EncodeAsString(msg_), msg_.errinfo);
+            sendToDestNode("", "", msg_.fromNodeId, msg_.callbackId, FFThrift::EncodeAsString(msg_), msg_.errinfo);
         }
     }
     else
@@ -357,11 +356,10 @@ void FFRpc::sendToDestNode(const string& strServiceName_, const string& msg_name
 
     uint64_t dest_broker_id = BROKER_MASTER_nodeId;
 
-    FFBroker* pbroker = Singleton<FFRpcMemoryRoute>::instance().getBroker(dest_broker_id);
-    if (pbroker)//!如果broker和本身都在同一个进程中,那么直接内存间投递即可
+    if (FFBroker::instancePtr())//!如果broker和本身都在同一个进程中,那么直接内存间投递即可
     {
         LOGTRACE((FFRPC, "FFRpc::send_to_broker_by_nodeid begin destNodeId[%u], m_bind_broker_id=%u memory post", destNodeId_, dest_broker_id));
-        pbroker->getTaskQueue().post(funcbind(&FFBroker::sendToRPcNode, pbroker, dest_msg));
+        FFBroker::instancePtr()->getTaskQueue().post(funcbind(&FFBroker::sendToRPcNode, FFBroker::instancePtr(), dest_msg));
     }
     else if (dest_broker_id == 0)
     {
@@ -380,14 +378,6 @@ bool FFRpc::isExist(const string& strServiceName_)
     }
 
     return true;
-}
-
-
-//! 调用接口后，需要回调消息给请求者
-void FFRpc::response(const string& msg_name_,  uint64_t destNodeId_, int64_t callbackId_, const string& body_, string errinfo)
-{
-    static string null_str;
-    getTaskQueue().post(funcbind(&FFRpc::sendToDestNode, this, null_str, msg_name_, destNodeId_, callbackId_, body_, errinfo));
 }
 
 //! 处理注册,
