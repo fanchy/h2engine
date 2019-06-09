@@ -4,6 +4,7 @@
 
 #include "server/http_mgr.h"
 #include "base/perf_monitor.h"
+#include "base/func.h"
 
 using namespace std;
 using namespace ff;
@@ -36,19 +37,17 @@ int HttpMgr::stop()
     return 0;
 }
 
-void HttpMgr::request(const string& url_, int timeoutsec, FFSlot::FFCallBack* callback_)
+void HttpMgr::request(const string& url_, int timeoutsec, Function<void(const std::string&)> callback)
 {
-    m_tq.post(funcbind(&HttpMgr::request_impl, this, url_, timeoutsec, callback_));
+    m_tq.post(funcbind(&HttpMgr::request_impl, this, url_, timeoutsec, callback));
 }
 
-void HttpMgr::request_impl(const string& sql_, int timeoutsec, FFSlot::FFCallBack* callback_)
+void HttpMgr::request_impl(const string& url_, int timeoutsec, Function<void(const std::string&)> callback)
 {
-    http_result_t result;
-    result.ret = syncRequest(sql_, timeoutsec);
-    if (callback_)
+    std::string ret = syncRequest(url_, timeoutsec);
+    if (callback)
     {
-        callback_->exe(&result);
-        delete callback_;
+        callback(ret);
     }
 }
 #ifdef FF_ENABLE_CURL
@@ -64,6 +63,7 @@ static size_t write_data_func(void *ptr, size_t size, size_t nmemb, void *stream
     return written;
 }
 #endif
+
 string HttpMgr::syncRequest(const string& url_, int timeoutsec)
 {
     LOGTRACE((HHTP_MGR, "HttpMgr::syncRequest begin...", url_));

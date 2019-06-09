@@ -72,7 +72,7 @@ FFWorker::~FFWorker()
 struct ScriptTimerTool{
     static void doTimer(ScriptArgObjPtr funcOBj){
         if (funcOBj && funcOBj->isFunc()){
-            funcOBj->getFunc()(ScriptArgObj::create());
+            funcOBj->runFunc(ScriptArgObj::create());
         }
     }
 };
@@ -102,27 +102,27 @@ static ScriptArgObjPtr queryResultToScriptArg(QueryDBResult& result)
 
 static void asyncQueryCB(ScriptArgObjPtr funcOBj, QueryDBResult& result){
     if (funcOBj && funcOBj->isFunc()){
-        funcOBj->getFunc()(queryResultToScriptArg(result));
+        funcOBj->runFunc(queryResultToScriptArg(result));
     }
 }
-void FFWorker::asyncQuery(long modid, const std::string& sql_, ScriptArgObjPtr func)
+void FFWorker::asyncQuery(int64_t modid, const std::string& sql_, ScriptArgObjPtr func)
 {
-    DB_MGR.asyncQueryModId(modid, sql_, funcbind(&asyncQueryCB, func), &(getRpc().getTaskQueue()));
+    DbMgr::instance().asyncQuery(modid, sql_, funcbind(&asyncQueryCB, func), &(getRpc().getTaskQueue()));
 }
-void FFWorker::asyncQueryByName(const string& name_, const string& sql_, ScriptArgObjPtr func)
+void FFWorker::asyncQueryByCfg(const string& cfg, int64_t modid, const string& sql_, ScriptArgObjPtr func)
 {
-    DB_MGR.asyncQueryByName(name_, sql_, funcbind(&asyncQueryCB, func), &(getRpc().getTaskQueue()));
+    DbMgr::instance().asyncQueryByCfg(cfg, modid, sql_, funcbind(&asyncQueryCB, func), &(getRpc().getTaskQueue()));
 }
 ScriptArgObjPtr FFWorker::query(const string& sql_)
 {
     QueryDBResult result;
-    DB_MGR.query(sql_, &result.dataResult, &result.errinfo, &result.affectedRows, &result.fieldNames);
+    DbMgr::instance().query(sql_, result);
     return queryResultToScriptArg(result);
 }
-ScriptArgObjPtr FFWorker::queryByName(const string& name_, const string& sql_)
+ScriptArgObjPtr FFWorker::queryByCfg(const string& cfg, const string& sql_)
 {
     QueryDBResult result;
-    DB_MGR.queryByName(name_, sql_, &result.dataResult, &result.errinfo, &result.affectedRows, &result.fieldNames);
+    DbMgr::instance().queryByCfg(cfg, sql_, result);
     return queryResultToScriptArg(result);
 }
 
@@ -161,7 +161,6 @@ int FFWorker::open(const string& brokercfg, int worker_index)
     LOGTRACE((FFWORKER_LOG, "FFWorker::open end ok"));
 
     SCRIPT_CACHE.init();
-    DB_MGR.setDefaultTaskQueue((TaskQueue*)&(this->getRpc().getTaskQueue()));
     EntityModule::init();
     CmdModule::init();
 
@@ -184,14 +183,14 @@ int FFWorker::open(const string& brokercfg, int worker_index)
     SCRIPT_UTIL.reg("logfatal", &FFWorker::logfatalForScirpt, this);
 
     SCRIPT_UTIL.reg("regTimer", &FFWorker::regTimerForScirpt, this);
-    SCRIPT_UTIL.reg("connectDB", &DbMgr::connectDB, (DbMgr*)(&DB_MGR));
+    SCRIPT_UTIL.reg("initDBPool", &DbMgr::initDBPool, (DbMgr*)(&(DbMgr::instance())));
     SCRIPT_UTIL.reg("asyncQuery", &FFWorker::asyncQuery, this);
     SCRIPT_UTIL.reg("query", &FFWorker::query, this);
-    SCRIPT_UTIL.reg("asyncQueryByName", &FFWorker::asyncQueryByName, this);
-    SCRIPT_UTIL.reg("queryByName", &FFWorker::queryByName, this);
-    //SCRIPT_UTIL.reg("workerRPC", &FFWorker::workerRPC, this);
-    //SCRIPT_UTIL.reg("asyncHttp", &FFWorker::asyncHttp, this);
-    //SCRIPT_UTIL.reg("syncHttp", &FFWorker::syncHttp, this);
+    SCRIPT_UTIL.reg("asyncQueryByCfg", &FFWorker::asyncQueryByCfg, this);
+    SCRIPT_UTIL.reg("queryByCfg", &FFWorker::queryByCfg, this);
+    SCRIPT_UTIL.reg("workerRPC", &FFWorker::workerRPC, this);
+    SCRIPT_UTIL.reg("asyncHttp", &FFWorker::asyncHttp, this);
+    SCRIPT_UTIL.reg("syncHttp", &FFWorker::syncHttp, this);
     return 0;
 }
 int FFWorker::close()
@@ -424,8 +423,9 @@ int FFWorker::gateBroadcastMsgToGate(const string& gate_name_, uint16_t cmd_, co
     GateBroadcastMsgToSessionReq msg;
     msg.cmd = cmd_;
     msg.body = data_;
-    //m_ffrpc->callSync(gate_name_, msg);
-    m_ffrpc->call(gate_name_, msg);
+    LOGTRACE((FFWORKER_LOG, "FFWorker::gateBroadcastMsgToGate begin[%s]", gate_name_));
+    m_ffrpc->callSync(gate_name_, msg);
+    //m_ffrpc->call(gate_name_, msg);
     return 0;
 }
 //! 关闭某个session
@@ -450,7 +450,7 @@ static void RpcCallBack(ScriptArgObjPtr funcOBj, const string& data){
         catch(exception& e_)
         {
         }
-        funcOBj->getFunc()(ScriptArgUtil<string>::toValue(retmsg.body));
+        funcOBj->runFunc(ScriptArgUtil<string>::toValue(retmsg.body));
     }
 }
 void FFWorker::workerRPC(int workerindex, uint16_t cmd, const std::string& data, ScriptArgObjPtr func){
@@ -462,8 +462,13 @@ void FFWorker::workerRPC(int workerindex, uint16_t cmd, const std::string& data,
 
     getRpc().call(strServiceName, reqmsg, funcbind(&RpcCallBack, func));
 }
-void FFWorker::asyncHttp(const std::string& url_, int timeoutsec, FFSlot::FFCallBack* cb){
-    Singleton<HttpMgr>::instance().request(url_, timeoutsec, cb);
+static void HttpCallBack(ScriptArgObjPtr funcOBj, const string& data){
+    if (funcOBj && funcOBj->isFunc()){
+        funcOBj->runFunc(ScriptArgUtil<string>::toValue(data));
+    }
+}
+void FFWorker::asyncHttp(const std::string& url_, int timeoutsec, ScriptArgObjPtr func){
+    Singleton<HttpMgr>::instance().request(url_, timeoutsec, funcbind(&HttpCallBack, func));
 }
 std::string FFWorker::syncHttp(const std::string& url_, int timeoutsec){
     return Singleton<HttpMgr>::instance().syncRequest(url_, timeoutsec);

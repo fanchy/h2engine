@@ -6,14 +6,12 @@
 #include <vector>
 #include <map>
 
-
-
 #include "base/fftype.h"
 #include "base/log.h"
 #include "base/smart_ptr.h"
 #include "db/ffdb.h"
 #include "base/lock.h"
-#include "base/ffslot.h"
+#include "base/func.h"
 
 namespace ff
 {
@@ -21,25 +19,15 @@ namespace ff
 class HttpMgr
 {
 public:
-    class http_result_t: public FFSlot::CallBackArg
-    {
-    public:
-        virtual int type()
-        {
-            return TYPEID(http_result_t);
-        }
-        std::string ret;
-    };
-
     HttpMgr();
     ~HttpMgr();
     int start();
     int stop();
 
-    void    request(const std::string& url_, int timeoutsec, FFSlot::FFCallBack* callback_);
+    void    request(const std::string& url_, int timeoutsec, Function<void(const std::string&)> callback);
     std::string  syncRequest(const std::string& url_, int timeoutsec = -1);
 private:
-    void    request_impl(const std::string& sql_, int timeoutsec, FFSlot::FFCallBack* callback_);
+    void    request_impl(const std::string& sql_, int timeoutsec, Function<void(const std::string&)> callback);
 private:
     TaskQueue                                m_tq;
 };

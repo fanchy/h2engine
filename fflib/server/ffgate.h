@@ -9,7 +9,6 @@
 #include <queue>
 
 #include "base/task_queue.h"
-#include "base/ffslot.h"
 #include "base/thread.h"
 #include "rpc/ffrpc.h"
 #include "base/timer_service.h"

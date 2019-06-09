@@ -127,7 +127,7 @@ TaskObjPtr TaskCtrl::genTask(int cfgid, int status){
     snprintf(sql, sizeof(sql), "insert into task (`uid`, `cfgid`, `status`, `value`, `tmUpdate`) values (%lu, %d, %d, %d, '%s')",
                                 (unsigned long)(this->getOwner()->getUid()), task->taskCfg->cfgid, task->status, task->value, TimeTool::formattm(task->tmUpdate).c_str());
     
-    DB_MGR.asyncQueryModId(this->getOwner()->getUid(), sql);
+    DbMgr::instance().asyncQuery(this->getOwner()->getUid(), sql);
 
     TaskStatusChange eTask(this->getOwner(), task->taskCfg->cfgid, task->status);
     EVENT_BUS_FIRE(eTask);
@@ -142,7 +142,7 @@ bool TaskCtrl::delTask(int cfgid){
         snprintf(sql, sizeof(sql), "delete from task where `uid` = '%lu' and `cfgid` = '%d' ",
                                     (unsigned long)(this->getOwner()->getUid()), cfgid);
         
-        DB_MGR.asyncQueryModId(this->getOwner()->getUid(), sql);
+        DbMgr::instance().asyncQuery(this->getOwner()->getUid(), sql);
         return true;
     }
     return false;
@@ -157,7 +157,7 @@ bool TaskCtrl::changeTaskStatus(TaskObjPtr task, int status){
     snprintf(sql, sizeof(sql), "update task set status = %d, tmUpdate = '%s' where `uid` = '%lu' and `cfgid` = '%d' ",
                                 status, TimeTool::formattm(task->tmUpdate).c_str(), (unsigned long)(this->getOwner()->getUid()), task->taskCfg->cfgid);
     
-    DB_MGR.asyncQueryModId(this->getOwner()->getUid(), sql);
+    DbMgr::instance().asyncQuery(this->getOwner()->getUid(), sql);
     TaskStatusChange eTask(this->getOwner(), task->taskCfg->cfgid, task->status);
     EVENT_BUS_FIRE(eTask);
     return true;

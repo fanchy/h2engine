@@ -5,8 +5,6 @@
 #include <assert.h>
 #include <string>
 
-
-#include "base/ffslot.h"
 #include "net/socket.h"
 #include "base/fftype.h"
 #include "base/singleton.h"
@@ -64,45 +62,6 @@ public:
     virtual void response(const std::string& msg_name_,  uint64_t destNodeId_,
                           int64_t callbackId_, const std::string& body_, std::string err = "") = 0;
 };
-
-class SlotReqArg: public FFSlot::CallBackArg
-{
-public:
-    SlotReqArg(const std::string& s_, uint64_t n_, int64_t cb_id_, std::string errinfo_, RPCResponser* p):
-        body(s_),
-        destNodeId(n_),
-        callbackId(cb_id_),
-        errinfo(errinfo_),
-        responser(p)
-    {}
-    SlotReqArg(){}
-    SlotReqArg(const SlotReqArg& src):
-        body(src.body),
-        destNodeId(src.destNodeId),
-        callbackId(src.callbackId),
-        errinfo(src.errinfo),
-        responser(src.responser)
-    {}
-    SlotReqArg& operator=(const SlotReqArg& src)
-    {
-        body = src.body,
-        destNodeId = src.destNodeId;
-        callbackId = src.callbackId;
-        errinfo = src.errinfo;
-        responser = src.responser;
-        return *this;
-    }
-    virtual int type()
-    {
-        return TYPEID(SlotReqArg);
-    }
-    std::string          body;
-    uint64_t             destNodeId;//! 请求来自于那个node id
-    int64_t              callbackId;//! 回调函数标识id
-    std::string          errinfo;
-    RPCResponser*        responser;
-};
-
 
 
 class null_type_t//: public FFMsg<null_type_t>

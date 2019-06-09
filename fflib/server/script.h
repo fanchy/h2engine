@@ -157,6 +157,14 @@ struct ScriptArgObj{
     const std::vector<SharedPtr<ScriptArgObj> >& getList() const         { return listVal; }
     const std::map<std::string, SharedPtr<ScriptArgObj> >& getDict() const         { return dictVal; }
     ScriptFunction& getFunc(){ return func; }
+    void runFunc(SharedPtr<ScriptArgObj> arg){
+        try{
+            func(arg);
+        }
+        catch(std::exception& e){
+            //LOGERROR(("SERVER", "runFunc failed %s", e.what()));
+        }
+    }
     void copy(SharedPtr<ScriptArgObj>& src){
         nType   = src->nType;
         nVal    = src->nVal;
