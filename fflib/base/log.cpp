@@ -171,7 +171,14 @@ Log::~Log()
 	}
 	m_class_set_history.clear();
 }
-
+void Log::setLevel(int level_)
+{
+	m_enabled_level = 0;
+	for (int i = 0; i < level_ && i < LOG_LEVEL_NUM; ++i)
+	{
+		m_enabled_level |= (1 << i);
+	}
+}
 void Log::setLevel(int level_, bool flag_)
 {
 	if (flag_)
@@ -304,6 +311,16 @@ void Log::log_content(int level_, const char* str_class_, const string& content_
 		printf("%s%s%s%s\n", g_log_color_head[level_], log_buff, content_.c_str(), g_log_color_tail[level_]);
 	}
 }
+void Log::setPathAndName(const std::string& path, const std::string& name)
+{
+	m_path = path;
+	m_filename = name;
+	struct timeval curtm;
+	gettimeofday(&curtm, NULL);
+	struct tm tm_val = *localtime(&(curtm.tv_sec));
+	::memset(&m_last_create_dir_tm, 0, sizeof(m_last_create_dir_tm));
+	check_and_create_dir(&tm_val);
+}
 
 bool Log::check_and_create_dir(struct tm* tm_val_)
 {
@@ -367,7 +384,13 @@ LogService::LogService():
 	m_log(NULL),
 	m_bEnableAllClass(true)
 {
+	int level = 5;
+	string path = "./log";
+	string filename = "log";
+	bool print_file = true;
+	bool print_screen = false;
 
+	m_log = new Log(level, "", path, filename, print_file, print_screen);
 }
 LogService::~LogService()
 {
@@ -381,25 +404,33 @@ int LogService::start(const string& opt_)
 }
 int LogService::start(ArgHelper& arg)
 {
-	if (m_log) return 0;
-
-	int level = 2;
+	int level = 5;
 	string path = "./log";
 	string filename = "log";
 	bool print_file = true;
 	bool print_screen = false;
 
-	if (!arg.getOptionValue("-log_level").empty()) level = ::atoi(arg.getOptionValue("-log_level").c_str());
-	if (!arg.getOptionValue("-log_path").empty()) path = arg.getOptionValue("-log_path");
-	if (!arg.getOptionValue("-log_filename").empty()) filename = arg.getOptionValue("-log_filename");
+	if (!arg.getOptionValue("-log_level").empty()){
+		level = ::atoi(arg.getOptionValue("-log_level").c_str());
+		m_log->setLevel(level);
+	}
+	if (!arg.getOptionValue("-log_path").empty()){
+		path = arg.getOptionValue("-log_path");
+	}
+	if (!arg.getOptionValue("-log_filename").empty()){
+		filename = arg.getOptionValue("-log_filename");
+	}
+
 
 	if (arg.getOptionValue("-log_print_file") == "false" || arg.getOptionValue("-log_print_file") == "0")
 	{
 		print_file = false;
+		m_log->setPrintFile(print_file);
 	}
 	if (arg.getOptionValue("-log_print_screen") == "true" || arg.getOptionValue("-log_print_screen") == "1")
 	{
 		print_screen = true;
+		m_log->setPrintScreen(print_screen);
 	}
 
 	m_log = new Log(level, arg.getOptionValue("-log_class"), path, filename, print_file, print_screen);

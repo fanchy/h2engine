@@ -66,7 +66,7 @@ public:
 			if (m_fmt_type.type == 'x')
 			{
 				char buff[64];
-				snprintf(buff, sizeof(buff), "0x%x", (unsigned int)content_);
+				snprintf(buff, sizeof(buff), "0x%lx", (unsigned long)content_);
 				m_num_buff = buff;
 			}
 			else
@@ -128,7 +128,8 @@ public:
 	Log(int level_, const std::string& all_class_, const std::string& path_, const std::string& file_,
 		  bool print_file_, bool print_screen_);
 	virtual ~Log();
-
+	void setPathAndName(const std::string& path, const std::string& name);
+	void setLevel(int lv);
 	void setLevel(int level_, bool flag_);
 	void setModule(const std::string& class_, bool flag_);
 	void setPrintFile(bool flag_);
@@ -160,7 +161,7 @@ protected:
 };
 
 #define LOG_IMPL_NONE_ARG(func, LOG_LEVEL) 															\
-	inline void func(const char* class_, const char* fmt_)													\
+	void func(const char* class_, const char* fmt_)													\
 	{																								\
 		if (m_log->is_level_enabled(LOG_LEVEL))														\
 		{																							\
@@ -175,7 +176,7 @@ protected:
 
 #define LOG_IMPL_ARG1(func, LOG_LEVEL) 																\
 	template <typename ARG1>																		\
-	inline void func(const char* class_, const char* fmt_, const ARG1& arg1_)								\
+	void func(const char* class_, const char* fmt_, const ARG1& arg1_)								\
 	{																								\
 		if (m_log->is_level_enabled(LOG_LEVEL))														\
 		{																							\
@@ -193,7 +194,7 @@ protected:
 
 #define LOG_IMPL_ARG2(func, LOG_LEVEL) 																\
 	template <typename ARG1, typename ARG2>															\
-	inline void func(const char* class_, const char* fmt_, const ARG1& arg1_, const ARG2& arg2_)			\
+	void func(const char* class_, const char* fmt_, const ARG1& arg1_, const ARG2& arg2_)			\
 	{																								\
 		if (m_log->is_level_enabled(LOG_LEVEL))														\
 		{																							\
@@ -211,7 +212,7 @@ protected:
 
 #define LOG_IMPL_ARG3(func, LOG_LEVEL) 																\
 	template <typename ARG1, typename ARG2, typename ARG3>											\
-	inline void func(const char* class_, const char* fmt_, const ARG1& arg1_, const ARG2& arg2_,			\
+	void func(const char* class_, const char* fmt_, const ARG1& arg1_, const ARG2& arg2_,			\
 			  const ARG3& arg3_)																	\
 	{																								\
 		if (m_log->is_level_enabled(LOG_LEVEL))														\
@@ -231,7 +232,7 @@ protected:
 
 #define LOG_IMPL_ARG4(func, LOG_LEVEL) 																\
 	template <typename ARG1, typename ARG2, typename ARG3, typename ARG4>							\
-	inline void func(const char* class_, const char* fmt_, const ARG1& arg1_, const ARG2& arg2_,			\
+	void func(const char* class_, const char* fmt_, const ARG1& arg1_, const ARG2& arg2_,			\
 			  const ARG3& arg3_, const ARG4& arg4_)													\
 	{																								\
 		if (m_log->is_level_enabled(LOG_LEVEL))														\
@@ -252,7 +253,7 @@ protected:
 
 #define LOG_IMPL_ARG5(func, LOG_LEVEL) 																\
 	template <typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>			\
-	inline void func(const char* class_, const char* fmt_, const ARG1& arg1_, const ARG2& arg2_,			\
+	void func(const char* class_, const char* fmt_, const ARG1& arg1_, const ARG2& arg2_,			\
 			  const ARG3& arg3_, const ARG4& arg4_, const ARG5& arg5_)								\
 	{																								\
 		if (m_log->is_level_enabled(LOG_LEVEL))														\
@@ -275,7 +276,7 @@ protected:
 #define LOG_IMPL_ARG6(func, LOG_LEVEL) 																\
 	template <typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5,			\
 			  typename ARG6>																		\
-	inline void func(const char* class_, const char* fmt_, const ARG1& arg1_, const ARG2& arg2_,			\
+	void func(const char* class_, const char* fmt_, const ARG1& arg1_, const ARG2& arg2_,			\
 			  const ARG3& arg3_, const ARG4& arg4_, const ARG5& arg5_, const ARG6& arg6_)			\
 	{																								\
 		if (m_log->is_level_enabled(LOG_LEVEL))														\
@@ -316,8 +317,8 @@ public:
 
 	LOG_IMPL_MACRO(asyncLogdebug, LOG_DEBUG);
 	LOG_IMPL_MACRO(asyncLogtrace, LOG_TRACE);
-	LOG_IMPL_MACRO(asyncLoginfo, LOG_INFO);
-	LOG_IMPL_MACRO(asyncLogwarn, LOG_WARN);
+	LOG_IMPL_MACRO(asyncLoginfo,  LOG_INFO);
+	LOG_IMPL_MACRO(asyncLogwarn,  LOG_WARN);
 	LOG_IMPL_MACRO(asyncLogerror, LOG_ERROR);
 	LOG_IMPL_MACRO(asyncLogfatal, LOG_FATAL);
 
@@ -326,6 +327,9 @@ public:
 	void setPrintFile(bool flag_);
 	void setPrintScreen(bool flag_);
 	void setEnableAllClass(bool f) { m_bEnableAllClass = f;}
+
+	Log* getLogObj() { return m_log; }
+	TaskQueue& getTQ() { return m_task_queue; }
 private:
 	Log*			m_log;
 	TaskQueue       m_task_queue;
@@ -345,12 +349,162 @@ private:
 #define LOGERROR(content)  Singleton<LogService>::instance().asyncLogerror content
 #define LOGFATAL(content)  Singleton<LogService>::instance().asyncLogfatal content
 
-#define logdebug(content)  Singleton<LogService>::instance().asyncLogdebug("SERVER", content)
-#define logtrace(content)  Singleton<LogService>::instance().asyncLogtrace("SERVER", content)
-#define loginfo(content)   Singleton<LogService>::instance().asyncLoginfo("SERVER", content)
-#define logwarn(content)   Singleton<LogService>::instance().asyncLogwarn("SERVER", content)
-#define logerror(content)  Singleton<LogService>::instance().asyncLogerror("SERVER", content)
-#define logfatal(content)  Singleton<LogService>::instance().asyncLogfatal("SERVER", content)
+#define LOG_IMPL_NONE_ARG_NOCLASS(func, LOG_LEVEL) 															\
+	static void func(const char* fmt_)													\
+	{																								\
+		if (Singleton<LogService>::instance().getLogObj()->is_level_enabled(LOG_LEVEL))														\
+		{																							\
+			const char* class_name_str = "SERVER";							\
+			{																						\
+				Singleton<LogService>::instance().getTQ().post(funcbind(&Log::log_content, Singleton<LogService>::instance().getLogObj(), LOG_LEVEL,		\
+									 class_name_str, std::string(fmt_), gettid()));								\
+			}																						\
+		}																							\
+	}
+
+#define LOG_IMPL_ARG_NOCLASS1(func, LOG_LEVEL) 																\
+	template <typename ARG1>																		\
+	static void func(const char* fmt_, const ARG1& arg1_)								\
+	{																								\
+		if (Singleton<LogService>::instance().getLogObj()->is_level_enabled(LOG_LEVEL))														\
+		{																							\
+			const char* class_name_str = "SERVER";							\
+			{																						\
+				StrFormat dest(fmt_);															\
+				dest.append(arg1_);																	\
+				Singleton<LogService>::instance().getTQ().post(funcbind(&Log::log_content, Singleton<LogService>::instance().getLogObj(), LOG_LEVEL,		\
+									 class_name_str, dest.genResult(), gettid()));						 	\
+			}																						\
+		}																							\
+	}
+
+
+#define LOG_IMPL_ARG_NOCLASS2(func, LOG_LEVEL) 																\
+	template <typename ARG1, typename ARG2>															\
+	static void func(const char* fmt_, const ARG1& arg1_, const ARG2& arg2_)			\
+	{																								\
+		if (Singleton<LogService>::instance().getLogObj()->is_level_enabled(LOG_LEVEL))														\
+		{																							\
+			const char* class_name_str = "SERVER";							\
+			{																						\
+				StrFormat dest(fmt_);															\
+				dest.append(arg1_);																	\
+				dest.append(arg2_);																	\
+				Singleton<LogService>::instance().getTQ().post(funcbind(&Log::log_content, Singleton<LogService>::instance().getLogObj(), LOG_LEVEL,		\
+									 class_name_str, dest.genResult(), gettid()));						 	\
+			}																						\
+		}																							\
+	}
+
+#define LOG_IMPL_ARG_NOCLASS3(func, LOG_LEVEL) 																\
+	template <typename ARG1, typename ARG2, typename ARG3>											\
+	static void func(const char* fmt_, const ARG1& arg1_, const ARG2& arg2_,			\
+			  const ARG3& arg3_)																	\
+	{																								\
+		if (Singleton<LogService>::instance().getLogObj()->is_level_enabled(LOG_LEVEL))														\
+		{																							\
+			const char* class_name_str = "SERVER";							\
+			{																						\
+				StrFormat dest(fmt_);															\
+				dest.append(arg1_);																	\
+				dest.append(arg2_);																	\
+				dest.append(arg3_);																	\
+				Singleton<LogService>::instance().getTQ().post(funcbind(&Log::log_content, Singleton<LogService>::instance().getLogObj(), LOG_LEVEL,		\
+									 class_name_str, dest.genResult(), gettid()));						 	\
+			}																						\
+		}																							\
+	}
+
+#define LOG_IMPL_ARG_NOCLASS4(func, LOG_LEVEL) 																\
+	template <typename ARG1, typename ARG2, typename ARG3, typename ARG4>							\
+	static void func(const char* fmt_, const ARG1& arg1_, const ARG2& arg2_,			\
+			  const ARG3& arg3_, const ARG4& arg4_)													\
+	{																								\
+		if (Singleton<LogService>::instance().getLogObj()->is_level_enabled(LOG_LEVEL))														\
+		{																							\
+			const char* class_name_str = "SERVER";							\
+			{																						\
+				StrFormat dest(fmt_);															\
+				dest.append(arg1_);																	\
+				dest.append(arg2_);																	\
+				dest.append(arg3_);																	\
+				dest.append(arg4_);																	\
+				Singleton<LogService>::instance().getTQ().post(funcbind(&Log::log_content, Singleton<LogService>::instance().getLogObj(), LOG_LEVEL,		\
+									 class_name_str, dest.genResult(), gettid()));						 	\
+			}																						\
+		}																							\
+	}
+
+#define LOG_IMPL_ARG_NOCLASS5(func, LOG_LEVEL) 																\
+	template <typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5>			\
+	static void func(const char* fmt_, const ARG1& arg1_, const ARG2& arg2_,			\
+			  const ARG3& arg3_, const ARG4& arg4_, const ARG5& arg5_)								\
+	{																								\
+		if (Singleton<LogService>::instance().getLogObj()->is_level_enabled(LOG_LEVEL))														\
+		{																							\
+			const char* class_name_str = "SERVER";							\
+			{																						\
+				StrFormat dest(fmt_);															\
+				dest.append(arg1_);																	\
+				dest.append(arg2_);																	\
+				dest.append(arg3_);																	\
+				dest.append(arg4_);																	\
+				dest.append(arg5_);																	\
+				Singleton<LogService>::instance().getTQ().post(funcbind(&Log::log_content, Singleton<LogService>::instance().getLogObj(), LOG_LEVEL,		\
+									 class_name_str, dest.genResult(), gettid()));						 	\
+			}																						\
+		}																							\
+	}
+
+#define LOG_IMPL_ARG_NOCLASS6(func, LOG_LEVEL) 																\
+	template <typename ARG1, typename ARG2, typename ARG3, typename ARG4, typename ARG5,			\
+			  typename ARG6>																		\
+	static void func(const char* fmt_, const ARG1& arg1_, const ARG2& arg2_,			\
+			  const ARG3& arg3_, const ARG4& arg4_, const ARG5& arg5_, const ARG6& arg6_)			\
+	{																								\
+		if (Singleton<LogService>::instance().getLogObj()->is_level_enabled(LOG_LEVEL))														\
+		{																							\
+			const char* class_name_str = "SERVER";							\
+			{																						\
+				StrFormat dest(fmt_);															\
+				dest.append(arg1_);																	\
+				dest.append(arg2_);																	\
+				dest.append(arg3_);																	\
+				dest.append(arg4_);																	\
+				dest.append(arg5_);																	\
+				dest.append(arg6_);																	\
+				Singleton<LogService>::instance().getTQ().post(funcbind(&Log::log_content, Singleton<LogService>::instance().getLogObj(), LOG_LEVEL,		\
+									 class_name_str, dest.genResult(), gettid()));						 	\
+			}																						\
+		}																							\
+	}
+
+
+#define LOG_IMPL_MACRO_NOCLASS(funcname, LOG_LV) 	\
+	LOG_IMPL_NONE_ARG_NOCLASS(funcname, LOG_LV)  	\
+	LOG_IMPL_ARG_NOCLASS1(funcname, LOG_LV)	  	\
+	LOG_IMPL_ARG_NOCLASS2(funcname, LOG_LV)	  	\
+	LOG_IMPL_ARG_NOCLASS3(funcname, LOG_LV)		\
+	LOG_IMPL_ARG_NOCLASS4(funcname, LOG_LV)		\
+	LOG_IMPL_ARG_NOCLASS5(funcname, LOG_LV)		\
+	LOG_IMPL_ARG_NOCLASS6(funcname, LOG_LV)
+
+struct LogUtil{
+	LOG_IMPL_MACRO_NOCLASS(logdebugUtil, LOG_DEBUG);
+	LOG_IMPL_MACRO_NOCLASS(logtraceUtil, LOG_TRACE);
+	LOG_IMPL_MACRO_NOCLASS(loginfoUtil , LOG_INFO) ;
+	LOG_IMPL_MACRO_NOCLASS(logwarnUtil , LOG_WARN) ;
+	LOG_IMPL_MACRO_NOCLASS(logerrorUtil, LOG_ERROR);
+	LOG_IMPL_MACRO_NOCLASS(logfatalUtil, LOG_FATAL);
+};
+
+#define logdebug LogUtil::logdebugUtil
+#define logtrace LogUtil::logtraceUtil
+#define loginfo  LogUtil::loginfoUtil
+#define logwarn  LogUtil::logwarnUtil
+#define logerror LogUtil::logerrorUtil
+#define logfatal LogUtil::logfatalUtil
+
 }
 
 #endif
