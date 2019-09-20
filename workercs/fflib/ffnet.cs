@@ -52,17 +52,26 @@ namespace ff
 
                 foreach (var eachRecvPkg in m_oWSProtocol.GetRecvPkg())
                 {
-                    int nHeadEndIndex = -1;
-                    for (int i = 0; i < eachRecvPkg.Length; ++i)
-                    {
-                        if (eachRecvPkg[i] == '\n')
-                        {
-                            nHeadEndIndex = i;
-                            break;
-                        }
-                    }
+                    if (eachRecvPkg.Length == 0)
+                        continue;
+                    
                     UInt16 nCmd = 0;
                     byte[] dataBody = eachRecvPkg;
+
+
+                    int nHeadEndIndex = -1;
+                    if (eachRecvPkg[0] == 'c' || eachRecvPkg[0] == 'C')
+                    {
+                        ffsocket.SetProtocolType("websocket-text");
+                        for (int i = 0; i < eachRecvPkg.Length; ++i)
+                        {
+                            if (eachRecvPkg[i] == '\n')
+                            {
+                                nHeadEndIndex = i;
+                                break;
+                            }
+                        }
+                    }
                     if (nHeadEndIndex > 0)
                     {
                         byte[] bytesHead = new byte[nHeadEndIndex];
@@ -76,6 +85,15 @@ namespace ff
                         {
                             nCmd = Convert.ToUInt16(strCmds[1]);
                         }
+                    }
+                    else
+                    {
+                        if (eachRecvPkg.Length < 8)
+                            continue;
+                        size = System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt32(eachRecvPkg, 0));
+                        nCmd = (UInt16)System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt16(eachRecvPkg, 4));
+                        flag = System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt16(eachRecvPkg, 6));
+                        dataBody = new byte[eachRecvPkg.Length - 8];
                     }
                     FFLog.Trace(string.Format("cmd={0},data={1}", nCmd, dataBody.Length));
                         
@@ -258,7 +276,7 @@ namespace ff
             return null;
         }
         public static void SendMsg(IFFSocket ffsocket, UInt16 cmdSrc, byte[] strData){
-            if (ffsocket.GetProtocolType() == "websocket")
+            if (ffsocket.GetProtocolType() == "websocket-text")
             {
                 byte[] cmddata = Util.String2Byte(string.Format("cmd:{0}\n", cmdSrc));
                 byte[] wsData = Util.MergeArray(cmddata, strData);

@@ -33,25 +33,11 @@ namespace ff
         }
         public static byte[] String2Byte(string data)
         {
-            byte[] ret = new byte[data.Length];
-            for (int i = 0; i < data.Length; ++i)
-            {
-                ret[i] = (Byte)data[i];
-            }
-            return ret;
+            return System.Text.UTF8Encoding.Default.GetBytes(data);
         }
-        public static string Byte2String(byte[] data, int index = 0, int len = -1)
+        public static string Byte2String(byte[] data)
         {
-            if (len == -1)
-            {
-                len = data.Length;
-            }
-            StringWriter sw = new StringWriter();
-            for (int i = index; i < index + len && i < data.Length; ++i)
-            {
-                sw.Write((char)data[i]);
-            }
-            return sw.ToString();
+            return System.Text.UTF8Encoding.Default.GetString(data);
         }
     }
 }

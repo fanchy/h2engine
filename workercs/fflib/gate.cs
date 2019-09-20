@@ -34,6 +34,11 @@ namespace ff
             m_nGateIndex = nGateIndex;
             m_strGateName = string.Format("gate#{0}", m_nGateIndex);
             m_ffrpc = new FFRpc(m_strGateName);
+            if (m_ffrpc.Open(strBrokerHost) == false)
+            {
+                FFLog.Error("gate ffrpc open failed!");
+                return false;
+            }
 
             m_ffrpc.Reg<GateChangeLogicNodeReq, EmptyMsgRet>(this.ChangeSessionLogic);
             m_ffrpc.Reg<GateCloseSessionReq, EmptyMsgRet>(this.CloseSession);
@@ -129,7 +134,7 @@ namespace ff
                 {
                     //ffsocket.Close();
                     FFLog.Error(string.Format("gate worker[{0}] not exist", strDefaultWorker));
-                    FFNet.SendMsg(ffsocket, 0, Util.String2Byte("server is busy!0x0!"));
+                    FFNet.SendMsg(ffsocket, 256, Util.String2Byte("server is busy!0x0!你好"));
                     return;
                 }
                 Int64 sessionIDNew = ++m_nIDGenerator;

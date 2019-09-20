@@ -165,7 +165,7 @@ namespace ff
                     case FFRPC_CMD.REGISTER_TO_BROKER_RET:
                         {
                             FFNet.DecodeMsg(m_brokerData, strMsg);
-                            FFLog.Trace(string.Format("ffrpc.handleMsg..REGISTER_TO_BROKER_RET..{0}, {1}", m_brokerData.Node_id, m_brokerData.Register_flag));
+                            FFLog.Trace(string.Format("ffrpc.handleMsg..REGISTER_TO_BROKER_RET..{0},{1},{2}", m_strServiceName, m_brokerData.Node_id, m_brokerData.Register_flag));
                             if (m_brokerData.Register_flag == 1)
                             {
                                 m_nNodeID = m_brokerData.Node_id;//! -1表示注册失败，0表示同步消息，1表示注册成功
