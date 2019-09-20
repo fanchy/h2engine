@@ -80,8 +80,6 @@ int FFBroker::open(const string& listen, string bridge_broker, string master_bro
     m_msgHandleFunc[BROKER_ROUTE_MSG]   = MsgHandleUtil<FFBroker, BrokerRouteMsgReq>::bind(&FFBroker::handleBrokerRouteMsg, this);
     m_msgHandleFunc[SYNC_CLIENT_REQ]   = MsgHandleUtil<FFBroker, BrokerRouteMsgReq>::bind(&FFBroker::processSyncClientReq, this);
 
-
-    Singleton<FFRpcMemoryRoute>::instance().addNode(BROKER_MASTER_nodeId, this);
     LOGINFO((BROKER, "FFBroker::open end ok"));
     return 0;
 }

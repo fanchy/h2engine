@@ -401,7 +401,7 @@ static BIND_FUNC_RET_TYPE js_connectDB(const Arguments& args)
     string host_ = js2string(args[0]);
     string group_ = js2string(args[1]);
     
-    long ret = DB_MGR.connectDB(host_, group_);
+    long ret = DbMgr::instance().connectDB(host_, group_);
     BIND_FUNC_RET_VAL(NewNumberValue(ret));
 }
 struct AsyncQueryCB
@@ -480,7 +480,7 @@ static BIND_FUNC_RET_TYPE js_asyncQuery(const Arguments& args)
     }
     
     AsyncQueryCB cb(funcptr);
-    DB_MGR.asyncQueryModId(db_id_, sql_,  cb, Singleton<FFWorkerJs>::instance().getRpc().getTaskQueue());
+    DbMgr::instance().asyncQueryModId(db_id_, sql_,  cb, Singleton<FFWorkerJs>::instance().getRpc().getTaskQueue());
     BIND_FUNC_RET_TRUE;
 }
 struct AsyncQueryNameCB
@@ -558,7 +558,7 @@ static BIND_FUNC_RET_TYPE js_asyncQueryByName(const Arguments& args)
     
     
     AsyncQueryNameCB cb(funcptr);
-    DB_MGR.asyncQueryByName(group_, sql_,  cb, Singleton<FFWorkerJs>::instance().getRpc().getTaskQueue());
+    DbMgr::instance().asyncQueryByName(group_, sql_,  cb, Singleton<FFWorkerJs>::instance().getRpc().getTaskQueue());
     BIND_FUNC_RET_TRUE;
 }
 static BIND_FUNC_RET_TYPE js_query(const Arguments& args)
@@ -571,7 +571,7 @@ static BIND_FUNC_RET_TYPE js_query(const Arguments& args)
     vector<vector<string> > ret_;
     vector<string> col_;
     int affectedRows = 0;
-    DB_MGR.query(sql_, &ret_, &errinfo, &affectedRows, &col_);
+    DbMgr::instance().query(sql_, &ret_, &errinfo, &affectedRows, &col_);
     
 
     Local<Object> retDict = OBJECT_NEW();
@@ -624,7 +624,7 @@ static BIND_FUNC_RET_TYPE js_QueryByName(const Arguments& args)
     vector<vector<string> > ret_;
     vector<string> col_;
     int affectedRows = 0;
-    DB_MGR.queryByName(group_, sql_, &ret_, &errinfo, &affectedRows, &col_);
+    DbMgr::instance().queryByName(group_, sql_, &ret_, &errinfo, &affectedRows, &col_);
     
 
     Local<Object> retDict = OBJECT_NEW();
@@ -999,19 +999,12 @@ int FFWorkerJs::scriptInit(const string& js_root)
     
     getSharedMem().setNotifyFunc(onSyncSharedData);
 
-    DB_MGR.start();
+    
     ArgHelper& arg_helper = Singleton<ArgHelper>::instance();
     if (arg_helper.isEnableOption("-db")){
-        int nDbNum = DB_THREAD_NUM;
-        if (arg_helper.getOptionValue("-db").find("sqlite://") != std::string::npos){
-            nDbNum = 1;
-        }
-        for (int i = 0; i < nDbNum; ++i){
-            if (0 == DB_MGR.connectDB(arg_helper.getOptionValue("-db"), DB_DEFAULT_NAME)){
-                LOGERROR((FFWORKER_JS, "db connect failed"));
-                return -1;
-                break;
-            }
+        if (DbMgr::instance().initDBPool(arg_helper.getOptionValue("-db"), 1)){
+            LOGERROR((FFWORKER_LUA, "FFWorker::db connect failed"));
+            return -1;
         }
     }
     
@@ -1207,7 +1200,7 @@ void FFWorkerJs::scriptCleanup()
     }
     this->cleanupModule();
     m_enable_call = false;
-    DB_MGR.stop();
+    DbMgr::instance().cleanup();
     getRpc().getTaskQueue().post(TaskBinder::gen(&FFWorkerJs::scriptRelease, this));
 }
 

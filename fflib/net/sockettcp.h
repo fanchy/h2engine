@@ -5,7 +5,6 @@
 #include <string>
 
 #include "net/socket.h"
-#include "base/obj_pool.h"
 #include "net/socket_op.h"
 #include "net/ioevent.h"
 #include "base/func.h"

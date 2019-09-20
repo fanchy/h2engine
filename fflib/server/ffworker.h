@@ -4,8 +4,6 @@
 //#include <assert.h>
 #include <string>
 
-
-#include "base/ffslot.h"
 #include "base/fftype.h"
 #include "rpc/ffrpc.h"
 #include "base/arg_helper.h"
@@ -140,7 +138,7 @@ public:
     void regTimerForScirpt(uint64_t mstimeout_, ScriptArgObjPtr func);
 
     void workerRPC(int workerindex, uint16_t cmd, const std::string& data, ScriptArgObjPtr func);
-    void asyncHttp(const std::string& url_, int timeoutsec, FFSlot::FFCallBack* cb);
+    void asyncHttp(const std::string& url_, int timeoutsec, ScriptArgObjPtr func);
     std::string syncHttp(const std::string& url_, int timeoutsec);
 
     bool initModule();
@@ -153,10 +151,10 @@ public:
     void logerrorForScirpt(const std::string& content_);
     void logfatalForScirpt(const std::string& content_);
 
-    void asyncQuery(long modid, const std::string& sql_, ScriptArgObjPtr func);
-    void asyncQueryByName(const std::string& name_, const std::string& sql_, ScriptArgObjPtr func);
+    void asyncQuery(int64_t modid, const std::string& sql_, ScriptArgObjPtr func);
+    void asyncQueryByCfg(const std::string& cfg_, int64_t modid, const std::string& sql_, ScriptArgObjPtr func);
     ScriptArgObjPtr query(const std::string& sql_);
-    ScriptArgObjPtr queryByName(const std::string& name_, const std::string& sql_);
+    ScriptArgObjPtr queryByCfg(const std::string& name_, const std::string& sql_);
 public:
     //! 转发client消息
     virtual int onSessionReq(userid_t sessionId_, uint16_t cmd_, const std::string& data_) {return 0;}
@@ -233,7 +231,7 @@ private:
 };
 #define FFWORKER (*FFWorker::gSingletonWorker)
 
-class FFWorker::session_enter_arg: public FFSlot::CallBackArg
+class FFWorker::session_enter_arg
 {
 public:
     session_enter_arg(const std::string& sessionIp_, const std::string& gate_, const userid_t& s_,
@@ -256,7 +254,7 @@ public:
     std::string    toWorker;//! 跳到哪个scene上面去,若是下线，toWorker为空
     std::string    extraData;//! 附带数据
 };
-class FFWorker::session_offline_arg: public FFSlot::CallBackArg
+class FFWorker::session_offline_arg
 {
 public:
     session_offline_arg(const userid_t& s_):
@@ -268,7 +266,7 @@ public:
     }
     userid_t          sessionId;
 };
-class FFWorker::logic_msg_arg: public FFSlot::CallBackArg
+class FFWorker::logic_msg_arg
 {
 public:
     logic_msg_arg(const userid_t& s_, uint16_t cmd_, const std::string& t_):
@@ -285,7 +283,7 @@ public:
     std::string             body;
 };
 
-class FFWorker::worker_call_msg_arg: public FFSlot::CallBackArg
+class FFWorker::worker_call_msg_arg
 {
 public:
     worker_call_msg_arg(uint16_t cmd_, const std::string& t_, std::string& err_, std::string& msgType_, std::string& ret_):

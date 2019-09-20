@@ -527,7 +527,7 @@ PHP_METHOD(h2ext, connectDB)
 	}
     std::string host_(strarg, strlen);
     std::string group_(strarg2, strlen2);
-    long ret = DB_MGR.connectDB(host_, group_);
+    long ret = DbMgr::instance().connectDB(host_, group_);
     
     RETURN_LONG(ret);
 }
@@ -605,7 +605,7 @@ PHP_METHOD(h2ext, asyncQuery)
     Singleton<FFWorkerPhp>::instance().m_php->globalCache(fieldname, funccb);
     
     AsyncQueryCB cb(idx);
-    DB_MGR.asyncQueryModId(db_id_, sql_,  cb, Singleton<FFWorkerPhp>::instance().getRpc().getTaskQueue());
+    DbMgr::instance().asyncQueryModId(db_id_, sql_,  cb, Singleton<FFWorkerPhp>::instance().getRpc().getTaskQueue());
     RETURN_TRUE;
 }
 struct AsyncQueryNameCB
@@ -683,7 +683,7 @@ PHP_METHOD(h2ext, asyncQueryByName)
     Singleton<FFWorkerPhp>::instance().m_php->globalCache(fieldname, funccb);
     
     AsyncQueryNameCB cb(idx);
-    DB_MGR.asyncQueryByName(group_, sql_,  cb, Singleton<FFWorkerPhp>::instance().getRpc().getTaskQueue());
+    DbMgr::instance().asyncQueryByName(group_, sql_,  cb, Singleton<FFWorkerPhp>::instance().getRpc().getTaskQueue());
     RETURN_TRUE;
 }
 PHP_METHOD(h2ext, query)
@@ -702,7 +702,7 @@ PHP_METHOD(h2ext, query)
     std::vector<std::vector<std::string> > ret_;
     std::vector<std::string> col_;
     int affectedRows = 0;
-    DB_MGR.query(sql_, &ret_, &errinfo, &affectedRows, &col_);
+    DbMgr::instance().query(sql_, &ret_, &errinfo, &affectedRows, &col_);
     
     zval* retval = NULL;
     MAKE_STD_ZVAL(retval);
@@ -754,7 +754,7 @@ PHP_METHOD(h2ext, queryByName)
     std::vector<std::vector<std::string> > ret_;
     std::vector<std::string> col_;
     int affectedRows = 0;
-    DB_MGR.queryByName(group_, sql_, &ret_, &errinfo, &affectedRows, &col_);
+    DbMgr::instance().queryByName(group_, sql_, &ret_, &errinfo, &affectedRows, &col_);
     
     zval* retval = NULL;
     MAKE_STD_ZVAL(retval);
@@ -1210,19 +1210,12 @@ int FFWorkerPhp::scriptInit(const std::string& root)
     
     LOGTRACE((FFWORKER_PHP, "FFWorkerPhp::scriptInit begin path:%s, m_ext_name:%s", path, m_ext_name));
 
-    DB_MGR.start();
+    
     ArgHelper& arg_helper = Singleton<ArgHelper>::instance();
     if (arg_helper.isEnableOption("-db")){
-        int nDbNum = DB_THREAD_NUM;
-        if (arg_helper.getOptionValue("-db").find("sqlite://") != std::string::npos){
-            nDbNum = 1;
-        }
-        for (int i = 0; i < nDbNum; ++i){
-            if (0 == DB_MGR.connectDB(arg_helper.getOptionValue("-db"), DB_DEFAULT_NAME)){
-                LOGERROR((FFWORKER_PHP, "db connect failed"));
-                return -1;
-                break;
-            }
+        if (DbMgr::instance().initDBPool(arg_helper.getOptionValue("-db"), 1)){
+            LOGERROR((FFWORKER_LUA, "FFWorker::db connect failed"));
+            return -1;
         }
     }
     
@@ -1315,7 +1308,7 @@ void FFWorkerPhp::scriptCleanup()
     this->cleanupModule();
     LOGINFO((FFWORKER_PHP, "scriptCleanup end"));
     m_enable_call = false;
-    DB_MGR.stop();
+    DbMgr::instance().cleanup();
 }
 int FFWorkerPhp::close()
 {

@@ -274,20 +274,11 @@ int FFWorkerLua::scriptInit(const string& lua_root)
 
     (*m_fflua).reg(lua_reg);
 
-
-    DB_MGR.start();
     ArgHelper& arg_helper = Singleton<ArgHelper>::instance();
     if (arg_helper.isEnableOption("-db")){
-        int nDbNum = DB_THREAD_NUM;
-        if (arg_helper.getOptionValue("-db").find("sqlite://") != std::string::npos){
-            nDbNum = 1;
-        }
-        for (int i = 0; i < nDbNum; ++i){
-            if (0 == DB_MGR.connectDB(arg_helper.getOptionValue("-db"), DB_DEFAULT_NAME)){
-                LOGERROR((FFWORKER_LUA, "db connect failed"));
-                return -1;
-                break;
-            }
+        if (DbMgr::instance().initDBPool(arg_helper.getOptionValue("-db"), 1)){
+            LOGERROR((FFWORKER_LUA, "FFWorker::db connect failed"));
+            return -1;
         }
     }
 
@@ -357,7 +348,7 @@ void FFWorkerLua::scriptCleanup()
     this->cleanupModule();
     LOGTRACE((FFWORKER_LUA, "scriptCleanup trace 1"));
     m_enable_call = false;
-    DB_MGR.stop();
+    DbMgr::instance().cleanup();
     LOGTRACE((FFWORKER_LUA, "scriptCleanup end ok"));
 }
 int FFWorkerLua::close()

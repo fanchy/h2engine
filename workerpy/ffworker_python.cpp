@@ -101,7 +101,7 @@ static bool py_regTimer(int mstimeout_, PyObject* pFuncSrc)
 //!数据库相关操作
 static long py_connectDB(const string& host_, const string& group_)
 {
-    return DB_MGR.connectDB(host_, group_);
+    return DbMgr::instance().connectDB(host_, group_);
 }
 struct PyQueryCallBack
 {
@@ -173,7 +173,7 @@ struct PyQueryCallBack
 static void py_asyncQuery(long modid, const string& sql_, PyObject* pFuncArg)
 {
     PyQueryCallBack cb(pFuncArg);
-    DB_MGR.asyncQueryModId(modid, sql_, cb, Singleton<FFWorkerPython>::instance().getRpc().getTaskQueue());
+    DbMgr::instance().asyncQueryModId(modid, sql_, cb, Singleton<FFWorkerPython>::instance().getRpc().getTaskQueue());
 }
 struct AsyncQueryNameCb
 {
@@ -251,7 +251,7 @@ struct AsyncQueryNameCb
 static void py_asyncQueryByName(const string& name_, const string& sql_, PyObject* pFuncArg)
 {
     AsyncQueryNameCb cb(pFuncArg);
-    DB_MGR.asyncQueryByName(name_, sql_, cb, Singleton<FFWorkerPython>::instance().getRpc().getTaskQueue());
+    DbMgr::instance().asyncQueryByName(name_, sql_, cb, Singleton<FFWorkerPython>::instance().getRpc().getTaskQueue());
 }
 
 static PyObject* py_query(const string& sql_)
@@ -261,7 +261,7 @@ static PyObject* py_query(const string& sql_)
     vector<vector<string> > retdata;
     vector<string> col;
     int affectedRows = 0;
-    DB_MGR.query(sql_, &retdata, &errinfo, &affectedRows, &col);
+    DbMgr::instance().query(sql_, &retdata, &errinfo, &affectedRows, &col);
 
     {
         string key = "datas";
@@ -305,7 +305,7 @@ static PyObject* py_QueryByName(const string& name_, const string& sql_)
     vector<vector<string> > retdata;
     vector<string> col;
     int affectedRows = 0;
-    DB_MGR.queryByName(name_, sql_, &retdata, &errinfo, &affectedRows, &col);
+    DbMgr::instance().queryByName(name_, sql_, &retdata, &errinfo, &affectedRows, &col);
 
     {
         string key = "datas";
@@ -779,23 +779,13 @@ int FFWorkerPython::scriptInit(const string& py_root)
 
     (*m_ffpython).init(EXT_NAME);
 
-    DB_MGR.start();
+    
     ArgHelper& arg_helper = Singleton<ArgHelper>::instance();
     if (arg_helper.isEnableOption("-db")){
-        int nDbNum = DB_THREAD_NUM;
-        if (arg_helper.getOptionValue("-db").find("sqlite://") != std::string::npos){
-            nDbNum = 1;
+        if (DbMgr::instance().initDBPool(arg_helper.getOptionValue("-db"), 1)){
+            LOGERROR((FFWORKER_LUA, "FFWorker::db connect failed"));
+            return -1;
         }
-        for (int i = 0; i < nDbNum; ++i){
-            if (0 == DB_MGR.connectDB(arg_helper.getOptionValue("-db"), DB_DEFAULT_NAME)){
-                LOGERROR((FFWORKER_PYTHON, "FFWorkerPython::db connect failed"));
-                return -1;
-                break;
-            }
-        }
-    }
-    else{
-        LOGERROR((FFWORKER_PYTHON, "FFWorkerPython::no db config"));
     }
 
     int ret = -2;
@@ -862,7 +852,7 @@ void FFWorkerPython::scriptCleanup()
     }
     this->cleanupModule();
     m_enable_call = false;
-    DB_MGR.stop();
+    DbMgr::instance().cleanup();
     LOGINFO((FFWORKER_PYTHON, "FFWorkerPython::scriptCleanup end"));
 }
 int FFWorkerPython::close()

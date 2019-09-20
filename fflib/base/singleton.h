@@ -11,11 +11,11 @@ class Singleton
 public:
     static T& instance()
     {
-	pthread_once(&m_ponce, &Singleton::init);
+	    pthread_once(&m_ponce, &Singleton::init);
         return *m_instance;
     }
 
-    static T* instance_ptr()
+    static T* instancePtr()
     {
         return m_instance;
     }

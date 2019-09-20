@@ -103,7 +103,7 @@ void FFGate::cleanup_session(client_info_t& client_info, SocketObjPtr sock_, boo
         {
             SessionOfflineReq msg;
             msg.sessionId  = session_data.id();
-            m_ffrpc->call(client_info.allocWorker, msg);
+            m_ffrpc->asyncCall(client_info.allocWorker, msg);
         }
 
         m_client_set.erase(session_data.id());
@@ -166,8 +166,8 @@ int FFGate::routeLogicMsg(const Message& msg_, SocketObjPtr sock_, bool first)
                     session_data.id(), msg.sessionIp, client_info.allocWorker));
     }
     try{
-        //m_ffrpc->callSync(client_info.allocWorker, msg);
-        m_ffrpc->call(client_info.allocWorker, msg);
+        //m_ffrpc->asyncCallSync(client_info.allocWorker, msg);
+        m_ffrpc->asyncCall(client_info.allocWorker, msg);
     }
     catch(exception& e){
         LOGTRACE((FFGATE, "except:%s", e.what()));
@@ -200,7 +200,7 @@ int FFGate::changeSessionLogic(RPCReq<GateChangeLogicNodeReq, EmptyMsgRet>& req_
 
     enter_msg.toWorker = req_.msg.allocWorker;
     enter_msg.extraData = req_.msg.extraData;
-    m_ffrpc->call(req_.msg.allocWorker, enter_msg);
+    m_ffrpc->asyncCall(req_.msg.allocWorker, enter_msg);
 
 
     LOGTRACE((FFGATE, "FFGate::changeSessionLogic end ok"));

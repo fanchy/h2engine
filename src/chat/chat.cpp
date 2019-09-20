@@ -31,7 +31,7 @@ struct ChatLoginDbFunctor{
         char buff[256] = {0};
         if (result.dataResult.empty()){//! 数据库里没有数据，创建一条数据
             snprintf(buff, sizeof(buff), "insert into chattest (UID, CHAT_TIMES) values ('%lu', '0')", (unsigned long)uid);
-            DB_MGR.asyncQueryModId(uid, buff);
+            DbMgr::instance().asyncQuery(uid, buff);
         }
         else{
             entity->get<ChatCtrl>()->nChatTimes = ::atoi(result.dataResult[0][0].c_str());
@@ -63,7 +63,7 @@ static void handleLogin(EntityPtr entity, const string& msg){//!处理登录，�
     ChatLoginDbFunctor dbFunc;
     dbFunc.uid = uid;
     dbFunc.entity = entity;
-    DB_MGR.asyncQueryModId(uid, sql, dbFunc);
+    DbMgr::instance().asyncQuery(uid, sql, dbFunc);
     
 }
 static void handleLogout(EntityPtr entity, const string& msg){
@@ -74,7 +74,7 @@ static void handleLogout(EntityPtr entity, const string& msg){
     char buff[256] = {0};
     snprintf(buff, sizeof(buff), "update chattest set CHAT_TIMES = '%d' where UID = '%lu'", 
                                  entity->get<ChatCtrl>()->nChatTimes, (unsigned long)(entity->getUid()));
-    DB_MGR.asyncQueryModId(entity->getUid(), buff);
+    DbMgr::instance().asyncQuery(entity->getUid(), buff);
     
     snprintf(buff, sizeof(buff), "user[%lu]离开了聊天室！", (unsigned long)(entity->getUid()));
     FFWORKER.gateBroadcastMsg(CHAT_S_BROADCAST, buff);//!这个是gate广播也就是全服广播
@@ -120,7 +120,7 @@ bool ChatModule::init(){
 
     //!一般而言，初始化的时候需要创建表，读取配置等
     string sql = "create table IF NOT EXISTS chattest (UID integer, CHAT_TIMES interger);";
-    DB_MGR.query(sql);
+    DbMgr::instance().query(sql);
     return true;
 }
 

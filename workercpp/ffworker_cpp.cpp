@@ -16,26 +16,12 @@ FFWorkerCpp::~FFWorkerCpp()
 }
 int FFWorkerCpp::cppInit()
 {
-    DB_MGR.start();
-    ArgHelper& arg_helper = Singleton<ArgHelper>::instance();
-    string dbcfg;
-    if (arg_helper.isEnableOption("-db")){
-        dbcfg = arg_helper.getOptionValue("-db");
-    }
-    else{
-        dbcfg = "sqlite://./h2test.db";
-        LOGERROR((FFWORKER_CPP, "FFWorkerCpp::no db config use demo db:sqlite://./h2test.db"));
-    }
     
-    int nDbNum = DB_THREAD_NUM;
-    if (dbcfg.find("sqlite://") != std::string::npos){
-        nDbNum = 1;
-    }
-    for (int i = 0; i < nDbNum; ++i){
-        if (0 == DB_MGR.connectDB(dbcfg, DB_DEFAULT_NAME)){
-            LOGERROR((FFWORKER_CPP, "FFWorkerCpp::db connect failed"));
+    ArgHelper& arg_helper = Singleton<ArgHelper>::instance();
+    if (arg_helper.isEnableOption("-db")){
+        if (DbMgr::instance().initDBPool(arg_helper.getOptionValue("-db"), 1)){
+            LOGERROR((FFWORKER_LUA, "FFWorker::db connect failed"));
             return -1;
-            break;
         }
     }
 
