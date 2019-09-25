@@ -94,6 +94,7 @@ namespace ff
                         nCmd = (UInt16)System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt16(eachRecvPkg, 4));
                         flag = System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt16(eachRecvPkg, 6));
                         dataBody = new byte[eachRecvPkg.Length - 8];
+                        Array.Copy(eachRecvPkg, 8, dataBody, 0, dataBody.Length);
                     }
                     FFLog.Trace(string.Format("cmd={0},data={1}", nCmd, dataBody.Length));
                         

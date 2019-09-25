@@ -12,16 +12,12 @@ namespace ff
             FFBroker ffbroker = new FFBroker();
             ffbroker.Open(host);
 
-            string strServiceName = "worker#0";
-            FFRpc ffrpc = new FFRpc(strServiceName);
-            if (ffrpc.Open(host) == false){
+            int nWorkerIndex = 0;
+            FFWorker worker = new FFWorker();
+            if (worker.Open(host, nWorkerIndex) == false){
                 FFLog.Trace("ffrpc open failed!");
             }
-            ffrpc.Reg((SessionEnterWorkerReq req) =>
-            {
-                FFLog.Trace(string.Format("ffrpc SessionEnterWorkerReq £¡£¡£¡FromGate={0}", req.From_gate));
-                return req;
-            });
+
             //Console.ReadKey();
             //ffrpc.GetTaskQueue().Post(() =>
             //{
@@ -34,8 +30,8 @@ namespace ff
             //        FFLog.Trace(string.Format("ffrpc SessionEnterWorkerReq return£¡£¡£¡FromGate={0}", retMsg.From_gate));
             //    });
             //});
-            FFGate ffGate = new FFGate("gate#0");
-            if (ffGate.Open(host, "tcp://127.0.0.1:44000", 0) == false)
+            FFGate ffGate = new FFGate();
+            if (ffGate.Open(host, "tcp://*:44000", 0) == false)
             {
                 FFLog.Trace("ffGate open failed!");
             }
@@ -46,7 +42,7 @@ namespace ff
             FFNet.Timerout(100000, () =>
             {
                 FFLog.Debug("AAAAAAAAAAAAAAA1");
-                ffrpc.Close();
+                //ffbroker.Close();
             });
             FFLog.Trace(string.Format("main! {0}", System.Threading.Thread.CurrentThread.ManagedThreadId.ToString()));
             

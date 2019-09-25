@@ -254,7 +254,7 @@ namespace ff
             
             return true;
         }
-        public byte[] BuildPkg(byte[] dataBody, int opcode = 0x01)
+        public byte[] BuildPkg(byte[] dataBody, int opcode = 0x02)
         {
             int nBodyLenByteNum = 0;
             if (dataBody.Length >= 65536)
