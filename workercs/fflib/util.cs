@@ -45,18 +45,30 @@ namespace ff
         {
             return System.Text.UTF8Encoding.Default.GetString(data, index, (int)count);
         }
-        public static  string Pb2String(pb::IMessage retMsg)
+        public static byte[] Pb2Byte(pb::IMessage retMsg)
         {
             pb::CodedOutputStream cos = new pb::CodedOutputStream(bytesPBBuffer);
             retMsg.WriteTo(cos);
-            string ret = Util.Byte2String(bytesPBBuffer, 0, cos.Position);
+            byte[] ret = new byte[cos.Position];
+            Array.Copy(bytesPBBuffer, 0, ret, 0, cos.Position);
+
             return ret;
         }
-        public static T String2Pb<T>(string data) where T : pb::IMessage, new()
+        public static T Byte2Pb<T>(byte[] data) where T : pb::IMessage, new()
         {
             T retMsg = new T();
-            retMsg.MergeFrom(new pb::CodedInputStream(String2Byte(data)));
+            retMsg.MergeFrom(new pb::CodedInputStream(data));
             return retMsg;
+        }
+        public static int Distance(int x1, int y1, int x2, int y2)
+        {
+            return Math.Max(Math.Abs(x1 - x2), Math.Abs(y1 - y2));
+        }
+        public static long GetNowTimeMs()
+        {
+            System.DateTime currentTime = DateTime.Now;
+            long ret = ((Int64)currentTime.Ticks) / 10000;
+            return ret;
         }
     }
 }

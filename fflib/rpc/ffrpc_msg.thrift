@@ -7,14 +7,14 @@ struct SessionOfflineReq{
 struct RouteLogicMsgReq{
     1:i64 sessionId                  = 0
     2:i16 cmd                         = 0
-    3:string body
+    3:binary body
     4:string sessionIp
 }
 
 struct GateChangeLogicNodeReq{
     1:i64 sessionId                  = 0
     2:string allocWorker
-    3:string extraData
+    3:binary extraData
 }
 
 struct GateCloseSessionReq{
@@ -24,21 +24,21 @@ struct GateCloseSessionReq{
 struct GateRouteMsgToSessionReq{
     1:list<i64> sessionId            = 0
     2:i16 cmd                         = 0
-    3:string body
+    3:binary body
 }
 
 struct GateBroadcastMsgToSessionReq{
     1:i16 cmd                         = 0
-    2:string body
+    2:binary body
 }
 struct WorkerCallMsgReq{
     1:i16 cmd                         = 0
-    2:string body
+    2:binary body
 }
 struct WorkerCallMsgRet{
     1:string err;
     2:string msgType;
-    3:string body;
+    3:binary body;
 }
 
 struct BrokerRouteMsgReq{
@@ -47,7 +47,7 @@ struct BrokerRouteMsgReq{
     4:i64 destNodeId;
     6:i64 fromNodeId;
     7:i64 callbackId;
-    8:string body;
+    8:binary body;
     9:string errinfo;
 }
 struct RegisterToBrokerReq{
@@ -69,5 +69,5 @@ struct SessionEnterWorkerReq{
     3:string fromGate;
     4:string fromWorker;
     5:string toWorker;
-    6:string extraData;
+    6:binary extraData;
 }

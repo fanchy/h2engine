@@ -15,125 +15,122 @@ using System.Runtime.Serialization;
 using Thrift.Protocol;
 using Thrift.Transport;
 
-namespace ff
-{
 
+#if !SILVERLIGHT
+[Serializable]
+#endif
+public partial class RegisterToBrokerReq : TBase
+{
+  private int _nodeType;
+  private string _strServiceName;
+
+  public int NodeType
+  {
+    get
+    {
+      return _nodeType;
+    }
+    set
+    {
+      __isset.nodeType = true;
+      this._nodeType = value;
+    }
+  }
+
+  public string StrServiceName
+  {
+    get
+    {
+      return _strServiceName;
+    }
+    set
+    {
+      __isset.strServiceName = true;
+      this._strServiceName = value;
+    }
+  }
+
+
+  public Isset __isset;
   #if !SILVERLIGHT
   [Serializable]
   #endif
-  public partial class RegisterToBrokerReq : TBase
+  public struct Isset {
+    public bool nodeType;
+    public bool strServiceName;
+  }
+
+  public RegisterToBrokerReq() {
+  }
+
+  public void Read (TProtocol iprot)
   {
-    private int _node_type;
-    private string _service_name;
-
-    public int Node_type
+    TField field;
+    iprot.ReadStructBegin();
+    while (true)
     {
-      get
-      {
-        return _node_type;
+      field = iprot.ReadFieldBegin();
+      if (field.Type == TType.Stop) { 
+        break;
       }
-      set
+      switch (field.ID)
       {
-        __isset.node_type = true;
-        this._node_type = value;
-      }
-    }
-
-    public string Service_name
-    {
-      get
-      {
-        return _service_name;
-      }
-      set
-      {
-        __isset.service_name = true;
-        this._service_name = value;
-      }
-    }
-
-
-    public Isset __isset;
-    #if !SILVERLIGHT
-    [Serializable]
-    #endif
-    public struct Isset {
-      public bool node_type;
-      public bool service_name;
-    }
-
-    public RegisterToBrokerReq() {
-    }
-
-    public void Read (TProtocol iprot)
-    {
-      TField field;
-      iprot.ReadStructBegin();
-      while (true)
-      {
-        field = iprot.ReadFieldBegin();
-        if (field.Type == TType.Stop) { 
-          break;
-        }
-        switch (field.ID)
-        {
-          case 1:
-            if (field.Type == TType.I32) {
-              Node_type = iprot.ReadI32();
-            } else { 
-              TProtocolUtil.Skip(iprot, field.Type);
-            }
-            break;
-          case 2:
-            if (field.Type == TType.String) {
-              Service_name = iprot.ReadString();
-            } else { 
-              TProtocolUtil.Skip(iprot, field.Type);
-            }
-            break;
-          default: 
+        case 1:
+          if (field.Type == TType.I32) {
+            NodeType = iprot.ReadI32();
+          } else { 
             TProtocolUtil.Skip(iprot, field.Type);
-            break;
-        }
-        iprot.ReadFieldEnd();
+          }
+          break;
+        case 2:
+          if (field.Type == TType.String) {
+            StrServiceName = iprot.ReadString();
+          } else { 
+            TProtocolUtil.Skip(iprot, field.Type);
+          }
+          break;
+        default: 
+          TProtocolUtil.Skip(iprot, field.Type);
+          break;
       }
-      iprot.ReadStructEnd();
+      iprot.ReadFieldEnd();
     }
+    iprot.ReadStructEnd();
+  }
 
-    public void Write(TProtocol oprot) {
-      TStruct struc = new TStruct("RegisterToBrokerReq");
-      oprot.WriteStructBegin(struc);
-      TField field = new TField();
-      if (__isset.node_type) {
-        field.Name = "node_type";
-        field.Type = TType.I32;
-        field.ID = 1;
-        oprot.WriteFieldBegin(field);
-        oprot.WriteI32(Node_type);
-        oprot.WriteFieldEnd();
-      }
-      if (Service_name != null && __isset.service_name) {
-        field.Name = "service_name";
-        field.Type = TType.String;
-        field.ID = 2;
-        oprot.WriteFieldBegin(field);
-        oprot.WriteString(Service_name);
-        oprot.WriteFieldEnd();
-      }
-      oprot.WriteFieldStop();
-      oprot.WriteStructEnd();
+  public void Write(TProtocol oprot) {
+    TStruct struc = new TStruct("RegisterToBrokerReq");
+    oprot.WriteStructBegin(struc);
+    TField field = new TField();
+    if (__isset.nodeType) {
+      field.Name = "nodeType";
+      field.Type = TType.I32;
+      field.ID = 1;
+      oprot.WriteFieldBegin(field);
+      oprot.WriteI32(NodeType);
+      oprot.WriteFieldEnd();
     }
-
-    public override string ToString() {
-      StringBuilder sb = new StringBuilder("RegisterToBrokerReq(");
-      sb.Append("Node_type: ");
-      sb.Append(Node_type);
-      sb.Append(",Service_name: ");
-      sb.Append(Service_name);
-      sb.Append(")");
-      return sb.ToString();
+    if (StrServiceName != null && __isset.strServiceName) {
+      field.Name = "strServiceName";
+      field.Type = TType.String;
+      field.ID = 2;
+      oprot.WriteFieldBegin(field);
+      oprot.WriteString(StrServiceName);
+      oprot.WriteFieldEnd();
     }
+    oprot.WriteFieldStop();
+    oprot.WriteStructEnd();
+  }
 
+  public override string ToString() {
+    StringBuilder sb = new StringBuilder("RegisterToBrokerReq(");
+    sb.Append("NodeType: ");
+    sb.Append(NodeType);
+    sb.Append(",StrServiceName: ");
+    sb.Append(StrServiceName);
+    sb.Append(")");
+    return sb.ToString();
   }
 
 }
+

@@ -15,52 +15,49 @@ using System.Runtime.Serialization;
 using Thrift.Protocol;
 using Thrift.Transport;
 
-namespace ff
+
+#if !SILVERLIGHT
+[Serializable]
+#endif
+public partial class EmptyMsgRet : TBase
 {
 
-  #if !SILVERLIGHT
-  [Serializable]
-  #endif
-  public partial class EmptyMsgRet : TBase
+  public EmptyMsgRet() {
+  }
+
+  public void Read (TProtocol iprot)
   {
-
-    public EmptyMsgRet() {
-    }
-
-    public void Read (TProtocol iprot)
+    TField field;
+    iprot.ReadStructBegin();
+    while (true)
     {
-      TField field;
-      iprot.ReadStructBegin();
-      while (true)
-      {
-        field = iprot.ReadFieldBegin();
-        if (field.Type == TType.Stop) { 
-          break;
-        }
-        switch (field.ID)
-        {
-          default: 
-            TProtocolUtil.Skip(iprot, field.Type);
-            break;
-        }
-        iprot.ReadFieldEnd();
+      field = iprot.ReadFieldBegin();
+      if (field.Type == TType.Stop) { 
+        break;
       }
-      iprot.ReadStructEnd();
+      switch (field.ID)
+      {
+        default: 
+          TProtocolUtil.Skip(iprot, field.Type);
+          break;
+      }
+      iprot.ReadFieldEnd();
     }
+    iprot.ReadStructEnd();
+  }
 
-    public void Write(TProtocol oprot) {
-      TStruct struc = new TStruct("EmptyMsgRet");
-      oprot.WriteStructBegin(struc);
-      oprot.WriteFieldStop();
-      oprot.WriteStructEnd();
-    }
+  public void Write(TProtocol oprot) {
+    TStruct struc = new TStruct("EmptyMsgRet");
+    oprot.WriteStructBegin(struc);
+    oprot.WriteFieldStop();
+    oprot.WriteStructEnd();
+  }
 
-    public override string ToString() {
-      StringBuilder sb = new StringBuilder("EmptyMsgRet(");
-      sb.Append(")");
-      return sb.ToString();
-    }
-
+  public override string ToString() {
+    StringBuilder sb = new StringBuilder("EmptyMsgRet(");
+    sb.Append(")");
+    return sb.ToString();
   }
 
 }
+

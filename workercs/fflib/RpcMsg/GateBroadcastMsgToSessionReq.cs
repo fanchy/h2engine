@@ -15,127 +15,124 @@ using System.Runtime.Serialization;
 using Thrift.Protocol;
 using Thrift.Transport;
 
-namespace ff
-{
 
+#if !SILVERLIGHT
+[Serializable]
+#endif
+public partial class GateBroadcastMsgToSessionReq : TBase
+{
+  private short _cmd;
+  private byte[] _body;
+
+  public short Cmd
+  {
+    get
+    {
+      return _cmd;
+    }
+    set
+    {
+      __isset.cmd = true;
+      this._cmd = value;
+    }
+  }
+
+  public byte[] Body
+  {
+    get
+    {
+      return _body;
+    }
+    set
+    {
+      __isset.body = true;
+      this._body = value;
+    }
+  }
+
+
+  public Isset __isset;
   #if !SILVERLIGHT
   [Serializable]
   #endif
-  public partial class GateBroadcastMsgToSessionReq : TBase
+  public struct Isset {
+    public bool cmd;
+    public bool body;
+  }
+
+  public GateBroadcastMsgToSessionReq() {
+    this._cmd = 0;
+    this.__isset.cmd = true;
+  }
+
+  public void Read (TProtocol iprot)
   {
-    private short _cmd;
-    private string _body;
-
-    public short Cmd
+    TField field;
+    iprot.ReadStructBegin();
+    while (true)
     {
-      get
-      {
-        return _cmd;
+      field = iprot.ReadFieldBegin();
+      if (field.Type == TType.Stop) { 
+        break;
       }
-      set
+      switch (field.ID)
       {
-        __isset.cmd = true;
-        this._cmd = value;
-      }
-    }
-
-    public string Body
-    {
-      get
-      {
-        return _body;
-      }
-      set
-      {
-        __isset.body = true;
-        this._body = value;
-      }
-    }
-
-
-    public Isset __isset;
-    #if !SILVERLIGHT
-    [Serializable]
-    #endif
-    public struct Isset {
-      public bool cmd;
-      public bool body;
-    }
-
-    public GateBroadcastMsgToSessionReq() {
-      this._cmd = 0;
-      this.__isset.cmd = true;
-    }
-
-    public void Read (TProtocol iprot)
-    {
-      TField field;
-      iprot.ReadStructBegin();
-      while (true)
-      {
-        field = iprot.ReadFieldBegin();
-        if (field.Type == TType.Stop) { 
-          break;
-        }
-        switch (field.ID)
-        {
-          case 1:
-            if (field.Type == TType.I16) {
-              Cmd = iprot.ReadI16();
-            } else { 
-              TProtocolUtil.Skip(iprot, field.Type);
-            }
-            break;
-          case 2:
-            if (field.Type == TType.String) {
-              Body = iprot.ReadString();
-            } else { 
-              TProtocolUtil.Skip(iprot, field.Type);
-            }
-            break;
-          default: 
+        case 1:
+          if (field.Type == TType.I16) {
+            Cmd = iprot.ReadI16();
+          } else { 
             TProtocolUtil.Skip(iprot, field.Type);
-            break;
-        }
-        iprot.ReadFieldEnd();
+          }
+          break;
+        case 2:
+          if (field.Type == TType.String) {
+            Body = iprot.ReadBinary();
+          } else { 
+            TProtocolUtil.Skip(iprot, field.Type);
+          }
+          break;
+        default: 
+          TProtocolUtil.Skip(iprot, field.Type);
+          break;
       }
-      iprot.ReadStructEnd();
+      iprot.ReadFieldEnd();
     }
+    iprot.ReadStructEnd();
+  }
 
-    public void Write(TProtocol oprot) {
-      TStruct struc = new TStruct("GateBroadcastMsgToSessionReq");
-      oprot.WriteStructBegin(struc);
-      TField field = new TField();
-      if (__isset.cmd) {
-        field.Name = "cmd";
-        field.Type = TType.I16;
-        field.ID = 1;
-        oprot.WriteFieldBegin(field);
-        oprot.WriteI16(Cmd);
-        oprot.WriteFieldEnd();
-      }
-      if (Body != null && __isset.body) {
-        field.Name = "body";
-        field.Type = TType.String;
-        field.ID = 2;
-        oprot.WriteFieldBegin(field);
-        oprot.WriteString(Body);
-        oprot.WriteFieldEnd();
-      }
-      oprot.WriteFieldStop();
-      oprot.WriteStructEnd();
+  public void Write(TProtocol oprot) {
+    TStruct struc = new TStruct("GateBroadcastMsgToSessionReq");
+    oprot.WriteStructBegin(struc);
+    TField field = new TField();
+    if (__isset.cmd) {
+      field.Name = "cmd";
+      field.Type = TType.I16;
+      field.ID = 1;
+      oprot.WriteFieldBegin(field);
+      oprot.WriteI16(Cmd);
+      oprot.WriteFieldEnd();
     }
-
-    public override string ToString() {
-      StringBuilder sb = new StringBuilder("GateBroadcastMsgToSessionReq(");
-      sb.Append("Cmd: ");
-      sb.Append(Cmd);
-      sb.Append(",Body: ");
-      sb.Append(Body);
-      sb.Append(")");
-      return sb.ToString();
+    if (Body != null && __isset.body) {
+      field.Name = "body";
+      field.Type = TType.String;
+      field.ID = 2;
+      oprot.WriteFieldBegin(field);
+      oprot.WriteBinary(Body);
+      oprot.WriteFieldEnd();
     }
+    oprot.WriteFieldStop();
+    oprot.WriteStructEnd();
+  }
 
+  public override string ToString() {
+    StringBuilder sb = new StringBuilder("GateBroadcastMsgToSessionReq(");
+    sb.Append("Cmd: ");
+    sb.Append(Cmd);
+    sb.Append(",Body: ");
+    sb.Append(Body);
+    sb.Append(")");
+    return sb.ToString();
   }
 
 }
+

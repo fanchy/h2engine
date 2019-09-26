@@ -14,18 +14,22 @@ namespace ff
         public int y;
         public int hp;
         public int direction;
+        public long nLastAttackedTime;
+        public int apprID;
         public Role()
         {
             nSessionID = 0;
             strName = "";
             nLevel = 0;
             Random rd = new Random();
-            x = 30+ rd.Next() % 5;
-            y = 30 + rd.Next() % 5;
+            x = 82 + rd.Next() % 5;
+            y = 91 + rd.Next() % 5;
             hp = 100;
             direction = 4;
+            nLastAttackedTime = 0;
+            apprID = 10001;
         }
-        public Int64 getID()
+        public Int64 GetID()
         {
             return nSessionID;
         }
@@ -38,11 +42,13 @@ namespace ff
     };
     public class Monster : Role
     {
+        public Int64 nLastAttackedRoleID;
         public Monster() : base()
         {
+            nLastAttackedRoleID = 0;
         }
     };
-    public delegate void CmdHandler(Player p, string data);
+    public delegate void CmdHandler(Player p, byte[] data);
     public delegate void PbHandler<RET_TYPE>(Player p, RET_TYPE t);//泛型委托
     public class FFWorker
     {
@@ -54,6 +60,8 @@ namespace ff
         FFRpc m_ffrpc;
         protected Dictionary<Int64, Role> m_dictRoles;
         protected Dictionary<int, CmdHandler> m_dictCmd2Func;
+        protected int xOffset = 30;
+        protected int yOffset = 40;
         public FFWorker()
         {
             m_nIDGenerator = 0;
@@ -70,12 +78,47 @@ namespace ff
                 .BindHandler<Pbmsg.AttackReq>(Pbmsg.ClientCmdDef.CAttack, this.HandleAttack)
                 ;
             int nGenId = 80;
-            nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = "大怪物1", x = 29, y = 29 };
-            nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = "大怪物2", x = 42, y = 27 };
-            nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = "大怪物3", x = 48, y = 19 };
-            nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = "大怪物4", x = 52, y = 31 };
-            nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = "大怪物5", x = 45, y = 45 };
-            nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = "大怪物6", x = 51, y = 60 };
+            for (int i = 0; i < 5; ++ i)
+            {
+                string strName = string.Format("A大怪物{0}", i + 1);
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 73 + i*2, y = 77 - i, apprID = 10001 };
+            }
+            for (int i = 0; i < 5; ++i)
+            {
+                string strName = string.Format("B大怪物{0}", i + 1);
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 91 + i * 2, y = 101 - i, apprID = 10002 };
+            }
+            for (int i = 0; i < 5; ++i)
+            {
+                string strName = string.Format("C大怪物{0}", i + 1);
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 64 + i * 2, y = 86 - i, apprID = 10003 };
+            }
+            for (int i = 0; i < 5; ++i)
+            {
+                string strName = string.Format("D大怪物{0}", i + 1);
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 66 + i * 2, y = 98 - i, apprID = 10004 };
+            }
+            for (int i = 0; i < 5; ++i)
+            {
+                string strName = string.Format("E大怪物{0}", i + 1);
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 74 + i * 2, y = 106 - i, apprID = 10005 };
+            }
+            for (int i = 0; i < 5; ++i)
+            {
+                string strName = string.Format("F大怪物{0}", i + 1);
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 78 + i * 2, y = 111 - i, apprID = 10006 };
+            }
+            for (int i = 0; i < 5; ++i)
+            {
+                string strName = string.Format("G大怪物{0}", i + 1);
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 89 + i * 2, y = 112 - i, apprID = 10007 };
+            }
+            //nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = "大怪物2", x = 42 + xOffset, y = 27 + yOffset, apprID = 10002};
+            //nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = "大怪物3", x = 48 + xOffset, y = 19 + yOffset, apprID = 10003};
+            //nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = "大怪物4", x = 52 + xOffset, y = 31 + yOffset, apprID = 10004};
+            //nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = "大怪物5", x = 45 + xOffset, y = 45 + yOffset, apprID = 10005};
+            //nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = "大怪物6", x = 51 + xOffset, y = 50 + yOffset, apprID = 10006};
+            //nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = "大怪物7", x = 55 + xOffset, y = 55 + yOffset, apprID = 10007 };
         }
         public bool Open(string strBrokerHost, int nWorkerIndex)
         {
@@ -91,36 +134,36 @@ namespace ff
             m_ffrpc.Reg<RouteLogicMsgReq, EmptyMsgRet>(this.OnRouteLogicMsgReq);
             m_ffrpc.Reg<SessionOfflineReq, EmptyMsgRet>(this.OnSessionOfflineReq);
 
+            FFNet.Timerout(1000, this.HandleMonsterAI);
             return true;
         }
         public FFWorker BindHandler<T>(Pbmsg.ClientCmdDef cmd, PbHandler<T> method) where T : pb::IMessage, new()
         {
-            CmdHandler ch = (Player player, string data) =>
+            m_dictCmd2Func[(int)cmd] = (Player player, byte[] data) =>
             {
-                T reqMsg = Util.String2Pb<T>(data);
+                T reqMsg = Util.Byte2Pb<T>(data);
                 method(player, reqMsg);
             };
-            m_dictCmd2Func[(int)cmd] = ch;
             return this;
         }
         public void SendPlayerMsg<T>(Player player, Pbmsg.ServerCmdDef cmd, T pbMsgData) where T : pb::IMessage, new()
         {
-            GateRouteMsgToSessionReq msgToSession = new GateRouteMsgToSessionReq() { Cmd = (Int16)cmd, Body = Util.Pb2String(pbMsgData) };
-            msgToSession.Session_id.Add(player.nSessionID);
+            GateRouteMsgToSessionReq msgToSession = new GateRouteMsgToSessionReq() { Cmd = (Int16)cmd, Body = Util.Pb2Byte(pbMsgData) };
+            msgToSession.SessionId.Add(player.nSessionID);
             m_ffrpc.Call(m_strDefaultGate, msgToSession);
         }
         public void BroadcastPlayerMsg<T>(Pbmsg.ServerCmdDef cmd, T pbMsgData) where T : pb::IMessage, new()
         {
-            GateBroadcastMsgToSessionReq msgToSession = new GateBroadcastMsgToSessionReq() { Cmd = (Int16)cmd, Body = Util.Pb2String(pbMsgData) };
+            GateBroadcastMsgToSessionReq msgToSession = new GateBroadcastMsgToSessionReq() { Cmd = (Int16)cmd, Body = Util.Pb2Byte(pbMsgData) };
 
             m_ffrpc.Call(m_strDefaultGate, msgToSession);
         }
         public void ClosePlayer(Player player)
         {
-            GateCloseSessionReq msgToSession = new GateCloseSessionReq() { Session_id = player.nSessionID };
+            GateCloseSessionReq msgToSession = new GateCloseSessionReq() { SessionId = player.nSessionID };
             m_ffrpc.Call(m_strDefaultGate, msgToSession);
         }
-        public Role getRoleBySessionID(Int64 id)
+        public Role GetRoleBySessionID(Int64 id)
         {
             if (m_dictRoles.ContainsKey(id) == false)
             {
@@ -129,20 +172,20 @@ namespace ff
             Role role = m_dictRoles[id];
             return role;
         }
-        public Player getPlayerBySessionID(Int64 id)
+        public Player GetPlayerBySessionID(Int64 id)
         {
-            Role role = getRoleBySessionID(id);
+            Role role = GetRoleBySessionID(id);
             if (role is Player)
             {
                 return role as Player;
             }
             return null;
         }
-        
+
         public EmptyMsgRet OnRouteLogicMsgReq(RouteLogicMsgReq reqMsg)
         {
             int cmd = reqMsg.Cmd;
-            Int64 nSessionID = reqMsg.Session_id;
+            Int64 nSessionID = reqMsg.SessionId;
             FFLog.Trace(string.Format("worker RouteLogicMsgReq! {0} {1}", cmd, nSessionID));
 
             if (m_dictCmd2Func.ContainsKey(cmd) == false)
@@ -152,7 +195,7 @@ namespace ff
             }
             if (cmd == (int)Pbmsg.ClientCmdDef.CLogin)
             {
-                Player playerOld = getPlayerBySessionID(nSessionID);
+                Player playerOld = GetPlayerBySessionID(nSessionID);
                 if (playerOld != null)
                 {
                     ClosePlayer(playerOld);
@@ -177,30 +220,46 @@ namespace ff
                     return RPC_NONE;
                 }
             }
-            Player player = getPlayerBySessionID(nSessionID);
+            Player player = GetPlayerBySessionID(nSessionID);
             m_dictCmd2Func[cmd](player, reqMsg.Body);
 
             return RPC_NONE;
         }
         public EmptyMsgRet OnSessionOfflineReq(SessionOfflineReq reqMsg)
         {
-            Int64 nSessionID = reqMsg.Session_id;
+            Int64 nSessionID = reqMsg.SessionId;
             FFLog.Trace(string.Format("worker OnSessionOfflineReq! {0}", nSessionID));
             if (m_dictRoles.ContainsKey(nSessionID) == false)
             {
                 return RPC_NONE;
             }
 
-            Player player = getPlayerBySessionID(nSessionID);
+            Player player = GetPlayerBySessionID(nSessionID);
             m_dictRoles.Remove(nSessionID);
 
             Pbmsg.LogoutRet retMsg = new Pbmsg.LogoutRet()
             {
-                Id = player.getID(),
+                Id = player.GetID(),
                 Name = player.strName,
             };
             BroadcastPlayerMsg<Pbmsg.LogoutRet>(Pbmsg.ServerCmdDef.SLogout, retMsg);
             return RPC_NONE;
+        }
+        public Pbmsg.EnterMapRet BuildEnterMsg(Role role)
+        {
+            Pbmsg.EnterMapRet enterMapRet = new Pbmsg.EnterMapRet()
+            {
+                Id = role.GetID(),
+                Name = role.strName,
+                Level = role.nLevel,
+                X = role.x,
+                Y = role.y,
+                Hp = role.hp,
+                Direction = role.direction,
+                ObjType = role is Player ? 0 : 1,
+                ApprID = role.apprID,
+            };
+            return enterMapRet;
         }
         public void HandleLogin(Player player, Pbmsg.LoginReq reqMsg)
         {
@@ -208,59 +267,31 @@ namespace ff
             player.nLevel = 1;
             Pbmsg.LoginRet retMsg = new Pbmsg.LoginRet()
             {
-                Id = player.getID(),
+                Id = player.GetID(),
                 Name = reqMsg.Name,
                 Level = player.nLevel,
             };
             SendPlayerMsg<Pbmsg.LoginRet>(player, Pbmsg.ServerCmdDef.SLogin, retMsg);
 
             {
-                Pbmsg.EnterMapRet enterMapRet = new Pbmsg.EnterMapRet()
-                {
-                    Id = player.getID(),
-                    Name = player.strName,
-                    Level = player.nLevel,
-                    X = player.x,
-                    Y = player.y,
-                    Hp = player.hp,
-                    Direction = player.direction,
-                    ObjType = 0,
-            };
-                
+                Pbmsg.EnterMapRet enterMapRet = BuildEnterMsg(player);
                 BroadcastPlayerMsg<Pbmsg.EnterMapRet>(Pbmsg.ServerCmdDef.SEnterMap, enterMapRet);
             }
 
-            
+
             foreach (Role roleOther in m_dictRoles.Values)
             {
-                if (roleOther.getID() == player.getID())
+                if (roleOther.GetID() == player.GetID())
                 {
                     continue;
                 }
-                Pbmsg.EnterMapRet enterMapRet = new Pbmsg.EnterMapRet()
-                {
-                    Id = roleOther.getID(),
-                    Name = roleOther.strName,
-                    Level = roleOther.nLevel,
-                    X = roleOther.x,
-                    Y = roleOther.y,
-                    Hp = roleOther.hp,
-                    ObjType = 0,
-                    Direction = roleOther.direction
-                };
-                if (roleOther is Monster)
-                {
-                    enterMapRet.ObjType = 1;
-                }
-
                 if (roleOther.hp == 0)
                 {
-                    roleOther.hp = 100;
-                    enterMapRet.Hp = roleOther.hp;
-                    BroadcastPlayerMsg<Pbmsg.EnterMapRet>(Pbmsg.ServerCmdDef.SEnterMap, enterMapRet);
+                    continue;
                 }
+                Pbmsg.EnterMapRet enterMapRet = BuildEnterMsg(roleOther);
                 SendPlayerMsg<Pbmsg.EnterMapRet>(player, Pbmsg.ServerCmdDef.SEnterMap, enterMapRet);
-                
+
             }
         }
         public void HandleRun(Player player, Pbmsg.RunReq reqMsg)
@@ -270,7 +301,7 @@ namespace ff
             player.direction = reqMsg.Direction;
             Pbmsg.RunRet runRet = new Pbmsg.RunRet()
             {
-                Id = player.getID(),
+                Id = player.GetID(),
                 X = player.x,
                 Y = player.y,
             };
@@ -278,14 +309,14 @@ namespace ff
         }
         public void HandleAttack(Player player, Pbmsg.AttackReq reqMsg)
         {
-            Role roleTarget = getRoleBySessionID(reqMsg.Targetid);
+            Role roleTarget = GetRoleBySessionID(reqMsg.Targetid);
             if (roleTarget == null)
             {
                 return;
             }
             Pbmsg.AttackRet retMsg = new Pbmsg.AttackRet()
             {
-                Id = player.getID(),
+                Id = player.GetID(),
                 Targetid = reqMsg.Targetid,
                 Magicid = reqMsg.Magicid,
             };
@@ -301,45 +332,91 @@ namespace ff
             {
                 roleTarget.hp = 0;
             }
-            int hpNow = roleTarget.hp;
             Pbmsg.HPChangedRet retMsg2 = new Pbmsg.HPChangedRet()
             {
-                Id = roleTarget.getID(),
+                Id = roleTarget.GetID(),
                 Magicid = reqMsg.Magicid,
-                ValCur = hpNow,
+                ValCur = roleTarget.hp,
                 ValChanged = hpChaneged,
             };
             BroadcastPlayerMsg<Pbmsg.HPChangedRet>(Pbmsg.ServerCmdDef.SHpChanged, retMsg2);
+            roleTarget.nLastAttackedTime = Util.GetNowTimeMs();
 
-            if (roleTarget is Monster && hpChaneged <= 3)
+            if (roleTarget is Monster)
             {
                 Monster monster = roleTarget as Monster;
                 monster.direction = (player.direction + 4) % 8;
-                Pbmsg.AttackRet monsterAttackMsg = new Pbmsg.AttackRet()
+                monster.nLastAttackedRoleID = player.GetID();
+                if (monster.hp == 0)
                 {
-                    Id = monster.getID(),
-                    Targetid = player.getID(),
-                };
-                BroadcastPlayerMsg<Pbmsg.AttackRet>(Pbmsg.ServerCmdDef.SAttack, monsterAttackMsg);
-
-                roleTarget = player;
-                if (roleTarget.hp >= hpChaneged)
-                {
-                    roleTarget.hp -= hpChaneged;
+                    Pbmsg.LeaveMapRet leaveMsg = new Pbmsg.LeaveMapRet()
+                    {
+                        Id = roleTarget.GetID(),
+                    };
+                    BroadcastPlayerMsg<Pbmsg.LeaveMapRet>(Pbmsg.ServerCmdDef.SLeaveMap, leaveMsg);
                 }
-                else
-                {
-                    roleTarget.hp = 0;
-                }
-                hpNow = roleTarget.hp;
-                Pbmsg.HPChangedRet retMsg3 = new Pbmsg.HPChangedRet()
-                {
-                    Id = roleTarget.getID(),
-                    ValCur = hpNow,
-                    ValChanged = hpChaneged,
-                };
-                BroadcastPlayerMsg<Pbmsg.HPChangedRet>(Pbmsg.ServerCmdDef.SHpChanged, retMsg3);
             }
+        }
+        public void HandleMonsterAI()
+        {
+            foreach (Role role in m_dictRoles.Values)
+            {
+                if (role.hp == 0)
+                {
+                    if (Util.GetNowTimeMs() - role.nLastAttackedTime < 5000)
+                        continue;
+                    role.hp = 100;
+                    Pbmsg.EnterMapRet enterMapRet = BuildEnterMsg(role);
+                    BroadcastPlayerMsg<Pbmsg.EnterMapRet>(Pbmsg.ServerCmdDef.SEnterMap, enterMapRet);
+                    continue;
+                }
+                if (!(role is Monster))
+                {
+                    continue;
+                }
+                    
+                Monster monster = role as Monster;
+                if (monster.nLastAttackedRoleID == 0)
+                    continue;
+                Player player = GetPlayerBySessionID(monster.nLastAttackedRoleID);
+                if (player == null || player.hp == 0)
+                {
+                    monster.nLastAttackedRoleID = 0;
+                    continue;
+                }
+                int nDistance = Util.Distance(monster.x, monster.y, player.x, player.y);
+                if (nDistance <= 1)
+                {
+                    Pbmsg.AttackRet monsterAttackMsg = new Pbmsg.AttackRet()
+                    {
+                        Id = monster.GetID(),
+                        Targetid = player.GetID(),
+                    };
+                    BroadcastPlayerMsg<Pbmsg.AttackRet>(Pbmsg.ServerCmdDef.SAttack, monsterAttackMsg);
+
+                    Random rd = new Random();
+                    int hpChaneged = 10 + rd.Next() % 5;
+
+                    Role roleTarget = player;
+                    if (roleTarget.hp >= hpChaneged)
+                    {
+                        roleTarget.hp -= hpChaneged;
+                    }
+                    else
+                    {
+                        roleTarget.hp = 0;
+                    }
+                    roleTarget.nLastAttackedTime = Util.GetNowTimeMs();
+                    Pbmsg.HPChangedRet retMsg3 = new Pbmsg.HPChangedRet()
+                    {
+                        Id = roleTarget.GetID(),
+                        ValCur = roleTarget.hp,
+                        ValChanged = hpChaneged,
+                    };
+                    BroadcastPlayerMsg<Pbmsg.HPChangedRet>(Pbmsg.ServerCmdDef.SHpChanged, retMsg3);
+                }
+            }
+            FFNet.Timerout(2000, this.HandleMonsterAI);
         }
     }
 }

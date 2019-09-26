@@ -181,7 +181,8 @@ namespace ff
         public void HandleTimeout(object source, System.Timers.ElapsedEventArgs e)
         {
             System.DateTime currentTime = DateTime.Now;
-            Int64 n = ((Int64)currentTime.Second) * 1000 + currentTime.Millisecond;
+            
+            Int64 n = ((Int64)currentTime.Ticks) / 10000;
             m_taskTimer.RemoveAll(data =>
             {
                 if (n >= data.endms)
@@ -200,7 +201,7 @@ namespace ff
             System.DateTime currentTime = DateTime.Now;
             TimerData data;
             data.task = task;
-            data.endms = ((Int64)currentTime.Second) * 1000 + currentTime.Millisecond + nms;
+            data.endms = ((Int64)currentTime.Ticks) / 10000 + nms;
             m_taskTimer.Add(data);
         }
     };

@@ -113,7 +113,7 @@ uint32_t RouteLogicMsgReq::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 3:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->body);
+          xfer += iprot->readBinary(this->body);
           this->__isset.body = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -152,7 +152,7 @@ uint32_t RouteLogicMsgReq::write(::apache::thrift::protocol::TProtocol* oprot) c
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("body", ::apache::thrift::protocol::T_STRING, 3);
-  xfer += oprot->writeString(this->body);
+  xfer += oprot->writeBinary(this->body);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("sessionIp", ::apache::thrift::protocol::T_STRING, 4);
@@ -214,7 +214,7 @@ uint32_t GateChangeLogicNodeReq::read(::apache::thrift::protocol::TProtocol* ipr
         break;
       case 3:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->extraData);
+          xfer += iprot->readBinary(this->extraData);
           this->__isset.extraData = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -245,7 +245,7 @@ uint32_t GateChangeLogicNodeReq::write(::apache::thrift::protocol::TProtocol* op
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("extraData", ::apache::thrift::protocol::T_STRING, 3);
-  xfer += oprot->writeString(this->extraData);
+  xfer += oprot->writeBinary(this->extraData);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -376,7 +376,7 @@ uint32_t GateRouteMsgToSessionReq::read(::apache::thrift::protocol::TProtocol* i
         break;
       case 3:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->body);
+          xfer += iprot->readBinary(this->body);
           this->__isset.body = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -415,7 +415,7 @@ uint32_t GateRouteMsgToSessionReq::write(::apache::thrift::protocol::TProtocol* 
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("body", ::apache::thrift::protocol::T_STRING, 3);
-  xfer += oprot->writeString(this->body);
+  xfer += oprot->writeBinary(this->body);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -464,7 +464,7 @@ uint32_t GateBroadcastMsgToSessionReq::read(::apache::thrift::protocol::TProtoco
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->body);
+          xfer += iprot->readBinary(this->body);
           this->__isset.body = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -491,7 +491,7 @@ uint32_t GateBroadcastMsgToSessionReq::write(::apache::thrift::protocol::TProtoc
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("body", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString(this->body);
+  xfer += oprot->writeBinary(this->body);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -539,7 +539,7 @@ uint32_t WorkerCallMsgReq::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->body);
+          xfer += iprot->readBinary(this->body);
           this->__isset.body = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -566,7 +566,7 @@ uint32_t WorkerCallMsgReq::write(::apache::thrift::protocol::TProtocol* oprot) c
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("body", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString(this->body);
+  xfer += oprot->writeBinary(this->body);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -622,7 +622,7 @@ uint32_t WorkerCallMsgRet::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 3:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->body);
+          xfer += iprot->readBinary(this->body);
           this->__isset.body = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -653,7 +653,7 @@ uint32_t WorkerCallMsgRet::write(::apache::thrift::protocol::TProtocol* oprot) c
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("body", ::apache::thrift::protocol::T_STRING, 3);
-  xfer += oprot->writeString(this->body);
+  xfer += oprot->writeBinary(this->body);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -734,7 +734,7 @@ uint32_t BrokerRouteMsgReq::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 8:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->body);
+          xfer += iprot->readBinary(this->body);
           this->__isset.body = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -785,7 +785,7 @@ uint32_t BrokerRouteMsgReq::write(::apache::thrift::protocol::TProtocol* oprot) 
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("body", ::apache::thrift::protocol::T_STRING, 8);
-  xfer += oprot->writeString(this->body);
+  xfer += oprot->writeBinary(this->body);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("errinfo", ::apache::thrift::protocol::T_STRING, 9);
@@ -1106,7 +1106,7 @@ uint32_t SessionEnterWorkerReq::read(::apache::thrift::protocol::TProtocol* ipro
         break;
       case 6:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->extraData);
+          xfer += iprot->readBinary(this->extraData);
           this->__isset.extraData = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -1149,7 +1149,7 @@ uint32_t SessionEnterWorkerReq::write(::apache::thrift::protocol::TProtocol* opr
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("extraData", ::apache::thrift::protocol::T_STRING, 6);
-  xfer += oprot->writeString(this->extraData);
+  xfer += oprot->writeBinary(this->extraData);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();

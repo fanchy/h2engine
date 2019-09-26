@@ -59,33 +59,33 @@ namespace ff
         //!切换worker
         public EmptyMsgRet ChangeSessionLogic(GateChangeLogicNodeReq reqMsg)
         {
-            if (m_dictClients.ContainsKey(reqMsg.Session_id) == false)
+            if (m_dictClients.ContainsKey(reqMsg.SessionId) == false)
             {
                 return m_msgEmpty;
             }
-            ClientInfo cinfo = m_dictClients[reqMsg.Session_id];
+            ClientInfo cinfo = m_dictClients[reqMsg.SessionId];
             SessionEnterWorkerReq msgEnter = new SessionEnterWorkerReq() { };
             
-            msgEnter.From_worker = cinfo.strAllocWorker;
-            cinfo.strAllocWorker = reqMsg.Alloc_worker;
+            msgEnter.FromWorker = cinfo.strAllocWorker;
+            cinfo.strAllocWorker = reqMsg.AllocWorker;
 
-            msgEnter.Session_id = reqMsg.Session_id;
-            msgEnter.From_gate = m_strGateName;
-            msgEnter.Session_ip = cinfo.sockObj.GetIP();
+            msgEnter.SessionId = reqMsg.SessionId;
+            msgEnter.FromGate = m_strGateName;
+            msgEnter.SessionIp = cinfo.sockObj.GetIP();
 
-            msgEnter.To_worker = reqMsg.Alloc_worker;
-            msgEnter.Extra_data = reqMsg.Extra_data;
-            m_ffrpc.Call(reqMsg.Alloc_worker, msgEnter);
+            msgEnter.ToWorker = reqMsg.AllocWorker;
+            msgEnter.ExtraData = reqMsg.ExtraData;
+            m_ffrpc.Call(reqMsg.AllocWorker, msgEnter);
             return m_msgEmpty;
         }
         //! 关闭某个session socket
         public EmptyMsgRet CloseSession(GateCloseSessionReq reqMsg)
         {
-            if (m_dictClients.ContainsKey(reqMsg.Session_id) == false)
+            if (m_dictClients.ContainsKey(reqMsg.SessionId) == false)
             {
                 return m_msgEmpty;
             }
-            ClientInfo cinfo = m_dictClients[reqMsg.Session_id];
+            ClientInfo cinfo = m_dictClients[reqMsg.SessionId];
             cinfo.sockObj.Close();
             CleanupSession(cinfo, false);
             return m_msgEmpty;
@@ -94,7 +94,7 @@ namespace ff
         {
             if (closesend)
             {
-                SessionOfflineReq msg = new SessionOfflineReq() {Session_id= cinfo.sessionID};
+                SessionOfflineReq msg = new SessionOfflineReq() { SessionId = cinfo.sessionID};
                 m_ffrpc.Call(cinfo.strAllocWorker, msg);
             }
             m_dictClients.Remove(cinfo.sessionID);
@@ -102,8 +102,8 @@ namespace ff
         //! 转发消息给client
         public EmptyMsgRet RouteMsgToSession(GateRouteMsgToSessionReq reqMsg)
         {
-            byte[] dataBody = Util.String2Byte(reqMsg.Body);
-            foreach (var sessionID in reqMsg.Session_id)
+            byte[] dataBody = reqMsg.Body;// Util.String2Byte(reqMsg.Body);
+            foreach (var sessionID in reqMsg.SessionId)
             {
                 if (m_dictClients.ContainsKey(sessionID) == false)
                 {
@@ -117,7 +117,7 @@ namespace ff
         //! 广播消息给所有的client
         public EmptyMsgRet BroadcastMsgToSession(GateBroadcastMsgToSessionReq reqMsg)
         {
-            byte[] dataBody = Util.String2Byte(reqMsg.Body);
+            byte[] dataBody = reqMsg.Body;
             foreach (var cinfo in m_dictClients.Values)
             {
                 FFNet.SendMsg(cinfo.sockObj, (UInt16)reqMsg.Cmd, dataBody);
@@ -166,10 +166,10 @@ namespace ff
         //! 逻辑处理,转发消息到logic service
         public void RouteLogicMsg(ClientInfo cinfo, UInt16 cmd, byte[] strMsg, bool first)
         {
-            RouteLogicMsgReq msg = new RouteLogicMsgReq() { Session_id= cinfo.sessionID, Cmd= (Int16)cmd, Body= Util.Byte2String(strMsg)};
+            RouteLogicMsgReq msg = new RouteLogicMsgReq() { SessionId= cinfo.sessionID, Cmd= (Int16)cmd, Body= strMsg};
             if (first)
             {
-                msg.Session_ip = cinfo.sockObj.GetIP();
+                msg.SessionIp = cinfo.sockObj.GetIP();
             }
             m_ffrpc.Call(cinfo.strAllocWorker, msg);
         }

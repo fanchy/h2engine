@@ -15,177 +15,174 @@ using System.Runtime.Serialization;
 using Thrift.Protocol;
 using Thrift.Transport;
 
-namespace ff
-{
 
+#if !SILVERLIGHT
+[Serializable]
+#endif
+public partial class RegisterToBrokerRet : TBase
+{
+  private short _registerFlag;
+  private long _nodeId;
+  private Dictionary<string, long> _service2nodeId;
+
+  public short RegisterFlag
+  {
+    get
+    {
+      return _registerFlag;
+    }
+    set
+    {
+      __isset.registerFlag = true;
+      this._registerFlag = value;
+    }
+  }
+
+  public long NodeId
+  {
+    get
+    {
+      return _nodeId;
+    }
+    set
+    {
+      __isset.nodeId = true;
+      this._nodeId = value;
+    }
+  }
+
+  public Dictionary<string, long> Service2nodeId
+  {
+    get
+    {
+      return _service2nodeId;
+    }
+    set
+    {
+      __isset.service2nodeId = true;
+      this._service2nodeId = value;
+    }
+  }
+
+
+  public Isset __isset;
   #if !SILVERLIGHT
   [Serializable]
   #endif
-  public partial class RegisterToBrokerRet : TBase
+  public struct Isset {
+    public bool registerFlag;
+    public bool nodeId;
+    public bool service2nodeId;
+  }
+
+  public RegisterToBrokerRet() {
+  }
+
+  public void Read (TProtocol iprot)
   {
-    private short _register_flag;
-    private long _node_id;
-    private Dictionary<string, long> _service2node_id;
-
-    public short Register_flag
+    TField field;
+    iprot.ReadStructBegin();
+    while (true)
     {
-      get
-      {
-        return _register_flag;
+      field = iprot.ReadFieldBegin();
+      if (field.Type == TType.Stop) { 
+        break;
       }
-      set
+      switch (field.ID)
       {
-        __isset.register_flag = true;
-        this._register_flag = value;
-      }
-    }
-
-    public long Node_id
-    {
-      get
-      {
-        return _node_id;
-      }
-      set
-      {
-        __isset.node_id = true;
-        this._node_id = value;
-      }
-    }
-
-    public Dictionary<string, long> Service2node_id
-    {
-      get
-      {
-        return _service2node_id;
-      }
-      set
-      {
-        __isset.service2node_id = true;
-        this._service2node_id = value;
-      }
-    }
-
-
-    public Isset __isset;
-    #if !SILVERLIGHT
-    [Serializable]
-    #endif
-    public struct Isset {
-      public bool register_flag;
-      public bool node_id;
-      public bool service2node_id;
-    }
-
-    public RegisterToBrokerRet() {
-    }
-
-    public void Read (TProtocol iprot)
-    {
-      TField field;
-      iprot.ReadStructBegin();
-      while (true)
-      {
-        field = iprot.ReadFieldBegin();
-        if (field.Type == TType.Stop) { 
-          break;
-        }
-        switch (field.ID)
-        {
-          case 1:
-            if (field.Type == TType.I16) {
-              Register_flag = iprot.ReadI16();
-            } else { 
-              TProtocolUtil.Skip(iprot, field.Type);
-            }
-            break;
-          case 2:
-            if (field.Type == TType.I64) {
-              Node_id = iprot.ReadI64();
-            } else { 
-              TProtocolUtil.Skip(iprot, field.Type);
-            }
-            break;
-          case 3:
-            if (field.Type == TType.Map) {
-              {
-                Service2node_id = new Dictionary<string, long>();
-                TMap _map4 = iprot.ReadMapBegin();
-                for( int _i5 = 0; _i5 < _map4.Count; ++_i5)
-                {
-                  string _key6;
-                  long _val7;
-                  _key6 = iprot.ReadString();
-                  _val7 = iprot.ReadI64();
-                  Service2node_id[_key6] = _val7;
-                }
-                iprot.ReadMapEnd();
-              }
-            } else { 
-              TProtocolUtil.Skip(iprot, field.Type);
-            }
-            break;
-          default: 
+        case 1:
+          if (field.Type == TType.I16) {
+            RegisterFlag = iprot.ReadI16();
+          } else { 
             TProtocolUtil.Skip(iprot, field.Type);
-            break;
-        }
-        iprot.ReadFieldEnd();
-      }
-      iprot.ReadStructEnd();
-    }
-
-    public void Write(TProtocol oprot) {
-      TStruct struc = new TStruct("RegisterToBrokerRet");
-      oprot.WriteStructBegin(struc);
-      TField field = new TField();
-      if (__isset.register_flag) {
-        field.Name = "register_flag";
-        field.Type = TType.I16;
-        field.ID = 1;
-        oprot.WriteFieldBegin(field);
-        oprot.WriteI16(Register_flag);
-        oprot.WriteFieldEnd();
-      }
-      if (__isset.node_id) {
-        field.Name = "node_id";
-        field.Type = TType.I64;
-        field.ID = 2;
-        oprot.WriteFieldBegin(field);
-        oprot.WriteI64(Node_id);
-        oprot.WriteFieldEnd();
-      }
-      if (Service2node_id != null && __isset.service2node_id) {
-        field.Name = "service2node_id";
-        field.Type = TType.Map;
-        field.ID = 3;
-        oprot.WriteFieldBegin(field);
-        {
-          oprot.WriteMapBegin(new TMap(TType.String, TType.I64, Service2node_id.Count));
-          foreach (string _iter8 in Service2node_id.Keys)
-          {
-            oprot.WriteString(_iter8);
-            oprot.WriteI64(Service2node_id[_iter8]);
           }
-          oprot.WriteMapEnd();
-        }
-        oprot.WriteFieldEnd();
+          break;
+        case 2:
+          if (field.Type == TType.I64) {
+            NodeId = iprot.ReadI64();
+          } else { 
+            TProtocolUtil.Skip(iprot, field.Type);
+          }
+          break;
+        case 3:
+          if (field.Type == TType.Map) {
+            {
+              Service2nodeId = new Dictionary<string, long>();
+              TMap _map4 = iprot.ReadMapBegin();
+              for( int _i5 = 0; _i5 < _map4.Count; ++_i5)
+              {
+                string _key6;
+                long _val7;
+                _key6 = iprot.ReadString();
+                _val7 = iprot.ReadI64();
+                Service2nodeId[_key6] = _val7;
+              }
+              iprot.ReadMapEnd();
+            }
+          } else { 
+            TProtocolUtil.Skip(iprot, field.Type);
+          }
+          break;
+        default: 
+          TProtocolUtil.Skip(iprot, field.Type);
+          break;
       }
-      oprot.WriteFieldStop();
-      oprot.WriteStructEnd();
+      iprot.ReadFieldEnd();
     }
+    iprot.ReadStructEnd();
+  }
 
-    public override string ToString() {
-      StringBuilder sb = new StringBuilder("RegisterToBrokerRet(");
-      sb.Append("Register_flag: ");
-      sb.Append(Register_flag);
-      sb.Append(",Node_id: ");
-      sb.Append(Node_id);
-      sb.Append(",Service2node_id: ");
-      sb.Append(Service2node_id);
-      sb.Append(")");
-      return sb.ToString();
+  public void Write(TProtocol oprot) {
+    TStruct struc = new TStruct("RegisterToBrokerRet");
+    oprot.WriteStructBegin(struc);
+    TField field = new TField();
+    if (__isset.registerFlag) {
+      field.Name = "registerFlag";
+      field.Type = TType.I16;
+      field.ID = 1;
+      oprot.WriteFieldBegin(field);
+      oprot.WriteI16(RegisterFlag);
+      oprot.WriteFieldEnd();
     }
+    if (__isset.nodeId) {
+      field.Name = "nodeId";
+      field.Type = TType.I64;
+      field.ID = 2;
+      oprot.WriteFieldBegin(field);
+      oprot.WriteI64(NodeId);
+      oprot.WriteFieldEnd();
+    }
+    if (Service2nodeId != null && __isset.service2nodeId) {
+      field.Name = "service2nodeId";
+      field.Type = TType.Map;
+      field.ID = 3;
+      oprot.WriteFieldBegin(field);
+      {
+        oprot.WriteMapBegin(new TMap(TType.String, TType.I64, Service2nodeId.Count));
+        foreach (string _iter8 in Service2nodeId.Keys)
+        {
+          oprot.WriteString(_iter8);
+          oprot.WriteI64(Service2nodeId[_iter8]);
+        }
+        oprot.WriteMapEnd();
+      }
+      oprot.WriteFieldEnd();
+    }
+    oprot.WriteFieldStop();
+    oprot.WriteStructEnd();
+  }
 
+  public override string ToString() {
+    StringBuilder sb = new StringBuilder("RegisterToBrokerRet(");
+    sb.Append("RegisterFlag: ");
+    sb.Append(RegisterFlag);
+    sb.Append(",NodeId: ");
+    sb.Append(NodeId);
+    sb.Append(",Service2nodeId: ");
+    sb.Append(Service2nodeId);
+    sb.Append(")");
+    return sb.ToString();
   }
 
 }
+

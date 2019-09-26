@@ -38,7 +38,7 @@ namespace ff
         public FFRpc(string strName) {
             m_strServiceName = strName;
             m_strBrokerHost = "tcp://127.0.0.1:43210";
-            m_brokerData = new RegisterToBrokerRet() { Node_id = 0, Register_flag = 0, Service2node_id = new Dictionary<string, long>() };
+            m_brokerData = new RegisterToBrokerRet() { NodeId = 0, RegisterFlag = 0, Service2nodeId = new Dictionary<string, long>() };
             m_dictFuncs = new Dictionary<string/* msg name */, FFRpcFunc>();
             m_dictCallBack = new Dictionary<long, FFRpcFunc>();
             m_nIDGenerator = 0;
@@ -61,7 +61,7 @@ namespace ff
             if (null == m_socketBroker) {
                 return false;
             }
-            RegisterToBrokerReq reqMsg = new RegisterToBrokerReq { Node_type = 2, Service_name = m_strServiceName };
+            RegisterToBrokerReq reqMsg = new RegisterToBrokerReq { NodeType = 2, StrServiceName = m_strServiceName };
 
             FFNet.SendMsg(m_socketBroker, (UInt16)FFRPC_CMD.REGISTER_TO_BROKER_REQ, reqMsg);
             return true;
@@ -84,7 +84,7 @@ namespace ff
         }
         public bool IsExistNode(string strServiceName)
         {
-            if (m_brokerData.Service2node_id.ContainsKey(strServiceName))
+            if (m_brokerData.Service2nodeId.ContainsKey(strServiceName))
             {
                 return true;
             }
@@ -103,11 +103,11 @@ namespace ff
                 MSG_TYPE msgData = new MSG_TYPE();
                 FFNet.DecodeMsg(msgData, reqMsg.Body);
                 RET_TYPE retMsg = funcUser(msgData);
-                if (reqMsg.Callback_id != 0)
+                if (reqMsg.CallbackId != 0)
                 {
-                    reqMsg.Dest_node_id = reqMsg.From_node_id;
-                    reqMsg.Dest_service_name = "";
-                    reqMsg.Body = Util.Byte2String(FFNet.EncodeMsg(retMsg));
+                    reqMsg.DestNodeId = reqMsg.FromNodeId;
+                    reqMsg.DestServiceName = "";
+                    reqMsg.Body = FFNet.EncodeMsg(retMsg);//Util.Byte2String(
                     SendToDestNode(reqMsg);
                 }
             };
@@ -117,16 +117,16 @@ namespace ff
         public bool Call<MSG_TYPE>(string strServiceName, MSG_TYPE msgData)
             where MSG_TYPE : Thrift.Protocol.TBase, new()
         {
-            if (!m_brokerData.Service2node_id.ContainsKey(strServiceName))
+            if (!m_brokerData.Service2nodeId.ContainsKey(strServiceName))
             {
                 FFLog.Error(string.Format("ffrpc.Call servervice:{0} not exist", strServiceName));
                 return false;
             }
-            BrokerRouteMsgReq reqMsg = new BrokerRouteMsgReq() { Callback_id = 0, Err_info = ""};
-            reqMsg.Dest_node_id = m_brokerData.Service2node_id[strServiceName];
-            reqMsg.Dest_service_name = strServiceName;
-            reqMsg.Body = Util.Byte2String(FFNet.EncodeMsg(msgData));
-            reqMsg.Dest_msg_name = Type2Name(msgData);
+            BrokerRouteMsgReq reqMsg = new BrokerRouteMsgReq() { CallbackId = 0, Errinfo = ""};
+            reqMsg.DestNodeId = m_brokerData.Service2nodeId[strServiceName];
+            reqMsg.DestServiceName = strServiceName;
+            reqMsg.Body = FFNet.EncodeMsg(msgData);//Util.Byte2String(
+            reqMsg.DestMsgName = Type2Name(msgData);
             SendToDestNode(reqMsg);
             return true;
         }
@@ -134,20 +134,20 @@ namespace ff
             where MSG_TYPE : Thrift.Protocol.TBase, new()
             where RET_TYPE : Thrift.Protocol.TBase, new()
         {
-            if (!m_brokerData.Service2node_id.ContainsKey(strServiceName))
+            if (!m_brokerData.Service2nodeId.ContainsKey(strServiceName))
             {
                 FFLog.Error(string.Format("ffrpc.Call servervice:{0} not exist", strServiceName));
                 RET_TYPE retMsg = new RET_TYPE();
                 callback(retMsg);
                 return false;
             }
-            BrokerRouteMsgReq reqMsg = new BrokerRouteMsgReq() { Callback_id = 0, Err_info = "" };
-            reqMsg.Dest_node_id = m_brokerData.Service2node_id[strServiceName];
-            reqMsg.Dest_service_name = strServiceName;
-            reqMsg.Body = Util.Byte2String(FFNet.EncodeMsg(msgData));
-            reqMsg.Dest_msg_name = Type2Name(msgData);
-            reqMsg.Callback_id = ++m_nIDGenerator;
-            m_dictCallBack[reqMsg.Callback_id] = (BrokerRouteMsgReq dataMsg) =>
+            BrokerRouteMsgReq reqMsg = new BrokerRouteMsgReq() { CallbackId = 0, Errinfo = "" };
+            reqMsg.DestNodeId = m_brokerData.Service2nodeId[strServiceName];
+            reqMsg.DestServiceName = strServiceName;
+            reqMsg.Body = FFNet.EncodeMsg(msgData);//Util.Byte2String(
+            reqMsg.DestMsgName = Type2Name(msgData);
+            reqMsg.CallbackId = ++m_nIDGenerator;
+            m_dictCallBack[reqMsg.CallbackId] = (BrokerRouteMsgReq dataMsg) =>
             {
                 RET_TYPE retMsg = new RET_TYPE();
                 FFNet.DecodeMsg(retMsg, dataMsg.Body);
@@ -165,48 +165,52 @@ namespace ff
                     case FFRPC_CMD.REGISTER_TO_BROKER_RET:
                         {
                             FFNet.DecodeMsg(m_brokerData, strMsg);
-                            FFLog.Trace(string.Format("ffrpc.handleMsg..REGISTER_TO_BROKER_RET..{0},{1},{2}", m_strServiceName, m_brokerData.Node_id, m_brokerData.Register_flag));
-                            if (m_brokerData.Register_flag == 1)
+                            FFLog.Trace(string.Format("ffrpc.handleMsg..REGISTER_TO_BROKER_RET..{0},{1},{2}", m_strServiceName, m_brokerData.NodeId, m_brokerData.RegisterFlag));
+                            if (m_brokerData.RegisterFlag == 1)
                             {
-                                m_nNodeID = m_brokerData.Node_id;//! -1表示注册失败，0表示同步消息，1表示注册成功
+                                m_nNodeID = m_brokerData.NodeId;//! -1表示注册失败，0表示同步消息，1表示注册成功
                             }
                         }break;
                     case FFRPC_CMD.BROKER_TO_CLIENT_MSG:
                         {
-                            BrokerRouteMsgReq reqMsg = new BrokerRouteMsgReq();
-                            FFNet.DecodeMsg(reqMsg, strMsg);
-                            FFLog.Trace(string.Format("ffrpc.BROKER_TO_CLIENT_MSG msgname={0}", reqMsg.Dest_msg_name));
-                            if (reqMsg.Err_info.Length > 0)
-                            {
-                                FFLog.Error(string.Format("FFRpc::handleRpcCallMsg error={0}", reqMsg.Err_info));
-                                if (reqMsg.Callback_id == 0)
-                                {
-                                    return;
-                                }
-                            }
+                            
                             try
                             {
-                                if (reqMsg.Dest_service_name.Length > 0)
+                                BrokerRouteMsgReq reqMsg = new BrokerRouteMsgReq();
+                                FFNet.DecodeMsg(reqMsg, strMsg);
+                                if (reqMsg.Errinfo == null)
+                                    reqMsg.Errinfo = "";
+                                FFLog.Trace(string.Format("ffrpc.BROKER_TO_CLIENT_MSG msgname={0}", reqMsg.DestMsgName));
+                                if (reqMsg.Errinfo.Length > 0)
                                 {
-                                    if (!m_dictFuncs.ContainsKey(reqMsg.Dest_msg_name))
+                                    FFLog.Error(string.Format("FFRpc::handleRpcCallMsg error={0}", reqMsg.Errinfo));
+                                    if (reqMsg.CallbackId == 0)
                                     {
-                                        reqMsg.Err_info = "interface named " + reqMsg.Dest_msg_name + " not found in rpc";
-                                        FFLog.Error(string.Format("FFRpc::handleRpcCallMsg error={0}", reqMsg.Err_info));
-                                        reqMsg.Dest_node_id = reqMsg.From_node_id;
-                                        reqMsg.Dest_service_name = "";
+                                        return;
+                                    }
+                                }
+
+                                if (reqMsg.DestServiceName.Length > 0)
+                                {
+                                    if (!m_dictFuncs.ContainsKey(reqMsg.DestMsgName))
+                                    {
+                                        reqMsg.Errinfo = "interface named " + reqMsg.DestMsgName + " not found in rpc";
+                                        FFLog.Error(string.Format("FFRpc::handleRpcCallMsg error={0}", reqMsg.Errinfo));
+                                        reqMsg.DestNodeId = reqMsg.FromNodeId;
+                                        reqMsg.DestServiceName = "";
                                         SendToDestNode(reqMsg);
                                         return;
                                     }
-                                    FFRpcFunc destFunc = m_dictFuncs[reqMsg.Dest_msg_name];
+                                    FFRpcFunc destFunc = m_dictFuncs[reqMsg.DestMsgName];
                                     destFunc(reqMsg);
                                 }
                                 else
                                 {
-                                    if (!m_dictCallBack.ContainsKey(reqMsg.Callback_id))
+                                    if (!m_dictCallBack.ContainsKey(reqMsg.CallbackId))
                                     {
                                         return;
                                     }
-                                    FFRpcFunc destFunc = m_dictCallBack[reqMsg.Callback_id];
+                                    FFRpcFunc destFunc = m_dictCallBack[reqMsg.CallbackId];
                                     destFunc(reqMsg);
                                 }
                             }
@@ -230,7 +234,7 @@ namespace ff
         }
         public void SendToDestNode(BrokerRouteMsgReq retMsg)
         {
-            retMsg.From_node_id = m_nNodeID;
+            retMsg.FromNodeId = m_nNodeID;
             FFNet.SendMsg(m_socketBroker, (UInt16)FFRPC_CMD.BROKER_ROUTE_MSG, retMsg);
         }
     }

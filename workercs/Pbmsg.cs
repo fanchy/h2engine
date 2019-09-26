@@ -29,19 +29,20 @@ namespace Pbmsg {
             "IAEoCRINCgVsZXZlbBgDIAEoBSIlCglMb2dvdXRSZXQSCgoCaWQYASABKAMS",
             "DAoEbmFtZRgCIAEoCSIxCgZSdW5SZXESCQoBeBgBIAEoBRIJCgF5GAIgASgF",
             "EhEKCWRpcmVjdGlvbhgDIAEoBSIqCgZSdW5SZXQSCgoCaWQYASABKAMSCQoB",
-            "eBgCIAEoBRIJCgF5GAMgASgFIosBCgtFbnRlck1hcFJldBIKCgJpZBgBIAEo",
+            "eBgCIAEoBRIJCgF5GAMgASgFIpsBCgtFbnRlck1hcFJldBIKCgJpZBgBIAEo",
             "AxIMCgRuYW1lGAIgASgJEg0KBWxldmVsGAMgASgFEgkKAXgYBCABKAUSCQoB",
             "eRgFIAEoBRINCgVtYXBpZBgGIAEoAxIPCgdvYmpUeXBlGAcgASgFEgoKAmhw",
-            "GAggASgFEhEKCWRpcmVjdGlvbhgJIAEoBSIuCglBdHRhY2tSZXESDwoHbWFn",
-            "aWNpZBgBIAEoBRIQCgh0YXJnZXRpZBgCIAEoAyJNCglBdHRhY2tSZXQSCgoC",
-            "aWQYASABKAMSEAoIdGFyZ2V0aWQYAiABKAMSDwoHbWFnaWNpZBgDIAEoBRIR",
-            "CglkaXJlY3Rpb24YBCABKAUiTwoMSFBDaGFuZ2VkUmV0EgoKAmlkGAEgASgD",
-            "EhIKCnZhbENoYW5nZWQYAyABKAUSDwoHbWFnaWNpZBgEIAEoBRIOCgZ2YWxD",
-            "dXIYBSABKAUqQQoMQ2xpZW50Q21kRGVmEgsKB0NfQkVHSU4QABILCgdDX0xP",
-            "R0lOEAESCQoFQ19SVU4QAhIMCghDX0FUVEFDSxADKnIKDFNlcnZlckNtZERl",
-            "ZhILCgdTX0JFR0lOEAASCwoHU19MT0dJThABEgkKBVNfUlVOEAISDAoIU19B",
-            "VFRBQ0sQAxIMCghTX0xPR09VVBBkEg8KC1NfRU5URVJfTUFQEGUSEAoMU19I",
-            "UF9DSEFOR0VEEGZiBnByb3RvMw=="));
+            "GAggASgFEhEKCWRpcmVjdGlvbhgJIAEoBRIOCgZhcHBySUQYCiABKAUiGQoL",
+            "TGVhdmVNYXBSZXQSCgoCaWQYASABKAMiQQoJQXR0YWNrUmVxEg8KB21hZ2lj",
+            "aWQYASABKAUSEAoIdGFyZ2V0aWQYAiABKAMSEQoJZGlyZWN0aW9uGAMgASgF",
+            "IjoKCUF0dGFja1JldBIKCgJpZBgBIAEoAxIQCgh0YXJnZXRpZBgCIAEoAxIP",
+            "CgdtYWdpY2lkGAMgASgFIk8KDEhQQ2hhbmdlZFJldBIKCgJpZBgBIAEoAxIS",
+            "Cgp2YWxDaGFuZ2VkGAMgASgFEg8KB21hZ2ljaWQYBCABKAUSDgoGdmFsQ3Vy",
+            "GAUgASgFKkEKDENsaWVudENtZERlZhILCgdDX0JFR0lOEAASCwoHQ19MT0dJ",
+            "ThABEgkKBUNfUlVOEAISDAoIQ19BVFRBQ0sQAyqDAQoMU2VydmVyQ21kRGVm",
+            "EgsKB1NfQkVHSU4QABILCgdTX0xPR0lOEAESCQoFU19SVU4QAhIMCghTX0FU",
+            "VEFDSxADEgwKCFNfTE9HT1VUEGQSDwoLU19FTlRFUl9NQVAQZRIQCgxTX0hQ",
+            "X0NIQU5HRUQQZhIPCgtTX0xFQVZFX01BUBBnYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Pbmsg.ClientCmdDef), typeof(global::Pbmsg.ServerCmdDef), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -50,9 +51,10 @@ namespace Pbmsg {
             new pbr::GeneratedClrTypeInfo(typeof(global::Pbmsg.LogoutRet), global::Pbmsg.LogoutRet.Parser, new[]{ "Id", "Name" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Pbmsg.RunReq), global::Pbmsg.RunReq.Parser, new[]{ "X", "Y", "Direction" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Pbmsg.RunRet), global::Pbmsg.RunRet.Parser, new[]{ "Id", "X", "Y" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Pbmsg.EnterMapRet), global::Pbmsg.EnterMapRet.Parser, new[]{ "Id", "Name", "Level", "X", "Y", "Mapid", "ObjType", "Hp", "Direction" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Pbmsg.AttackReq), global::Pbmsg.AttackReq.Parser, new[]{ "Magicid", "Targetid" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Pbmsg.AttackRet), global::Pbmsg.AttackRet.Parser, new[]{ "Id", "Targetid", "Magicid", "Direction" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Pbmsg.EnterMapRet), global::Pbmsg.EnterMapRet.Parser, new[]{ "Id", "Name", "Level", "X", "Y", "Mapid", "ObjType", "Hp", "Direction", "ApprID" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Pbmsg.LeaveMapRet), global::Pbmsg.LeaveMapRet.Parser, new[]{ "Id" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Pbmsg.AttackReq), global::Pbmsg.AttackReq.Parser, new[]{ "Magicid", "Targetid", "Direction" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Pbmsg.AttackRet), global::Pbmsg.AttackRet.Parser, new[]{ "Id", "Targetid", "Magicid" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Pbmsg.HPChangedRet), global::Pbmsg.HPChangedRet.Parser, new[]{ "Id", "ValChanged", "Magicid", "ValCur" }, null, null, null, null)
           }));
     }
@@ -78,6 +80,7 @@ namespace Pbmsg {
     [pbr::OriginalName("S_LOGOUT")] SLogout = 100,
     [pbr::OriginalName("S_ENTER_MAP")] SEnterMap = 101,
     [pbr::OriginalName("S_HP_CHANGED")] SHpChanged = 102,
+    [pbr::OriginalName("S_LEAVE_MAP")] SLeaveMap = 103,
   }
 
   #endregion
@@ -958,6 +961,7 @@ namespace Pbmsg {
       objType_ = other.objType_;
       hp_ = other.hp_;
       direction_ = other.direction_;
+      apprID_ = other.apprID_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1065,6 +1069,20 @@ namespace Pbmsg {
       }
     }
 
+    /// <summary>Field number for the "apprID" field.</summary>
+    public const int ApprIDFieldNumber = 10;
+    private int apprID_;
+    /// <summary>
+    ///外形id
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int ApprID {
+      get { return apprID_; }
+      set {
+        apprID_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as EnterMapRet);
@@ -1087,6 +1105,7 @@ namespace Pbmsg {
       if (ObjType != other.ObjType) return false;
       if (Hp != other.Hp) return false;
       if (Direction != other.Direction) return false;
+      if (ApprID != other.ApprID) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1102,6 +1121,7 @@ namespace Pbmsg {
       if (ObjType != 0) hash ^= ObjType.GetHashCode();
       if (Hp != 0) hash ^= Hp.GetHashCode();
       if (Direction != 0) hash ^= Direction.GetHashCode();
+      if (ApprID != 0) hash ^= ApprID.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1151,6 +1171,10 @@ namespace Pbmsg {
         output.WriteRawTag(72);
         output.WriteInt32(Direction);
       }
+      if (ApprID != 0) {
+        output.WriteRawTag(80);
+        output.WriteInt32(ApprID);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1185,6 +1209,9 @@ namespace Pbmsg {
       }
       if (Direction != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(Direction);
+      }
+      if (ApprID != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(ApprID);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1223,6 +1250,9 @@ namespace Pbmsg {
       }
       if (other.Direction != 0) {
         Direction = other.Direction;
+      }
+      if (other.ApprID != 0) {
+        ApprID = other.ApprID;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1271,6 +1301,139 @@ namespace Pbmsg {
             Direction = input.ReadInt32();
             break;
           }
+          case 80: {
+            ApprID = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  public sealed partial class LeaveMapRet : pb::IMessage<LeaveMapRet> {
+    private static readonly pb::MessageParser<LeaveMapRet> _parser = new pb::MessageParser<LeaveMapRet>(() => new LeaveMapRet());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<LeaveMapRet> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Pbmsg.PbmsgReflection.Descriptor.MessageTypes[6]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public LeaveMapRet() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public LeaveMapRet(LeaveMapRet other) : this() {
+      id_ = other.id_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public LeaveMapRet Clone() {
+      return new LeaveMapRet(this);
+    }
+
+    /// <summary>Field number for the "id" field.</summary>
+    public const int IdFieldNumber = 1;
+    private long id_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public long Id {
+      get { return id_; }
+      set {
+        id_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as LeaveMapRet);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(LeaveMapRet other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Id != other.Id) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Id != 0L) hash ^= Id.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Id != 0L) {
+        output.WriteRawTag(8);
+        output.WriteInt64(Id);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Id != 0L) {
+        size += 1 + pb::CodedOutputStream.ComputeInt64Size(Id);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(LeaveMapRet other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Id != 0L) {
+        Id = other.Id;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Id = input.ReadInt64();
+            break;
+          }
         }
       }
     }
@@ -1285,7 +1448,7 @@ namespace Pbmsg {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Pbmsg.PbmsgReflection.Descriptor.MessageTypes[6]; }
+      get { return global::Pbmsg.PbmsgReflection.Descriptor.MessageTypes[7]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1304,6 +1467,7 @@ namespace Pbmsg {
     public AttackReq(AttackReq other) : this() {
       magicid_ = other.magicid_;
       targetid_ = other.targetid_;
+      direction_ = other.direction_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1334,6 +1498,17 @@ namespace Pbmsg {
       }
     }
 
+    /// <summary>Field number for the "direction" field.</summary>
+    public const int DirectionFieldNumber = 3;
+    private int direction_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int Direction {
+      get { return direction_; }
+      set {
+        direction_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as AttackReq);
@@ -1349,6 +1524,7 @@ namespace Pbmsg {
       }
       if (Magicid != other.Magicid) return false;
       if (Targetid != other.Targetid) return false;
+      if (Direction != other.Direction) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1357,6 +1533,7 @@ namespace Pbmsg {
       int hash = 1;
       if (Magicid != 0) hash ^= Magicid.GetHashCode();
       if (Targetid != 0L) hash ^= Targetid.GetHashCode();
+      if (Direction != 0) hash ^= Direction.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1378,6 +1555,10 @@ namespace Pbmsg {
         output.WriteRawTag(16);
         output.WriteInt64(Targetid);
       }
+      if (Direction != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Direction);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1391,6 +1572,9 @@ namespace Pbmsg {
       }
       if (Targetid != 0L) {
         size += 1 + pb::CodedOutputStream.ComputeInt64Size(Targetid);
+      }
+      if (Direction != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Direction);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1408,6 +1592,9 @@ namespace Pbmsg {
       }
       if (other.Targetid != 0L) {
         Targetid = other.Targetid;
+      }
+      if (other.Direction != 0) {
+        Direction = other.Direction;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1428,6 +1615,10 @@ namespace Pbmsg {
             Targetid = input.ReadInt64();
             break;
           }
+          case 24: {
+            Direction = input.ReadInt32();
+            break;
+          }
         }
       }
     }
@@ -1442,7 +1633,7 @@ namespace Pbmsg {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Pbmsg.PbmsgReflection.Descriptor.MessageTypes[7]; }
+      get { return global::Pbmsg.PbmsgReflection.Descriptor.MessageTypes[8]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1462,7 +1653,6 @@ namespace Pbmsg {
       id_ = other.id_;
       targetid_ = other.targetid_;
       magicid_ = other.magicid_;
-      direction_ = other.direction_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1504,17 +1694,6 @@ namespace Pbmsg {
       }
     }
 
-    /// <summary>Field number for the "direction" field.</summary>
-    public const int DirectionFieldNumber = 4;
-    private int direction_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int Direction {
-      get { return direction_; }
-      set {
-        direction_ = value;
-      }
-    }
-
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as AttackRet);
@@ -1531,7 +1710,6 @@ namespace Pbmsg {
       if (Id != other.Id) return false;
       if (Targetid != other.Targetid) return false;
       if (Magicid != other.Magicid) return false;
-      if (Direction != other.Direction) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1541,7 +1719,6 @@ namespace Pbmsg {
       if (Id != 0L) hash ^= Id.GetHashCode();
       if (Targetid != 0L) hash ^= Targetid.GetHashCode();
       if (Magicid != 0) hash ^= Magicid.GetHashCode();
-      if (Direction != 0) hash ^= Direction.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1567,10 +1744,6 @@ namespace Pbmsg {
         output.WriteRawTag(24);
         output.WriteInt32(Magicid);
       }
-      if (Direction != 0) {
-        output.WriteRawTag(32);
-        output.WriteInt32(Direction);
-      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1587,9 +1760,6 @@ namespace Pbmsg {
       }
       if (Magicid != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(Magicid);
-      }
-      if (Direction != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Direction);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1610,9 +1780,6 @@ namespace Pbmsg {
       }
       if (other.Magicid != 0) {
         Magicid = other.Magicid;
-      }
-      if (other.Direction != 0) {
-        Direction = other.Direction;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1637,10 +1804,6 @@ namespace Pbmsg {
             Magicid = input.ReadInt32();
             break;
           }
-          case 32: {
-            Direction = input.ReadInt32();
-            break;
-          }
         }
       }
     }
@@ -1655,7 +1818,7 @@ namespace Pbmsg {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Pbmsg.PbmsgReflection.Descriptor.MessageTypes[8]; }
+      get { return global::Pbmsg.PbmsgReflection.Descriptor.MessageTypes[9]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

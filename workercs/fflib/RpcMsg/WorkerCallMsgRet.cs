@@ -15,157 +15,154 @@ using System.Runtime.Serialization;
 using Thrift.Protocol;
 using Thrift.Transport;
 
-namespace ff
-{
 
+#if !SILVERLIGHT
+[Serializable]
+#endif
+public partial class WorkerCallMsgRet : TBase
+{
+  private string _err;
+  private string _msgType;
+  private byte[] _body;
+
+  public string Err
+  {
+    get
+    {
+      return _err;
+    }
+    set
+    {
+      __isset.err = true;
+      this._err = value;
+    }
+  }
+
+  public string MsgType
+  {
+    get
+    {
+      return _msgType;
+    }
+    set
+    {
+      __isset.msgType = true;
+      this._msgType = value;
+    }
+  }
+
+  public byte[] Body
+  {
+    get
+    {
+      return _body;
+    }
+    set
+    {
+      __isset.body = true;
+      this._body = value;
+    }
+  }
+
+
+  public Isset __isset;
   #if !SILVERLIGHT
   [Serializable]
   #endif
-  public partial class WorkerCallMsgRet : TBase
+  public struct Isset {
+    public bool err;
+    public bool msgType;
+    public bool body;
+  }
+
+  public WorkerCallMsgRet() {
+  }
+
+  public void Read (TProtocol iprot)
   {
-    private string _err;
-    private string _msg_type;
-    private string _body;
-
-    public string Err
+    TField field;
+    iprot.ReadStructBegin();
+    while (true)
     {
-      get
-      {
-        return _err;
+      field = iprot.ReadFieldBegin();
+      if (field.Type == TType.Stop) { 
+        break;
       }
-      set
+      switch (field.ID)
       {
-        __isset.err = true;
-        this._err = value;
-      }
-    }
-
-    public string Msg_type
-    {
-      get
-      {
-        return _msg_type;
-      }
-      set
-      {
-        __isset.msg_type = true;
-        this._msg_type = value;
-      }
-    }
-
-    public string Body
-    {
-      get
-      {
-        return _body;
-      }
-      set
-      {
-        __isset.body = true;
-        this._body = value;
-      }
-    }
-
-
-    public Isset __isset;
-    #if !SILVERLIGHT
-    [Serializable]
-    #endif
-    public struct Isset {
-      public bool err;
-      public bool msg_type;
-      public bool body;
-    }
-
-    public WorkerCallMsgRet() {
-    }
-
-    public void Read (TProtocol iprot)
-    {
-      TField field;
-      iprot.ReadStructBegin();
-      while (true)
-      {
-        field = iprot.ReadFieldBegin();
-        if (field.Type == TType.Stop) { 
-          break;
-        }
-        switch (field.ID)
-        {
-          case 1:
-            if (field.Type == TType.String) {
-              Err = iprot.ReadString();
-            } else { 
-              TProtocolUtil.Skip(iprot, field.Type);
-            }
-            break;
-          case 2:
-            if (field.Type == TType.String) {
-              Msg_type = iprot.ReadString();
-            } else { 
-              TProtocolUtil.Skip(iprot, field.Type);
-            }
-            break;
-          case 3:
-            if (field.Type == TType.String) {
-              Body = iprot.ReadString();
-            } else { 
-              TProtocolUtil.Skip(iprot, field.Type);
-            }
-            break;
-          default: 
+        case 1:
+          if (field.Type == TType.String) {
+            Err = iprot.ReadString();
+          } else { 
             TProtocolUtil.Skip(iprot, field.Type);
-            break;
-        }
-        iprot.ReadFieldEnd();
+          }
+          break;
+        case 2:
+          if (field.Type == TType.String) {
+            MsgType = iprot.ReadString();
+          } else { 
+            TProtocolUtil.Skip(iprot, field.Type);
+          }
+          break;
+        case 3:
+          if (field.Type == TType.String) {
+            Body = iprot.ReadBinary();
+          } else { 
+            TProtocolUtil.Skip(iprot, field.Type);
+          }
+          break;
+        default: 
+          TProtocolUtil.Skip(iprot, field.Type);
+          break;
       }
-      iprot.ReadStructEnd();
+      iprot.ReadFieldEnd();
     }
+    iprot.ReadStructEnd();
+  }
 
-    public void Write(TProtocol oprot) {
-      TStruct struc = new TStruct("WorkerCallMsgRet");
-      oprot.WriteStructBegin(struc);
-      TField field = new TField();
-      if (Err != null && __isset.err) {
-        field.Name = "err";
-        field.Type = TType.String;
-        field.ID = 1;
-        oprot.WriteFieldBegin(field);
-        oprot.WriteString(Err);
-        oprot.WriteFieldEnd();
-      }
-      if (Msg_type != null && __isset.msg_type) {
-        field.Name = "msg_type";
-        field.Type = TType.String;
-        field.ID = 2;
-        oprot.WriteFieldBegin(field);
-        oprot.WriteString(Msg_type);
-        oprot.WriteFieldEnd();
-      }
-      if (Body != null && __isset.body) {
-        field.Name = "body";
-        field.Type = TType.String;
-        field.ID = 3;
-        oprot.WriteFieldBegin(field);
-        oprot.WriteString(Body);
-        oprot.WriteFieldEnd();
-      }
-      oprot.WriteFieldStop();
-      oprot.WriteStructEnd();
+  public void Write(TProtocol oprot) {
+    TStruct struc = new TStruct("WorkerCallMsgRet");
+    oprot.WriteStructBegin(struc);
+    TField field = new TField();
+    if (Err != null && __isset.err) {
+      field.Name = "err";
+      field.Type = TType.String;
+      field.ID = 1;
+      oprot.WriteFieldBegin(field);
+      oprot.WriteString(Err);
+      oprot.WriteFieldEnd();
     }
-
-    public override string ToString() {
-      StringBuilder sb = new StringBuilder("WorkerCallMsgRet(");
-      sb.Append("Err: ");
-      sb.Append(Err);
-      sb.Append(",Msg_type: ");
-      sb.Append(Msg_type);
-      sb.Append(",Body: ");
-      sb.Append(Body);
-      sb.Append(")");
-      return sb.ToString();
+    if (MsgType != null && __isset.msgType) {
+      field.Name = "msgType";
+      field.Type = TType.String;
+      field.ID = 2;
+      oprot.WriteFieldBegin(field);
+      oprot.WriteString(MsgType);
+      oprot.WriteFieldEnd();
     }
+    if (Body != null && __isset.body) {
+      field.Name = "body";
+      field.Type = TType.String;
+      field.ID = 3;
+      oprot.WriteFieldBegin(field);
+      oprot.WriteBinary(Body);
+      oprot.WriteFieldEnd();
+    }
+    oprot.WriteFieldStop();
+    oprot.WriteStructEnd();
+  }
 
+  public override string ToString() {
+    StringBuilder sb = new StringBuilder("WorkerCallMsgRet(");
+    sb.Append("Err: ");
+    sb.Append(Err);
+    sb.Append(",MsgType: ");
+    sb.Append(MsgType);
+    sb.Append(",Body: ");
+    sb.Append(Body);
+    sb.Append(")");
+    return sb.ToString();
   }
 
 }
+
