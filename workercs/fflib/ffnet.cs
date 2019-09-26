@@ -1,7 +1,7 @@
 using System;
 using System.Net.Sockets;
 using System.Collections.Generic;
-using Xunit;
+//using Xunit;
 namespace ff
 {
     public delegate void SocketMsgHandler(IFFSocket ffsocket, UInt16 cmd, byte[] strData);
