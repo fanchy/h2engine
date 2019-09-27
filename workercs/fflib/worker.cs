@@ -5,6 +5,11 @@ using System.Collections.Generic;
 using pb = global::Google.Protobuf;
 namespace ff
 {
+    enum MapCfg
+    {
+        CenterX = 20,
+        CenterY = 30
+    }
     public class Role
     {
         public Int64 nSessionID;
@@ -22,8 +27,8 @@ namespace ff
             strName = "";
             nLevel = 0;
             Random rd = new Random();
-            x = 82 + rd.Next() % 5;
-            y = 91 + rd.Next() % 5;
+            x = (int)MapCfg.CenterX + rd.Next() % 5;
+            y = (int)MapCfg.CenterY + rd.Next() % 5;
             hp = 100;
             direction = 4;
             nLastAttackedTime = 0;
@@ -78,41 +83,41 @@ namespace ff
                 .BindHandler<Pbmsg.AttackReq>(Pbmsg.ClientCmdDef.CAttack, this.HandleAttack)
                 ;
             int nGenId = 80;
-            int num = 3;
+            int num = 2;
             for (int i = 0; i < num; ++ i)
             {
                 string strName = string.Format("A大怪物{0}", i + 1);
-                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 73 + i*2, y = 77 - i, apprID = 10001 };
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 17+20-(int)MapCfg.CenterX + i*2, y= 22 + 30 - (int)MapCfg.CenterY - i, apprID = 10001 };
             }
             for (int i = 0; i < num; ++i)
             {
                 string strName = string.Format("B大怪物{0}", i + 1);
-                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 83 + i * 2, y = 92 - i, apprID = 10002 };
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 12+20-(int)MapCfg.CenterX + i * 2, y = 32 + 30 - (int)MapCfg.CenterY - i, apprID = 10002 };
             }
             for (int i = 0; i < num; ++i)
             {
                 string strName = string.Format("C大怪物{0}", i + 1);
-                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 64 + i * 2, y = 86 - i, apprID = 10003 };
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 15 + 20 - (int)MapCfg.CenterX + i * 2, y = 40 + 30 - (int)MapCfg.CenterY - i, apprID = 10003 };
             }
             for (int i = 0; i < num; ++i)
             {
                 string strName = string.Format("D大怪物{0}", i + 1);
-                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 66 + i * 2, y = 98 - i, apprID = 10004 };
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 20 + 20 - (int)MapCfg.CenterX + i * 2, y = 40 + 30 - (int)MapCfg.CenterY - i, apprID = 10004 };
             }
             for (int i = 0; i < num; ++i)
             {
                 string strName = string.Format("E大怪物{0}", i + 1);
-                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 72 + i * 2, y = 102 - i, apprID = 10005 };
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 25 + 20 - (int)MapCfg.CenterX + i * 2, y = 39 + 30 - (int)MapCfg.CenterY - i, apprID = 10005 };
             }
             for (int i = 0; i < num; ++i)
             {
                 string strName = string.Format("F大怪物{0}", i + 1);
-                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 77 + i * 2, y = 107 - i, apprID = 10006 };
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 25 + 20 - (int)MapCfg.CenterX + i * 2, y = 28 + 30 - (int)MapCfg.CenterY - i, apprID = 10006 };
             }
             for (int i = 0; i < num; ++i)
             {
                 string strName = string.Format("G大怪物{0}", i + 1);
-                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 87 + i * 2, y = 96 - i, apprID = 10007 };
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 16 + 20 - (int)MapCfg.CenterX + i * 2, y = 30 - i, apprID = 10007 };
             }
             //nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = "大怪物2", x = 42 + xOffset, y = 27 + yOffset, apprID = 10002};
             //nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = "大怪物3", x = 48 + xOffset, y = 19 + yOffset, apprID = 10003};
