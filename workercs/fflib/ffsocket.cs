@@ -108,7 +108,7 @@ namespace ff
                 HandleClose();
                 return;
             }
-            //FFLog.Trace(string.Format("scoket: recv 1111 {0}", length));
+            FFLog.Trace(string.Format("scoket: recv 1111 {0}", length));
             if (length == 0)
             {
                 FFLog.Warning("HandleRecv: recv end ok file ");
@@ -168,19 +168,29 @@ namespace ff
                 HandleClose();
                 return;
             }
+            catch (System.ObjectDisposedException ex)
+            {
+                FFLog.Error("scoket: send Error22 " + ex.Message);
+                return;
+            }
             FFNet.GetTaskQueue().Post(() =>
             {
-                if (m_oBuffSending.Count > 0)
-                {
-                    m_oBuffSending.RemoveAt(0);
-                }
                 try
                 {
+                    if (m_oBuffSending.Count > 0)
+                    {
+                        m_oBuffSending.RemoveAt(0);
+                    }
                     if (m_oBuffSending.Count > 0 && m_oSocket != null)
                     {
                         byte[] data = m_oBuffSending[0];
                         m_oSocket.BeginSend(data, 0, data.Length, 0, new AsyncCallback(handleSendEnd), m_oSocket);
                     }
+                }
+                catch (System.ObjectDisposedException ex)
+                {
+                    FFLog.Trace("scoket: send Error1 " + ex.Message);
+                    HandleClose();
                 }
                 catch (SocketException ex)
                 {

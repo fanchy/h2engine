@@ -11,7 +11,7 @@ namespace ff
         public Int32 size;
         public UInt16 cmd;
         public Int16 flag;
-        public byte[] m_strRecvData;
+        public byte[] m_strRecvDataOld;
         public SocketMsgHandler         m_funcMsgHandler;
         public SocketBrokenHandler      m_funcBroken;
         public WSProtocol               m_oWSProtocol;
@@ -19,7 +19,7 @@ namespace ff
             size = 0;
             cmd  = 0;
             flag = 0;
-            m_strRecvData    = new byte[0];
+            m_strRecvDataOld    = new byte[0];
             m_funcMsgHandler = funcMsg;
             m_funcBroken     = funcBroken;
             m_oWSProtocol = new WSProtocol();
@@ -115,26 +115,44 @@ namespace ff
                 return;
             }
             
-            m_strRecvData = Util.MergeArray(m_strRecvData, strData);
+            byte[] m_strRecvData = strData;//Util.MergeArray(m_strRecvData, strData);
+            int nRead = 0;
             while (m_strRecvData.Length >= 8){
-                size = System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt32(m_strRecvData, 0));
-                cmd  = (UInt16)System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt16(m_strRecvData, 4));
-                flag = System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt16(m_strRecvData, 6));
-                FFLog.Trace(string.Format("HandleRecv cmd:{0},len:{1}", cmd, size));
-                if (m_strRecvData.Length < 8 + size){
+                size = System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt32(strData, nRead + 0));
+                cmd  = (UInt16)System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt16(strData, nRead + 4));
+                flag = System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt16(strData, nRead + 6));
+                FFLog.Trace(string.Format("HandleRecv cmd:{0},len:{1},recvlen:{2}", cmd, size, m_strRecvData.Length));
+                
+                if (cmd == 0 || size == 0){
+                    string st = "";
+                    foreach (byte b in m_strRecvData)
+                    {
+                        st += b.ToString();
+                    }
+                    FFLog.Trace(st);
+                    
+                    m_strRecvData = new byte[0];
+                    string st2 = "";
+                    foreach (byte b in strData)
+                    {
+                        st2 += b.ToString();
+                    }
+                    FFLog.Trace(st2);
+                    break;
+                }
+                if (strData.Length < nRead + 8 + size){
                     break;
                 }
                 byte[] msgBody = new byte[size];
-                Array.Copy(m_strRecvData, 8, msgBody, 0, size);
-                if (m_strRecvData.Length == 8 + size)
-                {
-                    m_strRecvData = new byte[0];
-                }
-                else{
-                    byte[] leftData = new byte[m_strRecvData.Length - (8 + size)];
-                    Array.Copy(m_strRecvData, 8 + size, leftData, 0, size);
-                    m_strRecvData = leftData;
-                }
+                Array.Copy(strData, nRead + 8, msgBody, 0, size);
+                nRead += (8 + size);
+                // if (strData.Length == 8 + size)
+                // {
+                    // m_strRecvData = new byte[0];
+                // }
+                // else{
+                    // FFLog.Trace(string.Format("HandleRecv cmd:{0},len:{1},recvlen:{2},leftData:{3}", cmd, size, m_strRecvData.Length, leftData.Length));
+                // }
                 try
                 {
                     m_funcMsgHandler(ffsocket, cmd, msgBody);
@@ -142,6 +160,10 @@ namespace ff
                 catch (Exception ex)
                 {
                     FFLog.Error("scoket.HandleRecv error:" + ex.Message);
+                }
+                if (strData.Length == nRead)
+                {
+                    break;
                 }
             }
         }
