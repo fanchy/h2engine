@@ -157,9 +157,13 @@ namespace ff
         }
         private void handleSendEnd(IAsyncResult ar)
         {
+            var socket = ar.AsyncState as Socket;
             try
             {
-                var socket = ar.AsyncState as Socket;
+                if (socket == null)
+                {
+                    return;
+                }
                 socket.EndSend(ar);
             }
             catch (SocketException ex)
@@ -171,7 +175,8 @@ namespace ff
             catch (System.ObjectDisposedException ex)
             {
                 FFLog.Error("scoket: send Error22 " + ex.Message);
-                return;
+                HandleClose();
+
             }
             FFNet.GetTaskQueue().Post(() =>
             {

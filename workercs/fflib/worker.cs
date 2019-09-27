@@ -78,37 +78,38 @@ namespace ff
                 .BindHandler<Pbmsg.AttackReq>(Pbmsg.ClientCmdDef.CAttack, this.HandleAttack)
                 ;
             int nGenId = 80;
-            for (int i = 0; i < 5; ++ i)
+            int num = 3;
+            for (int i = 0; i < num; ++ i)
             {
                 string strName = string.Format("A大怪物{0}", i + 1);
                 nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 73 + i*2, y = 77 - i, apprID = 10001 };
             }
-            for (int i = 0; i < 5; ++i)
+            for (int i = 0; i < num; ++i)
             {
                 string strName = string.Format("B大怪物{0}", i + 1);
                 nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 83 + i * 2, y = 92 - i, apprID = 10002 };
             }
-            for (int i = 0; i < 5; ++i)
+            for (int i = 0; i < num; ++i)
             {
                 string strName = string.Format("C大怪物{0}", i + 1);
                 nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 64 + i * 2, y = 86 - i, apprID = 10003 };
             }
-            for (int i = 0; i < 5; ++i)
+            for (int i = 0; i < num; ++i)
             {
                 string strName = string.Format("D大怪物{0}", i + 1);
                 nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 66 + i * 2, y = 98 - i, apprID = 10004 };
             }
-            for (int i = 0; i < 5; ++i)
+            for (int i = 0; i < num; ++i)
             {
                 string strName = string.Format("E大怪物{0}", i + 1);
                 nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 72 + i * 2, y = 102 - i, apprID = 10005 };
             }
-            for (int i = 0; i < 5; ++i)
+            for (int i = 0; i < num; ++i)
             {
                 string strName = string.Format("F大怪物{0}", i + 1);
                 nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 77 + i * 2, y = 107 - i, apprID = 10006 };
             }
-            for (int i = 0; i < 5; ++i)
+            for (int i = 0; i < num; ++i)
             {
                 string strName = string.Format("G大怪物{0}", i + 1);
                 nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 87 + i * 2, y = 96 - i, apprID = 10007 };
@@ -295,6 +296,7 @@ namespace ff
                 }
                 Pbmsg.EnterMapRet enterMapRet = BuildEnterMsg(roleOther);
                 SendPlayerMsg<Pbmsg.EnterMapRet>(player, Pbmsg.ServerCmdDef.SEnterMap, enterMapRet);
+                //System.Threading.Thread.Sleep(100);
 
             }
         }
