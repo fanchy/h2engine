@@ -15,7 +15,7 @@ ARCH=
 BIN=workercs
 
 #源文件目录
-SrcDir= . fflib fflib/RpcMsg thrift thrift/Collections thrift/Net35 thrift/Properties thrift/Protocol thrift/Server thrift/Transport
+SrcDir= . fflib fflib/RpcMsg thrift thrift/Collections thrift/Net35 thrift/Properties thrift/Protocol thrift/Server thrift/Transport Google.Protobuf Google.Protobuf/Collections Google.Protobuf/Compatibility Google.Protobuf/Properties Google.Protobuf/Reflection Google.Protobuf/WellKnownTypes 
 #头文件目录
 IncDir= ./
 #连接库目录
@@ -33,7 +33,7 @@ OBJS = $(SRCS:%.cpp=%.o)
 
 all:$(BIN)
 $(BIN):$(SRCS)
-	$(CC) $(SRCS)
+	$(CC) /out:$@ $(SRCS)
 	@echo " OK!\tComplie $@ "
 # @$(LN) $(shell pwd)/$(LIB_NAME).$(LIB_VER) /lib/$(LIB_NAME)
 
