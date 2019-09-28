@@ -82,7 +82,7 @@ namespace ff
                 .BindHandler<Pbmsg.RunReq>(Pbmsg.ClientCmdDef.CRun, this.HandleRun)
                 .BindHandler<Pbmsg.AttackReq>(Pbmsg.ClientCmdDef.CAttack, this.HandleAttack)
                 ;
-            int nGenId = 80;
+            int nGenId = 10000;
             int num = 2;
             for (int i = 0; i < num; ++ i)
             {
