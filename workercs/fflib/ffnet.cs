@@ -98,7 +98,7 @@ namespace ff
                         dataBody = new byte[eachRecvPkg.Length - 8];
                         Array.Copy(eachRecvPkg, 8, dataBody, 0, dataBody.Length);
                     }
-                    FFLog.Trace(string.Format("cmd={0},data={1}", nCmd, dataBody.Length));
+                    //FFLog.Trace(string.Format("cmd={0},data={1}", nCmd, dataBody.Length));
                         
                     try
                     {
@@ -129,7 +129,7 @@ namespace ff
                 size = System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt32(m_strRecvData, nRead + 0));
                 cmd  = (UInt16)System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt16(m_strRecvData, nRead + 4));
                 flag = System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt16(m_strRecvData, nRead + 6));
-                FFLog.Trace(string.Format("HandleRecv cmd:{0},len:{1},recvlen:{2}", cmd, size, m_strRecvData.Length));
+                //FFLog.Trace(string.Format("HandleRecv cmd:{0},len:{1},recvlen:{2}", cmd, size, m_strRecvData.Length));
                 
                 if (cmd == 0 || size == 0){
                     string st = "";
@@ -323,7 +323,7 @@ namespace ff
             byte[][] p = { lenArray, cmdArray, resArray, strData };
             byte[] sendData = Util.MergeArray(p);
             ffsocket.AsyncSend(sendData);
-            FFLog.Trace(string.Format("SendMsg cmd:{0},len:{1},len2:{2}", cmdSrc, strData.Length, sendData.Length));
+            //FFLog.Trace(string.Format("SendMsg cmd:{0},len:{1},len2:{2}", cmdSrc, strData.Length, sendData.Length));
         }
 
         public static void SendMsg(IFFSocket ffsocket, UInt16 cmd, Thrift.Protocol.TBase reqMsg)

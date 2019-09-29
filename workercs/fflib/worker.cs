@@ -192,7 +192,7 @@ namespace ff
         {
             int cmd = reqMsg.Cmd;
             Int64 nSessionID = reqMsg.SessionId;
-            FFLog.Trace(string.Format("worker RouteLogicMsgReq! {0} {1}", cmd, nSessionID));
+            //FFLog.Trace(string.Format("worker RouteLogicMsgReq! {0} {1}", cmd, nSessionID));
 
             if (m_dictCmd2Func.ContainsKey(cmd) == false)
             {

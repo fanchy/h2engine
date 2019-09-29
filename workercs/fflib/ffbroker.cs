@@ -67,8 +67,8 @@ namespace ff
                         {
                             BrokerRouteMsgReq reqMsg = new BrokerRouteMsgReq();
                             FFNet.DecodeMsg(reqMsg, strMsg);
-                            FFLog.Trace(string.Format("FFBroker.BROKER_ROUTE_MSG service={0},func={1} Callback={2}",
-                                        reqMsg.DestServiceName, reqMsg.DestMsgName, reqMsg.CallbackId));
+                            //FFLog.Trace(string.Format("FFBroker.BROKER_ROUTE_MSG service={0},func={1} Callback={2}",
+                            //            reqMsg.DestServiceName, reqMsg.DestMsgName, reqMsg.CallbackId));
                             if (!m_dictSockets.ContainsKey(reqMsg.DestNodeId))
                             {
                                 return;

@@ -180,7 +180,7 @@ namespace ff
                                 FFNet.DecodeMsg(reqMsg, strMsg);
                                 if (reqMsg.Errinfo == null)
                                     reqMsg.Errinfo = "";
-                                FFLog.Trace(string.Format("ffrpc.BROKER_TO_CLIENT_MSG msgname={0}", reqMsg.DestMsgName));
+                                //FFLog.Trace(string.Format("ffrpc.BROKER_TO_CLIENT_MSG msgname={0}", reqMsg.DestMsgName));
                                 if (reqMsg.Errinfo.Length > 0)
                                 {
                                     FFLog.Error(string.Format("FFRpc::handleRpcCallMsg error={0}", reqMsg.Errinfo));

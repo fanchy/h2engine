@@ -220,7 +220,7 @@ namespace ff
             {
                 aPayload_data[i] = (byte)(aPayload_data[i] ^ aMasking_key[i % 4]);
             }
-            FFLog.Trace(string.Format("nOpcode={0},data={1}", nOpcode, aPayload_data.Length));
+            
             if (8 == nOpcode)
             {
                 AddSendPkg(BuildPkg(new byte[0], nOpcode));// close
@@ -251,7 +251,11 @@ namespace ff
                     dataFragmentation = MergeArray(dataFragmentation, aPayload_data);
                 }
             }
-            
+            else
+            {
+                FFLog.Trace(string.Format("nOpcode={0},data={1}", nOpcode, aPayload_data.Length));
+            }
+
             return true;
         }
         public byte[] BuildPkg(byte[] dataBody, int opcode = 0x02)

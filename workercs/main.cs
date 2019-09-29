@@ -39,16 +39,18 @@ namespace ff
 
             //FFNet.Timerout(1000, Theout);
             //FFNet.Timerout(2000, Theout);
-            FFNet.Timerout(100000, () =>
+            FFNet.Timerout(1000000, () =>
             {
                 FFLog.Debug("AAAAAAAAAAAAAAA1");
                 //ffbroker.Close();
             });
             FFLog.Trace(string.Format("main! {0}", System.Threading.Thread.CurrentThread.ManagedThreadId.ToString()));
-            
+
+            bool bExit = false;
             AppDomain.CurrentDomain.ProcessExit += (sender, arg) =>
             {
                 FFLog.Trace("exist!!");
+                bExit = true;
             };
             Console.CancelKeyPress += (object sender, ConsoleCancelEventArgs e) =>{
                 e.Cancel = true;
@@ -56,8 +58,12 @@ namespace ff
 
                 FFNet.Cleanup();
                 FFLog.Cleanup();
+                bExit = true;
             };
-            Console.ReadKey();
+            while (!bExit)
+            {
+                System.Threading.Thread.Sleep(300);
+            }
 
             FFLog.Trace("exist!!");
             FFNet.Cleanup();

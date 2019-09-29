@@ -108,7 +108,7 @@ namespace ff
                 HandleClose();
                 return;
             }
-            FFLog.Trace(string.Format("scoket: recv 1111 {0}", length));
+            //FFLog.Trace(string.Format("scoket: recv 1111 {0}", length));
             if (length == 0)
             {
                 FFLog.Warning("HandleRecv: recv end ok file ");
@@ -160,7 +160,7 @@ namespace ff
             var socket = ar.AsyncState as Socket;
             try
             {
-                if (socket == null)
+                if (socket == null || m_oSocket == null || !socket.Connected)
                 {
                     return;
                 }
@@ -174,7 +174,10 @@ namespace ff
             }
             catch (System.ObjectDisposedException ex)
             {
-                FFLog.Error("scoket: send Error22 " + ex.Message);
+                if (ar.IsCompleted)
+                    FFLog.Error("scoket: send Error22 !!" + ex.Message);
+                else
+                    FFLog.Error("scoket: send Error22 " + ex.Message);
                 HandleClose();
 
             }
