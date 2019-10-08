@@ -149,7 +149,7 @@ namespace ff
                     break;
                 }
                 if (nLeftSize < nRead + 8 + size){
-                    FFLog.Error("scoket.HandleRecv 111111111111111111");
+                    //FFLog.Error("scoket.HandleRecv 111111111111111111");
                     Array.Copy(m_strRecvData, nRead, m_strRecvData, 0, nLeftSize - nRead);
                     break;
                 }

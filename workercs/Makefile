@@ -24,7 +24,12 @@ SRCS=$(foreach dir,$(SrcDir),$(wildcard $(dir)/*.cs))
 #INCS=$(foreach dir,$(IncDir),$(wildcard $(dir)/*.h))
 INCS=$(foreach dir,$(IncDir),$(addprefix -I,$(dir)))
 LINKS=$(foreach dir,$(LibDir),$(addprefix -L,$(dir)))
-CFLAGS := $(CFLAGS) $(INCS)
+CFLAGS := $(CFLAGS) $(INCS) 
+CSFLAGS := 
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+    CSFLAGS += /define:linux
+endif
 LDFLAGS:= $(LINKS) $(LDFLAGS)
 CC=csc
 ARCH=PC
@@ -33,7 +38,7 @@ OBJS = $(SRCS:%.cpp=%.o)
 
 all:$(BIN)
 $(BIN):$(SRCS)
-	$(CC) /out:$@ $(SRCS)
+	$(CC) $(CSFLAGS) /out:$@ $(SRCS)
 	@echo " OK!\tComplie $@ "
 # @$(LN) $(shell pwd)/$(LIB_NAME).$(LIB_VER) /lib/$(LIB_NAME)
 
