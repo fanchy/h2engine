@@ -5,26 +5,27 @@ namespace ff
 {
     public class FFMain
     {
-        const string DaemonTag = "--daemon";
         public static void Main(string[] args)
         {
 #if linux
-            if (args.Length >= 1 && (args[0] == "/daemon" || args[0] == "--daemon"))
+            //if (args.Length >= 1 && (args[0] == "/daemon" || args[0] == "--daemon"))
+            for (int i = 0; i < args.Length; ++i)
             {
-                FFLog.Trace(string.Format("1111 1 {0}", args[0]));
-                // if (arg != "-daemon")
-                    // continue;
-                FFLog.Trace(string.Format("app arg:-daemon"));
+                if (args[i] != "/daemon" && args[i] != "--daemon")
+                {
+                    continue;
+                }
+                FFLog.Trace(string.Format("config {0}", args[i]));
+
                 int pid = fork();
                 if (pid != 0) exit(0);
                 setsid();
                 pid = fork();
                 if (pid != 0) exit(0);
                 umask(022);
-                
-                // ????????????
+
                 int max = open("/dev/null", 0);
-                for (var i = 0; i <= max; i++) { close(i); }
+                for (var m = 0; m <= max; m++) { close(m); }
                 
                 //!read write error
                 int fd = open("/dev/null", 0);
@@ -33,13 +34,25 @@ namespace ff
                 
                 var executablePath = Environment.GetCommandLineArgs()[0];
                 FFLog.Trace(string.Format("executablePath {0}", executablePath));
-                string[] args2 = {"mono", executablePath};
-
-                execvp("mono", args2);
+                string[] argsNew = new string[args.Length + 1];//{"mono", executablePath};
+                int assignIndex = 0;
+                argsNew[assignIndex] = "mono";
+                assignIndex += 1;
+                argsNew[assignIndex] = executablePath;
+                assignIndex += 1;
+                for (int j = 0; j < args.Length; ++j)
+                {
+                    if (i == j){
+                        continue;
+                    }
+                    argsNew[assignIndex] = args[j];
+                    assignIndex += 1;
+                }
+                execvp("mono", argsNew);
                 return;
             }
 #endif
-            
+
             string host = "tcp://127.0.0.1:43210";
             FFBroker ffbroker = new FFBroker();
             ffbroker.Open(host);
@@ -59,7 +72,7 @@ namespace ff
             //    reqMsg.From_gate = "gate#1";
             //    ffrpc.Call(strServiceName, reqWorkerCall, (SessionEnterWorkerReq retMsg) =>
             //    {
-            //        FFLog.Trace(string.Format("ffrpc SessionEnterWorkerReq return£¡£¡£¡FromGate={0}", retMsg.From_gate));
+            //        FFLog.Trace(string.Format("ffrpc SessionEnterWorkerReq return!!!FromGate={0}", retMsg.From_gate));
             //    });
             //});
             FFGate ffGate = new FFGate();

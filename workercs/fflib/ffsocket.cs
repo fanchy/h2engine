@@ -96,7 +96,7 @@ namespace ff
             try
             {
                 Socket socket = (Socket)ar.AsyncState;
-                if (socket == null)
+                if (socket == null || m_oSocket == null || !socket.Connected)
                 {
                     return;
                 }
@@ -166,20 +166,11 @@ namespace ff
                 }
                 socket.EndSend(ar);
             }
-            catch (SocketException ex)
+            catch (Exception ex)
             {
-                FFLog.Trace("scoket: send Error " + ex.Message);
+                FFLog.Warning("scoket: send Error1 " + ex.Message);
                 HandleClose();
                 return;
-            }
-            catch (System.ObjectDisposedException ex)
-            {
-                if (ar.IsCompleted)
-                    FFLog.Error("scoket: send Error22 !!" + ex.Message);
-                else
-                    FFLog.Error("scoket: send Error22 " + ex.Message);
-                HandleClose();
-
             }
             FFNet.GetTaskQueue().Post(() =>
             {
