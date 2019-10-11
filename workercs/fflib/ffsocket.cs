@@ -186,12 +186,7 @@ namespace ff
                         m_oSocket.BeginSend(data, 0, data.Length, 0, new AsyncCallback(handleSendEnd), m_oSocket);
                     }
                 }
-                catch (System.ObjectDisposedException ex)
-                {
-                    FFLog.Trace("scoket: send Error1 " + ex.Message);
-                    HandleClose();
-                }
-                catch (SocketException ex)
+                catch (Exception ex)
                 {
                     FFLog.Trace("scoket: send Error " + ex.Message);
                     HandleClose();
@@ -210,11 +205,17 @@ namespace ff
                 {
                     return;
                 }
-
-                m_oSocket.Close();
-                m_oSocket = null;
-                m_oBuffSending.Clear();
-                m_oSocketCtrl.HandleBroken(this);
+                try
+                {
+                    m_oSocket.Close();
+                    m_oSocket = null;
+                    m_oBuffSending.Clear();
+                    m_oSocketCtrl.HandleBroken(this);
+                }
+                catch (Exception ex)
+                {
+                    FFLog.Trace("scoket: HandleClose Error " + ex.Message);
+                }
             });
         }
         public string GetIP()

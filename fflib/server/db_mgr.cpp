@@ -102,6 +102,7 @@ int DbMgr::doQuery(SharedPtr<FFDb> db, const std::string& sql, Function<void(Que
     }
     if (!callbackTQ){
         callback(ret);
+        return 0;
     }
     callbackTQ->post(funcbind(&threadSafeCall, callback, ret));
     return 0;
