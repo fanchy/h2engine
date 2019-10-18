@@ -7,10 +7,12 @@ namespace ff
     {
         protected Socket              m_oSocket;
         protected ISocketCtrl         m_oSocketCtrl;
+        protected bool bRunning;
         public FFAcceptor(ISocketCtrl ctrl)
         {
             m_oSocket   = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             m_oSocketCtrl = ctrl;
+            bRunning = false;
         }
         public bool Listen(string ip, int port){
             try{
@@ -20,6 +22,7 @@ namespace ff
                 else{
                     m_oSocket.Bind(new System.Net.IPEndPoint(System.Net.IPAddress.Parse(ip), port));
                 }
+                bRunning = true;
                 m_oSocket.Listen(2);
                 m_oSocket.BeginAccept(new AsyncCallback(HandleAccepted), m_oSocket);
             }
@@ -42,7 +45,6 @@ namespace ff
                     var client = socket.EndAccept(ar);
                     IFFSocket ffsocket = new FFScoketAsync(m_oSocketCtrl.ForkSelf(), client);
                     ffsocket.AsyncRecv();
-                    m_oSocket.BeginAccept(new AsyncCallback(HandleAccepted), m_oSocket);
                     FFLog.Trace(string.Format("scoket: handleAccepted ip:{0}", ffsocket.GetIP()));
                 }
             }
@@ -51,9 +53,14 @@ namespace ff
                 FFLog.Trace("scoket: handleAccepted Error " + ex.Message);
             }
 
+            if (bRunning)
+            {
+                m_oSocket.BeginAccept(new AsyncCallback(HandleAccepted), m_oSocket);
+            }
         }
         public void Close(){
             try {
+                bRunning = false;
                 m_oSocket.Close();
             }
             catch (Exception ex)

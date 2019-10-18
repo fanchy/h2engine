@@ -17,6 +17,7 @@ namespace ff
         public int nLevel;
         public int x;
         public int y;
+        public int maxhp;
         public int hp;
         public int direction;
         public long nLastAttackedTime;
@@ -29,10 +30,11 @@ namespace ff
             Random rd = new Random();
             x = (int)MapCfg.CenterX + rd.Next() % 5;
             y = (int)MapCfg.CenterY + rd.Next() % 5;
-            hp = 100;
+            maxhp = 1000;
+            hp = maxhp;
             direction = 4;
             nLastAttackedTime = 0;
-            apprID = 10001;
+            apprID = 3 + rd.Next() % 3;
         }
         public Int64 GetID()
         {
@@ -83,41 +85,41 @@ namespace ff
                 .BindHandler<Pbmsg.AttackReq>(Pbmsg.ClientCmdDef.CAttack, this.HandleAttack)
                 ;
             int nGenId = 10000;
-            int num = 2;
-            for (int i = 0; i < num; ++ i)
+            int num = 1;
+            for (int i = 0; i < 1; ++ i)
             {
                 string strName = string.Format("A大怪物{0}", i + 1);
-                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 17+20-(int)MapCfg.CenterX + i*2, y= 22 + 30 - (int)MapCfg.CenterY - i, apprID = 10001 };
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 17+20-(int)MapCfg.CenterX + i*2, y= 22 + 30 - (int)MapCfg.CenterY - i, apprID = 1 };
             }
             for (int i = 0; i < num; ++i)
             {
                 string strName = string.Format("B大怪物{0}", i + 1);
-                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 12+20-(int)MapCfg.CenterX + i * 2, y = 32 + 30 - (int)MapCfg.CenterY - i, apprID = 10002 };
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 12+20-(int)MapCfg.CenterX + i * 2, y = 32 + 30 - (int)MapCfg.CenterY - i, apprID = 2 };
             }
             for (int i = 0; i < num; ++i)
             {
                 string strName = string.Format("C大怪物{0}", i + 1);
-                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 15 + 20 - (int)MapCfg.CenterX + i * 2, y = 40 + 30 - (int)MapCfg.CenterY - i, apprID = 10003 };
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 15 + 20 - (int)MapCfg.CenterX + i * 2, y = 40 + 30 - (int)MapCfg.CenterY - i, apprID = 3 };
             }
             for (int i = 0; i < num; ++i)
             {
                 string strName = string.Format("D大怪物{0}", i + 1);
-                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 20 + 20 - (int)MapCfg.CenterX + i * 2, y = 40 + 30 - (int)MapCfg.CenterY - i, apprID = 10004 };
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 20 + 20 - (int)MapCfg.CenterX + i * 2, y = 40 + 30 - (int)MapCfg.CenterY - i, apprID = 4 };
             }
             for (int i = 0; i < num; ++i)
             {
                 string strName = string.Format("E大怪物{0}", i + 1);
-                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 25 + 20 - (int)MapCfg.CenterX + i * 2, y = 39 + 30 - (int)MapCfg.CenterY - i, apprID = 10005 };
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 25 + 20 - (int)MapCfg.CenterX + i * 2, y = 39 + 30 - (int)MapCfg.CenterY - i, apprID = 5 };
             }
             for (int i = 0; i < num; ++i)
             {
                 string strName = string.Format("F大怪物{0}", i + 1);
-                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 25 + 20 - (int)MapCfg.CenterX + i * 2, y = 28 + 30 - (int)MapCfg.CenterY - i, apprID = 10006 };
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 25 + 20 - (int)MapCfg.CenterX + i * 2, y = 28 + 30 - (int)MapCfg.CenterY - i, apprID = 3 };
             }
             for (int i = 0; i < num; ++i)
             {
                 string strName = string.Format("G大怪物{0}", i + 1);
-                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 16 + 20 - (int)MapCfg.CenterX + i * 2, y = 30 - i, apprID = 10007 };
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 16 + 20 - (int)MapCfg.CenterX + i * 2, y = 30 - i, apprID = 4 };
             }
             //nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = "大怪物2", x = 42 + xOffset, y = 27 + yOffset, apprID = 10002};
             //nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = "大怪物3", x = 48 + xOffset, y = 19 + yOffset, apprID = 10003};
@@ -333,7 +335,7 @@ namespace ff
             };
             BroadcastPlayerMsg<Pbmsg.AttackRet>(Pbmsg.ServerCmdDef.SAttack, retMsg);
             Random rd = new Random();
-            int hpChaneged = 1 + rd.Next() % 5;
+            int hpChaneged = rd.Next(1, roleTarget.maxhp / 10);
 
             if (roleTarget.hp >= hpChaneged)
             {
@@ -376,7 +378,7 @@ namespace ff
                 {
                     if (Util.GetNowTimeMs() - role.nLastAttackedTime < 5000)
                         continue;
-                    role.hp = 100;
+                    role.hp = role.maxhp;
                     Pbmsg.EnterMapRet enterMapRet = BuildEnterMsg(role);
                     BroadcastPlayerMsg<Pbmsg.EnterMapRet>(Pbmsg.ServerCmdDef.SEnterMap, enterMapRet);
                     continue;
@@ -406,9 +408,9 @@ namespace ff
                     BroadcastPlayerMsg<Pbmsg.AttackRet>(Pbmsg.ServerCmdDef.SAttack, monsterAttackMsg);
 
                     Random rd = new Random();
-                    int hpChaneged = 5 + rd.Next() % 5;
 
                     Role roleTarget = player;
+                    int hpChaneged = rd.Next(1, roleTarget.maxhp / 10);
                     if (roleTarget.hp >= hpChaneged)
                     {
                         roleTarget.hp -= hpChaneged;

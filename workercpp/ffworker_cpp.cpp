@@ -20,7 +20,7 @@ int FFWorkerCpp::cppInit()
     ArgHelper& arg_helper = Singleton<ArgHelper>::instance();
     if (arg_helper.isEnableOption("-db")){
         if (DbMgr::instance().initDBPool(arg_helper.getOptionValue("-db"), 1)){
-            LOGERROR((FFWORKER_LUA, "FFWorker::db connect failed"));
+            LOGERROR((FFWORKER_CPP, "FFWorker::db connect failed"));
             return -1;
         }
     }

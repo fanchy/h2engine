@@ -96,7 +96,7 @@ namespace ff
             try
             {
                 Socket socket = (Socket)ar.AsyncState;
-                if (socket == null || m_oSocket == null || !socket.Connected)
+                if (socket == null || m_oSocket == null)
                 {
                     return;
                 }
