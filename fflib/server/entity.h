@@ -74,9 +74,6 @@ public:
     bool sendMsg(uint16_t cmd, const std::string& msg);
     bool sessionClose();// 断开连接
 
-    SharedPtr<Entity> toPtr();
-
-
 private:
     void initField(EntityField* ret, const std::string& name);
 public:

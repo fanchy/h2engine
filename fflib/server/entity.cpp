@@ -45,12 +45,9 @@ bool Entity::sessionClose(){// 断开连接
     return false;
 }
 
-SharedPtr<Entity> Entity::toPtr(){
-    return Entity::toEntity(long(this));
-}
 void Entity::initField(EntityField* ret, const std::string& name){
     ret->setFiledName(name);
-    ret->setOwner(this->toPtr());
+    ret->setOwner(TO_ENTITY(this));
 }
 EntityField* Entity::getFieldByName(const std::string& name){
     for (size_t i = 0; i < m_fields.size(); ++i){

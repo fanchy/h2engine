@@ -121,9 +121,6 @@
 		<Unit filename="../fflib/server/prop.h" />
 		<Unit filename="../fflib/server/script.h" />
 		<Unit filename="../fflib/server/script_cache.h" />
-		<Unit filename="../fflib/server/shared_mem.cpp" />
-		<Unit filename="../fflib/server/shared_mem.h" />
-		<Unit filename="../fflib/server/shared_mem_win.cpp" />
 		<Unit filename="../fflib/xml/ffxml.cpp" />
 		<Unit filename="../fflib/xml/ffxml.h" />
 		<Unit filename="../fflib/xml/tinystr.cpp" />

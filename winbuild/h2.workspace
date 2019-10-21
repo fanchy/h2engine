@@ -2,6 +2,7 @@
 <CodeBlocks_workspace_file>
 	<Workspace title="Workspace">
 		<Project filename="h2engine.cbp" />
+		<Project filename="h2workercpp.cbp" />
 		<Project filename="h2workerpy.cbp" />
 		<Project filename="h2workerlua.cbp" />
 	</Workspace>

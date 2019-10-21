@@ -37,7 +37,7 @@ BOOL CtrlHandler( DWORD fdwCtrlType )
       g_flagwait = false;
       return( TRUE );
     default:
-      printf( "recv=%d please use Ctrl-C \n\n", (int)fdwCtrlType );
+      printf( "recv=%u please use Ctrl-C \n\n", (unsigned int)fdwCtrlType );
       return FALSE;
   }
 }

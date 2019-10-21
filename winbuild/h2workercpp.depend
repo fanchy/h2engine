@@ -811,7 +811,7 @@
 	"server/entity.h"
 	"thrift/FFThrift.h"
 
-1557839060 d:\code\h2engine\fflib\server\entity.h
+1571662506 d:\code\h2engine\fflib\server\entity.h
 	<string>
 	<vector>
 	<list>
@@ -1257,284 +1257,65 @@
 	<string>
 	"base/osdef.h"
 
-1558406947 source:d:\code\h2engine\workerpy\ffworker_python.cpp
-	"./ffworker_python.h"
+1559304868 source:d:\code\h2engine\workerlua\ffworker_lua.cpp
+	"./ffworker_lua.h"
 	"base/perf_monitor.h"
 	"server/http_mgr.h"
-	"python/ffpython.h"
 	"server/script.h"
+	<stdio.h>
+	"luaops.h"
 
-1557839061 d:\code\h2engine\workerpy\ffworker_python.h
+1557839061 d:\code\h2engine\workerlua\ffworker_lua.h
 	"base/log.h"
 	"server/db_mgr.h"
 	"server/fftask_processor.h"
 	"server/ffworker.h"
 
-1557839060 d:\code\h2engine\fflib\server\fftask_processor.h
+1559388922 d:\code\h2engine\fflib\server\fftask_processor.h
 	"rapidjson/document.h"
 	"rapidjson/prettywriter.h"
 	"rapidjson/filestream.h"
 	"rapidjson/stringbuffer.h"
 	"base/smart_ptr.h"
 
-1557886832 d:\code\h2engine\fflib\python\ffpython.h
-	<C:\Python27\include\Python.h>
-	<C:\Python27\include\structmember.h>
-	<winsock2.h>
-	<stdio.h>
-	<windows.h>
-	<Python.h>
-	<structmember.h>
-	<string>
-	<sstream>
-	<vector>
-	<list>
-	<set>
-	<map>
-	<stdexcept>
-
-1550332006 c:\python27\include\python.h
-	"patchlevel.h"
-	"pyconfig.h"
-	"pymacconfig.h"
-	<limits.h>
-	<stdio.h>
-	<string.h>
-	<errno.h>
-	<stdlib.h>
-	<unistd.h>
-	<crypt.h>
-	<stddef.h>
-	<assert.h>
-	"pyport.h"
-	"pymath.h"
-	"pymem.h"
-	"object.h"
-	"objimpl.h"
-	"pydebug.h"
-	"unicodeobject.h"
-	"intobject.h"
-	"boolobject.h"
-	"longobject.h"
-	"floatobject.h"
-	"complexobject.h"
-	"rangeobject.h"
-	"stringobject.h"
-	"memoryobject.h"
-	"bufferobject.h"
-	"bytesobject.h"
-	"bytearrayobject.h"
-	"tupleobject.h"
-	"listobject.h"
-	"dictobject.h"
-	"enumobject.h"
-	"setobject.h"
-	"methodobject.h"
-	"moduleobject.h"
-	"funcobject.h"
-	"classobject.h"
-	"fileobject.h"
-	"cobject.h"
-	"pycapsule.h"
-	"traceback.h"
-	"sliceobject.h"
-	"cellobject.h"
-	"iterobject.h"
-	"genobject.h"
-	"descrobject.h"
-	"warnings.h"
-	"weakrefobject.h"
-	"codecs.h"
-	"pyerrors.h"
-	"pystate.h"
-	"pyarena.h"
-	"modsupport.h"
-	"pythonrun.h"
-	"ceval.h"
-	"sysmodule.h"
-	"intrcheck.h"
-	"import.h"
-	"abstract.h"
-	"compile.h"
-	"eval.h"
-	"pyctype.h"
-	"pystrtod.h"
-	"pystrcmp.h"
-	"dtoa.h"
-	"pyfpe.h"
-	<pth.h>
-
-1551633600 c:\python27\include\patchlevel.h
-
-1550332008 c:\python27\include\pyconfig.h
-	<io.h>
-	<stdlib.h>
-	<float.h>
-	<basetsd.h>
-	<io.h>
-	<stdio.h>
-
-1486996680 c:\python27\include\pymacconfig.h
-
-1557839061 d:\code\h2engine\winbuild\include\crypt.h
-	<features.h>
-
-1486996680 c:\python27\include\pyport.h
-	"pyconfig.h"
-	<inttypes.h>
+1557839061 d:\code\h2engine\workerlua\luaops.h
 	<stdint.h>
 	<stdlib.h>
-	<ieeefp.h>
-	<math.h>
-	<sys/time.h>
-	<time.h>
-	<sys/time.h>
-	<time.h>
-	<sys/select.h>
-	<sys/types.h>
-	"unixstuff.h"
-	<sys/types.h>
-	<sys/stat.h>
-	<stat.h>
-	<sys/types.h>
-	<sys/termio.h>
-	<termios.h>
-	<osreldate.h>
-	<ctype.h>
-	<wctype.h>
+	<string>
+	<lua.hpp>
 
-1486996680 c:\python27\include\pymath.h
-	"pyconfig.h"
+1557839061 d:\code\h2engine\winbuild\include\lua.hpp
+	"lua.h"
+	"lualib.h"
+	"lauxlib.h"
 
-1550332006 c:\python27\include\pymem.h
-	"pyport.h"
-
-1486996680 c:\python27\include\object.h
-
-1550332006 c:\python27\include\objimpl.h
-	"pymem.h"
-
-1486996680 c:\python27\include\pydebug.h
-
-1486996680 c:\python27\include\unicodeobject.h
+1557839061 d:\code\h2engine\winbuild\include\lua.h
 	<stdarg.h>
-	<ctype.h>
-	<time.h>
-	<wchar.h>
-	<wctype.h>
-
-1550332006 c:\python27\include\intobject.h
-
-1486996678 c:\python27\include\boolobject.h
-
-1486996678 c:\python27\include\longobject.h
-
-1486996678 c:\python27\include\floatobject.h
-
-1486996678 c:\python27\include\complexobject.h
-
-1486996680 c:\python27\include\rangeobject.h
-
-1486996680 c:\python27\include\stringobject.h
-	<stdarg.h>
-
-1486996680 c:\python27\include\memoryobject.h
-
-1486996678 c:\python27\include\bufferobject.h
-
-1486996678 c:\python27\include\bytesobject.h
-
-1486996678 c:\python27\include\bytearrayobject.h
-	<stdarg.h>
-
-1486996680 c:\python27\include\tupleobject.h
-
-1486996678 c:\python27\include\listobject.h
-
-1486996678 c:\python27\include\dictobject.h
-
-1486996678 c:\python27\include\enumobject.h
-
-1486996680 c:\python27\include\setobject.h
-
-1486996680 c:\python27\include\methodobject.h
-
-1486996680 c:\python27\include\moduleobject.h
-
-1486996678 c:\python27\include\funcobject.h
-
-1486996678 c:\python27\include\classobject.h
-
-1486996678 c:\python27\include\fileobject.h
-
-1486996678 c:\python27\include\cobject.h
-
-1486996680 c:\python27\include\pycapsule.h
-
-1486996680 c:\python27\include\traceback.h
-
-1503762432 c:\python27\include\sliceobject.h
-
-1486996678 c:\python27\include\cellobject.h
-
-1486996678 c:\python27\include\iterobject.h
-
-1486996678 c:\python27\include\genobject.h
-
-1486996678 c:\python27\include\descrobject.h
-
-1486996680 c:\python27\include\warnings.h
-
-1486996680 c:\python27\include\weakrefobject.h
-
-1486996678 c:\python27\include\codecs.h
-
-1486996680 c:\python27\include\pyerrors.h
-	<stdarg.h>
-
-1486996680 c:\python27\include\pystate.h
-
-1486996680 c:\python27\include\pyarena.h
-
-1486996680 c:\python27\include\modsupport.h
-	<stdarg.h>
-
-1503762432 c:\python27\include\pythonrun.h
-
-1503762432 c:\python27\include\ceval.h
-
-1486996680 c:\python27\include\sysmodule.h
-
-1486996678 c:\python27\include\intrcheck.h
-
-1486996678 c:\python27\include\import.h
-
-1486996678 c:\python27\include\abstract.h
-
-1486996678 c:\python27\include\compile.h
-	"code.h"
-
-1486996678 c:\python27\include\code.h
-
-1486996678 c:\python27\include\eval.h
-
-1486996680 c:\python27\include\pyctype.h
-
-1486996680 c:\python27\include\pystrtod.h
-
-1486996680 c:\python27\include\pystrcmp.h
-
-1486996678 c:\python27\include\dtoa.h
-
-1486996680 c:\python27\include\pyfpe.h
-	<signal.h>
-	<setjmp.h>
-	<math.h>
-
-1486996680 c:\python27\include\structmember.h
 	<stddef.h>
+	"luaconf.h"
 
-1557886888 source:d:\code\h2engine\workerpy\main.cpp
+1557839061 d:\code\h2engine\winbuild\include\luaconf.h
+	<limits.h>
+	<stddef.h>
+	<unistd.h>
+	<io.h>
+	<stdio.h>
+	<stdio.h>
+	<readline/readline.h>
+	<readline/history.h>
+	<assert.h>
+	<math.h>
+	<unistd.h>
+
+1557839061 d:\code\h2engine\winbuild\include\lualib.h
+	"lua.h"
+
+1557839061 d:\code\h2engine\winbuild\include\lauxlib.h
+	<stddef.h>
+	<stdio.h>
+	"lua.h"
+
+1559304868 source:d:\code\h2engine\workerlua\main.cpp
 	<stdio.h>
 	"base/osdef.h"
 	"base/fftype.h"
@@ -1546,16 +1327,14 @@
 	"base/signal_helper.h"
 	"base/daemon_tool.h"
 	"base/perf_monitor.h"
-	"base/event_bus.h"
 	"base/os_tool.h"
+	"net/ffnet.h"
 	"rpc/ffrpc.h"
 	"rpc/ffbroker.h"
 	"server/ffworker.h"
 	"server/ffgate.h"
-	"server/shared_mem.h"
 	"server/http_mgr.h"
-	"server/db_mgr.h"
-	"./ffworker_python.h"
+	"./ffworker_lua.h"
 
 1559304868 d:\code\h2engine\fflib\net\wsprotocol.h
 	<string>
@@ -1709,69 +1488,6 @@
 	<stdexcept>
 	<string>
 
-1560060054 source:d:\code\h2engine\fflib\net\ioevent_select.cpp
-	"base/func.h"
-	"base/osdef.h"
-	"net/ioevent.h"
-	"net/ioevent_select.h"
-	"base/lock.h"
-	"net/socket_op.h"
-	<map>
-	<vector>
-	<list>
-	<set>
-
-1558862323 d:\code\h2engine\fflib\net\ioevent.h
-	"base/func.h"
-	"base/osdef.h"
-
-1559304868 d:\code\h2engine\fflib\net\ioevent_select.h
-	"base/func.h"
-	"base/osdef.h"
-	"net/ioevent.h"
-	"base/lock.h"
-	"net/socket_op.h"
-	<map>
-	<vector>
-	<list>
-
-1559304868 source:d:\code\h2engine\fflib\net\sockettcp.cpp
-	"base/osdef.h"
-	<errno.h>
-	<assert.h>
-	<sys/types.h>
-	<sys/socket.h>
-	"net/sockettcp.h"
-	"net/socket_op.h"
-	"base/task_queue.h"
-	"base/log.h"
-
-1568982320 d:\code\h2engine\fflib\net\sockettcp.h
-	<list>
-	<string>
-	"net/socket.h"
-	"net/socket_op.h"
-	"net/ioevent.h"
-	"base/func.h"
-
-1559304868 d:\code\h2engine\fflib\net\acceptortcp.h
-	<string>
-	"base/osdef.h"
-	"net/ioevent.h"
-	"net/acceptor.h"
-	"net/socket_protocol.h"
-
-1559304868 d:\code\h2engine\fflib\net\ioevent_epoll.h
-	"base/func.h"
-	"base/osdef.h"
-	"net/ioevent.h"
-	"base/lock.h"
-	"net/socket_op.h"
-	<map>
-	<vector>
-	<list>
-	<sys/epoll.h>
-
 1559304868 source:d:\code\h2engine\fflib\net\acceptortcp.cpp
 	<sys/types.h>
 	<sys/socket.h>
@@ -1794,6 +1510,69 @@
 	"base/task_queue.h"
 	"base/log.h"
 	"net/socket_protocol.h"
+
+1558862323 d:\code\h2engine\fflib\net\ioevent.h
+	"base/func.h"
+	"base/osdef.h"
+
+1559304868 d:\code\h2engine\fflib\net\acceptortcp.h
+	<string>
+	"base/osdef.h"
+	"net/ioevent.h"
+	"net/acceptor.h"
+	"net/socket_protocol.h"
+
+1568982320 d:\code\h2engine\fflib\net\sockettcp.h
+	<list>
+	<string>
+	"net/socket.h"
+	"net/socket_op.h"
+	"net/ioevent.h"
+	"base/func.h"
+
+1560060054 source:d:\code\h2engine\fflib\net\ioevent_select.cpp
+	"base/func.h"
+	"base/osdef.h"
+	"net/ioevent.h"
+	"net/ioevent_select.h"
+	"base/lock.h"
+	"net/socket_op.h"
+	<map>
+	<vector>
+	<list>
+	<set>
+
+1559304868 d:\code\h2engine\fflib\net\ioevent_select.h
+	"base/func.h"
+	"base/osdef.h"
+	"net/ioevent.h"
+	"base/lock.h"
+	"net/socket_op.h"
+	<map>
+	<vector>
+	<list>
+
+1559304868 source:d:\code\h2engine\fflib\net\sockettcp.cpp
+	"base/osdef.h"
+	<errno.h>
+	<assert.h>
+	<sys/types.h>
+	<sys/socket.h>
+	"net/sockettcp.h"
+	"net/socket_op.h"
+	"base/task_queue.h"
+	"base/log.h"
+
+1559304868 d:\code\h2engine\fflib\net\ioevent_epoll.h
+	"base/func.h"
+	"base/osdef.h"
+	"net/ioevent.h"
+	"base/lock.h"
+	"net/socket_op.h"
+	<map>
+	<vector>
+	<list>
+	<sys/epoll.h>
 
 1558861769 d:\code\h2engine\fflib\base\anytype.h
 	<string>
@@ -1829,4 +1608,147 @@
 	<thrift/FFThrift.h>
 	"rpc/msg_def/ffrpc_msg_types.h"
 	"rpc/msg_def/ffrpc_msg_constants.h"
+
+1568831660 source:d:\code\h2engine\lib3party\quickjs\bjson.c
+	"quickjs-libc.h"
+	"cutils.h"
+
+1568831660 d:\code\h2engine\lib3party\quickjs\quickjs-libc.h
+	<stdio.h>
+	<stdlib.h>
+	"quickjs.h"
+
+1568831660 d:\code\h2engine\lib3party\quickjs\quickjs.h
+	<stdio.h>
+	<stdint.h>
+
+1568831660 d:\code\h2engine\lib3party\quickjs\cutils.h
+	<stdlib.h>
+	<inttypes.h>
+
+1568831660 source:d:\code\h2engine\lib3party\quickjs\cutils.c
+	<stdlib.h>
+	<stdio.h>
+	<stdarg.h>
+	<string.h>
+	"cutils.h"
+
+1568831660 source:d:\code\h2engine\lib3party\quickjs\jscompress.c
+	<stdlib.h>
+	<stdio.h>
+	<getopt.h>
+	<stdarg.h>
+	<string.h>
+	<inttypes.h>
+	<unistd.h>
+	"cutils.h"
+
+1568831660 source:d:\code\h2engine\lib3party\quickjs\libbf.c
+	<stdlib.h>
+	<stdio.h>
+	<inttypes.h>
+	<math.h>
+	<string.h>
+	<assert.h>
+	<immintrin.h>
+	"cutils.h"
+	"libbf.h"
+
+1568831660 d:\code\h2engine\lib3party\quickjs\libbf.h
+	<stddef.h>
+	<stdint.h>
+
+1568831660 source:d:\code\h2engine\lib3party\quickjs\libregexp.c
+	<stdlib.h>
+	<stdio.h>
+	<stdarg.h>
+	<inttypes.h>
+	<string.h>
+	<assert.h>
+	"cutils.h"
+	"libregexp.h"
+	"libregexp-opcode.h"
+	"libregexp-opcode.h"
+
+1568831660 d:\code\h2engine\lib3party\quickjs\libregexp.h
+	<stddef.h>
+	"libunicode.h"
+
+1568831660 d:\code\h2engine\lib3party\quickjs\libunicode.h
+	<inttypes.h>
+
+1568831660 d:\code\h2engine\lib3party\quickjs\libregexp-opcode.h
+
+1568831660 source:d:\code\h2engine\lib3party\quickjs\libunicode.c
+	<stdlib.h>
+	<stdio.h>
+	<stdarg.h>
+	<string.h>
+	<assert.h>
+	"cutils.h"
+	"libunicode.h"
+	"libunicode-table.h"
+
+1568831660 d:\code\h2engine\lib3party\quickjs\libunicode-table.h
+	<stdint.h>
+
+1568831660 source:d:\code\h2engine\lib3party\quickjs\quickjs-libc.c
+	<stdlib.h>
+	<stdio.h>
+	<stdarg.h>
+	<inttypes.h>
+	<string.h>
+	<assert.h>
+	<unistd.h>
+	<errno.h>
+	<fcntl.h>
+	<sys/time.h>
+	<time.h>
+	<signal.h>
+	<limits.h>
+	<sys/stat.h>
+	<dirent.h>
+	<windows.h>
+	<conio.h>
+	<dlfcn.h>
+	<termios.h>
+	<sys/ioctl.h>
+	<sys/wait.h>
+	"cutils.h"
+	"list.h"
+	"quickjs-libc.h"
+
+1568831660 d:\code\h2engine\lib3party\quickjs\list.h
+	<stddef.h>
+
+1571383327 source:d:\code\h2engine\workercpp\ffworker_cpp.cpp
+	"./ffworker_cpp.h"
+	"base/perf_monitor.h"
+	"server/http_mgr.h"
+
+1557839061 d:\code\h2engine\workercpp\ffworker_cpp.h
+	"base/log.h"
+	"server/db_mgr.h"
+	"server/fftask_processor.h"
+	"server/ffworker.h"
+
+1571662206 source:d:\code\h2engine\workercpp\main.cpp
+	"base/osdef.h"
+	"base/fftype.h"
+	"base/daemon_tool.h"
+	"base/arg_helper.h"
+	"base/str_tool.h"
+	"base/smart_ptr.h"
+	"base/log.h"
+	"base/signal_helper.h"
+	"base/daemon_tool.h"
+	"base/perf_monitor.h"
+	"base/event_bus.h"
+	"net/ffnet.h"
+	"rpc/ffrpc.h"
+	"server/ffworker.h"
+	"server/ffgate.h"
+	"server/http_mgr.h"
+	"server/db_mgr.h"
+	"./ffworker_cpp.h"
 
