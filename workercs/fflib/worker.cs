@@ -34,7 +34,7 @@ namespace ff
             hp = maxhp;
             direction = 4;
             nLastAttackedTime = 0;
-            apprID = 3 + rd.Next() % 3;
+            apprID = 18 + rd.Next() % 2;
         }
         public Int64 GetID()
         {
@@ -85,8 +85,8 @@ namespace ff
                 .BindHandler<Pbmsg.AttackReq>(Pbmsg.ClientCmdDef.CAttack, this.HandleAttack)
                 ;
             int nGenId = 10000;
-            int num = 1;
-            for (int i = 0; i < 1; ++ i)
+            int num = 0;
+            for (int i = 0; i < num; ++ i)
             {
                 string strName = string.Format("白猿{0}", i + 1);
                 nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 17+20-(int)MapCfg.CenterX + i*2, y= 22 + 30 - (int)MapCfg.CenterY - i, apprID = 101 };
