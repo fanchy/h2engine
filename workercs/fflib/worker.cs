@@ -43,6 +43,7 @@ namespace ff
         public int hp;
         public int direction;
         public long nLastAttackedTime;
+        public long nLastAttackTime;
         public int apprID;
         public Role()
         {
@@ -56,6 +57,7 @@ namespace ff
             hp = maxhp;
             direction = 4;
             nLastAttackedTime = 0;
+            nLastAttackTime = 0;
             apprID = 18 + rd.Next() % 2;
         }
         public Int64 GetID()
@@ -425,9 +427,9 @@ namespace ff
                 int nDistance = Util.Distance(monster.x, monster.y, player.x, player.y);
                 if (nDistance <= 1)
                 {
-                    if (Util.GetNowTimeMs() - monster.nLastAttackedTime < 1000)
+                    if (Util.GetNowTimeMs() - monster.nLastAttackTime < 1000)
                         continue;
-                    monster.nLastAttackedTime = Util.GetNowTimeMs();
+                    monster.nLastAttackTime = Util.GetNowTimeMs();
                     Pbmsg.AttackRet monsterAttackMsg = new Pbmsg.AttackRet()
                     {
                         Id = monster.GetID(),
