@@ -112,10 +112,10 @@ namespace ff
                 ;
             int nGenId = 10000;
             int num = 0;
-            for (int i = 0; i < 1; ++i)
+            for (int i = 0; i < 3; ++i)
             {
                 string strName = string.Format("尸霸{0}", i + 1);
-                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 15 + 20 - (int)MapCfg.CenterX + i * 2, y = 35 + 30 - (int)MapCfg.CenterY - i, apprID = 69 };
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 18 + 20 - (int)MapCfg.CenterX + i * 2, y = 28 + 30 - (int)MapCfg.CenterY - i, apprID = 69 };
             }
             for (int i = 0; i < num; ++i)
             {
@@ -461,6 +461,10 @@ namespace ff
                 else//！怪物寻路追打角色
                 {
                     GamePoint nextPos = FindPath(new GamePoint(monster.x, monster.y), new GamePoint(player.x, player.y));
+                    if (GetRoleByPos(nextPos.x, nextPos.y) != null)
+                    {
+                        continue;
+                    }
                     monster.x = nextPos.x;
                     monster.y = nextPos.y;
                     Pbmsg.RunRet runRet = new Pbmsg.RunRet()
@@ -576,6 +580,21 @@ namespace ff
             destPoint.x += nowX;
             destPoint.y += nowY;
             return destPoint;
+        }
+        public Role GetRoleByPos(int x, int y, Int64 excludeID = 0)
+        {
+            foreach (Role roleOther in m_dictRoles.Values)
+            {
+                if (roleOther.GetID() == excludeID)
+                {
+                    continue;
+                }
+                if (roleOther.x == x && roleOther.y == y)
+                {
+                    return roleOther;
+                }
+            }
+            return null;
         }
     }
 }
