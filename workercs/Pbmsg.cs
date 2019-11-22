@@ -29,20 +29,21 @@ namespace Pbmsg {
             "IAEoCRINCgVsZXZlbBgDIAEoBSIlCglMb2dvdXRSZXQSCgoCaWQYASABKAMS",
             "DAoEbmFtZRgCIAEoCSIxCgZSdW5SZXESCQoBeBgBIAEoBRIJCgF5GAIgASgF",
             "EhEKCWRpcmVjdGlvbhgDIAEoBSIqCgZSdW5SZXQSCgoCaWQYASABKAMSCQoB",
-            "eBgCIAEoBRIJCgF5GAMgASgFIpsBCgtFbnRlck1hcFJldBIKCgJpZBgBIAEo",
+            "eBgCIAEoBRIJCgF5GAMgASgFIqwBCgtFbnRlck1hcFJldBIKCgJpZBgBIAEo",
             "AxIMCgRuYW1lGAIgASgJEg0KBWxldmVsGAMgASgFEgkKAXgYBCABKAUSCQoB",
             "eRgFIAEoBRINCgVtYXBpZBgGIAEoAxIPCgdvYmpUeXBlGAcgASgFEgoKAmhw",
-            "GAggASgFEhEKCWRpcmVjdGlvbhgJIAEoBRIOCgZhcHBySUQYCiABKAUiGQoL",
-            "TGVhdmVNYXBSZXQSCgoCaWQYASABKAMiQQoJQXR0YWNrUmVxEg8KB21hZ2lj",
-            "aWQYASABKAUSEAoIdGFyZ2V0aWQYAiABKAMSEQoJZGlyZWN0aW9uGAMgASgF",
-            "IjoKCUF0dGFja1JldBIKCgJpZBgBIAEoAxIQCgh0YXJnZXRpZBgCIAEoAxIP",
-            "CgdtYWdpY2lkGAMgASgFIk8KDEhQQ2hhbmdlZFJldBIKCgJpZBgBIAEoAxIS",
-            "Cgp2YWxDaGFuZ2VkGAMgASgFEg8KB21hZ2ljaWQYBCABKAUSDgoGdmFsQ3Vy",
-            "GAUgASgFKkEKDENsaWVudENtZERlZhILCgdDX0JFR0lOEAASCwoHQ19MT0dJ",
-            "ThABEgkKBUNfUlVOEAISDAoIQ19BVFRBQ0sQAyqDAQoMU2VydmVyQ21kRGVm",
-            "EgsKB1NfQkVHSU4QABILCgdTX0xPR0lOEAESCQoFU19SVU4QAhIMCghTX0FU",
-            "VEFDSxADEgwKCFNfTE9HT1VUEGQSDwoLU19FTlRFUl9NQVAQZRIQCgxTX0hQ",
-            "X0NIQU5HRUQQZhIPCgtTX0xFQVZFX01BUBBnYgZwcm90bzM="));
+            "GAggASgFEhEKCWRpcmVjdGlvbhgJIAEoBRIOCgZhcHBySUQYCiABKAUSDwoH",
+            "b3duZXJJRBgLIAEoAyIZCgtMZWF2ZU1hcFJldBIKCgJpZBgBIAEoAyJBCglB",
+            "dHRhY2tSZXESDwoHbWFnaWNpZBgBIAEoBRIQCgh0YXJnZXRpZBgCIAEoAxIR",
+            "CglkaXJlY3Rpb24YAyABKAUiOgoJQXR0YWNrUmV0EgoKAmlkGAEgASgDEhAK",
+            "CHRhcmdldGlkGAIgASgDEg8KB21hZ2ljaWQYAyABKAUiTwoMSFBDaGFuZ2Vk",
+            "UmV0EgoKAmlkGAEgASgDEhIKCnZhbENoYW5nZWQYAyABKAUSDwoHbWFnaWNp",
+            "ZBgEIAEoBRIOCgZ2YWxDdXIYBSABKAUqQQoMQ2xpZW50Q21kRGVmEgsKB0Nf",
+            "QkVHSU4QABILCgdDX0xPR0lOEAESCQoFQ19SVU4QAhIMCghDX0FUVEFDSxAD",
+            "KoMBCgxTZXJ2ZXJDbWREZWYSCwoHU19CRUdJThAAEgsKB1NfTE9HSU4QARIJ",
+            "CgVTX1JVThACEgwKCFNfQVRUQUNLEAMSDAoIU19MT0dPVVQQZBIPCgtTX0VO",
+            "VEVSX01BUBBlEhAKDFNfSFBfQ0hBTkdFRBBmEg8KC1NfTEVBVkVfTUFQEGdi",
+            "BnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Pbmsg.ClientCmdDef), typeof(global::Pbmsg.ServerCmdDef), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -51,7 +52,7 @@ namespace Pbmsg {
             new pbr::GeneratedClrTypeInfo(typeof(global::Pbmsg.LogoutRet), global::Pbmsg.LogoutRet.Parser, new[]{ "Id", "Name" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Pbmsg.RunReq), global::Pbmsg.RunReq.Parser, new[]{ "X", "Y", "Direction" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Pbmsg.RunRet), global::Pbmsg.RunRet.Parser, new[]{ "Id", "X", "Y" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Pbmsg.EnterMapRet), global::Pbmsg.EnterMapRet.Parser, new[]{ "Id", "Name", "Level", "X", "Y", "Mapid", "ObjType", "Hp", "Direction", "ApprID" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Pbmsg.EnterMapRet), global::Pbmsg.EnterMapRet.Parser, new[]{ "Id", "Name", "Level", "X", "Y", "Mapid", "ObjType", "Hp", "Direction", "ApprID", "OwnerID" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Pbmsg.LeaveMapRet), global::Pbmsg.LeaveMapRet.Parser, new[]{ "Id" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Pbmsg.AttackReq), global::Pbmsg.AttackReq.Parser, new[]{ "Magicid", "Targetid", "Direction" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Pbmsg.AttackRet), global::Pbmsg.AttackRet.Parser, new[]{ "Id", "Targetid", "Magicid" }, null, null, null, null),
@@ -962,6 +963,7 @@ namespace Pbmsg {
       hp_ = other.hp_;
       direction_ = other.direction_;
       apprID_ = other.apprID_;
+      ownerID_ = other.ownerID_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1083,6 +1085,20 @@ namespace Pbmsg {
       }
     }
 
+    /// <summary>Field number for the "ownerID" field.</summary>
+    public const int OwnerIDFieldNumber = 11;
+    private long ownerID_;
+    /// <summary>
+    ///元神的话这个字段表示主体ID
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public long OwnerID {
+      get { return ownerID_; }
+      set {
+        ownerID_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as EnterMapRet);
@@ -1106,6 +1122,7 @@ namespace Pbmsg {
       if (Hp != other.Hp) return false;
       if (Direction != other.Direction) return false;
       if (ApprID != other.ApprID) return false;
+      if (OwnerID != other.OwnerID) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1122,6 +1139,7 @@ namespace Pbmsg {
       if (Hp != 0) hash ^= Hp.GetHashCode();
       if (Direction != 0) hash ^= Direction.GetHashCode();
       if (ApprID != 0) hash ^= ApprID.GetHashCode();
+      if (OwnerID != 0L) hash ^= OwnerID.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1175,6 +1193,10 @@ namespace Pbmsg {
         output.WriteRawTag(80);
         output.WriteInt32(ApprID);
       }
+      if (OwnerID != 0L) {
+        output.WriteRawTag(88);
+        output.WriteInt64(OwnerID);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1212,6 +1234,9 @@ namespace Pbmsg {
       }
       if (ApprID != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(ApprID);
+      }
+      if (OwnerID != 0L) {
+        size += 1 + pb::CodedOutputStream.ComputeInt64Size(OwnerID);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1253,6 +1278,9 @@ namespace Pbmsg {
       }
       if (other.ApprID != 0) {
         ApprID = other.ApprID;
+      }
+      if (other.OwnerID != 0L) {
+        OwnerID = other.OwnerID;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1303,6 +1331,10 @@ namespace Pbmsg {
           }
           case 80: {
             ApprID = input.ReadInt32();
+            break;
+          }
+          case 88: {
+            OwnerID = input.ReadInt64();
             break;
           }
         }

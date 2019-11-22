@@ -69,7 +69,11 @@ namespace ff
     {
         public Player(): base()
         {
+            playerYS = null;
+            idZhuTi = 0;
         }
+        public Player playerYS;//!元神
+        public Int64 idZhuTi;//!元神对应的主体ID
     };
     public class Monster : Role
     {
@@ -182,8 +186,15 @@ namespace ff
         }
         public void SendPlayerMsg<T>(Player player, Pbmsg.ServerCmdDef cmd, T pbMsgData) where T : pb::IMessage, new()
         {
-            GateRouteMsgToSessionReq msgToSession = new GateRouteMsgToSessionReq() { Cmd = (Int16)cmd, Body = Util.Pb2Byte(pbMsgData) };
-            msgToSession.SessionId.Add(player.nSessionID);
+            Int64 nSessionID = player.nSessionID;
+            Int16 nCmd = (Int16)cmd;
+            if (player.idZhuTi != 0)
+            {
+                nSessionID = player.idZhuTi;
+                //nCmd |= 0x4000;
+            }
+            GateRouteMsgToSessionReq msgToSession = new GateRouteMsgToSessionReq() { Cmd = nCmd, Body = Util.Pb2Byte(pbMsgData) };
+            msgToSession.SessionId.Add(nSessionID);
             m_ffrpc.Call(m_strDefaultGate, msgToSession);
         }
         public void BroadcastPlayerMsg<T>(Pbmsg.ServerCmdDef cmd, T pbMsgData) where T : pb::IMessage, new()
@@ -215,13 +226,27 @@ namespace ff
             }
             return null;
         }
+        public Player GetPlayerZhuTiByYuanShen(Player playerYS)
+        {
+            Role role = GetRoleBySessionID(playerYS.idZhuTi);
+            if (role is Player)
+            {
+                return role as Player;
+            }
+            return null;
+        }
 
         public EmptyMsgRet OnRouteLogicMsgReq(RouteLogicMsgReq reqMsg)
         {
             int cmd = reqMsg.Cmd;
             Int64 nSessionID = reqMsg.SessionId;
             //FFLog.Trace(string.Format("worker RouteLogicMsgReq! {0} {1}", cmd, nSessionID));
-
+            bool bIsYuanShenMsg = false;
+            if ((cmd & 0x4000) != 0)
+            {
+                cmd &= ~(0x4000);
+                bIsYuanShenMsg = true;
+            }
             if (m_dictCmd2Func.ContainsKey(cmd) == false)
             {
                 FFLog.Error(string.Format("worker cmd invalid! {0}", cmd));
@@ -255,7 +280,19 @@ namespace ff
                 }
             }
             Player player = GetPlayerBySessionID(nSessionID);
-            m_dictCmd2Func[cmd](player, reqMsg.Body);
+            if (bIsYuanShenMsg)
+            {
+                if (null == player.playerYS)
+                {
+                    FFLog.Error(string.Format("playerYS invalid", cmd));
+                    return RPC_NONE;
+                }
+                m_dictCmd2Func[cmd](player.playerYS, reqMsg.Body);
+            }
+            else
+            {
+                m_dictCmd2Func[cmd](player, reqMsg.Body);
+            }
 
             return RPC_NONE;
         }
@@ -271,12 +308,24 @@ namespace ff
             Player player = GetPlayerBySessionID(nSessionID);
             m_dictRoles.Remove(nSessionID);
 
+
             Pbmsg.LogoutRet retMsg = new Pbmsg.LogoutRet()
             {
                 Id = player.GetID(),
                 Name = player.strName,
             };
             BroadcastPlayerMsg<Pbmsg.LogoutRet>(Pbmsg.ServerCmdDef.SLogout, retMsg);
+
+            if (player.playerYS != null && m_dictRoles.ContainsKey(player.playerYS.nSessionID) != false)
+            {
+                m_dictRoles.Remove(player.playerYS.nSessionID);
+                retMsg = new Pbmsg.LogoutRet()
+                {
+                    Id = player.playerYS.GetID(),
+                    Name = player.playerYS.strName,
+                };
+                BroadcastPlayerMsg<Pbmsg.LogoutRet>(Pbmsg.ServerCmdDef.SLogout, retMsg);
+            }
             return RPC_NONE;
         }
         public Pbmsg.EnterMapRet BuildEnterMsg(Role role)
@@ -292,7 +341,13 @@ namespace ff
                 Direction = role.direction,
                 ObjType = role is Player ? 0 : 1,
                 ApprID = role.apprID,
+                OwnerID = 0,
             };
+            if (role is Player)
+            {
+                Player player = role as Player;
+                enterMapRet.OwnerID = player.idZhuTi;
+            }
             return enterMapRet;
         }
         public void HandleLogin(Player player, Pbmsg.LoginReq reqMsg)
@@ -306,16 +361,23 @@ namespace ff
                 Level = player.nLevel,
             };
             SendPlayerMsg<Pbmsg.LoginRet>(player, Pbmsg.ServerCmdDef.SLogin, retMsg);
-            for (int i = 0; i < 100; ++i)
-            {
-                SendPlayerMsg<Pbmsg.LoginRet>(player, Pbmsg.ServerCmdDef.SLogin, retMsg);
-            }
+            //for (int i = 0; i < 100; ++i)
+            //{
+            //    SendPlayerMsg<Pbmsg.LoginRet>(player, Pbmsg.ServerCmdDef.SLogin, retMsg);
+            //}
 
             {
                 Pbmsg.EnterMapRet enterMapRet = BuildEnterMsg(player);
                 BroadcastPlayerMsg<Pbmsg.EnterMapRet>(Pbmsg.ServerCmdDef.SEnterMap, enterMapRet);
-            }
 
+                player.playerYS = new Player() { nSessionID = player.nSessionID + 100000, strName = player.strName + "的元神", idZhuTi = player.GetID()};
+                player.playerYS.x = player.x - 1;
+                player.playerYS.y = player.y - 1;
+                m_dictRoles[player.playerYS.nSessionID] = player.playerYS;
+
+                enterMapRet = BuildEnterMsg(player.playerYS);
+                BroadcastPlayerMsg<Pbmsg.EnterMapRet>(Pbmsg.ServerCmdDef.SEnterMap, enterMapRet);
+            }
 
             foreach (Role roleOther in m_dictRoles.Values)
             {
