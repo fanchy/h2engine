@@ -70,192 +70,201 @@ namespace ff
                 return false;
             }
             cacheRecvData = MergeArray(cacheRecvData, strNewData);
-            if (dictParams.Count == 0)
-            {
-                string strRecvData = Byte2String(cacheRecvData);
-                if (strRecvData.Length < 3)
-                {
+            return HandleRecvParseMsg();
+        }
+        public bool HandleRecvParseMsg()
+        {
+            do{
+                if (cacheRecvData.Length < 1){
                     return true;
                 }
-                if (strRecvData.Length >= 3 && strRecvData.StartsWith("GET") == false)
+                //FFLog.Trace(string.Format("HandleRecv cacheRecvData!!! {0}", cacheRecvData.Length)); 
+                if (dictParams.Count == 0)
                 {
-                    statusWebSocketConnection = -1;
-                    return false;
-                }
-                if (strRecvData.Contains("\r\n\r\n") == false)//!header data not end
-                {
-                    return true;
-                }
-                if (strRecvData.Contains("Upgrade: websocket") == false)
-                {
-                    statusWebSocketConnection = -1;
-                    return false;
-                }
-                string[] strLines = strRecvData.Split("\r\n");
-                foreach (var line in strLines)
-                {
-                    string[] strParams = line.Split(": ");
-                    if (strParams.Length == 2)
+                    string strRecvData = Byte2String(cacheRecvData);
+                    if (strRecvData.Length < 3)
                     {
-                        dictParams[strParams[0]] = strParams[1];
+                        return true;
                     }
-                    else if (strParams.Length == 1 && strParams[0].Contains("GET"))
-                    {
-                        dictParams["PATH"] = strParams[0];
-                    }
-                }
-                if (true == dictParams.ContainsKey("Sec-WebSocket-Key"))
-                {
-                    string Sec_WebSocket_Key = dictParams["Sec-WebSocket-Key"];
-                    string strGUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-                    byte[] dataToHash = System.Text.Encoding.UTF8.GetBytes(Sec_WebSocket_Key + strGUID);
-                    byte[] dataHashed = SHA1.Create().ComputeHash(dataToHash);
-                    string strHashBase64 = Convert.ToBase64String(dataHashed);
-
-                    string strSendData = string.Format("HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: {0}\r\n\r\n", strHashBase64);
-                    AddSendPkg(String2Byte(strSendData));
-                    strRecvData = "";
-                    cacheRecvData = new byte[0];
-                    statusWebSocketConnection = 1;
-
-                    return true;
-                }
-                else if (true == dictParams.ContainsKey("Sec-WebSocket-Key1"))
-                {
-                    string handshake = "HTTP/1.1 101 Web Socket Protocol Handshake\r\nUpgrade: WebSocket\r\nConnection: Upgrade\r\n";
-
-                    string str_origin = dictParams["Origin"];
-                    if (str_origin.Length == 0)
-                    {
-                        str_origin = "null";
-                    }
-                    handshake += "Sec-WebSocket-Origin: " + str_origin + "\r\n";
-
-                    string str_host = dictParams["Host"];
-                    if (str_host.Length > 0)
-                    {
-                        string[] tmp_path_arg = strLines[0].Split(" ");
-                        string tmp_path = "/";
-                        if (tmp_path_arg.Length >= 2)
-                        {
-                            tmp_path = tmp_path_arg[1];
-                        }
-
-                        handshake += "Sec-WebSocket-Location: ws://" + dictParams["Host"] + tmp_path + "\r\n\r\n";
-                    }
-
-                    UInt32 key1 = ComputeWebsokcetKeyVal(dictParams["Sec-WebSocket-Key1"]);
-                    UInt32 key2 = ComputeWebsokcetKeyVal(dictParams["Sec-WebSocket-Key2"]);
-
-                    string keyExt = strLines[strLines.Length - 1];
-                    if (keyExt.Length < 8)
+                    if (strRecvData.Length >= 3 && strRecvData.StartsWith("GET") == false)
                     {
                         statusWebSocketConnection = -1;
                         return false;
                     }
-
-                    byte[] tmpBuff = new byte[16];
-                    byte[] key1Bytes = BitConverter.GetBytes(key1);
-                    byte[] key2Bytes = BitConverter.GetBytes(key2);
-                    byte[] keyExtBytes = String2Byte(keyExt);
-                    Array.Copy(key1Bytes, 0, tmpBuff, 0, key1Bytes.Length);
-                    Array.Copy(key2Bytes, 0, tmpBuff, key1Bytes.Length, key2Bytes.Length);
-                    Array.Copy(keyExtBytes, 0, tmpBuff, key1Bytes.Length + key2Bytes.Length, keyExtBytes.Length);
-                    handshake += ComputeMd5(tmpBuff);
-                    AddSendPkg(String2Byte(handshake));
-                }
-                else
-                {
-                    statusWebSocketConnection = -1;
-                    return false;
-                }
-            }
-            int nFIN = ((cacheRecvData[0] & 0x80) == 0x80)? 1: 0;
-            int nOpcode = cacheRecvData[0] & 0x0F;
-            //int nMask = ((cacheRecvData[1] & 0x80) == 0x80) ? 1 : 0;
-            int nPayload_length = cacheRecvData[1] & 0x7F;
-            int nPlayLoadLenByteNum = 1;
-            int nMaskingKeyByteNum = 4;
-            if (nPayload_length == 126)
-            {
-                nPlayLoadLenByteNum = 3;
-            }
-            else if (nPayload_length == 127)
-            {
-                nPlayLoadLenByteNum = 9;
-            }
-            if (cacheRecvData.Length < (1 + nPlayLoadLenByteNum + nMaskingKeyByteNum))
-            {
-                return true;
-            }
-            if (nPayload_length == 126)
-            {
-                byte[] nPayload_length_Bytes = new byte[2];
-                Array.Copy(cacheRecvData, 2, nPayload_length_Bytes, 0, nPayload_length_Bytes.Length);
-                nPayload_length = System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt16(nPayload_length_Bytes, 0));
-            }
-            else if (nPayload_length == 127)
-            {
-                byte[] nPayload_length_Bytes = new byte[8];
-                Array.Copy(cacheRecvData, 2, nPayload_length_Bytes, 0, nPayload_length_Bytes.Length);
-                nPayload_length = (int)System.Net.IPAddress.NetworkToHostOrder((long)BitConverter.ToInt64(nPayload_length_Bytes, 0));
-            }
-            if (cacheRecvData.Length < (1 + nPlayLoadLenByteNum + nMaskingKeyByteNum + nPayload_length))
-            {
-                return true;
-            }
-
-            byte[] aMasking_key = new byte[nMaskingKeyByteNum];
-            Array.Copy(cacheRecvData, 1 + nPlayLoadLenByteNum, aMasking_key, 0, nMaskingKeyByteNum);
-            byte[] aPayload_data = new byte[nPayload_length];
-            Array.Copy(cacheRecvData, 1 + nPlayLoadLenByteNum + nMaskingKeyByteNum, aPayload_data, 0, nPayload_length);
-            int nLeftSize = cacheRecvData.Length - (1 + nPlayLoadLenByteNum + nMaskingKeyByteNum + nPayload_length);
-            byte[] leftBytes = new byte[nLeftSize];
-            if (nLeftSize > 0)
-            {
-                Array.Copy(cacheRecvData, 1 + nPlayLoadLenByteNum + nMaskingKeyByteNum + nPayload_length, leftBytes, 0, nLeftSize);
-            }
-            cacheRecvData = leftBytes;
-            for (int i = 0; i < nPayload_length; i++)
-            {
-                aPayload_data[i] = (byte)(aPayload_data[i] ^ aMasking_key[i % 4]);
-            }
-            
-            if (8 == nOpcode)
-            {
-                AddSendPkg(BuildPkg(new byte[0], nOpcode));// close
-                bIsClose = true;
-            }
-            else if (2 == nOpcode || 1 == nOpcode || 0 == nOpcode || 9 == nOpcode)
-            {
-                if (9 == nOpcode)//!ping
-                {
-                    AddSendPkg(BuildPkg(new byte[0], 0xA));// pong
-                }
-
-                if (nFIN == 1)
-                {
-                    if (dataFragmentation.Length == 0)
+                    if (strRecvData.Contains("\r\n\r\n") == false)//!header data not end
                     {
-                        AddRecvPkg(aPayload_data);
+                        return true;
+                    }
+                    if (strRecvData.Contains("Upgrade: websocket") == false)
+                    {
+                        statusWebSocketConnection = -1;
+                        return false;
+                    }
+                    string[] strLines = strRecvData.Split("\r\n");
+                    foreach (var line in strLines)
+                    {
+                        string[] strParams = line.Split(": ");
+                        if (strParams.Length == 2)
+                        {
+                            dictParams[strParams[0]] = strParams[1];
+                        }
+                        else if (strParams.Length == 1 && strParams[0].Contains("GET"))
+                        {
+                            dictParams["PATH"] = strParams[0];
+                        }
+                    }
+                    if (true == dictParams.ContainsKey("Sec-WebSocket-Key"))
+                    {
+                        string Sec_WebSocket_Key = dictParams["Sec-WebSocket-Key"];
+                        string strGUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+                        byte[] dataToHash = System.Text.Encoding.UTF8.GetBytes(Sec_WebSocket_Key + strGUID);
+                        byte[] dataHashed = SHA1.Create().ComputeHash(dataToHash);
+                        string strHashBase64 = Convert.ToBase64String(dataHashed);
+
+                        string strSendData = string.Format("HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: {0}\r\n\r\n", strHashBase64);
+                        AddSendPkg(String2Byte(strSendData));
+                        strRecvData = "";
+                        cacheRecvData = new byte[0];
+                        statusWebSocketConnection = 1;
+
+                        return true;
+                    }
+                    else if (true == dictParams.ContainsKey("Sec-WebSocket-Key1"))
+                    {
+                        string handshake = "HTTP/1.1 101 Web Socket Protocol Handshake\r\nUpgrade: WebSocket\r\nConnection: Upgrade\r\n";
+
+                        string str_origin = dictParams["Origin"];
+                        if (str_origin.Length == 0)
+                        {
+                            str_origin = "null";
+                        }
+                        handshake += "Sec-WebSocket-Origin: " + str_origin + "\r\n";
+
+                        string str_host = dictParams["Host"];
+                        if (str_host.Length > 0)
+                        {
+                            string[] tmp_path_arg = strLines[0].Split(" ");
+                            string tmp_path = "/";
+                            if (tmp_path_arg.Length >= 2)
+                            {
+                                tmp_path = tmp_path_arg[1];
+                            }
+
+                            handshake += "Sec-WebSocket-Location: ws://" + dictParams["Host"] + tmp_path + "\r\n\r\n";
+                        }
+
+                        UInt32 key1 = ComputeWebsokcetKeyVal(dictParams["Sec-WebSocket-Key1"]);
+                        UInt32 key2 = ComputeWebsokcetKeyVal(dictParams["Sec-WebSocket-Key2"]);
+
+                        string keyExt = strLines[strLines.Length - 1];
+                        if (keyExt.Length < 8)
+                        {
+                            statusWebSocketConnection = -1;
+                            return false;
+                        }
+
+                        byte[] tmpBuff = new byte[16];
+                        byte[] key1Bytes = BitConverter.GetBytes(key1);
+                        byte[] key2Bytes = BitConverter.GetBytes(key2);
+                        byte[] keyExtBytes = String2Byte(keyExt);
+                        Array.Copy(key1Bytes, 0, tmpBuff, 0, key1Bytes.Length);
+                        Array.Copy(key2Bytes, 0, tmpBuff, key1Bytes.Length, key2Bytes.Length);
+                        Array.Copy(keyExtBytes, 0, tmpBuff, key1Bytes.Length + key2Bytes.Length, keyExtBytes.Length);
+                        handshake += ComputeMd5(tmpBuff);
+                        AddSendPkg(String2Byte(handshake));
+                    }
+                    else
+                    {
+                        statusWebSocketConnection = -1;
+                        return false;
+                    }
+                }
+                int nFIN = ((cacheRecvData[0] & 0x80) == 0x80)? 1: 0;
+                int nOpcode = cacheRecvData[0] & 0x0F;
+                //int nMask = ((cacheRecvData[1] & 0x80) == 0x80) ? 1 : 0;
+                int nPayload_length = cacheRecvData[1] & 0x7F;
+                int nPlayLoadLenByteNum = 1;
+                int nMaskingKeyByteNum = 4;
+                if (nPayload_length == 126)
+                {
+                    nPlayLoadLenByteNum = 3;
+                }
+                else if (nPayload_length == 127)
+                {
+                    nPlayLoadLenByteNum = 9;
+                }
+                if (cacheRecvData.Length < (1 + nPlayLoadLenByteNum + nMaskingKeyByteNum))
+                {
+                    return true;
+                }
+                if (nPayload_length == 126)
+                {
+                    byte[] nPayload_length_Bytes = new byte[2];
+                    Array.Copy(cacheRecvData, 2, nPayload_length_Bytes, 0, nPayload_length_Bytes.Length);
+                    nPayload_length = System.Net.IPAddress.NetworkToHostOrder(BitConverter.ToInt16(nPayload_length_Bytes, 0));
+                }
+                else if (nPayload_length == 127)
+                {
+                    byte[] nPayload_length_Bytes = new byte[8];
+                    Array.Copy(cacheRecvData, 2, nPayload_length_Bytes, 0, nPayload_length_Bytes.Length);
+                    nPayload_length = (int)System.Net.IPAddress.NetworkToHostOrder((long)BitConverter.ToInt64(nPayload_length_Bytes, 0));
+                }
+                if (cacheRecvData.Length < (1 + nPlayLoadLenByteNum + nMaskingKeyByteNum + nPayload_length))
+                {
+                    return true;
+                }
+
+                byte[] aMasking_key = new byte[nMaskingKeyByteNum];
+                Array.Copy(cacheRecvData, 1 + nPlayLoadLenByteNum, aMasking_key, 0, nMaskingKeyByteNum);
+                byte[] aPayload_data = new byte[nPayload_length];
+                Array.Copy(cacheRecvData, 1 + nPlayLoadLenByteNum + nMaskingKeyByteNum, aPayload_data, 0, nPayload_length);
+                int nLeftSize = cacheRecvData.Length - (1 + nPlayLoadLenByteNum + nMaskingKeyByteNum + nPayload_length);
+                byte[] leftBytes = new byte[nLeftSize];
+                if (nLeftSize > 0)
+                {
+                    Array.Copy(cacheRecvData, 1 + nPlayLoadLenByteNum + nMaskingKeyByteNum + nPayload_length, leftBytes, 0, nLeftSize);
+                }
+                cacheRecvData = leftBytes;
+                for (int i = 0; i < nPayload_length; i++)
+                {
+                    aPayload_data[i] = (byte)(aPayload_data[i] ^ aMasking_key[i % 4]);
+                }
+                
+                if (8 == nOpcode)
+                {
+                    AddSendPkg(BuildPkg(new byte[0], nOpcode));// close
+                    bIsClose = true;
+                }
+                else if (2 == nOpcode || 1 == nOpcode || 0 == nOpcode || 9 == nOpcode)
+                {
+                    if (9 == nOpcode)//!ping
+                    {
+                        AddSendPkg(BuildPkg(new byte[0], 0xA));// pong
+                    }
+
+                    if (nFIN == 1)
+                    {
+                        if (dataFragmentation.Length == 0)
+                        {
+                            AddRecvPkg(aPayload_data);
+                        }
+                        else
+                        {
+                            dataFragmentation = MergeArray(dataFragmentation, aPayload_data);
+                            AddRecvPkg(dataFragmentation);
+                            dataFragmentation = new byte[0];
+                        }
                     }
                     else
                     {
                         dataFragmentation = MergeArray(dataFragmentation, aPayload_data);
-                        AddRecvPkg(dataFragmentation);
-                        dataFragmentation = new byte[0];
                     }
                 }
                 else
                 {
-                    dataFragmentation = MergeArray(dataFragmentation, aPayload_data);
+                    FFLog.Trace(string.Format("nOpcode={0},data={1}", nOpcode, aPayload_data.Length));
                 }
-            }
-            else
-            {
-                FFLog.Trace(string.Format("nOpcode={0},data={1}", nOpcode, aPayload_data.Length));
-            }
-
+            } while(cacheRecvData.Length > 0);
             return true;
         }
         public byte[] BuildPkg(byte[] dataBody, int opcode = 0x02)
