@@ -3,8 +3,10 @@ using System.Net.Sockets;
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
-
 using pb = global::Google.Protobuf;
+
+using System.Linq;
+
 namespace ff
 {
     class Util
@@ -69,6 +71,31 @@ namespace ff
             System.DateTime currentTime = DateTime.Now;
             long ret = ((Int64)currentTime.Ticks) / 10000;
             return ret;
+        }
+        public static string InitClassByNames(string[] names)
+        {
+            string nspace = "ff";
+
+            var q = from t in System.Reflection.Assembly.GetExecutingAssembly().GetTypes()
+                where t.IsClass && t.Namespace == nspace
+                select t;
+            q.ToList().ForEach(t => {
+                if (Array.IndexOf(names, t.Name) >= 0)
+                {
+                    object[] paraNone = new object[]{};
+                    System.Reflection.MethodInfo method = t.GetMethod("Instance");
+                    if (method != null){
+                        Console.WriteLine(t.Name + ":" + method);
+                        var ret = method.Invoke(null, paraNone);
+                        System.Reflection.MethodInfo initMethod = t.GetMethod("Init");
+                        if (initMethod != null)
+                        {
+                            initMethod.Invoke(ret, paraNone);
+                        }
+                    }
+                }
+            });
+            return "";
         }
     }
 }

@@ -1,12 +1,20 @@
 using System;
 using System.Runtime.InteropServices;
-
 namespace ff
 {
     public class FFMain
     {
+        public static FFMain Instance(){
+            Console.WriteLine("ffmain.instance......");
+            return new FFMain();
+        }
+        public void Init(){
+            Console.WriteLine("ffmain.init......");
+        }
         public static void Main(string[] args)
         {
+            string[] names = {"FFMain"};
+            Util.InitClassByNames(names);
 #if linux
             //if (args.Length >= 1 && (args[0] == "/daemon" || args[0] == "--daemon"))
             for (int i = 0; i < args.Length; ++i)
