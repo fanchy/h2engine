@@ -8,6 +8,10 @@
     <StartupObject>ff.FFMain</StartupObject>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath></OutputPath>
+  </PropertyGroup>
+
   <ItemGroup>
     <Folder Include="thrift\Properties\" />
   </ItemGroup>

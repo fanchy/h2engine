@@ -12,7 +12,7 @@ namespace ff
         public FFAcceptor m_acceptor;
         public Int64 m_nForAllocID;
         public FFBroker(){
-            m_strListenHost = "tcp://127.0.0.1:43210";
+            m_strListenHost = Util.strBrokerListen;
             m_brokerData = new RegisterToBrokerRet() { NodeId = 0, RegisterFlag = 0, Service2nodeId = new Dictionary<string, long>() };
             m_dictSockets = new Dictionary<Int64/* node id*/, IFFSocket>();
             m_nForAllocID = 0;

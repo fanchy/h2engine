@@ -78,8 +78,9 @@ namespace ff
                     {
                         task();
                     }
-                    catch (System.Exception)
+                    catch (System.Exception ex)
                     {
+                        FFLog.Trace("void RunAllTask exception:" + ex.Message);
                         continue;
                     }
                     finally

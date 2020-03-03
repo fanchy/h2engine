@@ -6,27 +6,6 @@ using pb = global::Google.Protobuf;
 
 namespace ff
 {
-    public struct GamePoint
-    {
-        public GamePoint(int a = 0, int b = 0) { x = a; y = b; }
-        public int x;
-        public int y;
-        public GamePoint clone()
-        {
-            return new GamePoint(x, y);
-        }
-    }
-    enum Direction
-    {
-        UP = 0,
-        UP_RIGHT = 1,
-        RIGHT = 2,
-        RIGHT_DOWN = 3,
-        DOWN = 4,
-        DOWN_LEFT = 5,
-        LEFT = 6,
-        LEFT_UP = 7
-    }
     enum MapCfg
     {
         CenterX = 20,
@@ -71,9 +50,20 @@ namespace ff
         {
             playerYS = null;
             idZhuTi = 0;
+            bIsRobot = false;
+            nCurTarget = 0;
+            nLastRobotAITm = 0;
+            Random rd = new Random();
+            if (rd.Next() % 2 == 0)
+                apprID = 21;
+            else
+                apprID = 18;
         }
         public Player playerYS;//!元神
         public Int64 idZhuTi;//!元神对应的主体ID
+        public bool bIsRobot;
+        public Int64 nCurTarget;//!当前机器人选择的目标
+        public long nLastRobotAITm;
     };
     public class Monster : Role
     {
@@ -94,11 +84,13 @@ namespace ff
         protected string m_strWorkerName;
         protected EmptyMsgRet RPC_NONE;
         protected string m_strDefaultGate;
+        protected int gCount = 0;
         FFRpc m_ffrpc;
         protected Dictionary<Int64, Role> m_dictRoles;
         protected Dictionary<int, CmdHandler> m_dictCmd2Func;
         protected int xOffset = 30;
         protected int yOffset = 40;
+        protected long nLastAITick = 0;
         public FFWorker()
         {
             m_nIDGenerator = 0;
@@ -119,12 +111,22 @@ namespace ff
             for (int i = 0; i < 3; ++i)
             {
                 string strName = string.Format("尸霸{0}", i + 1);
-                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 18 + 20 - (int)MapCfg.CenterX + i * 2, y = 28 + 30 - (int)MapCfg.CenterY - i, apprID = 69 };
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 42 + i * 2, y = 32 - i, apprID = 69 };
             }
-            for (int i = 0; i < num; ++i)
+            for (int i = 0; i < 5; ++i)
             {
-                string strName = string.Format("蓝魔{0}", i + 1);
-                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 12 + 20 - (int)MapCfg.CenterX + i * 2, y = 32 + 30 - (int)MapCfg.CenterY - i, apprID = 102 };
+                string strName = string.Format("尸卫{0}", i + 1);
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 30 + i * 2, y = 30 - i, apprID = 68 };
+            }
+            for (int i = 0; i < 5; ++i)
+            {
+                string strName = string.Format("尸卫{0}", i + 1);
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 25 + i * 2, y = 30 - i, apprID = 68 };
+            }
+            for (int i = 0; i < 5; ++i)
+            {
+                string strName = string.Format("尸卫{0}", i + 1);
+                nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = strName, x = 20 + i * 2, y = 30 - i, apprID = 68 };
             }
             for (int i = 0; i < num; ++i)
             {
@@ -157,6 +159,7 @@ namespace ff
             //nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = "大怪物5", x = 45 + xOffset, y = 45 + yOffset, apprID = 10005};
             //nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = "大怪物6", x = 51 + xOffset, y = 50 + yOffset, apprID = 10006};
             //nGenId++; m_dictRoles[nGenId] = new Monster() { nSessionID = nGenId, strName = "大怪物7", x = 55 + xOffset, y = 55 + yOffset, apprID = 10007 };
+            //InitRobot();
         }
         public bool Open(string strBrokerHost, int nWorkerIndex)
         {
@@ -350,6 +353,36 @@ namespace ff
             }
             return enterMapRet;
         }
+        public void InitRobot()
+        {
+            int centerX = 24;
+            int centerY = 30;
+            int nMaxNum = 30;
+            for (int i = 0; i < nMaxNum; ++i)
+            {
+                if (i % 3 == 0)
+                {
+                    centerX = 24;
+                    centerY = 30;
+                }
+                else if (i % 3 == 0)
+                {
+                    centerX = 29;
+                    centerY = 21;
+                }
+                else
+                {
+                    centerX = 30;
+                    centerY = 21;
+                }
+                Player player = new Player() { nSessionID = i + 200000, strName = string.Format("机器人{0}", i+1), bIsRobot = true};
+                Random rd = new Random();
+                player.x = centerX + rd.Next(1, 10);
+                player.y = centerY + rd.Next(1, 10);
+                m_dictRoles[player.nSessionID] = player;
+            }
+        }
+        
         public void HandleLogin(Player player, Pbmsg.LoginReq reqMsg)
         {
             player.strName = reqMsg.Name;
@@ -370,9 +403,10 @@ namespace ff
                 Pbmsg.EnterMapRet enterMapRet = BuildEnterMsg(player);
                 BroadcastPlayerMsg<Pbmsg.EnterMapRet>(Pbmsg.ServerCmdDef.SEnterMap, enterMapRet);
 
-                player.playerYS = new Player() { nSessionID = player.nSessionID + 100000, strName = player.strName + "的元神", idZhuTi = player.GetID()};
+                player.playerYS = new Player() { nSessionID = player.nSessionID + 100000, strName = player.strName + "的元神", idZhuTi = player.GetID() };
                 player.playerYS.x = player.x - 1;
                 player.playerYS.y = player.y - 1;
+                player.playerYS.apprID = player.apprID;
                 m_dictRoles[player.playerYS.nSessionID] = player.playerYS;
 
                 enterMapRet = BuildEnterMsg(player.playerYS);
@@ -397,6 +431,10 @@ namespace ff
         }
         public void HandleRun(Player player, Pbmsg.RunReq reqMsg)
         {
+            if (Util.GetNowTimeMs() - this.nLastAITick >= 2000)
+            {
+                FFNet.Timerout(1000, this.HandleMonsterAI);
+            }
             //System.Threading.Thread.Sleep(3000);
             player.x = reqMsg.X;
             player.y = reqMsg.Y;
@@ -425,6 +463,7 @@ namespace ff
             BroadcastPlayerMsg<Pbmsg.AttackRet>(Pbmsg.ServerCmdDef.SAttack, retMsg);
             Random rd = new Random();
             int hpChaneged = rd.Next(1, roleTarget.maxhp / 10);
+            //hpChaneged = 1;
 
             if (roleTarget.hp >= hpChaneged)
             {
@@ -461,11 +500,22 @@ namespace ff
         }
         public void HandleMonsterAI()
         {
+            FFNet.Timerout(1000, this.HandleMonsterAI);
+            long now = Util.GetNowTimeMs();
+            if (now - this.nLastAITick < 800)
+            {
+                return;
+            }
+            this.nLastAITick = Util.GetNowTimeMs();
             foreach (Role role in m_dictRoles.Values)
             {
-                if (role.hp == 0)
+                //if (gCount++ % 10 == 0)
+                //{
+                //    FFLog.Trace(string.Format("HandleMonsterAI! {0},hp:{1}", gCount, role.hp));
+                //}
+                if (role.hp <= 0)
                 {
-                    if (Util.GetNowTimeMs() - role.nLastAttackedTime < 5000)
+                    if (Util.GetNowTimeMs() - role.nLastAttackedTime < 5000 && gCount++ % 10 != 0)
                         continue;
                     role.hp = role.maxhp;
                     Pbmsg.EnterMapRet enterMapRet = BuildEnterMsg(role);
@@ -474,6 +524,14 @@ namespace ff
                 }
                 if (!(role is Monster))
                 {
+                    if (role is Player)
+                    {
+                        Player playerTmp = role as Player;
+                        if (playerTmp.bIsRobot)
+                        {
+                            HandleRobotAI(playerTmp);
+                        }
+                    }
                     continue;
                 }
 
@@ -538,7 +596,92 @@ namespace ff
                     BroadcastPlayerMsg<Pbmsg.RunRet>(Pbmsg.ServerCmdDef.SRun, runRet);
                 }
             }
-            FFNet.Timerout(800, this.HandleMonsterAI);
+        }
+        public Role GetTargetRobot(Player player)
+        {
+            if (player.nCurTarget == 0)
+            {
+                return null;
+            }
+            Role roleTarget = GetRoleBySessionID(player.nCurTarget);
+            if (roleTarget == null || roleTarget.hp == 0)// || !(roleTarget is Player))
+            {
+                player.nCurTarget = 0;
+                return null;
+            }
+            Role ret = roleTarget;// as Player;
+            return ret;
+        }
+        public void HandleRobotAI(Player player)
+        {
+            long nowtm = Util.GetNowTimeMs();
+            if (nowtm - player.nLastRobotAITm < 1000)
+            {
+                return;
+            }
+            player.nLastRobotAITm = nowtm;
+            Role targetRole = GetTargetRobot(player);
+            if (targetRole == null)//!没有目标找一个离自己最近的目标
+            {
+                foreach (Role roleOther in m_dictRoles.Values)
+                {
+                    if (roleOther == player || roleOther.hp == 0 || roleOther is Monster)
+                    {
+                        continue;
+                    }
+                    if (targetRole != null && Util.Distance(player.x, player.y, targetRole.x, targetRole.y) <= Util.Distance(player.x, player.y, roleOther.x, roleOther.y))
+                    {
+                        continue;
+                    }
+                    targetRole = roleOther;
+                    player.nCurTarget = targetRole.GetID();
+                }
+            }
+            int nDistance = Util.Distance(player.x, player.y, targetRole.x, targetRole.y);
+            if (nDistance <= 1)
+            {
+                Pbmsg.AttackRet monsterAttackMsg = new Pbmsg.AttackRet()
+                {
+                    Magicid = 2,
+                    Id = player.GetID(),
+                    Targetid = targetRole.GetID(),
+                };
+                BroadcastPlayerMsg<Pbmsg.AttackRet>(Pbmsg.ServerCmdDef.SAttack, monsterAttackMsg);
+
+                int hpChaneged = 200;
+
+                //if (targetRole.hp >= hpChaneged)
+                //{
+                //    targetRole.hp -= hpChaneged;
+                //}
+                //else
+                //{
+                //    targetRole.hp = 0;
+                //    targetRole.nLastAttackedTime = Util.GetNowTimeMs();
+                //}
+                Pbmsg.HPChangedRet retMsg2 = new Pbmsg.HPChangedRet()
+                {
+                    Id = targetRole.GetID(),
+                    Magicid = 2,
+                    ValCur = targetRole.hp,
+                    ValChanged = hpChaneged,
+                };
+                BroadcastPlayerMsg<Pbmsg.HPChangedRet>(Pbmsg.ServerCmdDef.SHpChanged, retMsg2);
+                return;
+            }
+            //!追击
+            int nDir = Util.CalDirection(player.x, player.y, targetRole.x, targetRole.y);
+            GamePoint offsetPos = Util.CalPointByDirLen(nDir, 1);
+            player.x = player.x + offsetPos.x;
+            player.y = player.y + offsetPos.y;
+            Pbmsg.RunRet runRet = new Pbmsg.RunRet()
+            {
+                Id = player.GetID(),
+                X = player.x,
+                Y = player.y,
+            };
+            BroadcastPlayerMsg<Pbmsg.RunRet>(Pbmsg.ServerCmdDef.SRun, runRet);
+            return;
         }
         public int CalDirection(int srcx, int srcy, int destx, int desty)
         {
@@ -614,7 +757,7 @@ namespace ff
         {
             int nowX = fromPos.x;
             int nowY = fromPos.y;
-            GamePoint tmpDestPos = destPos.clone();
+            GamePoint tmpDestPos = destPos.Clone();
             //!先直着走后斜着走的策略代码开始********************************************************************
             if (Math.Abs(destPos.x - nowX) != Math.Abs(destPos.y - nowY))
             {//!还没走到斜45度，那么就选一条常的边走

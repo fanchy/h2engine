@@ -1,20 +1,12 @@
 using System;
 using System.Runtime.InteropServices;
+
 namespace ff
 {
     public class FFMain
     {
-        public static FFMain Instance(){
-            Console.WriteLine("ffmain.instance......");
-            return new FFMain();
-        }
-        public void Init(){
-            Console.WriteLine("ffmain.init......");
-        }
         public static void Main(string[] args)
         {
-            string[] names = {"FFMain"};
-            Util.InitClassByNames(names);
 #if linux
             //if (args.Length >= 1 && (args[0] == "/daemon" || args[0] == "--daemon"))
             for (int i = 0; i < args.Length; ++i)
@@ -61,7 +53,7 @@ namespace ff
             }
 #endif
 
-            string host = "tcp://127.0.0.1:43210";
+            string host = Util.strBrokerListen;
             FFBroker ffbroker = new FFBroker();
             ffbroker.Open(host);
 
@@ -84,7 +76,7 @@ namespace ff
             //    });
             //});
             FFGate ffGate = new FFGate();
-            if (ffGate.Open(host, "tcp://*:44000", 0) == false)
+            if (ffGate.Open(host, Util.strGateListen, 0) == false)
             {
                 FFLog.Trace("ffGate open failed!");
             }

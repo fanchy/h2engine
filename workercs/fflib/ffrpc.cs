@@ -37,7 +37,7 @@ namespace ff
         protected long m_nIDGenerator;
         public FFRpc(string strName) {
             m_strServiceName = strName;
-            m_strBrokerHost = "tcp://127.0.0.1:43210";
+            m_strBrokerHost = Util.strBrokerListen;
             m_brokerData = new RegisterToBrokerRet() { NodeId = 0, RegisterFlag = 0, Service2nodeId = new Dictionary<string, long>() };
             m_dictFuncs = new Dictionary<string/* msg name */, FFRpcFunc>();
             m_dictCallBack = new Dictionary<long, FFRpcFunc>();
