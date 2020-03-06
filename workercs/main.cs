@@ -5,61 +5,15 @@ namespace ff
 {
     public class FFMain
     {
+        static string[] listEnableClassNames = {"RoleMgr", "MonsterMgr", "PlayerHandler"};
         public static void Main(string[] args)
         {
-#if linux
-            //if (args.Length >= 1 && (args[0] == "/daemon" || args[0] == "--daemon"))
-            for (int i = 0; i < args.Length; ++i)
-            {
-                if (args[i] != "/daemon" && args[i] != "--daemon")
-                {
-                    continue;
-                }
-                FFLog.Trace(string.Format("config {0}", args[i]));
-
-                int pid = fork();
-                if (pid != 0) exit(0);
-                setsid();
-                pid = fork();
-                if (pid != 0) exit(0);
-                umask(022);
-
-                int max = open("/dev/null", 0);
-                for (var m = 0; m <= max; m++) { close(m); }
-                
-                //!read write error
-                int fd = open("/dev/null", 0);
-                dup(fd);
-                dup(fd);
-                
-                var executablePath = Environment.GetCommandLineArgs()[0];
-                FFLog.Trace(string.Format("executablePath {0}", executablePath));
-                string[] argsNew = new string[args.Length + 1];//{"mono", executablePath};
-                int assignIndex = 0;
-                argsNew[assignIndex] = "mono";
-                assignIndex += 1;
-                argsNew[assignIndex] = executablePath;
-                assignIndex += 1;
-                for (int j = 0; j < args.Length; ++j)
-                {
-                    if (i == j){
-                        continue;
-                    }
-                    argsNew[assignIndex] = args[j];
-                    assignIndex += 1;
-                }
-                execvp("mono", argsNew);
-                return;
-            }
-#endif
-
             string host = Util.strBrokerListen;
             FFBroker ffbroker = new FFBroker();
             ffbroker.Open(host);
 
             int nWorkerIndex = 0;
-            FFWorker worker = new FFWorker();
-            if (worker.Open(host, nWorkerIndex) == false){
+            if (FFWorker.Instance().Open(host, nWorkerIndex, listEnableClassNames) == false){
                 FFLog.Trace("ffrpc open failed!");
             }
 

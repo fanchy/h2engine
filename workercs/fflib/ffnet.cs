@@ -182,22 +182,26 @@ namespace ff
     struct TimerData
     {
         public FFTask task;
-        public Int64 endms;
+        public Int64  endms;
+        public bool   loop;
+        public int timeoutms;
     };
     class FFNetContext
     {
         private TaskQueue m_taskQueue;
         private List<TimerData> m_taskTimer;
+        private List<TimerData> m_taskTmp;
         private System.Timers.Timer m_timer;
         public FFNetContext()
         {
             m_taskQueue = new TaskQueue();
             m_taskTimer = new List<TimerData>();
+            m_taskTmp = new List<TimerData>();
             m_taskQueue.Run();
             m_timer = new System.Timers.Timer(50);
-            m_timer.Elapsed += new System.Timers.ElapsedEventHandler(this.HandleTimeout);//到达时间的时候执行事件；
-            m_timer.AutoReset = true;//设置是执行一次（false）还是一直执行(true)；
-            m_timer.Enabled = true;//是否执行System.Timers.Timer.Elapsed事件；
+            m_timer.Elapsed += new System.Timers.ElapsedEventHandler(this.HandleTimeout);
+            m_timer.AutoReset = true;
+            m_timer.Enabled = true;
         }
         public void Cleanup()
         {
@@ -216,20 +220,37 @@ namespace ff
             {
                 if (n >= data.endms)
                 {
-                    m_taskQueue.Post(() =>
-                    {
-                        data.task();
-                    });
+                    m_taskTmp.Add(data);
+                    if (data.loop){
+                        data.endms = ((Int64)currentTime.Ticks) / 10000 + data.timeoutms;
+                    }
                     return true;
                 }
                 return false;
             });
+            
+            foreach (var data in m_taskTmp)
+            {
+                GetTaskQueue().Post(()=>{
+                    data.task();
+                });
+                if (data.loop){
+                    m_taskTimer.Add(data);
+                }
+            }
+            m_taskTmp.Clear();
         }
-        public void Timerout(int nms, FFTask task)
+        public void TimeroutLoop(int nms, FFTask task)
+        {
+            Timerout(nms, task, true);
+        }
+        public void Timerout(int nms, FFTask task, bool loop = false)
         {
             System.DateTime currentTime = DateTime.Now;
             TimerData data;
             data.task = task;
+            data.loop = loop;
+            data.timeoutms = nms;
             data.endms = ((Int64)currentTime.Ticks) / 10000 + nms;
             m_taskTimer.Add(data);
         }
@@ -249,6 +270,10 @@ namespace ff
         public static void Timerout(int nms, FFTask task)
         {
             GetContext().Timerout(nms, task);
+        }
+        public static void TimeroutLoop(int nms, FFTask task)
+        {
+            GetContext().TimeroutLoop(nms, task);
         }
 
         public static bool Cleanup()

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace ff
 {
     public delegate void FFTask();
-    class TaskQueue
+    public class TaskQueue
     {
         private Mutex           m_mutex;
         private AutoResetEvent  m_event;

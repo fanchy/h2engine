@@ -25,7 +25,7 @@ namespace ff
     public delegate void FFRpcFunc(BrokerRouteMsgReq reqMsg);
     public delegate RET_TYPE TUserFunc<MSG_TYPE, RET_TYPE>(MSG_TYPE t);//泛型委托
     public delegate void TCallBack<RET_TYPE>(RET_TYPE t);//泛型委托
-    class FFRpc
+    public class FFRpc
     {
         protected IFFSocket m_socketBroker;
         protected string m_strServiceName;

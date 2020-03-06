@@ -12,6 +12,10 @@ namespace ff
     class Util
     {
         public static byte[] bytesPBBuffer = new byte[4096];
+        public static double tan30  = Math.Tan(Math.PI / 6);
+        public static double tan60  = Math.Tan(Math.PI / 3);
+        public static string strBrokerListen = "tcp://127.0.0.1:43210";
+        public static string strGateListen = "tcp://*:44000";
         public static byte[] MergeArray(byte[] array1, byte[] array2)
         {
             byte[] ret = new byte[array1.Length + array2.Length];
@@ -79,22 +83,28 @@ namespace ff
             var q = from t in System.Reflection.Assembly.GetExecutingAssembly().GetTypes()
                 where t.IsClass && t.Namespace == nspace
                 select t;
-            q.ToList().ForEach(t => {
+            foreach(var t in q.ToList())
+            {
                 if (Array.IndexOf(names, t.Name) >= 0)
                 {
                     object[] paraNone = new object[]{};
                     System.Reflection.MethodInfo method = t.GetMethod("Instance");
                     if (method != null){
-                        Console.WriteLine(t.Name + ":" + method);
+                        //Console.WriteLine(t.Name + ":" + method);
                         var ret = method.Invoke(null, paraNone);
                         System.Reflection.MethodInfo initMethod = t.GetMethod("Init");
                         if (initMethod != null)
                         {
-                            initMethod.Invoke(ret, paraNone);
+                            object retB = initMethod.Invoke(ret, paraNone);
+                            if (retB != null && retB is bool)
+                            {
+                                bool b = (bool)retB;
+                                FFLog.Trace(string.Format("{0} init {1}", t.Name, b?"ok":"failed"));
+                            }
                         }
                     }
                 }
-            });
+            }
             return "";
         }
 		public static int CalDirection(int srcx, int srcy, int destx, int desty)
