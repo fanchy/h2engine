@@ -27,13 +27,8 @@ namespace ff
         protected string m_strWorkerName;
         protected EmptyMsgRet RPC_NONE;
         protected string m_strDefaultGate;
-        protected int gCount = 0;
         protected FFRpc m_ffrpc;
-        protected Dictionary<Int64, Role> m_dictRoles;
         protected Dictionary<int, CmdHandler> m_dictCmd2Func;
-        protected int xOffset = 30;
-        protected int yOffset = 40;
-        protected long nLastAITick = 0;
         protected SessionID2Object funcSessionID2Object;
         public FFWorker()
         {

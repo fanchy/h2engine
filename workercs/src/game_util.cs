@@ -7,9 +7,9 @@ using pb = global::Google.Protobuf;
 
 namespace ff
 {
-    public struct GamePoint
+    public class GamePoint
     {
-        public GamePoint(int a = 0, int b = 0) { x = a; y = b; }
+        public GamePoint(int a = 0, int b = 0) { this.x = a; this.y = b; }
         public int x;
         public int y;
         public GamePoint Clone()
@@ -139,5 +139,6 @@ namespace ff
             destPoint.y += nowY;
             return destPoint;
         }
+        
     }
 }

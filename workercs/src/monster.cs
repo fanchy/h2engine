@@ -279,8 +279,8 @@ namespace ff
                 return;
             }
             //!追击
-            int nDir = Util.CalDirection(player.x, player.y, targetRole.x, targetRole.y);
-            GamePoint offsetPos = Util.CalPointByDirLen(nDir, 1);
+            int nDir = GameUtil.CalDirection(player.x, player.y, targetRole.x, targetRole.y);
+            GamePoint offsetPos = GameUtil.CalPointByDirLen(nDir, 1);
             player.x = player.x + offsetPos.x;
             player.y = player.y + offsetPos.y;
             Pbmsg.RunRet runRet = new Pbmsg.RunRet()
