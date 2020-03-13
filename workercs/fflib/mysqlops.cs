@@ -14,7 +14,7 @@ namespace ff
         {
             m_nLastAffectRowNum = 0;
         }
-        public bool Connect(string args_)
+        public bool Connect(string args)
         {
             if (m_mysql != null){
                 m_mysql.Close();
@@ -23,7 +23,32 @@ namespace ff
             bool ret = true;
             try
             {
-                m_mysql = new MySqlConnection(args_);//("Database=guild;Data Source=109.244.2.71;port=5908;User Id=preader;Password=kFGZ6_57RCsrGJCU;CharSet=Latin1;");
+                string[] strList = args.Split("/");// mysql://127.0.0.1:3306/user/passwd/db
+                if (strList.Length < 5)
+                {
+                    return false;
+                }
+                string[] host_vt = strList[2].Split(":");
+                string host = host_vt[0];
+                string port = "3306";
+                if (host_vt.Length >= 2)
+                {
+                    port = host_vt[1];
+                }
+                string user   = strList[3];
+                string passwd = strList[4];
+                string db = "";
+                if (strList.Length >= 6)
+                {
+                    db = strList[5];
+                }
+                string charset = "utf8";
+                if (strList.Length >= 7)
+                {
+                    charset = strList[6];
+                }
+                string connectionString = string.Format("Database={0};Data Source={1};port={2};User Id={3};Password={4};CharSet={5};", db, host, port, user, passwd, charset);
+                m_mysql = new MySqlConnection(connectionString);
                 m_mysql.Open();
              }
             catch (System.Exception ex)
@@ -110,8 +135,9 @@ namespace ff
 try
 {
     var Conn = new MysqlOps();
-    Conn.Connect("Database=guild;Data Source=109.244.2.71;port=5908;User Id=preader;Password=kFGZ6_57RCsrGJCU;CharSet=Latin1;");
-    Conn.ExeSql("select * from pyg50801 limit 2", (List<string[]> data, string[] colnames)=>{
+    
+    Conn.Connect("mysql://127.0.0.1:3306/user/password/dbname/charset");
+    Conn.ExeSql("select * from test limit 2", (List<string[]> data, string[] colnames)=>{
         Console.WriteLine(colnames.ToString() + "-------" + data[1].ToString());
     });
     
