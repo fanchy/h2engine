@@ -90,5 +90,28 @@ namespace ff
                 taskToRun.Clear();
             }
         }
+        public Thread GetThread(){
+            return m_thread;
+        }
+        public bool IsInSameThread()
+        {
+            if (Thread.CurrentThread.ManagedThreadId == m_thread.ManagedThreadId)
+            {
+                return true;
+            }
+            return false;
+        }
+        public void PostOrRunIfInSameThread(FFTask task)
+        {
+            if (task == null)
+                return;
+            if (IsInSameThread())
+            {
+                task();
+            }
+            else{
+                Post(task);
+            }
+        }
     }
 }

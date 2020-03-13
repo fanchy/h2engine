@@ -18,8 +18,9 @@ namespace ff
         private FileStream m_fs;
         private StreamWriter m_sw;
         private int m_nLogLevel;
+        public string m_strCurFileName;
         public static FFLog gInstance = null;
-        public static FFLog GetInstance()
+        public static FFLog Instance()
         {
             if (gInstance == null)
             {
@@ -28,12 +29,10 @@ namespace ff
             return gInstance;
         }
         public FFLog(){
-            m_fs = new FileStream("./test.log", FileMode.Append);
-            m_sw = new StreamWriter(m_fs);
-
             m_taskQueue = new TaskQueue();
             m_taskQueue.Run();
             m_nLogLevel = (int)FFLogLevel.DEBUG;
+            m_strCurFileName = "";
         }
         ~FFLog()
         {
@@ -50,83 +49,100 @@ namespace ff
                 m_fs.Close();
             }
         }
-        public void SetPath(string strPath)
-        {
-            m_fs.Close();
-            m_sw.Close();
-            m_fs = new FileStream(strPath, FileMode.Append);
-            m_sw = new StreamWriter(m_fs);
-        }
         public void LogToFile(FFLogLevel nLogLevel, string data)
         {
-            if (m_nLogLevel < (int)nLogLevel)
+            try
             {
-                return;
-            }
-            ConsoleColor color = ConsoleColor.Gray;
-            string logdata = "";
-            switch(nLogLevel)
+                string fileName = string.Format("./log/{0:yyyy-MM-dd}.txt", System.DateTime.Now);
+                if (m_fs == null || fileName != m_strCurFileName)
+                {
+                    if (!System.IO.Directory.Exists("./log")){
+                        System.IO.Directory.CreateDirectory("./log");
+                    }
+                    m_strCurFileName = fileName;
+                    if (m_fs != null){
+                        m_fs.Close();
+                    }
+                    if (m_sw != null){
+                        m_sw.Close();
+                    }
+                    m_fs = new FileStream(m_strCurFileName, FileMode.Append);
+                    m_sw = new StreamWriter(m_fs);
+                }
+                
+                if (m_nLogLevel < (int)nLogLevel)
+                {
+                    return;
+                }
+                ConsoleColor color = ConsoleColor.Gray;
+                string logdata = "";
+                switch(nLogLevel)
+                {
+                    case FFLogLevel.DEBUG:
+                        {
+                            logdata = string.Format("[{0:yyyy-MM-dd HH:mm:ss}] DEBUG {1}", System.DateTime.Now, data);
+                        }break;
+                    case FFLogLevel.TRACE:
+                        {
+                            logdata = string.Format("[{0:yyyy-MM-dd HH:mm:ss}] TRACE {1}", System.DateTime.Now, data);
+                        }break;
+                    case FFLogLevel.INFO:
+                        {
+                            color = ConsoleColor.Green;
+                            logdata = string.Format("[{0:yyyy-MM-dd HH:mm:ss}] INFO  {1}", System.DateTime.Now, data);
+                        }
+                        break;
+                    case FFLogLevel.WARNING:
+                        {
+                            color = ConsoleColor.Yellow;
+                            logdata = string.Format("[{0:yyyy-MM-dd HH:mm:ss}] WARN  {1}", System.DateTime.Now, data);
+                        }
+                        break;
+                    case FFLogLevel.ERROR:
+                        {
+                            color = ConsoleColor.Red;
+                            logdata = string.Format("[{0:yyyy-MM-dd HH:mm:ss}] ERROR {1}", System.DateTime.Now, data);
+                        }
+                        break;
+                    default:
+                        logdata = string.Format("[{0:yyyy-MM-dd HH:mm:ss}] ERROR {1}", System.DateTime.Now, data);
+                        break;
+                }
+                
+                m_taskQueue.Post(() =>{
+                    m_sw.WriteLine(logdata);
+                    m_sw.Flush();
+                    Console.ForegroundColor = color;
+                    Console.WriteLine(logdata);
+                });
+                }
+            catch (System.Exception ex)
             {
-                case FFLogLevel.DEBUG:
-                    {
-                        logdata = string.Format("[{0:MM-dd HH:mm:ss}] DEBUG   {1}", System.DateTime.Now, data);
-                    }break;
-                case FFLogLevel.TRACE:
-                    {
-                        logdata = string.Format("[{0:MM-dd HH:mm:ss}] TRACE   {1}", System.DateTime.Now, data);
-                    }break;
-                case FFLogLevel.INFO:
-                    {
-                        color = ConsoleColor.Green;
-                        logdata = string.Format("[{0:MM-dd HH:mm:ss}] INFO    {1}", System.DateTime.Now, data);
-                    }
-                    break;
-                case FFLogLevel.WARNING:
-                    {
-                        color = ConsoleColor.Yellow;
-                        logdata = string.Format("[{0:MM-dd HH:mm:ss}] WARNING {1}", System.DateTime.Now, data);
-                    }
-                    break;
-                case FFLogLevel.ERROR:
-                    {
-                        color = ConsoleColor.Red;
-                        logdata = string.Format("[{0:MM-dd HH:mm:ss}] ERROR   {1}", System.DateTime.Now, data);
-                    }
-                    break;
-                default:
-                    logdata = string.Format("[{0:MM-dd HH:mm:ss}] ERROR   {1}", System.DateTime.Now, data);
-                    break;
+                Console.WriteLine("Log.LogToFile Exception:" + ex.Message);
             }
-            
-            m_taskQueue.Post(() =>{
-                m_sw.WriteLine(logdata);
-                m_sw.Flush();
-                Console.ForegroundColor = color;
-                Console.WriteLine(logdata);
-            });
         }
         public static void Debug(string data)
         {
-            FFLog.GetInstance().LogToFile(FFLogLevel.DEBUG, data);
+            FFLog.Instance().LogToFile(FFLogLevel.DEBUG, data);
         }
         public static void Trace(string data) {
-            FFLog.GetInstance().LogToFile(FFLogLevel.TRACE, data);
+            FFLog.Instance().LogToFile(FFLogLevel.TRACE, data);
         }
         public static void Info(string data)
         {
-            FFLog.GetInstance().LogToFile(FFLogLevel.INFO, data);
+            FFLog.Instance().LogToFile(FFLogLevel.INFO, data);
         }
         public static void Warning(string data)
         {
-            FFLog.GetInstance().LogToFile(FFLogLevel.WARNING, data);
+            FFLog.Instance().LogToFile(FFLogLevel.WARNING, data);
         }
         public static void Error(string data)
         {
-            FFLog.GetInstance().LogToFile(FFLogLevel.ERROR, data);
+            FFLog.Instance().LogToFile(FFLogLevel.ERROR, data);
         }
         public static void Cleanup()
         {
-            FFLog.GetInstance().DoCleanup();
+            FFLog.Instance().DoCleanup();
         }
     }
 }

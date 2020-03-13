@@ -185,6 +185,7 @@ namespace ff
         public Int64  endms;
         public bool   loop;
         public int timeoutms;
+        public string timerName;
     };
     class FFNetContext
     {
@@ -232,7 +233,20 @@ namespace ff
             foreach (var data in m_taskTmp)
             {
                 GetTaskQueue().Post(()=>{
-                    data.task();
+                    try
+                    {
+                        Int64 nBeginUs = DateTime.Now.Ticks / 10;
+                        data.task();
+                        if (data.timerName != null && data.timerName != "")
+                        {
+                            PerfMonitor.Instance().AddPerf("timer="+data.timerName, DateTime.Now.Ticks / 10 - nBeginUs);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        FFLog.Error("timer exception:" + ex.Message);
+                        return;
+                    }
                 });
                 if (data.loop){
                     m_taskTimer.Add(data);
@@ -240,17 +254,18 @@ namespace ff
             }
             m_taskTmp.Clear();
         }
-        public void TimeroutLoop(int nms, FFTask task)
+        public void TimeroutLoop(int nms, FFTask task, string timerName)
         {
-            Timerout(nms, task, true);
+            Timerout(nms, task, timerName, true);
         }
-        public void Timerout(int nms, FFTask task, bool loop = false)
+        public void Timerout(int nms, FFTask task, string timerName = "", bool loop = false)
         {
             System.DateTime currentTime = DateTime.Now;
             TimerData data;
             data.task = task;
             data.loop = loop;
             data.timeoutms = nms;
+            data.timerName = timerName;
             data.endms = ((Int64)currentTime.Ticks) / 10000 + nms;
             m_taskTimer.Add(data);
         }
@@ -267,13 +282,13 @@ namespace ff
             return gInstanceContext;
         }
         public static TaskQueue GetTaskQueue() { return GetContext().GetTaskQueue();  }
-        public static void Timerout(int nms, FFTask task)
+        public static void Timerout(int nms, FFTask task, string timerName)
         {
-            GetContext().Timerout(nms, task);
+            GetContext().Timerout(nms, task, timerName);
         }
-        public static void TimeroutLoop(int nms, FFTask task)
+        public static void TimeroutLoop(int nms, FFTask task, string timerName)
         {
-            GetContext().TimeroutLoop(nms, task);
+            GetContext().TimeroutLoop(nms, task, timerName);
         }
 
         public static bool Cleanup()

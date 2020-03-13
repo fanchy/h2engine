@@ -78,7 +78,7 @@ namespace ff
             }
 
 
-            FFNet.TimeroutLoop(1000, this.HandleMonsterAI);
+            FFNet.TimeroutLoop(1000, this.HandleMonsterAI, "HandleMonsterAI");
             return true;
         }
         public void InitRobot()

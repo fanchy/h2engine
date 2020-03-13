@@ -6,6 +6,13 @@ namespace ff
 {
     class FFBroker
     {
+        private static FFBroker gInstance = null;
+        public static FFBroker Instance() {
+            if (gInstance == null){
+                gInstance = new FFBroker();
+            }
+            return gInstance;
+        }
         public string   m_strListenHost;
         public RegisterToBrokerRet m_brokerData;
         public Dictionary<Int64/* node id*/, IFFSocket>     m_dictSockets;//!各个节点对应的连接信息
@@ -17,7 +24,7 @@ namespace ff
             m_dictSockets = new Dictionary<Int64/* node id*/, IFFSocket>();
             m_nForAllocID = 0;
         }
-        public bool Open(string strBrokerCfg) {
+        public bool Init(string strBrokerCfg) {
             if (strBrokerCfg.Length > 0)
             {
                 m_strListenHost = strBrokerCfg;
@@ -34,7 +41,9 @@ namespace ff
             }
             return true;
         }
-        public bool Close(){
+        public bool Cleanup(){
+            if (m_acceptor != null)
+                m_acceptor.Close();
             return true;
         }
         public void HandleMsg(IFFSocket ffsocket, UInt16 cmd, byte[] strMsg) {

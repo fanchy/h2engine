@@ -83,10 +83,13 @@ namespace ff
             var q = from t in System.Reflection.Assembly.GetExecutingAssembly().GetTypes()
                 where t.IsClass && t.Namespace == nspace
                 select t;
-            foreach(var t in q.ToList())
+            foreach(string name in names)
             {
-                if (Array.IndexOf(names, t.Name) >= 0)
+                foreach(var t in q.ToList())
                 {
+                    if (t.Name != name)
+                        continue;
+                    
                     object[] paraNone = new object[]{};
                     System.Reflection.MethodInfo method = t.GetMethod("Instance");
                     if (method != null){
@@ -100,9 +103,48 @@ namespace ff
                             {
                                 bool b = (bool)retB;
                                 FFLog.Trace(string.Format("{0} init {1}", t.Name, b?"ok":"failed"));
+                                if (!b)
+                                    return t.Name;
                             }
                         }
                     }
+                    break;
+                }
+            }
+            return "";
+        }
+        public static string CleanupClassByNames(string[] names)
+        {
+            string nspace = "ff";
+
+            var q = from t in System.Reflection.Assembly.GetExecutingAssembly().GetTypes()
+                where t.IsClass && t.Namespace == nspace
+                select t;
+            for (int i = names.Count() - 1; i >= 0; i --)
+            {
+                string name = names[i];
+                foreach(var t in q.ToList())
+                {
+                    if (t.Name != name)
+                        continue;
+                    
+                    object[] paraNone = new object[]{};
+                    System.Reflection.MethodInfo method = t.GetMethod("Instance");
+                    if (method != null){
+                        //Console.WriteLine(t.Name + ":" + method);
+                        var ret = method.Invoke(null, paraNone);
+                        System.Reflection.MethodInfo initMethod = t.GetMethod("Cleanup");
+                        if (initMethod != null)
+                        {
+                            object retB = initMethod.Invoke(ret, paraNone);
+                            if (retB != null && retB is bool)
+                            {
+                                bool b = (bool)retB;
+                                FFLog.Trace(string.Format("{0} Cleanup {1}", t.Name, b?"ok":"failed"));
+                            }
+                        }
+                    }
+                    break;
                 }
             }
             return "";

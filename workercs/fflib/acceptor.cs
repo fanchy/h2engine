@@ -28,13 +28,17 @@ namespace ff
             }
             catch (Exception ex)
             {
-                FFLog.Trace("scoket: listen Error " + ex.Message);
+                FFLog.Error("scoket: listen Error " + ex.Message);
                 return false;
             }
             return true;
         }
         public void HandleAccepted(IAsyncResult ar)
         {
+            if (!bRunning)
+            {
+                return;
+            }
             try
             {
                 Socket socket = (Socket)ar.AsyncState;
@@ -45,12 +49,12 @@ namespace ff
                     var client = socket.EndAccept(ar);
                     IFFSocket ffsocket = new FFScoketAsync(m_oSocketCtrl.ForkSelf(), client);
                     ffsocket.AsyncRecv();
-                    FFLog.Trace(string.Format("scoket: handleAccepted ip:{0}", ffsocket.GetIP()));
+                    FFLog.Info(string.Format("scoket: handleAccepted ip:{0}", ffsocket.GetIP()));
                 }
             }
             catch (Exception ex)
             {
-                FFLog.Trace("scoket: handleAccepted Error " + ex.Message);
+                FFLog.Error("scoket: handleAccepted Error " + ex.Message);
             }
 
             if (bRunning)

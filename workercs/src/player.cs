@@ -57,10 +57,10 @@ namespace ff
         }
         public bool Init()
         {
-            FFWorker.Instance().BindHandler<Pbmsg.LoginReq>((int)Pbmsg.ClientCmdDef.CLogin, this.HandleLogin)
+            FFWorker.Instance().BindHandler<Pbmsg.LoginReq>(Pbmsg.ClientCmdDef.CLogin, this.HandleLogin)
                 .BindOffline(this.HandleLogout)
-                .BindHandler<Player, Pbmsg.RunReq>((int)Pbmsg.ClientCmdDef.CRun, this.HandleRun)
-                .BindHandler<Player, Pbmsg.AttackReq>((int)Pbmsg.ClientCmdDef.CAttack, this.HandleAttack)
+                .BindHandler<Player, Pbmsg.RunReq>(Pbmsg.ClientCmdDef.CRun, this.HandleRun)
+                .BindHandler<Player, Pbmsg.AttackReq>(Pbmsg.ClientCmdDef.CAttack, this.HandleAttack)
                 ;
             return true;
         }
@@ -78,15 +78,17 @@ namespace ff
             
             Player player = new Player() { nSessionID = nSessionID };
             RoleMgr.Instance().AddRole(player);
-
+            
             player.strName = reqMsg.Name;
             player.nLevel = 1;
+
             Pbmsg.LoginRet retMsg = new Pbmsg.LoginRet()
             {
                 Id = player.GetID(),
                 Name = reqMsg.Name,
                 Level = player.nLevel,
             };
+
             player.SendPlayerMsg(Pbmsg.ServerCmdDef.SLogin, retMsg);
 
             {

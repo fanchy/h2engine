@@ -1,26 +1,29 @@
 using System;
-using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 namespace ff
 {
     public class FFMain
     {
-        static string[] listEnableClassNames = {"RoleMgr", "MonsterMgr", "PlayerHandler"};
+        static readonly string[] listEnableClassNames = {"RoleMgr", "MonsterMgr", "PlayerHandler"};
         public static void Main(string[] args)
         {
             string host = Util.strBrokerListen;
-            FFBroker ffbroker = new FFBroker();
-            ffbroker.Open(host);
-
-            int nWorkerIndex = 0;
-            if (FFWorker.Instance().Open(host, nWorkerIndex, listEnableClassNames) == false){
-                FFLog.Trace("ffrpc open failed!");
+            if (!FFBroker.Instance().Init(host)){
+                FFLog.Error("FFBroker open failed!");
+                return;
             }
 
-            FFGate ffGate = new FFGate();
-            if (ffGate.Open(host, Util.strGateListen, 0) == false)
+            int nWorkerIndex = 0;
+            if (FFWorker.Instance().Init(host, nWorkerIndex, listEnableClassNames) == false){
+                FFLog.Trace("FFWorker open failed!");
+                return;
+            }
+
+            if (FFGate.Instance().Init(host, Util.strGateListen) == false)
             {
                 FFLog.Trace("ffGate open failed!");
+                return;
             }
             
             bool bExit = false;
@@ -40,6 +43,9 @@ namespace ff
             }
 
             FFLog.Trace("exit!!!");
+            FFGate.Instance().Cleanup();
+            FFBroker.Instance().Cleanup();
+            FFWorker.Instance().Cleanup();
             FFNet.Cleanup();
             FFLog.Cleanup();
         }

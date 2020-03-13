@@ -12,6 +12,13 @@ namespace ff
     };
     class FFGate
     {
+        private static FFGate gInstance = null;
+        public static FFGate Instance() {
+            if (gInstance == null){
+                gInstance = new FFGate();
+            }
+            return gInstance;
+        }
         public FFAcceptor m_acceptor;
         protected long m_nIDGenerator;
         protected int m_nGateIndex;//!这是第几个gate，现在只有一个gate，如果以后想要有多个gate，这个要被正确的赋值
@@ -29,7 +36,7 @@ namespace ff
             m_msgEmpty = new EmptyMsgRet();
             m_acceptor = null;
         }
-        public bool Open(string strBrokerHost, string strGateListenIpPort, int nGateIndex)
+        public bool Init(string strBrokerHost, string strGateListenIpPort, int nGateIndex = 0)
         {
             m_nGateIndex = nGateIndex;
             m_strGateName = string.Format("gate#{0}", m_nGateIndex);
@@ -52,13 +59,22 @@ namespace ff
             }
             else
             {
-                FFLog.Trace(string.Format("FFGate open....{0} failed", strGateListenIpPort));
+                FFLog.Error(string.Format("FFGate open....{0} failed", strGateListenIpPort));
             }
+            return true;
+        }
+        public bool Cleanup()
+        {
+            if (m_ffrpc != null)
+                m_ffrpc.Close();
+            if (m_acceptor != null)
+                m_acceptor.Close();
             return true;
         }
         //!切换worker
         public EmptyMsgRet ChangeSessionLogic(GateChangeLogicNodeReq reqMsg)
         {
+            FFLog.Trace(string.Format("FFGate ChangeSessionLogic....sessionid={0}", reqMsg.SessionId));
             if (m_dictClients.ContainsKey(reqMsg.SessionId) == false)
             {
                 return m_msgEmpty;

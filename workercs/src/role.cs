@@ -80,7 +80,7 @@ namespace ff
         public bool Init()
         {
             Player player = null;
-            FFWorker.Instance().SetSessionID2Object((Int64 s, int cmd, byte[] data)=>{
+            FFWorker.Instance().funcSessionID2Object = (Int64 s, int cmd, byte[] data)=>{
                 Role ret = this.GetPlayerBySessionID(s);
                 if (ret != null && ret is Player)
                 {
@@ -92,10 +92,13 @@ namespace ff
                     }
                 }
                 return player;
-            });
+            };
             return true;
         }
-
+        public bool Cleanup()
+        {
+            return true;
+        }
         public Role GetRoleBySessionID(Int64 id)
         {
             if (m_dictRoles.ContainsKey(id) == false)
