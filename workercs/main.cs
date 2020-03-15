@@ -5,22 +5,24 @@ namespace ff
 {
     public class FFMain
     {
-        static readonly string[] listEnableClassNames = {"RoleMgr", "MonsterMgr", "PlayerHandler"};
+        static readonly string[] listEnableClassNames = {"DBMgr", "RoleMgr", "MonsterMgr", "PlayerHandler"};
         public static void Main(string[] args)
         {
-            string host = Util.strBrokerListen;
-            if (!FFBroker.Instance().Init(host)){
+            CfgTool.Instance().InitCfg(args);
+            string strBrokerListen = CfgTool.Instance().GetCfgVal("BrokerListen", "tcp://127.0.0.1:4321");
+            if (!FFBroker.Instance().Init(strBrokerListen)){
                 FFLog.Error("FFBroker open failed!");
                 return;
             }
 
             int nWorkerIndex = 0;
-            if (FFWorker.Instance().Init(host, nWorkerIndex, listEnableClassNames) == false){
+            if (FFWorker.Instance().Init(strBrokerListen, nWorkerIndex, listEnableClassNames) == false){
                 FFLog.Trace("FFWorker open failed!");
                 return;
             }
 
-            if (FFGate.Instance().Init(host, Util.strGateListen) == false)
+            string strGateListen = CfgTool.Instance().GetCfgVal("GateListen, "tcp://*:44000");
+            if (FFGate.Instance().Init(strBrokerListen, strGateListen) == false)
             {
                 FFLog.Trace("ffGate open failed!");
                 return;

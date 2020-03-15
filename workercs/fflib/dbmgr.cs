@@ -25,14 +25,20 @@ namespace ff
         }
         public bool Init()
         {
-            return true;
+            string dbCfg = CfgTool.Instance().GetCfgVal("DBCfg");
+            if (dbCfg.Length == 0)
+                return true;
+            int dbThreadNum = 4;
+            int.TryParse(CfgTool.Instance().GetCfgVal("DBThreadNum", "4"),out dbThreadNum);
+
+            return InitPool(dbCfg, dbThreadNum);
         }
         public bool InitPool(string host, int nThreadNum)
         {
             m_dbForSync = new MysqlOps();
             if (!m_dbForSync.Connect(host))
             {
-                FFLog.Error(string.Format("DbMgr::connectDB failed<%s>", m_dbForSync.ErrorMsg()));
+                FFLog.Error(string.Format("DbMgr::connectDB failed<{0}>", m_dbForSync.ErrorMsg()));
                 m_dbForSync = null;
                 return false;
             }
@@ -42,7 +48,7 @@ namespace ff
                 MysqlOps db = new MysqlOps();
                 if (!db.Connect(host))
                 {
-                    FFLog.Error(string.Format("DbMgr::connectDB failed<%s>", db.ErrorMsg()));
+                    FFLog.Error(string.Format("DbMgr::connectDB failed<{0}>", db.ErrorMsg()));
                     return false;
                 }
                 
@@ -52,7 +58,7 @@ namespace ff
                 };
                 m_dbPool[i].tq.Run();
             }
-            FFLog.Info(string.Format("DbMgr::connectDB host<%s>,num<%d>", host, nThreadNum));
+            FFLog.Info(string.Format("DbMgr::connectDB host<{0}>,num<{1}>", host, nThreadNum));
             return true;
         }
         public bool AsyncQuery(Int64 modid, string sql, QueryCallback cb = null)
@@ -72,6 +78,8 @@ namespace ff
         }
         public bool cleanup()
         {
+            if (m_dbForSync == null)
+                return true;
             FFLog.Info("DbMgr::stop begin...");
             for (int i = 0; i < m_dbPool.Length; ++i)
             {
