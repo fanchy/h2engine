@@ -5,7 +5,7 @@ using MySql.Data.MySqlClient;
 
 namespace ff
 {
-    class MysqlOps: DbOps
+    public class MysqlOps: DbOps
     {
         private MySqlConnection m_mysql;
         string m_strErr;
@@ -74,6 +74,8 @@ namespace ff
         {
             m_strErr = "";
             m_nLastAffectRowNum = 0;
+            
+            List<string[]> result = new List<string[]>();
             try
             {
                 MySqlCommand cmd = new MySqlCommand(sql_, m_mysql);
@@ -93,7 +95,6 @@ namespace ff
                 {
                     colnames[i] = reader.GetName(i);
                 }
-                List<string[]> result = new List<string[]>();
                 while (reader.Read())//初始索引是-1，执行读取下一行数据，返回值是bool
                 {
                     string[] row = new string[filedCount];
@@ -103,12 +104,13 @@ namespace ff
                     }
                     result.Add(row);
                 }
-                cb(result, colnames);
+                cb(result, colnames, "");
             }
             catch (System.Exception ex)
             {
                 m_strErr = ex.Message;
                 FFLog.Error("MysqlOps.Connect:" + ex.Message);
+                cb(result, null, m_strErr);
                 return false;
             }
             return true;

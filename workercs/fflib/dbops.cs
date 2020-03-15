@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace ff
 {
-    public delegate void QueryCallback(List<string[]> rows, string[] colnames);
+    public delegate void QueryCallback(List<string[]> rows, string[] colnames, string errorMsg);
     interface DbOps
     {
         bool Connect(string args_);
