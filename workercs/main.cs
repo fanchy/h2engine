@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ff
 {
-    public class FFMain
+    public class FFApp
     {
         static readonly string[] listEnableClassNames = {"DBMgr", "RoleMgr", "MonsterMgr", "PlayerHandler"};
         public static void Main(string[] args)
@@ -21,7 +21,7 @@ namespace ff
                 return;
             }
 
-            string strGateListen = CfgTool.Instance().GetCfgVal("GateListen, "tcp://*:44000");
+            string strGateListen = CfgTool.Instance().GetCfgVal("GateListen", "tcp://*:44000");
             if (FFGate.Instance().Init(strBrokerListen, strGateListen) == false)
             {
                 FFLog.Trace("ffGate open failed!");

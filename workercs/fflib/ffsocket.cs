@@ -111,7 +111,7 @@ namespace ff
             //FFLog.Trace(string.Format("scoket: recv 1111 {0}", length));
             if (length == 0)
             {
-                FFLog.Warning("HandleRecv: recv end ok file ");
+                FFLog.Warning("HandleRecv: recv endof file ");
                 HandleClose();
                 return;
             }

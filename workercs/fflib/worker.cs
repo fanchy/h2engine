@@ -205,10 +205,7 @@ namespace ff
             Int64 nSessionID = reqMsg.SessionId;
             FFLog.Trace(string.Format("worker OnSessionEnterWorkerReq session={0}", nSessionID));
 
-            var f = this.funcSessionOnEnterWorker;
-            if (f != null){
-                f(nSessionID, reqMsg.FromWorker, reqMsg.ExtraData);
-            }
+            this.funcSessionOnEnterWorker?.Invoke(nSessionID, reqMsg.FromWorker, reqMsg.ExtraData);
             PerfMonitor.Instance().AddPerf("OnEnterWorker", DateTime.Now.Ticks / 10 - nBeginUs);
             return RPC_NONE;
         }

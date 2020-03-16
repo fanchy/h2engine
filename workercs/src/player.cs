@@ -121,7 +121,7 @@ namespace ff
         }
         public void HandleLogout(Int64 nSessionID)
         {
-            FFLog.Trace(string.Format("worker OnSessionOfflineReq! {0}", nSessionID));
+            FFLog.Trace(string.Format("PlayerHandler.HandleLogout {0}", nSessionID));
             Player player = RoleMgr.Instance().GetPlayerBySessionID(nSessionID);
             if (player == null)
                 return;

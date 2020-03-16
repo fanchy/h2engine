@@ -12,10 +12,6 @@ namespace ff
     class Util
     {
         public static byte[] bytesPBBuffer = new byte[4096];
-        //public static double tan30  = Math.Tan(Math.PI / 6);
-        public static double tan60  = Math.Tan(Math.PI / 3);
-        //public static string strBrokerListen = "tcp://127.0.0.1:43210";
-        //public static string strGateListen = "tcp://*:44000";
         public static byte[] MergeArray(byte[] array1, byte[] array2)
         {
             byte[] ret = new byte[array1.Length + array2.Length];
