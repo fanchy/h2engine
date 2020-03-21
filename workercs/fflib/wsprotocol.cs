@@ -10,9 +10,9 @@ namespace ff
         protected byte[] cacheRecvData;
         protected int   statusWebSocketConnection;
         protected Dictionary<string, string> dictParams;
-        public List<byte[]> listSendPkg;//!需要发送的数据
-        public List<byte[]> listRecvPkg;//!已经接收的
-        byte[] dataFragmentation;//!缓存分片数据
+        public List<byte[]> listSendPkg;
+        public List<byte[]> listRecvPkg;
+        byte[] dataFragmentation;
         protected bool bIsClose;
         public WSProtocol()
         {

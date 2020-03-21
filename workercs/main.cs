@@ -6,8 +6,10 @@ namespace ff
     public class FFApp
     {
         static readonly string[] listEnableClassNames = {"DBMgr", "RoleMgr", "MonsterMgr", "PlayerHandler"};
+        
         public static void Main(string[] args)
         {
+            
             CfgTool.Instance().InitCfg(args);
             string strBrokerListen = CfgTool.Instance().GetCfgVal("BrokerListen", "tcp://127.0.0.1:4321");
             if (!FFBroker.Instance().Init(strBrokerListen)){

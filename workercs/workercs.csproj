@@ -10,6 +10,12 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath></OutputPath>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PlatformTarget>x64</PlatformTarget>
+    <WarningLevel>2</WarningLevel>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,6 +24,7 @@
 
   <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.11.4" />
+    <PackageReference Include="IronPython" Version="2.7.9" />
     <PackageReference Include="MySql.Data" Version="8.0.19" />
   </ItemGroup>
 
