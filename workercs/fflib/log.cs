@@ -19,6 +19,7 @@ namespace ff
         private StreamWriter m_sw;
         private int m_nLogLevel;
         public string m_strCurFileName;
+        private ConsoleColor colorDefault;
         public static FFLog gInstance = null;
         public static FFLog Instance()
         {
@@ -33,6 +34,7 @@ namespace ff
             m_taskQueue.Run();
             m_nLogLevel = (int)FFLogLevel.DEBUG;
             m_strCurFileName = "";
+            colorDefault = Console.ForegroundColor;
         }
         ~FFLog()
         {
@@ -74,7 +76,7 @@ namespace ff
                 {
                     return;
                 }
-                ConsoleColor color = ConsoleColor.Gray;
+                ConsoleColor color = colorDefault;
                 string logdata = "";
                 switch(nLogLevel)
                 {
@@ -114,6 +116,8 @@ namespace ff
                     m_sw.Flush();
                     Console.ForegroundColor = color;
                     Console.WriteLine(logdata);
+                    if (color != colorDefault)
+                        Console.ForegroundColor = colorDefault;
                 });
                 }
             catch (System.Exception ex)
