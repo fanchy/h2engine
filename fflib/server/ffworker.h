@@ -56,9 +56,9 @@ struct WorkerInitFileInfo{
     WorkerFunc  func;
     int         priority;
 };
-#define WORKER_AT_SETUP(f) static int gSetup_##f = FFWorker::regSetupFunc(f, __FILE__, __LINE__)
-#define WORKER_AT_SETUP_PRIORITY(f, p) static int gSetup_##f = FFWorker::regSetupFunc(f, __FILE__, __LINE__, p)
-#define WORKER_AT_EXIT(f)  static int gExit_##f = FFWorker::regExitFunc(f)
+#define WORKER_AT_SETUP(f) static const int gSetup_##f = FFWorker::regSetupFunc(f, __FILE__, __LINE__)
+#define WORKER_AT_SETUP_PRIORITY(f, p) static const int gSetup_##f = FFWorker::regSetupFunc(f, __FILE__, __LINE__, p)
+#define WORKER_AT_EXIT(f)  static const int gExit_##f = FFWorker::regExitFunc(f)
 
 template<typename T>
 struct SessionMsgFunctorUtil;

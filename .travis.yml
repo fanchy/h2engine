@@ -13,6 +13,7 @@ script:
   - cmake CMakeCache.txt 
   - make h2engine
   - make h2workercpp
-  - make h2workerpy
   - make h2workerlua
+  - python --version
+  - make h2workerpy
 

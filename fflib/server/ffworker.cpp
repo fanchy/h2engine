@@ -174,7 +174,7 @@ int FFWorker::open(const string& brokercfg, int worker_index)
     SCRIPT_UTIL.reg("getSessionIp", &FFWorker::getSessionIp, this);
     SCRIPT_UTIL.reg("isExist", &FFRpc::isExist, (FFRpc*)(&this->getRpc()));
     //SCRIPT_UTIL.reg("reload", &FFWorker::reload, this);
-    
+
     SCRIPT_UTIL.reg("logdebug", &FFWorker::logdebugForScirpt, this);
     SCRIPT_UTIL.reg("logtrace", &FFWorker::logtraceForScirpt, this);
     SCRIPT_UTIL.reg("loginfo",  &FFWorker::loginfoForScirpt , this);
@@ -256,7 +256,7 @@ int FFWorker::processSessionReq(RPCReq<RouteLogicMsgReq, EmptyMsgRet>& req_)
         EmptyMsgRet out;
         req_.response(out);
     }
-    
+
     LOGTRACE((FFWORKER_LOG, "FFWorker::processSessionReq end ok"));
     return 0;
 }
@@ -276,7 +276,7 @@ int FFWorker::processSessionOffline(RPCReq<SessionOfflineReq, EmptyMsgRet>& req_
     EmptyMsgRet out;
     req_.response(out);
     m_worker_client.erase(req_.msg.sessionId);
-    
+
     return 0;
 }
 
@@ -298,7 +298,7 @@ int FFWorker::processSessionEnter(RPCReq<SessionEnterWorkerReq, EmptyMsgRet>& re
         onSessionEnter(req_.msg.sessionId, req_.msg.extraData);
     }
 
-    
+
     LOGTRACE((FFWORKER_LOG, "FFWorker::processSessionEnter end ok"));
 
     return 0;
@@ -321,7 +321,7 @@ int FFWorker::processWorkerCall(RPCReq<WorkerCallMsgReq, WorkerCallMsgRet>& req_
     }
     req_.response(out);
 
-    
+
     LOGTRACE((FFWORKER_LOG, "FFWorker::processWorkerCall end ok"));
     return 0;
 }
@@ -442,7 +442,7 @@ void FFWorker::regTimer(uint64_t mstimeout_, Function<void()> func){
 }
 static void RpcCallBack(ScriptArgObjPtr funcOBj, const string& data){
     if (funcOBj && funcOBj->isFunc()){
-        
+
         WorkerCallMsgRet retmsg;
         try{
             FFThrift::DecodeFromString(retmsg, data);

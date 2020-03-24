@@ -508,7 +508,7 @@ PHP_METHOD(h2ext, regTimer)
     };
     
     Singleton<FFWorkerPhp>::instance().regTimer(mstimeout_, 
-                TaskBinder::gen(&lambda_cb::callback, idx));
+                funcbind(&lambda_cb::callback, idx));
     RETURN_TRUE;
 }
 PHP_METHOD(h2ext, writeLockGuard)
@@ -517,19 +517,20 @@ PHP_METHOD(h2ext, writeLockGuard)
 }
 PHP_METHOD(h2ext, connectDB)
 {
-	char *strarg  = NULL;
-    long strlen = 0;
+	// char *strarg  = NULL;
+    // long strlen = 0;
 
-    char *strarg2  = NULL;
-    long strlen2 = 0;
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &strarg, &strlen, &strarg2, &strlen2) == FAILURE) {
-		RETURN_FALSE;
-	}
-    std::string host_(strarg, strlen);
-    std::string group_(strarg2, strlen2);
-    long ret = DbMgr::instance().connectDB(host_, group_);
+    // char *strarg2  = NULL;
+    // long strlen2 = 0;
+	// if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &strarg, &strlen, &strarg2, &strlen2) == FAILURE) {
+		// RETURN_FALSE;
+	// }
+    // std::string host_(strarg, strlen);
+    // std::string group_(strarg2, strlen2);
+    // long ret = DbMgr::instance().connectDB(host_, group_);
     
-    RETURN_LONG(ret);
+    //RETURN_LONG(ret);
+    RETURN_FALSE;
 }
 
 struct AsyncQueryCB
@@ -605,7 +606,7 @@ PHP_METHOD(h2ext, asyncQuery)
     Singleton<FFWorkerPhp>::instance().m_php->globalCache(fieldname, funccb);
     
     AsyncQueryCB cb(idx);
-    DbMgr::instance().asyncQueryModId(db_id_, sql_,  cb, Singleton<FFWorkerPhp>::instance().getRpc().getTaskQueue());
+    DbMgr::instance().asyncQuery(db_id_, sql_,  cb, &(Singleton<FFWorkerPhp>::instance().getRpc().getTaskQueue()));
     RETURN_TRUE;
 }
 struct AsyncQueryNameCB
@@ -673,7 +674,7 @@ PHP_METHOD(h2ext, asyncQueryByName)
 		RETURN_FALSE;
 	}
     
-    std::string group_(strgroup, lengroup);
+    //std::string group_(strgroup, lengroup);
     std::string sql_(strarg, strlen);
     
     char fieldname[256] = {0};
@@ -683,7 +684,7 @@ PHP_METHOD(h2ext, asyncQueryByName)
     Singleton<FFWorkerPhp>::instance().m_php->globalCache(fieldname, funccb);
     
     AsyncQueryNameCB cb(idx);
-    DbMgr::instance().asyncQueryByName(group_, sql_,  cb, Singleton<FFWorkerPhp>::instance().getRpc().getTaskQueue());
+    DbMgr::instance().asyncQuery(0, sql_,  cb, &(Singleton<FFWorkerPhp>::instance().getRpc().getTaskQueue()));
     RETURN_TRUE;
 }
 PHP_METHOD(h2ext, query)
@@ -697,12 +698,13 @@ PHP_METHOD(h2ext, query)
 	}
     
     std::string sql_(strarg, strlen);
+    QueryDBResult result;
+    DbMgr::instance().query(sql_, result);
     
-    std::string errinfo;
-    std::vector<std::vector<std::string> > ret_;
-    std::vector<std::string> col_;
-    int affectedRows = 0;
-    DbMgr::instance().query(sql_, &ret_, &errinfo, &affectedRows, &col_);
+    std::vector<std::vector<std::string> >& retdata = result.dataResult;
+    std::vector<std::string>& col = result.fieldNames;
+    int affectedRows = result.affectedRows;
+    std::string& errinfo = result.errinfo;
     
     zval* retval = NULL;
     MAKE_STD_ZVAL(retval);
@@ -715,15 +717,15 @@ PHP_METHOD(h2ext, query)
         MAKE_STD_ZVAL(val_arr);
         array_init(val_arr);
         
-        for (size_t i = 0; i < ret_.size(); ++i){
-            PhpWrap::arrayAppend(val_arr, PhpWrap::vecstr2zval(ret_[i]));
+        for (size_t i = 0; i < retdata.size(); ++i){
+            PhpWrap::arrayAppend(val_arr, PhpWrap::vecstr2zval(retdata[i]));
         }
         PhpWrap::arrayAdd(retval, key, val_arr);
     }
     
     {
         std::string key = "fields";
-        PhpWrap::arrayAdd(retval, key, PhpWrap::vecstr2zval(col_));
+        PhpWrap::arrayAdd(retval, key, PhpWrap::vecstr2zval(col));
     }
     {
         std::string key = "errinfo";
@@ -747,14 +749,16 @@ PHP_METHOD(h2ext, queryByName)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &strgroup, &lengroup, &strarg, &strlen) == FAILURE) {
 		RETURN_FALSE;
 	}
-    std::string group_(strgroup, lengroup);
-    std::string sql_(strarg, strlen);
+    //std::string group_(strgroup, lengroup);
     
-    std::string errinfo;
-    std::vector<std::vector<std::string> > ret_;
-    std::vector<std::string> col_;
-    int affectedRows = 0;
-    DbMgr::instance().queryByName(group_, sql_, &ret_, &errinfo, &affectedRows, &col_);
+    std::string sql_(strarg, strlen);
+    QueryDBResult result;
+    DbMgr::instance().query(sql_, result);
+    
+    std::vector<std::vector<std::string> >& retdata = result.dataResult;
+    std::vector<std::string>& col = result.fieldNames;
+    int affectedRows = result.affectedRows;
+    std::string& errinfo = result.errinfo;
     
     zval* retval = NULL;
     MAKE_STD_ZVAL(retval);
@@ -767,15 +771,15 @@ PHP_METHOD(h2ext, queryByName)
         MAKE_STD_ZVAL(val_arr);
         array_init(val_arr);
         
-        for (size_t i = 0; i < ret_.size(); ++i){
-            PhpWrap::arrayAppend(val_arr, PhpWrap::vecstr2zval(ret_[i]));
+        for (size_t i = 0; i < retdata.size(); ++i){
+            PhpWrap::arrayAppend(val_arr, PhpWrap::vecstr2zval(retdata[i]));
         }
         PhpWrap::arrayAdd(retval, key, val_arr);
     }
     
     {
         std::string key = "fields";
-        PhpWrap::arrayAdd(retval, key, PhpWrap::vecstr2zval(col_));
+        PhpWrap::arrayAdd(retval, key, PhpWrap::vecstr2zval(col));
     }
     {
         std::string key = "errinfo";
@@ -789,61 +793,62 @@ PHP_METHOD(h2ext, queryByName)
 }
 PHP_METHOD(h2ext, workerRPC)
 {
-    long workerindex = 0;
-    long cmd = 0;
-	char *strarg  = NULL;
-    long strlen = 0;
-    zval* funccb = NULL;
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "llsz", &workerindex, &cmd, &strarg, &strlen, &funccb) == FAILURE || funccb == NULL) {
-		RETURN_FALSE;
-	}
+    // long workerindex = 0;
+    // long cmd = 0;
+	// char *strarg  = NULL;
+    // long strlen = 0;
+    // zval* funccb = NULL;
+	// if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "llsz", &workerindex, &cmd, &strarg, &strlen, &funccb) == FAILURE || funccb == NULL) {
+		// RETURN_FALSE;
+	// }
     
-    std::string argdata(strarg, strlen);
+    // std::string argdata(strarg, strlen);
     
-    static int64_t rpc_idx = 0;
-    char fieldname[256] = {0};
-    ++rpc_idx;
-    long idx = long(rpc_idx);
-    snprintf(fieldname, sizeof(fieldname), "rpc#%ld", idx);
-    Singleton<FFWorkerPhp>::instance().m_php->globalCache(fieldname, funccb);
+    // static int64_t rpc_idx = 0;
+    // char fieldname[256] = {0};
+    // ++rpc_idx;
+    // long idx = long(rpc_idx);
+    // snprintf(fieldname, sizeof(fieldname), "rpc#%ld", idx);
+    // Singleton<FFWorkerPhp>::instance().m_php->globalCache(fieldname, funccb);
     
-    struct lambda_cb: public FFSlot::FFCallBack
-    {
-        lambda_cb(int idxarg):idx(idxarg){}
-        virtual void exe(FFSlot::CallBackArg* args_)
-        {
-            if (args_->type() != TYPEID(SlotReqArg))
-            {
-                return;
-            }
-            SlotReqArg* msg_data = (SlotReqArg*)args_;
-            WorkerCallMsgRet retmsg;
-            try{
-                FFThrift::DecodeFromString(retmsg, msg_data->body);
-            }
-            catch(std::exception& e_)
-            {
-            }
+    // struct lambda_cb: public FFSlot::FFCallBack
+    // {
+        // lambda_cb(int idxarg):idx(idxarg){}
+        // virtual void exe(FFSlot::CallBackArg* args_)
+        // {
+            // if (args_->type() != TYPEID(SlotReqArg))
+            // {
+                // return;
+            // }
+            // SlotReqArg* msg_data = (SlotReqArg*)args_;
+            // WorkerCallMsgRet retmsg;
+            // try{
+                // FFThrift::DecodeFromString(retmsg, msg_data->body);
+            // }
+            // catch(std::exception& e_)
+            // {
+            // }
             
-            char fieldname[256] = {0};
-            snprintf(fieldname, sizeof(fieldname), "rpc#%ld", idx);
+            // char fieldname[256] = {0};
+            // snprintf(fieldname, sizeof(fieldname), "rpc#%ld", idx);
             
-            try
-            {
-                zval* func_arg = PhpWrap::build_str(retmsg.body);
-                Singleton<FFWorkerPhp>::instance().m_php->callPhpCallback(fieldname, func_arg);
-            }
-            catch(std::exception& e_)
-            {
-                LOGERROR((FFWORKER_PHP, "FFWorkerPhp::call_service std::exception=%s", e_.what()));
-            }
-        }
-        virtual FFSlot::FFCallBack* fork() { return new lambda_cb(idx); }
-        long idx;
-    };
-    Singleton<FFWorkerPhp>::instance().workerRPC(workerindex, (uint16_t)cmd, argdata, new lambda_cb(idx));
+            // try
+            // {
+                // zval* func_arg = PhpWrap::build_str(retmsg.body);
+                // Singleton<FFWorkerPhp>::instance().m_php->callPhpCallback(fieldname, func_arg);
+            // }
+            // catch(std::exception& e_)
+            // {
+                // LOGERROR((FFWORKER_PHP, "FFWorkerPhp::call_service std::exception=%s", e_.what()));
+            // }
+        // }
+        // virtual FFSlot::FFCallBack* fork() { return new lambda_cb(idx); }
+        // long idx;
+    // };
+    // Singleton<FFWorkerPhp>::instance().workerRPC(workerindex, (uint16_t)cmd, argdata, new lambda_cb(idx));
     
-    RETURN_TRUE;
+    // RETURN_TRUE;
+    RETURN_FALSE;
 }
 PHP_METHOD(h2ext, syncSharedData)
 {
@@ -860,63 +865,64 @@ PHP_METHOD(h2ext, syncSharedData)
 }
 PHP_METHOD(h2ext, asyncHttp)
 {
-    long timeoutsec = 0;
-	char *strarg  = NULL;
-    long strlen = 0;
-    zval* funccb = NULL;
+    // long timeoutsec = 0;
+	// char *strarg  = NULL;
+    // long strlen = 0;
+    // zval* funccb = NULL;
     
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "slz", &strarg, &strlen, &timeoutsec, &funccb) == FAILURE || funccb == NULL) {
-		RETURN_FALSE;
-	}
+	// if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "slz", &strarg, &strlen, &timeoutsec, &funccb) == FAILURE || funccb == NULL) {
+		// RETURN_FALSE;
+	// }
     
-    std::string url(strarg, strlen);
+    // std::string url(strarg, strlen);
     
-    static int64_t http_idx = 0;
-    char fieldname[256] = {0};
-    ++http_idx;
-    long idx = long(http_idx);
-    snprintf(fieldname, sizeof(fieldname), "http#%ld", idx);
-    Singleton<FFWorkerPhp>::instance().m_php->globalCache(fieldname, funccb);
+    // static int64_t http_idx = 0;
+    // char fieldname[256] = {0};
+    // ++http_idx;
+    // long idx = long(http_idx);
+    // snprintf(fieldname, sizeof(fieldname), "http#%ld", idx);
+    // Singleton<FFWorkerPhp>::instance().m_php->globalCache(fieldname, funccb);
     
-    struct lambda_cb: public FFSlot::FFCallBack
-    {
-        lambda_cb(long idxarg):idx(idxarg){}
-        virtual void exe(FFSlot::CallBackArg* args_)
-        {
-            if (args_->type() != TYPEID(HttpMgr::http_result_t))
-            {
-                return;
-            }
-            HttpMgr::http_result_t* data = (HttpMgr::http_result_t*)args_;
+    // struct lambda_cb: public FFSlot::FFCallBack
+    // {
+        // lambda_cb(long idxarg):idx(idxarg){}
+        // virtual void exe(FFSlot::CallBackArg* args_)
+        // {
+            // if (args_->type() != TYPEID(HttpMgr::http_result_t))
+            // {
+                // return;
+            // }
+            // HttpMgr::http_result_t* data = (HttpMgr::http_result_t*)args_;
 
-            Singleton<FFWorkerPhp>::instance().getRpc().getTaskQueue().post(TaskBinder::gen(&lambda_cb::call_php, idx, data->ret));
-        }
-        static void call_php(long idx, std::string retdata)
-        {
-            if (Singleton<FFWorkerPhp>::instance().m_enable_call == false)
-            {
-                return;
-            }
-            char fieldname[256] = {0};
-            snprintf(fieldname, sizeof(fieldname), "http#%ld", idx);
+            // Singleton<FFWorkerPhp>::instance().getRpc().getTaskQueue().post(funcbind(&lambda_cb::call_php, idx, data->ret));
+        // }
+        // static void call_php(long idx, std::string retdata)
+        // {
+            // if (Singleton<FFWorkerPhp>::instance().m_enable_call == false)
+            // {
+                // return;
+            // }
+            // char fieldname[256] = {0};
+            // snprintf(fieldname, sizeof(fieldname), "http#%ld", idx);
             
-            try
-            {
-                zval* func_arg = PhpWrap::build_str(retdata);
-                Singleton<FFWorkerPhp>::instance().m_php->callPhpCallback(fieldname, func_arg);
-            }
-            catch(std::exception& e_)
-            {
-                LOGERROR((FFWORKER_PHP, "workerobj_python_t::gen_queryDB_callback std::exception<%s>", e_.what()));
-            }
+            // try
+            // {
+                // zval* func_arg = PhpWrap::build_str(retdata);
+                // Singleton<FFWorkerPhp>::instance().m_php->callPhpCallback(fieldname, func_arg);
+            // }
+            // catch(std::exception& e_)
+            // {
+                // LOGERROR((FFWORKER_PHP, "workerobj_python_t::gen_queryDB_callback std::exception<%s>", e_.what()));
+            // }
             
-        }
-        virtual FFSlot::FFCallBack* fork() { return new lambda_cb(idx); }
-        long idx;
-    };
+        // }
+        // virtual FFSlot::FFCallBack* fork() { return new lambda_cb(idx); }
+        // long idx;
+    // };
     
-    Singleton<FFWorkerPhp>::instance().asyncHttp(url, timeoutsec,  new lambda_cb(idx));
-    RETURN_TRUE;
+    // Singleton<FFWorkerPhp>::instance().asyncHttp(url, timeoutsec,  new lambda_cb(idx));
+    // RETURN_TRUE;
+    RETURN_FALSE;
 }
 PHP_METHOD(h2ext, syncHttp)
 {
@@ -946,15 +952,15 @@ PHP_METHOD(h2ext, escape)
     RETURN_STRINGL(ret.c_str(), ret.size(), 1);
 }
 
-static void onSyncSharedData(int32_t cmd, const std::string& data){
-    try{
-        Singleton<FFWorkerPhp>::instance().m_php->callVoid("onSyncSharedData", cmd, data);
-    }
-    catch(std::exception& e_)
-    {
-        LOGERROR((FFWORKER_PHP, "FFWorkerPhp::onSyncSharedData std::exception=%s", e_.what()));
-    }
-}
+// static void onSyncSharedData(int32_t cmd, const std::string& data){
+    // try{
+        // Singleton<FFWorkerPhp>::instance().m_php->callVoid("onSyncSharedData", cmd, data);
+    // }
+    // catch(std::exception& e_)
+    // {
+        // LOGERROR((FFWORKER_PHP, "FFWorkerPhp::onSyncSharedData std::exception=%s", e_.what()));
+    // }
+// }
 static ScriptArgObjPtr toScriptArg(zval* pvalue_){
     ScriptArgObjPtr ret = new ScriptArgObj();
     if (Z_TYPE_P(pvalue_) == IS_BOOL){
@@ -1214,7 +1220,7 @@ int FFWorkerPhp::scriptInit(const std::string& root)
     ArgHelper& arg_helper = Singleton<ArgHelper>::instance();
     if (arg_helper.isEnableOption("-db")){
         if (DbMgr::instance().initDBPool(arg_helper.getOptionValue("-db"), 1)){
-            LOGERROR((FFWORKER_LUA, "FFWorker::db connect failed"));
+            LOGERROR((FFWORKER_PHP, "FFWorker::db connect failed"));
             return -1;
         }
     }
@@ -1226,7 +1232,7 @@ int FFWorkerPhp::scriptInit(const std::string& root)
         Mutex                    mutex;
         ConditionVar            cond(mutex);
         
-        getRpc().getTaskQueue().post(TaskBinder::gen(&FFWorkerPhp::processInit, this, &mutex, &cond, &ret));
+        getRpc().getTaskQueue().post(funcbind(&FFWorkerPhp::processInit, this, &mutex, &cond, &ret));
         LockGuard lock(mutex);
         if (ret == -2){
             cond.wait();
@@ -1313,7 +1319,7 @@ void FFWorkerPhp::scriptCleanup()
 int FFWorkerPhp::close()
 {
     LOGINFO((FFWORKER_PHP, "close begin"));
-    getRpc().getTaskQueue().post(TaskBinder::gen(&FFWorkerPhp::scriptCleanup, this));
+    getRpc().getTaskQueue().post(funcbind(&FFWorkerPhp::scriptCleanup, this));
     
     FFWorker::close();
     if (false == m_started)

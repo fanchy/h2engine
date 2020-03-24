@@ -11,9 +11,9 @@
 - cmake CMakeLists.txt
 - make h2engine
 - ./h2engine -d
-- make h2workerpy
-- ./h2workerpy
-- tutorial code : main.py
+- make h2workerlua
+- ./h2workerlua
+
 
 # H2Engine 服务器引擎
 H2服务器引擎架构是轻量级的，与其说是引擎，个人觉得称之为平台更为合适。因为它封装的功能少之又少，但是提供了非常简洁方便的扩展机制，使得可以用C++、python、lua、js、php来开发具体的服务器功能。H2引擎的灵感来源于web服务器Apache。
@@ -31,8 +31,8 @@ $ cmake  CMakeLists.txt
 H2Engine进程分另个，h2engine 和h2worker ,其中h2worker根据使用语言的不同，分h2workerpy、h2workerlua、h2workerjs、h2workerphp,根据你使用的语言构建你需要的h2worker即可。
 ```shell
 $ make h2engine
-$ make h2workerpy
 $ make h2workerlua
+$ make h2workerpy
 $ make h2workerjs
 $ make h2workerphp
 ```

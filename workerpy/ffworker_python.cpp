@@ -98,11 +98,7 @@ static bool py_regTimer(int mstimeout_, PyObject* pFuncSrc)
                 funcbind(&lambda_cb::callback, pFuncSrc));
     return true;
 }
-//!数据库相关操作
-static long py_connectDB(const string& host_, const string& group_)
-{
-    return DbMgr::instance().connectDB(host_, group_);
-}
+
 struct PyQueryCallBack
 {
     PyQueryCallBack(PyObject* pFuncSrc):pFunc(pFuncSrc){
@@ -173,7 +169,7 @@ struct PyQueryCallBack
 static void py_asyncQuery(long modid, const string& sql_, PyObject* pFuncArg)
 {
     PyQueryCallBack cb(pFuncArg);
-    DbMgr::instance().asyncQueryModId(modid, sql_, cb, Singleton<FFWorkerPython>::instance().getRpc().getTaskQueue());
+    DbMgr::instance().asyncQuery(modid, sql_, cb, &(Singleton<FFWorkerPython>::instance().getRpc().getTaskQueue()));
 }
 struct AsyncQueryNameCb
 {
@@ -251,17 +247,20 @@ struct AsyncQueryNameCb
 static void py_asyncQueryByName(const string& name_, const string& sql_, PyObject* pFuncArg)
 {
     AsyncQueryNameCb cb(pFuncArg);
-    DbMgr::instance().asyncQueryByName(name_, sql_, cb, Singleton<FFWorkerPython>::instance().getRpc().getTaskQueue());
+    DbMgr::instance().asyncQuery(0, sql_, cb, &(Singleton<FFWorkerPython>::instance().getRpc().getTaskQueue()));
 }
 
 static PyObject* py_query(const string& sql_)
 {
     PyObject* pyRet = PyDict_New();
-    string errinfo;
-    vector<vector<string> > retdata;
-    vector<string> col;
-    int affectedRows = 0;
-    DbMgr::instance().query(sql_, &retdata, &errinfo, &affectedRows, &col);
+
+    QueryDBResult result;
+    DbMgr::instance().query(sql_, result);
+
+    vector<vector<string> >& retdata = result.dataResult;
+    vector<string>& col = result.fieldNames;
+    int affectedRows = result.affectedRows;
+    string& errinfo = result.errinfo;
 
     {
         string key = "datas";
@@ -301,11 +300,14 @@ static PyObject* py_query(const string& sql_)
 static PyObject* py_QueryByName(const string& name_, const string& sql_)
 {
     PyObject* pyRet = PyDict_New();
-    string errinfo;
-    vector<vector<string> > retdata;
-    vector<string> col;
-    int affectedRows = 0;
-    DbMgr::instance().queryByName(name_, sql_, &retdata, &errinfo, &affectedRows, &col);
+
+    QueryDBResult result;
+    //DbMgr::instance().queryByName(name_, sql_, &retdata, &errinfo, &affectedRows, &col);
+    DbMgr::instance().query(sql_, result);
+    vector<vector<string> >& retdata = result.dataResult;
+    vector<string>& col = result.fieldNames;
+    int affectedRows = result.affectedRows;
+    string& errinfo = result.errinfo;
 
     {
         string key = "datas";
@@ -344,113 +346,113 @@ static PyObject* py_QueryByName(const string& name_, const string& sql_)
 //!调用其他worker的接口
 static void py_workerRPC(int workerindex, uint16_t cmd, const string& argdata, PyObject* pFuncArg){
 
-    struct lambda_cb: public FFSlot::FFCallBack
-    {
-        lambda_cb(PyObject* pFuncArg):pFunc(pFuncArg){}
-        virtual void exe(FFSlot::CallBackArg* args_)
-        {
-            if (Singleton<FFWorkerPython>::instance().m_started == false){
-                return;
-            }
-            if (NULL == pFunc)
-            {
-                return;
-            }
-            if (args_->type() != TYPEID(SlotReqArg))
-            {
-                return;
-            }
-            SlotReqArg* msg_data = (SlotReqArg*)args_;
-            try
-            {
-                if (pFunc == NULL)
-                {
-                    return;
-                }
-                WorkerCallMsgRet retmsg;
-                try{
-                    FFThrift::DecodeFromString(retmsg, msg_data->body);
-                }
-                catch(exception& e_)
-                {
-                }
-                Singleton<FFWorkerPython>::instance().getFFpython().call_lambda<void>(pFunc, retmsg.body);
-            }
-            catch(exception& e_)
-            {
-                LOGERROR((FFWORKER_PYTHON, "ffscene_python_t::call_service exception=%s", e_.what()));
-            }
-            Py_XDECREF(pFunc);
-        }
-        virtual FFSlot::FFCallBack* fork() { return new lambda_cb(pFunc); }
-        PyObject* pFunc;
-    };
-    Singleton<FFWorkerPython>::instance().workerRPC(workerindex, cmd, argdata, new lambda_cb(pFuncArg));
+//    struct lambda_cb: public FFSlot::FFCallBack
+//    {
+//        lambda_cb(PyObject* pFuncArg):pFunc(pFuncArg){}
+//        virtual void exe(FFSlot::CallBackArg* args_)
+//        {
+//            if (Singleton<FFWorkerPython>::instance().m_started == false){
+//                return;
+//            }
+//            if (NULL == pFunc)
+//            {
+//                return;
+//            }
+//            if (args_->type() != TYPEID(SlotReqArg))
+//            {
+//                return;
+//            }
+//            SlotReqArg* msg_data = (SlotReqArg*)args_;
+//            try
+//            {
+//                if (pFunc == NULL)
+//                {
+//                    return;
+//                }
+//                WorkerCallMsgRet retmsg;
+//                try{
+//                    FFThrift::DecodeFromString(retmsg, msg_data->body);
+//                }
+//                catch(exception& e_)
+//                {
+//                }
+//                Singleton<FFWorkerPython>::instance().getFFpython().call_lambda<void>(pFunc, retmsg.body);
+//            }
+//            catch(exception& e_)
+//            {
+//                LOGERROR((FFWORKER_PYTHON, "ffscene_python_t::call_service exception=%s", e_.what()));
+//            }
+//            Py_XDECREF(pFunc);
+//        }
+//        virtual FFSlot::FFCallBack* fork() { return new lambda_cb(pFunc); }
+//        PyObject* pFunc;
+//    };
+//    Singleton<FFWorkerPython>::instance().workerRPC(workerindex, cmd, argdata, new lambda_cb(pFuncArg));
 }
 static void py_syncSharedData(int cmd, const string& data)
 {
 }
 static bool py_asyncHttp(const string& url_, int timeoutsec, PyObject* pFuncSrc)
 {
-    struct lambda_cb: public FFSlot::FFCallBack
-    {
-        lambda_cb(PyObject* pFuncSrc):pFunc(pFuncSrc){}
-        virtual void exe(FFSlot::CallBackArg* args_)
-        {
-            if (NULL == pFunc)
-            {
-                return;
-            }
-            if (args_->type() != TYPEID(HttpMgr::http_result_t))
-            {
-                return;
-            }
-            HttpMgr::http_result_t* data = (HttpMgr::http_result_t*)args_;
-
-            Singleton<FFWorkerPython>::instance().getRpc().getTaskQueue().post(funcbind(&lambda_cb::call_python, pFunc, data->ret));
-        }
-        static void call_python(PyObject* pFunc, string retdata)
-        {
-            try
-            {
-                if (Singleton<FFWorkerPython>::instance().m_enable_call)
-                {
-                    Singleton<FFWorkerPython>::instance().getFFpython().call_lambda<void>(pFunc, retdata);
-                }
-            }
-            catch(exception& e_)
-            {
-                LOGERROR((FFWORKER_PYTHON, "ffscene_python_t::py_asyncHttp exception<%s>", e_.what()));
-            }
-            Py_XDECREF(pFunc);
-        }
-        virtual FFSlot::FFCallBack* fork() { return new lambda_cb(pFunc); }
-        PyObject* pFunc;
-    };
-
-    if (pFuncSrc != NULL)
-    {
-        Py_INCREF(pFuncSrc);
-    }
-
-    Singleton<FFWorkerPython>::instance().asyncHttp(url_, timeoutsec, new lambda_cb(pFuncSrc));
+//    struct lambda_cb: public FFSlot::FFCallBack
+//    {
+//        lambda_cb(PyObject* pFuncSrc):pFunc(pFuncSrc){}
+//        virtual void exe(FFSlot::CallBackArg* args_)
+//        {
+//            if (NULL == pFunc)
+//            {
+//                return;
+//            }
+//            if (args_->type() != TYPEID(HttpMgr::http_result_t))
+//            {
+//                return;
+//            }
+//            HttpMgr::http_result_t* data = (HttpMgr::http_result_t*)args_;
+//
+//            Singleton<FFWorkerPython>::instance().getRpc().getTaskQueue().post(funcbind(&lambda_cb::call_python, pFunc, data->ret));
+//        }
+//        static void call_python(PyObject* pFunc, string retdata)
+//        {
+//            try
+//            {
+//                if (Singleton<FFWorkerPython>::instance().m_enable_call)
+//                {
+//                    Singleton<FFWorkerPython>::instance().getFFpython().call_lambda<void>(pFunc, retdata);
+//                }
+//            }
+//            catch(exception& e_)
+//            {
+//                LOGERROR((FFWORKER_PYTHON, "ffscene_python_t::py_asyncHttp exception<%s>", e_.what()));
+//            }
+//            Py_XDECREF(pFunc);
+//        }
+//        virtual FFSlot::FFCallBack* fork() { return new lambda_cb(pFunc); }
+//        PyObject* pFunc;
+//    };
+//
+//    if (pFuncSrc != NULL)
+//    {
+//        Py_INCREF(pFuncSrc);
+//    }
+//
+//    Singleton<FFWorkerPython>::instance().asyncHttp(url_, timeoutsec, new lambda_cb(pFuncSrc));
     return true;
 }
 static string py_syncHttp(const string& url_, int timeoutsec)
 {
     return Singleton<FFWorkerPython>::instance().syncHttp(url_, timeoutsec);
 }
-static void onSyncSharedData(int32_t cmd, const string& data){
-    try{
-        Singleton<FFWorkerPython>::instance().getFFpython().call<void>(
-                    Singleton<FFWorkerPython>::instance().m_ext_name,
-                    "onSyncSharedData", cmd, data);
-    }
-    catch(exception& e_)
-    {
-        LOGERROR((FFWORKER_PYTHON, "FFWorkerPython::onSyncSharedData exception=%s", e_.what()));
-    }
-}
+//static void onSyncSharedData(int32_t cmd, const string& data){
+//    try{
+//        Singleton<FFWorkerPython>::instance().getFFpython().call<void>(
+//                    Singleton<FFWorkerPython>::instance().m_ext_name,
+//                    "onSyncSharedData", cmd, data);
+//    }
+//    catch(exception& e_)
+//    {
+//        LOGERROR((FFWORKER_PYTHON, "FFWorkerPython::onSyncSharedData exception=%s", e_.what()));
+//    }
+//}
 static ScriptArgObjPtr toScriptArg(PyObject* pvalue_){
     ScriptArgObjPtr ret = new ScriptArgObj();
     if (PyLong_Check(pvalue_)){
@@ -763,7 +765,7 @@ int FFWorkerPython::scriptInit(const string& py_root)
                  .reg(&py_reload, "reload")
                  .reg(&py_log, "log")
                  .reg(&py_regTimer, "regTimer")
-                 .reg(&py_connectDB, "connectDB")
+                 //.reg(&py_connectDB, "connectDB")
                  .reg(&py_asyncQuery, "asyncQuery")
                  .reg(&py_query, "query")
                  .reg(&py_asyncQueryByName, "asyncQueryByName")
@@ -779,11 +781,11 @@ int FFWorkerPython::scriptInit(const string& py_root)
 
     (*m_ffpython).init(EXT_NAME);
 
-    
+
     ArgHelper& arg_helper = Singleton<ArgHelper>::instance();
     if (arg_helper.isEnableOption("-db")){
         if (DbMgr::instance().initDBPool(arg_helper.getOptionValue("-db"), 1)){
-            LOGERROR((FFWORKER_LUA, "FFWorker::db connect failed"));
+            LOGERROR((FFWORKER_PYTHON, "FFWorker::db connect failed"));
             return -1;
         }
     }

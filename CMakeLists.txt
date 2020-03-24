@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(h2engine)
-add_definitions(-g -O2 -Wall -static)
+add_definitions(-g -O2 -Wall -Wno-unused-const-variable -static)
 
 IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
 	MESSAGE(STATUS "current platform: Linux ")
