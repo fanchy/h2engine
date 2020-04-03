@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace ff
 {
-    class Util
+    public class Util
     {
         public static byte[] bytesPBBuffer = new byte[4096];
         public static byte[] MergeArray(byte[] array1, byte[] array2)
