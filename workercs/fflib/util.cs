@@ -145,6 +145,9 @@ namespace ff
             }
             return "";
         }
-		
+		static string ToBase64String(byte[] v)
+        {
+            return Convert.ToBase64String(v);
+        }
     }
 }
