@@ -71,3 +71,11 @@ struct SessionEnterWorkerReq{
     5:string toWorker;
     6:binary extraData;
 }
+
+struct VarData{
+    1:map<i32, i64>             intData;
+    2:map<i32, string>          strData;
+    3:map<i32, map<i32, i64> >  mapData;
+}
+
+

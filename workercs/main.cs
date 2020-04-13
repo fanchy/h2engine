@@ -3,6 +3,16 @@ using System.Collections.Generic;
 
 namespace ff
 {
+
+    public class Foo : Entity
+    {
+        public int a = 100;
+        public int b = 200;
+        public int c { get; set; }
+        public Foo() : base()
+        {
+        }
+    }
     public class FFApp
     {
         static readonly string[] listEnableClassNames = {"DBMgr", "RoleMgr", "MonsterMgr", "PlayerHandler"};
