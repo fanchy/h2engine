@@ -287,7 +287,7 @@ void Log::log_content(int level_, const char* str_class_, const string& content_
 	}
 	struct timeval curtm;
 	gettimeofday(&curtm, NULL);
-	struct tm tm_val = *localtime(&(curtm.tv_sec));
+	struct tm tm_val = *localtime((const time_t*)&(curtm.tv_sec));
 
 	char log_buff[512];
 	if (tid_){

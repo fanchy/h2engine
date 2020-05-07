@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1559304868 source:d:\code\h2engine\engine\main.cpp
+1568982320 source:d:\code\h2engine\engine\main.cpp
 	"base/osdef.h"
 	"base/fftype.h"
 	"base/daemon_tool.h"
@@ -185,7 +185,7 @@
 1557839060 d:\code\h2engine\fflib\net\netbase.h
 	"base/fftype.h"
 
-1557839060 d:\code\h2engine\fflib\net\message.h
+1588742714 d:\code\h2engine\fflib\net\message.h
 	<stdint.h>
 	<string>
 	<string.h>
@@ -320,16 +320,15 @@
 1557839060 d:\code\h2engine\fflib\net\socket_ctrl.h
 	<string>
 
-1559388922 d:\code\h2engine\fflib\rpc\ffbroker.h
+1568982320 d:\code\h2engine\fflib\rpc\ffbroker.h
 	<assert.h>
 	<string>
 	<map>
 	<set>
 	"base/task_queue.h"
-	"base/ffslot.h"
 	"base/thread.h"
 	"base/smart_ptr.h"
-	"rpc/ffrpc_ops.h"
+	"rpc/rpcbase.h"
 	"base/arg_helper.h"
 	"base/timer_service.h"
 	"net/message.h"
@@ -428,14 +427,13 @@
 	"net/socket.h"
 	"base/obj_pool.h"
 
-1559388922 d:\code\h2engine\fflib\server\ffgate.h
+1568982320 d:\code\h2engine\fflib\server\ffgate.h
 	<string>
 	<map>
 	<vector>
 	<set>
 	<queue>
 	"base/task_queue.h"
-	"base/ffslot.h"
 	"base/thread.h"
 	"rpc/ffrpc.h"
 	"base/timer_service.h"
@@ -522,7 +520,7 @@
 	"base/lock.h"
 	<sys/time.h>
 
-1559304868 source:d:\code\h2engine\fflib\base\log.cpp
+1568982320 source:d:\code\h2engine\fflib\base\log.cpp
 	"base/osdef.h"
 	"base/fftype.h"
 	"base/log.h"
@@ -894,31 +892,29 @@
 	"base/task_queue.h"
 	"base/log.h"
 
-1559388922 source:d:\code\h2engine\fflib\rpc\ffbroker.cpp
+1568982320 source:d:\code\h2engine\fflib\rpc\ffbroker.cpp
 	"rpc/ffbroker.h"
 	"base/log.h"
 	"base/arg_helper.h"
 	"rpc/ffrpc.h"
 	"net/ffnet.h"
 
-1559653362 source:d:\code\h2engine\fflib\rpc\ffrpc.cpp
+1568982320 source:d:\code\h2engine\fflib\rpc\ffrpc.cpp
 	"rpc/ffrpc.h"
-	"rpc/ffrpc_ops.h"
 	"base/log.h"
 	"rpc/ffbroker.h"
 	"net/ffnet.h"
 
-1559388922 source:d:\code\h2engine\fflib\rpc\msg_def\ffrpc_msg_constants.cpp
+1569469676 source:d:\code\h2engine\fflib\rpc\msg_def\ffrpc_msg_constants.cpp
 	"ffrpc_msg_constants.h"
 
-1559388922 source:d:\code\h2engine\fflib\rpc\msg_def\ffrpc_msg_types.cpp
+1569469676 source:d:\code\h2engine\fflib\rpc\msg_def\ffrpc_msg_types.cpp
 	"ffrpc_msg_types.h"
 	<algorithm>
 
-1557839060 source:d:\code\h2engine\fflib\server\cmd_util.cpp
+1568982320 source:d:\code\h2engine\fflib\server\cmd_util.cpp
 	"server/cmd_util.h"
 	"server/ffworker.h"
-	"rpc/ffbroker.h"
 
 1557839060 d:\code\h2engine\fflib\server\cmd_util.h
 	<string>
@@ -931,7 +927,7 @@
 	"server/entity.h"
 	"thrift/FFThrift.h"
 
-1557839060 d:\code\h2engine\fflib\server\entity.h
+1571662506 d:\code\h2engine\fflib\server\entity.h
 	<string>
 	<vector>
 	<list>
@@ -961,7 +957,7 @@
 	"base/fftype.h"
 	"base/singleton.h"
 
-1568982320 d:\code\h2engine\fflib\server\ffworker.h
+1584956957 d:\code\h2engine\fflib\server\ffworker.h
 	<string>
 	"base/fftype.h"
 	"rpc/ffrpc.h"
@@ -971,7 +967,7 @@
 	"server/prop.h"
 	"server/cmd_util.h"
 
-1559388922 source:d:\code\h2engine\fflib\server\db_mgr.cpp
+1570787530 source:d:\code\h2engine\fflib\server\db_mgr.cpp
 	"server/db_mgr.h"
 	"base/perf_monitor.h"
 
@@ -987,26 +983,26 @@
 	"base/lock.h"
 	"base/singleton.h"
 
-1557839060 source:d:\code\h2engine\fflib\server\entity.cpp
+1571662748 source:d:\code\h2engine\fflib\server\entity.cpp
 	"server/entity.h"
 	"server/ffworker.h"
 	"server/script.h"
 	"server/prop.h"
 
-1559651922 source:d:\code\h2engine\fflib\server\ffgate.cpp
+1568982320 source:d:\code\h2engine\fflib\server\ffgate.cpp
 	"server/ffgate.h"
 	"base/log.h"
 	"net/socket_op.h"
 	"net/ffnet.h"
 
-1559649341 source:d:\code\h2engine\fflib\server\ffworker.cpp
+1584955644 source:d:\code\h2engine\fflib\server\ffworker.cpp
 	"server/ffworker.h"
 	"base/log.h"
 	"server/http_mgr.h"
 	"server/script_cache.h"
 	"server/db_mgr.h"
 
-1557839060 d:\code\h2engine\fflib\server\http_mgr.h
+1568982320 d:\code\h2engine\fflib\server\http_mgr.h
 	<assert.h>
 	<string>
 	<vector>
@@ -1016,7 +1012,7 @@
 	"base/smart_ptr.h"
 	"db/ffdb.h"
 	"base/lock.h"
-	"base/ffslot.h"
+	"base/func.h"
 
 1557839060 d:\code\h2engine\fflib\server\script_cache.h
 	<string>
@@ -1043,10 +1039,11 @@
 	"msg_types.h"
 	<algorithm>
 
-1558404871 source:d:\code\h2engine\fflib\server\http_mgr.cpp
+1568982320 source:d:\code\h2engine\fflib\server\http_mgr.cpp
 	<curl/curl.h>
 	"server/http_mgr.h"
 	"base/perf_monitor.h"
+	"base/func.h"
 
 1557839061 d:\code\h2engine\winbuild\include\curl\curl.h
 	"curlver.h"
@@ -1125,7 +1122,7 @@
 	"xml/tinyxml.h"
 	<windows.h>
 
-1557839061 source:d:\code\h2engine\src\chat\chat.cpp
+1568982320 source:d:\code\h2engine\src\chat\chat.cpp
 	"server/cmd_util.h"
 	"server/entity.h"
 	"server/ffworker.h"
@@ -1216,7 +1213,7 @@
 	"server/entity.h"
 	"base/smart_ptr.h"
 
-1557839061 source:d:\code\h2engine\src\setup.cpp
+1585021550 source:d:\code\h2engine\src\setup.cpp
 	"server/ffworker.h"
 	"server/entity.h"
 	"player/player.h"
@@ -1254,7 +1251,7 @@
 	"server/entity.h"
 	"base/smart_ptr.h"
 
-1557839061 source:d:\code\h2engine\src\task\task.cpp
+1568982320 source:d:\code\h2engine\src\task\task.cpp
 	<ctype.h>
 	<algorithm>
 	"task/task.h"
@@ -1487,7 +1484,7 @@
 	"base/task_queue.h"
 	"base/log.h"
 
-1559649384 source:d:\code\h2engine\fflib\net\ioevent_select.cpp
+1560060054 source:d:\code\h2engine\fflib\net\ioevent_select.cpp
 	"base/func.h"
 	"base/osdef.h"
 	"net/ioevent.h"

@@ -39,6 +39,12 @@ struct MessageHead
         cmd  = ntohs(cmd);
         flag = ntohs(flag);
     }
+    void clear()
+    {
+        size = 0;
+        cmd  = 0;
+        flag = 0;
+    }
     uint32_t size;
     uint16_t cmd;
     uint16_t flag;
@@ -80,7 +86,7 @@ public:
     }
     void clear()
     {
-        ::memset(&m_head, 0, sizeof(m_head));
+        m_head.clear();//::memset(&m_head, 0, sizeof(m_head));
         m_body.clear();
     }
     void appendToBody(const char* buff, size_t len)
@@ -89,12 +95,12 @@ public:
     }
     //! for parse
     bool haveRecvHead(size_t have_recv_size_) { return have_recv_size_ >= sizeof(MessageHead);}
-    
+
     MessageHead& getHead() { return m_head; }
 private:
     MessageHead m_head;
     std::string         m_body;
 };
-    
+
 }
 #endif
