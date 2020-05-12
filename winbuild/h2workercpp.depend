@@ -1483,10 +1483,11 @@
 1558861769 d:\code\h2engine\fflib\base\osdef.h
 	<winsock2.h>
 
-1588746229 d:\code\h2engine\fflib\base\func.h
+1588993636 d:\code\h2engine\fflib\base\func.h
 	<stdio.h>
 	<stdexcept>
 	<string>
+	<stdint.h>
 
 1559304868 source:d:\code\h2engine\fflib\net\acceptortcp.cpp
 	<sys/types.h>

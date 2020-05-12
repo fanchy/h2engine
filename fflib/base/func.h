@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdexcept>
 #include <string>
+#include <stdint.h>
 
 namespace ff {
 
