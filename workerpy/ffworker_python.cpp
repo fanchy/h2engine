@@ -19,7 +19,7 @@ using namespace std;
 FFWorkerPython::FFWorkerPython():
     m_enable_call(true), m_started(false)
 {
-    m_ffpython = new ffpython_t();
+    m_ffpython = new FFPython();
 }
 FFWorkerPython::~FFWorkerPython()
 {
@@ -79,7 +79,8 @@ static bool py_regTimer(int mstimeout_, PyObject* pFuncSrc)
                 return;
             try
             {
-                Singleton<FFWorkerPython>::instance().getFFpython().call_lambda<void>(pFunc);
+                static std::vector<PyObject*> args;
+                Singleton<FFWorkerPython>::instance().getFFpython().callFuncByObjRet<void>(pFunc, args);
             }
             catch(exception& e_)
             {
@@ -120,32 +121,32 @@ struct PyQueryCallBack
         PyObject* pyRet = PyDict_New();
         {
             string key = "datas";
-            PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
-            PyObject *v = pytype_traits_t<vector<vector<string> > >::pyobj_from_cppobj(ret_);
+            PyObject *k = ScriptCppOps<string>::scriptFromCpp(key);
+            PyObject *v = ScriptCppOps<vector<vector<string> > >::scriptFromCpp(ret_);
             PyDict_SetItem(pyRet, k, v);
             Py_DECREF(k);
             Py_DECREF(v);
         }
         {
             string key = "fields";
-            PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
-            PyObject *v = pytype_traits_t<vector<string> >::pyobj_from_cppobj(col_);
+            PyObject *k = ScriptCppOps<string>::scriptFromCpp(key);
+            PyObject *v = ScriptCppOps<vector<string> >::scriptFromCpp(col_);
             PyDict_SetItem(pyRet, k, v);
             Py_DECREF(k);
             Py_DECREF(v);
         }
         {
             string key = "errinfo";
-            PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
-            PyObject *v = pytype_traits_t<string>::pyobj_from_cppobj(errinfo);
+            PyObject *k = ScriptCppOps<string>::scriptFromCpp(key);
+            PyObject *v = ScriptCppOps<string>::scriptFromCpp(errinfo);
             PyDict_SetItem(pyRet, k, v);
             Py_DECREF(k);
             Py_DECREF(v);
         }
         {
             string key = "affectedRows";
-            PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
-            PyObject *v = pytype_traits_t<int>::pyobj_from_cppobj(affectedRows);
+            PyObject *k = ScriptCppOps<string>::scriptFromCpp(key);
+            PyObject *v = ScriptCppOps<int>::scriptFromCpp(affectedRows);
             PyDict_SetItem(pyRet, k, v);
             Py_DECREF(k);
             Py_DECREF(v);
@@ -154,7 +155,9 @@ struct PyQueryCallBack
         {
             if (Singleton<FFWorkerPython>::instance().m_enable_call)
             {
-                Singleton<FFWorkerPython>::instance().getFFpython().call_lambda<void>(pFuncSrc, pyRet);
+                std::vector<PyObject*> args;
+                args.push_back(pyRet);
+                Singleton<FFWorkerPython>::instance().getFFpython().callFuncByObjRet<void>(pFuncSrc, args);
             }
         }
         catch(exception& e_)
@@ -198,32 +201,32 @@ struct AsyncQueryNameCb
         PyObject* pyRet = PyDict_New();
         {
             string key = "datas";
-            PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
-            PyObject *v = pytype_traits_t<vector<vector<string> > >::pyobj_from_cppobj(ret_);
+            PyObject *k = ScriptCppOps<string>::scriptFromCpp(key);
+            PyObject *v = ScriptCppOps<vector<vector<string> > >::scriptFromCpp(ret_);
             PyDict_SetItem(pyRet, k, v);
             Py_DECREF(k);
             Py_DECREF(v);
         }
         {
             string key = "fields";
-            PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
-            PyObject *v = pytype_traits_t<vector<string> >::pyobj_from_cppobj(col_);
+            PyObject *k = ScriptCppOps<string>::scriptFromCpp(key);
+            PyObject *v = ScriptCppOps<vector<string> >::scriptFromCpp(col_);
             PyDict_SetItem(pyRet, k, v);
             Py_DECREF(k);
             Py_DECREF(v);
         }
         {
             string key = "errinfo";
-            PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
-            PyObject *v = pytype_traits_t<string>::pyobj_from_cppobj(errinfo);
+            PyObject *k = ScriptCppOps<string>::scriptFromCpp(key);
+            PyObject *v = ScriptCppOps<string>::scriptFromCpp(errinfo);
             PyDict_SetItem(pyRet, k, v);
             Py_DECREF(k);
             Py_DECREF(v);
         }
         {
             string key = "affectedRows";
-            PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
-            PyObject *v = pytype_traits_t<int>::pyobj_from_cppobj(affectedRows);
+            PyObject *k = ScriptCppOps<string>::scriptFromCpp(key);
+            PyObject *v = ScriptCppOps<int>::scriptFromCpp(affectedRows);
             PyDict_SetItem(pyRet, k, v);
             Py_DECREF(k);
             Py_DECREF(v);
@@ -232,7 +235,9 @@ struct AsyncQueryNameCb
         {
             if (Singleton<FFWorkerPython>::instance().m_enable_call)
             {
-                Singleton<FFWorkerPython>::instance().getFFpython().call_lambda<void>(pFuncSrc, pyRet);
+                std::vector<PyObject*> args;
+                args.push_back(pyRet);
+                Singleton<FFWorkerPython>::instance().getFFpython().callFuncByObjRet<void>(pFuncSrc, args);
             }
         }
         catch(exception& e_)
@@ -264,32 +269,32 @@ static PyObject* py_query(const string& sql_)
 
     {
         string key = "datas";
-        PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
-        PyObject *v = pytype_traits_t<vector<vector<string> > >::pyobj_from_cppobj(retdata);
+        PyObject *k = ScriptCppOps<string>::scriptFromCpp(key);
+        PyObject *v = ScriptCppOps<vector<vector<string> > >::scriptFromCpp(retdata);
         PyDict_SetItem(pyRet, k, v);
         Py_DECREF(k);
         Py_DECREF(v);
     }
     {
         string key = "fields";
-        PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
-        PyObject *v = pytype_traits_t<vector<string> >::pyobj_from_cppobj(col);
+        PyObject *k = ScriptCppOps<string>::scriptFromCpp(key);
+        PyObject *v = ScriptCppOps<vector<string> >::scriptFromCpp(col);
         PyDict_SetItem(pyRet, k, v);
         Py_DECREF(k);
         Py_DECREF(v);
     }
     {
         string key = "errinfo";
-        PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
-        PyObject *v = pytype_traits_t<string>::pyobj_from_cppobj(errinfo);
+        PyObject *k = ScriptCppOps<string>::scriptFromCpp(key);
+        PyObject *v = ScriptCppOps<string>::scriptFromCpp(errinfo);
         PyDict_SetItem(pyRet, k, v);
         Py_DECREF(k);
         Py_DECREF(v);
     }
     {
         string key = "affectedRows";
-        PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
-        PyObject *v = pytype_traits_t<int>::pyobj_from_cppobj(affectedRows);
+        PyObject *k = ScriptCppOps<string>::scriptFromCpp(key);
+        PyObject *v = ScriptCppOps<int>::scriptFromCpp(affectedRows);
         PyDict_SetItem(pyRet, k, v);
         Py_DECREF(k);
         Py_DECREF(v);
@@ -311,32 +316,32 @@ static PyObject* py_QueryByName(const string& name_, const string& sql_)
 
     {
         string key = "datas";
-        PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
-        PyObject *v = pytype_traits_t<vector<vector<string> > >::pyobj_from_cppobj(retdata);
+        PyObject *k = ScriptCppOps<string>::scriptFromCpp(key);
+        PyObject *v = ScriptCppOps<vector<vector<string> > >::scriptFromCpp(retdata);
         PyDict_SetItem(pyRet, k, v);
         Py_DECREF(k);
         Py_DECREF(v);
     }
     {
         string key = "fields";
-        PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
-        PyObject *v = pytype_traits_t<vector<string> >::pyobj_from_cppobj(col);
+        PyObject *k = ScriptCppOps<string>::scriptFromCpp(key);
+        PyObject *v = ScriptCppOps<vector<string> >::scriptFromCpp(col);
         PyDict_SetItem(pyRet, k, v);
         Py_DECREF(k);
         Py_DECREF(v);
     }
     {
         string key = "errinfo";
-        PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
-        PyObject *v = pytype_traits_t<string>::pyobj_from_cppobj(errinfo);
+        PyObject *k = ScriptCppOps<string>::scriptFromCpp(key);
+        PyObject *v = ScriptCppOps<string>::scriptFromCpp(errinfo);
         PyDict_SetItem(pyRet, k, v);
         Py_DECREF(k);
         Py_DECREF(v);
     }
     {
         string key = "affectedRows";
-        PyObject *k = pytype_traits_t<string>::pyobj_from_cppobj(key);
-        PyObject *v = pytype_traits_t<int>::pyobj_from_cppobj(affectedRows);
+        PyObject *k = ScriptCppOps<string>::scriptFromCpp(key);
+        PyObject *v = ScriptCppOps<int>::scriptFromCpp(affectedRows);
         PyDict_SetItem(pyRet, k, v);
         Py_DECREF(k);
         Py_DECREF(v);
@@ -555,34 +560,20 @@ static PyObject* fromScriptArgToPy(ScriptArgObjPtr pvalue){
     }
     Py_RETURN_NONE;
 }
-static PyObject* callFunc(PyObject* pvalue){
+static PyObject* callFunc(std::vector<PyObject*>& pvalue){
     //LOGINFO((FFWORKER_PYTHON, "FFWorkerPython::callFunc begin 1"));
-    if (!pvalue){
-        Py_RETURN_NONE;
-    }
-    if (false == PyTuple_Check(pvalue)){
-        LOGINFO((FFWORKER_PYTHON, "FFWorkerPython::callFunc begin notlist"));
-        Py_RETURN_NONE;
-    }
     ScriptArgs scriptArgs;
-    int n = PyTuple_Size(pvalue);
+    size_t n = pvalue.size();
     if (n <= 0){
         LOGERROR((FFWORKER_PYTHON, "FFWorkerPython::callFunc no funcname"));
         Py_RETURN_NONE;
     }
-    PyObject *pyName = PyTuple_GetItem(pvalue, 0);
-    if (false == PyString_Check(pyName)){
-        LOGERROR((FFWORKER_PYTHON, "FFWorkerPython::callFunc no funcname, type error"));
-        Py_RETURN_NONE;
-    }
-    char* pDest = NULL;
-    Py_ssize_t  nLen    = 0;
-    PyString_AsStringAndSize(pyName, &pDest, &nLen);
-    string funcName(pDest, nLen);
-
-    for (int i = 1; i < n; ++i)
+    string funcName;
+    ScriptCppOps<string>::scriptToCpp(pvalue[0], funcName);
+    
+    for (size_t i = 1; i < n; ++i)
     {
-        PyObject *pyElem = PyTuple_GetItem(pvalue, i);
+        PyObject *pyElem = pvalue[1];
         ScriptArgObjPtr elem = toScriptArg(pyElem);
         scriptArgs.args.push_back(elem);
     }
@@ -595,16 +586,17 @@ static PyObject* callFunc(PyObject* pvalue){
     PyObject* ret = fromScriptArgToPy(scriptArgs.getReturnValue());
     return ret;
 }
-template<>
-struct pytype_traits_t<ScriptArgObjPtr>
-{
-    static int pyobj_to_cppobj(PyObject *pvalue_, ScriptArgObjPtr& m_ret)
+namespace ff{
+    template<>
+    struct ScriptCppOps<ScriptArgObjPtr>
     {
-        m_ret = toScriptArg(pvalue_);
-        return 0;
-    }
-    static const char* get_typename() { return "PyObject";}
-};
+        static int scriptToCpp(PyObject *pvalue_, ScriptArgObjPtr& m_ret)
+        {
+            m_ret = toScriptArg(pvalue_);
+            return 0;
+        }
+    };
+}
 static bool callScriptImpl(const std::string& funcNameArg, ScriptArgs& varScript){
     if (!Singleton<FFWorkerPython>::instance().m_enable_call)
     {
@@ -620,7 +612,7 @@ static bool callScriptImpl(const std::string& funcNameArg, ScriptArgs& varScript
 		funcName = vt[1];
 	}
 
-    ffpython_t& ffpython = Singleton<FFWorkerPython>::instance().getFFpython();
+    FFPython& ffpython = Singleton<FFWorkerPython>::instance().getFFpython();
     ScriptArgObjPtr ret;
     PyObject* args[9];
     memset((void*)args, 0, sizeof(args));
@@ -742,44 +734,41 @@ int FFWorkerPython::scriptInit(const string& py_root)
     {
         path = py_root.substr(0, pos+1);
         m_ext_name = py_root.substr(pos+1, py_root.size() - pos - 1);
-        ffpython_t::add_path(path);
+        (*m_ffpython).addPath(path);
     }
     else{
         m_ext_name = py_root;
-        ffpython_t::add_path("./");
+        (*m_ffpython).addPath("./");
     }
     pos = m_ext_name.find(".py");
     m_ext_name = m_ext_name.substr(0, pos);
 
     LOGTRACE((FFWORKER_PYTHON, "FFWorkerPython::scriptInit begin path:%s, m_ext_name:%s", path, m_ext_name));
 
-    (*m_ffpython).reg(&FFDb::escape, "escape")
-                 .reg(&py_send_msg_session, "sessionSendMsg")
-                 .reg(&py_broadcast_msg_gate, "gateBroadcastMsg")
-                 .reg(&py_multicast_msg_session, "sessionMulticastMsg")
-                 .reg(&py_closeSession, "sessionClose")
-                 .reg(&py_change_session_worker, "sessionChangeWorker")
-                 .reg(&py_getSessionGate, "getSessionGate")
-                 .reg(&py_getSessionIp, "getSessionIp")
-                 .reg(&py_isExist, "isExist")
-                 .reg(&py_reload, "reload")
-                 .reg(&py_log, "log")
-                 .reg(&py_regTimer, "regTimer")
-                 //.reg(&py_connectDB, "connectDB")
-                 .reg(&py_asyncQuery, "asyncQuery")
-                 .reg(&py_query, "query")
-                 .reg(&py_asyncQueryByName, "asyncQueryByName")
-                 .reg(&py_QueryByName, "queryByName")
-                 .reg(&py_workerRPC, "workerRPC")
-                 .reg(&py_syncSharedData, "syncSharedData")
-                 .reg(&py_asyncHttp, "asyncHttp")
-                 .reg(&py_syncHttp, "syncHttp")
-                 .reg(&py_writeLockGuard, "writeLockGuard")
-                 .reg(&callFunc, "callFunc", "", true)
+    (*m_ffpython).regFunc(&FFDb::escape, "escape")
+                 .regFunc(&py_send_msg_session, "sessionSendMsg")
+                 .regFunc(&py_broadcast_msg_gate, "gateBroadcastMsg")
+                 .regFunc(&py_multicast_msg_session, "sessionMulticastMsg")
+                 .regFunc(&py_closeSession, "sessionClose")
+                 .regFunc(&py_change_session_worker, "sessionChangeWorker")
+                 .regFunc(&py_getSessionGate, "getSessionGate")
+                 .regFunc(&py_getSessionIp, "getSessionIp")
+                 .regFunc(&py_isExist, "isExist")
+                 .regFunc(&py_reload, "reload")
+                 .regFunc(&py_log, "log")
+                 .regFunc(&py_regTimer, "regTimer")
+                 //.regFunc(&py_connectDB, "connectDB")
+                 .regFunc(&py_asyncQuery, "asyncQuery")
+                 .regFunc(&py_query, "query")
+                 .regFunc(&py_asyncQueryByName, "asyncQueryByName")
+                 .regFunc(&py_QueryByName, "queryByName")
+                 .regFunc(&py_workerRPC, "workerRPC")
+                 .regFunc(&py_syncSharedData, "syncSharedData")
+                 .regFunc(&py_asyncHttp, "asyncHttp")
+                 .regFunc(&py_syncHttp, "syncHttp")
+                 .regFunc(&py_writeLockGuard, "writeLockGuard")
+                 .regFunc(&callFunc, "callFunc")
                  ;
-
-
-    (*m_ffpython).init(EXT_NAME);
 
 
     ArgHelper& arg_helper = Singleton<ArgHelper>::instance();
@@ -875,7 +864,7 @@ string FFWorkerPython::reload(const string& name_)
     LOGTRACE((FFWORKER_PYTHON, "FFWorkerPython::reload begin name_[%s]", name_));
     try
     {
-        ffpython_t::reload(name_);
+        (*m_ffpython).reload(name_);
     }
     catch(exception& e_)
     {

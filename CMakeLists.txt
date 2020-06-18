@@ -53,6 +53,8 @@ include_directories(${PROJECT_SOURCE_DIR}/fflib ${PROJECT_SOURCE_DIR}/lib3party 
 link_directories(/usr/local/lib /usr/lib64/mysql ${PROJECT_SOURCE_DIR} ${EXT_LINK})
 
 file(GLOB_RECURSE ENGINE_LIB_SRC "fflib/*.c*") 
+list(REMOVE_ITEM ENGINE_LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/fflib/python/ffpython.cpp)
+
 foreach(filename ${ENGINE_LIB_SRC})  
 message(${filename})
 endforeach()
@@ -91,7 +93,7 @@ set(WORKER_CPP_SRC_LIST
     ${ENGINE_LIB_SRC} ${GAME_IMPL_SRC} ${WORKER_CPP_SRC}
 )
 set(WORKER_PY_SRC_LIST 
-    ${ENGINE_LIB_SRC} ${GAME_IMPL_SRC} ${WORKER_PY_SRC}
+    ${ENGINE_LIB_SRC} ${GAME_IMPL_SRC} ${WORKER_PY_SRC} ${CMAKE_CURRENT_SOURCE_DIR}/fflib/python/ffpython.cpp
 )
 set(WORKER_LUA_SRC_LIST 
     ${ENGINE_LIB_SRC} ${GAME_IMPL_SRC} ${WORKER_LUA_SRC}

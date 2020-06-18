@@ -10,9 +10,9 @@
 #include "server/fftask_processor.h"
 #include "server/ffworker.h"
 
-class ffpython_t;
 namespace ff
 {
+class FFPython;
 #define FFWORKER_PYTHON "FFWORKER_PYTHON"
 
 class FFWorkerPython: public FFWorker, task_processor_i
@@ -20,21 +20,21 @@ class FFWorkerPython: public FFWorker, task_processor_i
 public:
     FFWorkerPython();
     ~FFWorkerPython();
-    
-    ffpython_t&             getFFpython(){ return *m_ffpython; }
-    
+
+    FFPython&             getFFpython(){ return *m_ffpython; }
+
     int                     scriptInit(const std::string& py_root);
     void                    scriptCleanup();
-    
+
     int                     close();
-    
+
     std::string             reload(const std::string& name_);
     //!iterface for python
     void                    pylog(int level, const std::string& mod_, const std::string& content_);
 
     //!!处理初始化逻辑
     int                     processInit(Mutex* mutex, ConditionVar* var, int* ret);
-    
+
     //**************************************************重载的接口***************************************
     //! 转发client消息
     virtual int onSessionReq(userid_t session_id_, uint16_t cmd_, const std::string& data_);
@@ -44,11 +44,11 @@ public:
     virtual int onSessionEnter(userid_t session_id, const std::string& extra_data);
     //! scene 之间的互调用
     virtual std::string onWorkerCall(uint16_t cmd, const std::string& body);
-    
+
 public:
     bool                    m_enable_call;
     bool                    m_started;
-    ffpython_t*             m_ffpython;
+    FFPython*             m_ffpython;
     std::string             m_ext_name;
 };
 
