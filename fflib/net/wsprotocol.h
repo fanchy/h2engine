@@ -13,7 +13,7 @@
 #include <openssl/buffer.h>
 #include <openssl/md5.h>
 
-#ifdef linux 
+#ifdef linux
 #include <arpa/inet.h>
 #endif
 namespace ff {
@@ -111,210 +111,211 @@ public:
             return false;
         }
         cacheRecvData.append(buff, len);
-        if (dictParams.empty() == true)
-        {
-            std::string& strRecvData = cacheRecvData;
-            if (strRecvData.size() >= 3)
+        do{
+            if (dictParams.empty() == true)
             {
-                if (strRecvData.find("GET") == std::string::npos)
+                std::string& strRecvData = cacheRecvData;
+                if (strRecvData.size() >= 3)
+                {
+                    if (strRecvData.find("GET") == std::string::npos)
+                    {
+                        statusWebSocketConnection = -1;
+                        return false;
+                    }
+                }
+                else if (strRecvData.size() >= 2)
+                {
+                    if (strRecvData.find("GE") == std::string::npos)
+                    {
+                        statusWebSocketConnection = -1;
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (strRecvData.find("G") == std::string::npos)
+                    {
+                        statusWebSocketConnection = -1;
+                        return false;
+                    }
+                }
+                statusWebSocketConnection = 1;
+                if (strRecvData.find("\r\n\r\n") == std::string::npos)//!header data not end
+                {
+                    return true;
+                }
+                if (strRecvData.find("Upgrade: websocket") == std::string::npos)
                 {
                     statusWebSocketConnection = -1;
                     return false;
                 }
-            }
-            else if (strRecvData.size() >= 2)
-            {
-                if (strRecvData.find("GE") == std::string::npos)
+                std::vector<std::string> strLines;
+                strSplit(strRecvData, strLines, "\r\n");
+                for (size_t i = 0; i < strLines.size(); ++i)
+                {
+                    const std::string& line = strLines[i];
+                    std::vector<std::string> strParams;
+                    strSplit(line, strParams, ": ");
+                    if (strParams.size() == 2)
+                    {
+                        dictParams[strParams[0]] = strParams[1];
+                    }
+                    else if (strParams.size() == 1 && strParams[0].find("GET") != std::string::npos)
+                    {
+                        dictParams["PATH"] = strParams[0];
+                    }
+                }
+                if (dictParams.find("Sec-WebSocket-Key") != dictParams.end())
+                {
+                    const std::string& Sec_WebSocket_Key = dictParams["Sec-WebSocket-Key"];
+                    std::string strGUID = Sec_WebSocket_Key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+                    std::string dataHashed = sha1Encode(strGUID);
+                    std::string strHashBase64 = base64Encode(dataHashed.c_str(), dataHashed.length(), false);
+
+                    char buff[512] = {0};
+                    snprintf(buff, sizeof(buff), "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: %s\r\n\r\n", strHashBase64.c_str());
+
+                    addSendPkg(buff);
+                }
+                else if (dictParams.find("Sec-WebSocket-Key1") != dictParams.end())
+                {
+                    std::string handshake = "HTTP/1.1 101 Web Socket Protocol Handshake\r\nUpgrade: WebSocket\r\nConnection: Upgrade\r\n";
+
+                    std::string str_origin = dictParams["Origin"];
+                    if (str_origin.empty())
+                    {
+                        str_origin = "null";
+                    }
+                    handshake += std::string("Sec-WebSocket-Origin: ") + str_origin +"\r\n";
+
+                    std::string str_host = dictParams["Host"];
+                    if (false == str_host.empty())
+                    {
+                        std::vector<std::string> tmp_path_arg;
+                        strSplit(strLines[0], tmp_path_arg, " ");
+                        std::string tmp_path = "/";
+                        if (tmp_path_arg.size() >= 2)
+                        {
+                            tmp_path = tmp_path_arg[1];
+                        }
+
+                        handshake += std::string("Sec-WebSocket-Location: ws://") + dictParams["Host"] + tmp_path + "\r\n\r\n";
+                    }
+
+                    uint32_t key1 = computeWebsokcetKeyVal(dictParams["Sec-WebSocket-Key1"]);
+                    uint32_t key2 = computeWebsokcetKeyVal(dictParams["Sec-WebSocket-Key2"]);
+
+                    std::string& key_ext   = strLines[strLines.size() - 1];
+                    if (key_ext.size() < 8)
+                    {
+                        statusWebSocketConnection = -1;
+                        return false;
+                    }
+
+                    char tmp_buff[16] = {0};
+                    memcpy(tmp_buff, (const char*)(&key1), sizeof(key1));
+                    memcpy(tmp_buff + sizeof(key1), (const char*)(&key2), sizeof(key2));
+                    memcpy(tmp_buff + sizeof(key1) + sizeof(key2), key_ext.c_str(), 8);
+
+                    handshake += computeMd5(tmp_buff, sizeof(tmp_buff));
+                    addSendPkg(handshake);
+                }
+                else
                 {
                     statusWebSocketConnection = -1;
                     return false;
                 }
+                cacheRecvData.clear();
+                return true;
             }
-            else
+            int nFIN = ((cacheRecvData[0] & 0x80) == 0x80)? 1: 0;
+
+            int nOpcode = cacheRecvData[0] & 0x0F;
+            //int nMask = ((cacheRecvData[1] & 0x80) == 0x80) ? 1 : 0; //!this must be 1
+            int nPayload_length = cacheRecvData[1] & 0x7F;
+            int nPlayLoadLenByteNum = 1;
+            int nMaskingKeyByteNum = 4;
+
+            if (nPayload_length == 126)
             {
-                if (strRecvData.find("G") == std::string::npos)
-                {
-                    statusWebSocketConnection = -1;
-                    return false;
-                }
+                nPlayLoadLenByteNum = 3;
             }
-            statusWebSocketConnection = 1;
-            if (strRecvData.find("\r\n\r\n") == std::string::npos)//!header data not end
+            else if (nPayload_length == 127)
+            {
+                nPlayLoadLenByteNum = 9;
+            }
+            if ((int)cacheRecvData.size() < (1 + nPlayLoadLenByteNum + nMaskingKeyByteNum))
             {
                 return true;
             }
-            if (strRecvData.find("Upgrade: websocket") == std::string::npos)
+            if (nPayload_length == 126)
             {
-                statusWebSocketConnection = -1;
-                return false;
+                uint16_t tmpLen = 0;
+                memcpy(&tmpLen, cacheRecvData.c_str() + 2, 2);
+                nPayload_length = ntohs((int16_t)tmpLen);
             }
-            std::vector<std::string> strLines;
-            strSplit(strRecvData, strLines, "\r\n");
-            for (size_t i = 0; i < strLines.size(); ++i)
+            else if (nPayload_length == 127)
             {
-                const std::string& line = strLines[i];
-                std::vector<std::string> strParams;
-                strSplit(line, strParams, ": ");
-                if (strParams.size() == 2)
-                {
-                    dictParams[strParams[0]] = strParams[1];
-                }
-                else if (strParams.size() == 1 && strParams[0].find("GET") != std::string::npos)
-                {
-                    dictParams["PATH"] = strParams[0];
-                }
+                int64_t tmpLen = 0;
+                memcpy(&tmpLen, cacheRecvData.c_str() + 2, 8);
+                nPayload_length = (int)ws_ntoh64(tmpLen);
             }
-            if (dictParams.find("Sec-WebSocket-Key") != dictParams.end())
+
+            if ((int)cacheRecvData.size() < (1 + nPlayLoadLenByteNum + nMaskingKeyByteNum + nPayload_length))
             {
-                const std::string& Sec_WebSocket_Key = dictParams["Sec-WebSocket-Key"];
-                std::string strGUID = Sec_WebSocket_Key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-                std::string dataHashed = sha1Encode(strGUID);
-                std::string strHashBase64 = base64Encode(dataHashed.c_str(), dataHashed.length(), false);
-
-                char buff[512] = {0};
-                snprintf(buff, sizeof(buff), "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: %s\r\n\r\n", strHashBase64.c_str());
-
-                addSendPkg(buff);
+                return true;
             }
-            else if (dictParams.find("Sec-WebSocket-Key1") != dictParams.end())
+            std::string aMasking_key;
+            aMasking_key.assign(cacheRecvData.c_str() + 1 + nPlayLoadLenByteNum, nMaskingKeyByteNum);
+            std::string aPayload_data;
+            aPayload_data.assign(cacheRecvData.c_str() + 1 + nPlayLoadLenByteNum + nMaskingKeyByteNum, nPayload_length);
+            int nLeftSize = cacheRecvData.size() - (1 + nPlayLoadLenByteNum + nMaskingKeyByteNum + nPayload_length);
+
+            if (nLeftSize > 0)
             {
-                std::string handshake = "HTTP/1.1 101 Web Socket Protocol Handshake\r\nUpgrade: WebSocket\r\nConnection: Upgrade\r\n";
+                std::string leftBytes;
+                leftBytes.assign(cacheRecvData.c_str() + 1 + nPlayLoadLenByteNum + nMaskingKeyByteNum + nPayload_length, nLeftSize);
+                cacheRecvData = leftBytes;
+            }
+            else{
+                cacheRecvData.clear();
+            }
+            for (int i = 0; i < nPayload_length; i++)
+            {
+                aPayload_data[i] = (char)(aPayload_data[i] ^ aMasking_key[i % nMaskingKeyByteNum]);
+            }
 
-                std::string str_origin = dictParams["Origin"];
-                if (str_origin.empty())
+            if (8 == nOpcode)
+            {
+                addSendPkg(buildPkg("", nOpcode));// close
+                bIsClose = true;
+            }
+            else if (2 == nOpcode || 1 == nOpcode || 0 == nOpcode || 9 == nOpcode)
+            {
+                if (9 == nOpcode)//!ping
                 {
-                    str_origin = "null";
+                    addSendPkg(buildPkg("", 0xA));// pong
                 }
-                handshake += std::string("Sec-WebSocket-Origin: ") + str_origin +"\r\n";
 
-                std::string str_host = dictParams["Host"];
-                if (false == str_host.empty())
+                if (nFIN == 1)
                 {
-                    std::vector<std::string> tmp_path_arg;
-                    strSplit(strLines[0], tmp_path_arg, " ");
-                    std::string tmp_path = "/";
-                    if (tmp_path_arg.size() >= 2)
+                    if (dataFragmentation.size() == 0)
                     {
-                        tmp_path = tmp_path_arg[1];
+                        addRecvPkg(aPayload_data);
                     }
-
-                    handshake += std::string("Sec-WebSocket-Location: ws://") + dictParams["Host"] + tmp_path + "\r\n\r\n";
-                }
-
-                uint32_t key1 = computeWebsokcetKeyVal(dictParams["Sec-WebSocket-Key1"]);
-                uint32_t key2 = computeWebsokcetKeyVal(dictParams["Sec-WebSocket-Key2"]);
-
-                std::string& key_ext   = strLines[strLines.size() - 1];
-                if (key_ext.size() < 8)
-                {
-                    statusWebSocketConnection = -1;
-                    return false;
-                }
-
-                char tmp_buff[16] = {0};
-                memcpy(tmp_buff, (const char*)(&key1), sizeof(key1));
-                memcpy(tmp_buff + sizeof(key1), (const char*)(&key2), sizeof(key2));
-                memcpy(tmp_buff + sizeof(key1) + sizeof(key2), key_ext.c_str(), 8);
-
-                handshake += computeMd5(tmp_buff, sizeof(tmp_buff));
-                addSendPkg(handshake);
-            }
-            else
-            {
-                statusWebSocketConnection = -1;
-                return false;
-            }
-            cacheRecvData.clear();
-            return true;
-        }
-        int nFIN = ((cacheRecvData[0] & 0x80) == 0x80)? 1: 0;
-
-        int nOpcode = cacheRecvData[0] & 0x0F;
-        //int nMask = ((cacheRecvData[1] & 0x80) == 0x80) ? 1 : 0; //!this must be 1
-        int nPayload_length = cacheRecvData[1] & 0x7F;
-        int nPlayLoadLenByteNum = 1;
-        int nMaskingKeyByteNum = 4;
-        
-        if (nPayload_length == 126)
-        {
-            nPlayLoadLenByteNum = 3;
-        }
-        else if (nPayload_length == 127)
-        {
-            nPlayLoadLenByteNum = 9;
-        }
-        if ((int)cacheRecvData.size() < (1 + nPlayLoadLenByteNum + nMaskingKeyByteNum))
-        {
-            return true;
-        }
-        if (nPayload_length == 126)
-        {
-            uint16_t tmpLen = 0;
-            memcpy(&tmpLen, cacheRecvData.c_str() + 2, 2);
-            nPayload_length = ntohs((int16_t)tmpLen);
-        }
-        else if (nPayload_length == 127)
-        {
-            int64_t tmpLen = 0;
-            memcpy(&tmpLen, cacheRecvData.c_str() + 2, 8);
-            nPayload_length = (int)ws_ntoh64(tmpLen);
-        }
-        
-        if ((int)cacheRecvData.size() < (1 + nPlayLoadLenByteNum + nMaskingKeyByteNum + nPayload_length))
-        {
-            return true;
-        }
-        std::string aMasking_key;
-        aMasking_key.assign(cacheRecvData.c_str() + 1 + nPlayLoadLenByteNum, nMaskingKeyByteNum);
-        std::string aPayload_data;
-        aPayload_data.assign(cacheRecvData.c_str() + 1 + nPlayLoadLenByteNum + nMaskingKeyByteNum, nPayload_length);
-        int nLeftSize = cacheRecvData.size() - (1 + nPlayLoadLenByteNum + nMaskingKeyByteNum + nPayload_length);
-
-        if (nLeftSize > 0)
-        {
-            std::string leftBytes;
-            leftBytes.assign(cacheRecvData.c_str() + 1 + nPlayLoadLenByteNum + nMaskingKeyByteNum + nPayload_length, nLeftSize);
-            cacheRecvData = leftBytes;
-        }
-        else{
-            cacheRecvData.clear();
-        }
-        for (int i = 0; i < nPayload_length; i++)
-        {
-            aPayload_data[i] = (char)(aPayload_data[i] ^ aMasking_key[i % nMaskingKeyByteNum]);
-        }
-
-        if (8 == nOpcode)
-        {
-            addSendPkg(buildPkg("", nOpcode));// close
-            bIsClose = true;
-        }
-        else if (2 == nOpcode || 1 == nOpcode || 0 == nOpcode || 9 == nOpcode)
-        {
-            if (9 == nOpcode)//!ping
-            {
-                addSendPkg(buildPkg("", 0xA));// pong
-            }
-
-            if (nFIN == 1)
-            {
-                if (dataFragmentation.size() == 0)
-                {
-                    addRecvPkg(aPayload_data);
+                    else
+                    {
+                        dataFragmentation += aPayload_data;
+                        addRecvPkg(dataFragmentation);
+                        dataFragmentation.clear();
+                    }
                 }
                 else
                 {
                     dataFragmentation += aPayload_data;
-                    addRecvPkg(dataFragmentation);
-                    dataFragmentation.clear();
                 }
             }
-            else
-            {
-                dataFragmentation += aPayload_data;
-            }
-        }
-
+        }while(cacheRecvData.size() > 0);
         return true;
     }
     std::string buildPkg(const std::string& dataBody, int opcode = 0x01)
